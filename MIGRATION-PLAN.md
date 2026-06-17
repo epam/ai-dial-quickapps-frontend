@@ -6,6 +6,23 @@ QuickApp2 editor currently lives inside `ai-dial-chat`. The goal is to extract i
 
 ---
 
+## Status
+
+| Step  | Status |
+| ----- | ------ |
+| W1-1  | ✅ Done |
+| W1-2  | ✅ Done |
+| W1-3  | ✅ Done |
+| W1-4  | ✅ Done |
+| W1-5  | ⬜ Todo |
+| W1-6  | ⬜ Todo |
+| W1-7  | ⬜ Todo |
+| W1-8  | ⬜ Todo |
+| W1-9  | ⬜ Todo |
+| W1-10 | ⬜ Todo |
+
+---
+
 ## Wave 1 — Next.js app, iframe-able, feature-parity
 
 **Goal:** A working Next.js app that renders the QuickApp2 editor and can be embedded as an iframe inside `ai-dial-chat`. No redesign of the tech stack — copy-port as much as possible to move fast.
