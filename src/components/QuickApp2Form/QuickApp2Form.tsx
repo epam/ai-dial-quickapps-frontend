@@ -457,13 +457,18 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
       {!readonly && (
         <div className="sticky bottom-0 flex justify-end gap-2 border-t border-primary bg-layer-1 px-5 py-3">
           {onDiscard && (
-            <DialButton variant={ButtonVariant.Secondary} onClick={onDiscard} type="button">
-              {t(MarketplaceI18nKeys.DiscardMarketplace)}
-            </DialButton>
+            <DialButton
+              variant={ButtonVariant.Secondary}
+              onClick={onDiscard}
+              type="button"
+              label={t(MarketplaceI18nKeys.DiscardMarketplace)}
+            />
           )}
-          <DialButton variant={ButtonVariant.Primary} type="submit">
-            {t(MarketplaceI18nKeys.ApplyChanges)}
-          </DialButton>
+          <DialButton
+            variant={ButtonVariant.Primary}
+            type="submit"
+            label={t(MarketplaceI18nKeys.ApplyChanges)}
+          />
         </div>
       )}
     </form>

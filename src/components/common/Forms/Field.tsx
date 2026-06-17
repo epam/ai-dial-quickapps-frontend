@@ -39,7 +39,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             {...rest}
             ref={ref}
             className={classNames(
-              'input-form input-invalid peer mx-0 text-sm disabled:cursor-not-allowed disabled:border-primary',
+              'peer mx-0 w-full rounded border border-primary bg-transparent px-3 py-2 text-sm text-primary outline-none',
+              'placeholder:text-secondary',
+              'hover:border-accent-primary focus:border-focus',
+              'disabled:cursor-not-allowed disabled:border-transparent disabled:bg-controls-disable disabled:text-controls-primary-disable',
               error && 'border-error hover:border-error focus:border-error',
               type === 'password' && 'pr-9',
               className,

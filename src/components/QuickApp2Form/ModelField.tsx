@@ -59,7 +59,7 @@ export const ModelField: FC<ModelFieldProps> = ({
         className={classNames(
           'flex w-full items-center justify-between rounded border px-3 py-2 text-left text-sm',
           error ? 'border-error' : 'border-primary',
-          disabled ? 'cursor-not-allowed opacity-50' : 'hover:border-accent',
+          disabled ? 'cursor-not-allowed opacity-50' : 'hover:border-accent-primary',
         )}
       >
         <span className="truncate">{displayName}</span>

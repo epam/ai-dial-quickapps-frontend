@@ -3,13 +3,12 @@ import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import { AppContextProvider, type AppState } from '@/context/AppContext';
 import { DataContextProvider } from '@/context/DataContext';
-import { buildQuickApp2Config, getQuickApp2FormData } from '@/form/quickApp2Form';
+import { buildQuickApp2Config } from '@/form/quickApp2Form';
 import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { QuickApp2Config } from '@/types/quick-apps';
 import { saveDialApp } from '@/utils/dialClient';
 import type { DialApp, AppSettings } from '@/types/dial-entities';
 import { QuickApp2Form } from '@/components/QuickApp2Form/QuickApp2Form';
-import { useDataContext } from '@/context/DataContext';
 
 const ALLOWED_ORIGIN = process.env.NEXT_PUBLIC_ALLOWED_ORIGIN ?? '*';
 
@@ -35,12 +34,6 @@ interface EditorInnerProps {
 }
 
 function EditorInner({ appState, onSave, onDirtyChange, resetKey }: EditorInnerProps) {
-  const { modelsMap, toolsetsMap, models } = useDataContext();
-
-  const allEntitiesMap = { ...modelsMap, ...toolsetsMap };
-  const toolSupportingModelIds = models.filter((m) => m.features?.tools).map((m) => m.id);
-  const availableModelIds = models.map((m) => m.id);
-
   const handleSave = useCallback(
     async (data: QuickApp2FormType) => {
       await onSave(data, false);
@@ -62,35 +55,32 @@ export default function EditorPage() {
   const [appState, setAppState] = useState<AppState | null>(null);
   const [resetKey, setResetKey] = useState(0);
   const isDirtyRef = useRef(false);
-  const pendingSaveRef = useRef<((data: QuickApp2FormType, isAutoSave?: boolean) => void) | null>(null);
-
   useEffect(() => {
     postToParent({ type: 'READY' });
 
-    const handleMessage = (event: MessageEvent) => {
+    const handleMessage = async (event: MessageEvent) => {
       if (!isAllowedOrigin(event.origin)) return;
       const msg = event.data as InboundMessage;
       if (!msg?.type) return;
 
       switch (msg.type) {
         case 'INIT': {
-          setAppState({
-            token: msg.payload.token,
-            dialApiHost: msg.payload.dialApiHost,
-            app: msg.payload.app,
-            settings: msg.payload.settings,
+          const { app, token, dialApiHost, settings } = msg.payload;
+          // Store token and dialApiHost server-side so API calls never expose them to the browser
+          await fetch('/api/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, dialApiHost }),
           });
+          setAppState({ app, settings, isReady: true });
           break;
         }
         case 'TRIGGER_SAVE':
         case 'TRIGGER_AUTO_SAVE': {
           const isAutoSave = msg.type === 'TRIGGER_AUTO_SAVE';
-          if (pendingSaveRef.current) {
-            // Form will call onSave when triggered; we signal via a custom event
-            window.dispatchEvent(
-              new CustomEvent('dial-editor-trigger-save', { detail: { isAutoSave } }),
-            );
-          }
+          window.dispatchEvent(
+            new CustomEvent('dial-editor-trigger-save', { detail: { isAutoSave } }),
+          );
           break;
         }
         case 'RESET': {
@@ -123,12 +113,7 @@ export default function EditorPage() {
       const allEntitiesMap = {} as Record<string, { id: string; name?: string; type?: string }>;
       try {
         const newConfig = buildQuickApp2Config({ data, allEntitiesMap, existingConfig });
-        const updatedApp = await saveDialApp(
-          appState.token,
-          appState.dialApiHost,
-          appState.app.id,
-          newConfig,
-        );
+        const updatedApp = await saveDialApp(appState.app.id, newConfig);
         if (isAutoSave) {
           postToParent({ type: 'AUTO_SAVE_COMPLETE' });
         } else {

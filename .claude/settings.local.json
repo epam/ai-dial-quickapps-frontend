@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node *)"
+      "Bash(node *)",
+      "WebFetch(domain:themes.aks.dev.dial.parts)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "atlassian",
+    "figma",
+    "ai-dial-ui-kit",
+    "playwright"
+  ]
 }

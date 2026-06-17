@@ -74,14 +74,12 @@ export function DataContextProvider({
   children: React.ReactNode;
 }) {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { token, dialApiHost } = useAppContext();
+  const { isReady } = useAppContext();
 
   useEffect(() => {
+    if (!isReady) return;
     dispatch({ type: 'LOADING' });
-    Promise.all([
-      fetchDialModels(token, dialApiHost),
-      fetchDialToolsets(token, dialApiHost),
-    ])
+    Promise.all([fetchDialModels(), fetchDialToolsets()])
       .then(([models, toolsets]) => {
         dispatch({ type: 'MODELS_LOADED', payload: models });
         dispatch({ type: 'TOOLSETS_LOADED', payload: toolsets });
@@ -93,7 +91,7 @@ export function DataContextProvider({
           payload: err instanceof Error ? err.message : 'Failed to load data',
         });
       });
-  }, [token, dialApiHost]);
+  }, [isReady]);
 
   return <DataContext.Provider value={state}>{children}</DataContext.Provider>;
 }

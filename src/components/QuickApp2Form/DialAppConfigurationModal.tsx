@@ -1,5 +1,5 @@
 'use client';
-import { FC, useEffect, useState } from 'react';
+import { FC, useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
 import { MarketplaceI18nKeys } from '@/constants/i18n';
@@ -30,14 +30,8 @@ export const DialAppConfigurationModal: FC<DialAppConfigurationModalProps> = ({
     transport ?? (supportsMcp ? DialAppTransportType.MCP : DialAppTransportType.ChatCompletion),
   );
 
-  useEffect(() => {
-    setSelectedTransport(
-      transport ?? (supportsMcp ? DialAppTransportType.MCP : DialAppTransportType.ChatCompletion),
-    );
-  }, [agentId, transport, supportsMcp]);
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-blackout">
       <div className="w-96 rounded-lg bg-layer-2 p-6 shadow-xl">
         <h2 className="mb-4 text-lg font-semibold">{t(MarketplaceI18nKeys.AgentSettings)}</h2>
         <p className="mb-4 text-sm text-secondary">{t(MarketplaceI18nKeys.AgentSettingsDescription)}</p>
@@ -69,12 +63,16 @@ export const DialAppConfigurationModal: FC<DialAppConfigurationModalProps> = ({
         </div>
 
         <div className="flex justify-end gap-2">
-          <DialButton variant={ButtonVariant.Secondary} onClick={onClose}>
-            {t(MarketplaceI18nKeys.DiscardMarketplace)}
-          </DialButton>
-          <DialButton variant={ButtonVariant.Primary} onClick={() => onSave(selectedTransport)}>
-            {t(MarketplaceI18nKeys.ApplyChanges)}
-          </DialButton>
+          <DialButton
+            variant={ButtonVariant.Secondary}
+            onClick={onClose}
+            label={t(MarketplaceI18nKeys.DiscardMarketplace)}
+          />
+          <DialButton
+            variant={ButtonVariant.Primary}
+            onClick={() => onSave(selectedTransport)}
+            label={t(MarketplaceI18nKeys.ApplyChanges)}
+          />
         </div>
       </div>
     </div>

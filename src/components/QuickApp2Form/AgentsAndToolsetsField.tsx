@@ -145,15 +145,13 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
                   setEditorError(undefined);
                   onJsonViewChange(false);
                 }}
-              >
-                {t(MarketplaceI18nKeys.DiscardMarketplace)}
-              </DialButton>
+                label={t(MarketplaceI18nKeys.DiscardMarketplace)}
+              />
               <DialButton
                 variant={ButtonVariant.Primary}
                 onClick={handleJsonSwitchClick}
-              >
-                {t(MarketplaceI18nKeys.SaveJSON)}
-              </DialButton>
+                label={t(MarketplaceI18nKeys.SaveJSON)}
+              />
             </div>
           )}
         </div>
@@ -171,6 +169,7 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
 
       {configuringChip && (
         <DialAppConfigurationModal
+          key={configuringChip.id}
           agentId={configuringChip.id}
           transport={configuringChip.transport}
           onClose={() => setConfiguringChip(null)}

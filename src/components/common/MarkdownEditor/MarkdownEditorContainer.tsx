@@ -6,7 +6,6 @@ import {
   type FC,
   type ReactNode,
   useCallback,
-  useEffect,
   useState,
 } from 'react';
 
@@ -60,13 +59,8 @@ export const DialMarkdownEditorContainer: FC<
   placeholder,
 }) => {
   const [isJSONContentMode, setIsJSONContentMode] = useState(false);
+  // Keep Monaco mounted once activated to avoid remount flicker when toggling back.
   const [isEditorMounted, setIsEditorMounted] = useState(false);
-
-  useEffect(() => {
-    if (isJSONContentMode) {
-      setIsEditorMounted(true);
-    }
-  }, [isJSONContentMode]);
 
   const handleChange = useCallback(
     (val: string | undefined) => {
@@ -77,6 +71,7 @@ export const DialMarkdownEditorContainer: FC<
 
   const handleToggleSwitch = useCallback(() => {
     setIsJSONContentMode((prev) => !prev);
+    setIsEditorMounted(true);
   }, []);
 
   const showSwitcher = Boolean(switcherLabel);
