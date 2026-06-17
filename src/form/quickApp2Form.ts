@@ -233,6 +233,61 @@ export const getQuickApp2FormData = (
   };
 };
 
+export const buildQuickApp2Config = ({
+  data,
+  allEntitiesMap,
+  existingConfig,
+}: {
+  data: QuickApp2Form;
+  allEntitiesMap: Record<string, DialAIEntityModel & { id: string; name?: string; type?: string }>;
+  existingConfig?: QuickApp2Config;
+}): QuickApp2Config => {
+  const toolSets = getQuickApp2Toolsets({ allEntitiesMap, data });
+
+  const starters = data.starters
+    .filter((s) => s.title.trim() || s.text.trim())
+    .map(({ title, text }) => ({ title, text }));
+
+  const skills = data.agentSkills.map((url) => ({
+    type: 'dial-prompt' as const,
+    url,
+  }));
+
+  const timestampFeature = data.timestamp
+    ? { injection_strategy: 'tool_call' as const }
+    : null;
+
+  return {
+    orchestrator: {
+      deployment: {
+        deployment_id: data.model,
+        parameters: { temperature: data.temperature },
+      },
+      system_prompt: {
+        type: 'custom',
+        variables: existingConfig?.orchestrator?.system_prompt?.variables ?? {},
+        content: data.instructions,
+      },
+    },
+    contexts: existingConfig?.contexts ?? [],
+    tool_sets: toolSets,
+    conversation_starters: {
+      intro_text: data.introText || undefined,
+      chat_message_input_disabled: data.chatMessageInputDisabled || undefined,
+      auto_submit: data.autoSubmit,
+      starters,
+    },
+    ...(data.inputAttachmentTypes.length && {
+      input_attachment_types: data.inputAttachmentTypes,
+    }),
+    ...(data.maxInputAttachments != null && {
+      max_input_attachments: data.maxInputAttachments,
+    }),
+    ...(skills.length && { skills }),
+    features: { timestamp: timestampFeature },
+  };
+};
+
 export const getQuickApp2Toolsets = ({
   allEntitiesMap,
   data,

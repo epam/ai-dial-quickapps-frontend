@@ -11,11 +11,13 @@
   "dependencies": {
     "@epam/ai-dial-ui-kit": "^0.11.0-dev.32",
     "@floating-ui/react": "^0.27.19",
+    "@hookform/resolvers": "^5.4.0",
     "@monaco-editor/react": "^4.7.0",
     "@tabler/icons-react": "^3.44.0",
     "@uiw/react-md-editor": "^4.1.1",
     "classnames": "^2.5.1",
     "downshift": "^8.5.0",
+    "i18next": "^26.3.1",
     "lodash-es": "^4.18.1",
     "nanoid": "^5.1.11",
     "next": "16.2.9",
@@ -23,6 +25,7 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-hook-form": "^7.79.0",
+    "react-i18next": "^17.0.8",
     "zod": "^4.4.3"
   },
   "devDependencies": {

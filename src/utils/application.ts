@@ -103,3 +103,25 @@ export const doesAgentSupportMcp = (entity?: DialAIEntityModel): boolean =>
 export const doesModelAllowTemperature = (
   model?: DialAIEntityModel,
 ): boolean => !!(model as { features?: { temperature?: boolean } } | undefined)?.features?.temperature;
+
+export const isEntityIdPublic = (entity: { id: string }): boolean =>
+  entity.id.startsWith('public/');
+
+export const getEntityDisplayName = (
+  id: string,
+  allEntitiesMap: Record<string, { name?: string } | undefined>,
+): string => {
+  const entity = allEntitiesMap[id];
+  if (entity?.name) return entity.name;
+  const parts = id.split('/');
+  return decodeURIComponent(parts[parts.length - 1]);
+};
+
+export const isDialAiEntityModel = (entity: { type?: string }): boolean =>
+  entity?.type === 'application' || entity?.type === 'model';
+
+export const isToolsetEntityModel = (entity: { type?: string }): boolean =>
+  entity?.type === 'toolset';
+
+export const getSharedTooltip = (context: string): string =>
+  `Cannot change the ${context} of a shared application.`;

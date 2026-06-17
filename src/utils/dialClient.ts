@@ -98,6 +98,29 @@ export async function fetchDialModels(
   return [...modelsRes.data, ...appsRes.data].map(mapCoreToDialModel);
 }
 
+export async function saveDialApp(
+  token: string,
+  dialApiHost: string,
+  appId: string,
+  applicationProperties: unknown,
+): Promise<{ id: string; applicationProperties: unknown; [key: string]: unknown }> {
+  const encodedId = encodeURIComponent(appId);
+  const url = `${dialApiHost}/openai/applications/${encodedId}?api-version=${DIAL_API_VERSION}`;
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ applicationProperties }),
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`DIAL API ${res.status}: ${body}`);
+  }
+  return res.json() as Promise<{ id: string; applicationProperties: unknown; [key: string]: unknown }>;
+}
+
 export async function fetchDialToolsets(
   token: string,
   dialApiHost: string,
