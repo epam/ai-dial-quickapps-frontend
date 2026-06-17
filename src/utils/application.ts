@@ -99,3 +99,7 @@ export const getQuickAppItemNameFromConfig = (
 
 export const doesAgentSupportMcp = (entity?: DialAIEntityModel): boolean =>
   !!entity?.mcp || !!entity?.features?.mcp;
+
+export const doesModelAllowTemperature = (
+  model?: DialAIEntityModel,
+): boolean => !!(model as { features?: { temperature?: boolean } } | undefined)?.features?.temperature;

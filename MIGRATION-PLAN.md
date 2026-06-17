@@ -14,7 +14,7 @@ QuickApp2 editor currently lives inside `ai-dial-chat`. The goal is to extract i
 | W1-2  | ✅ Done |
 | W1-3  | ✅ Done |
 | W1-4  | ✅ Done |
-| W1-5  | ⬜ Todo |
+| W1-5  | ✅ Done |
 | W1-6  | ⬜ Todo |
 | W1-7  | ⬜ Todo |
 | W1-8  | ⬜ Todo |
