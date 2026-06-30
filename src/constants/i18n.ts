@@ -103,6 +103,8 @@ export enum MarketplaceI18nKeys {
   AgentSkillsDescription = "Reusable instruction modules the agent loads on demand when the task matches.",
   NoAgentSkillsAdded = "No Agent Skills added",
   AddAgentSkills = "Add Agent Skills",
+  SelectAgentSkills = "Select Agent Skills",
+  SearchAgentSkills = "Search skills...",
   SkillsLowercase = "skills",
   AdvancedSettings = "Advanced settings",
   ConnectVia = "Connect via",

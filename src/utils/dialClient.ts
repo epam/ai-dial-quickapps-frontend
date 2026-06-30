@@ -1,4 +1,4 @@
-import type { DialModel, DialToolset } from "@/types/dial-entities";
+import type { DialModel, DialPrompt, DialToolset } from "@/types/dial-entities";
 
 const DIAL_API_VERSION = "2025-01-01-preview";
 
@@ -134,4 +134,26 @@ export async function fetchDialFiles(
     `/v1/metadata/${path}?limit=1000&recursive=true`,
   );
   return res.items ?? [];
+}
+
+export async function fetchDialPrompts(): Promise<DialPrompt[]> {
+  const { bucket } = await dialFetch<{ bucket: string }>("/v1/bucket");
+  const encodedBucket = encodeURIComponent(bucket);
+  let res: { items?: DialFileMetadataItem[] };
+  try {
+    res = await dialFetch<{ items?: DialFileMetadataItem[] }>(
+      `/v1/metadata/prompts/${encodedBucket}/?limit=1000&recursive=true`,
+    );
+  } catch {
+    return [];
+  }
+  return (res.items ?? [])
+    .filter((item) => item.nodeType === "ITEM")
+    .map((item) => {
+      const parts = ["prompts", bucket];
+      if (item.parentPath) parts.push(item.parentPath);
+      parts.push(item.name);
+      const id = parts.join("/");
+      return { id, name: item.name, folderId: id.slice(0, id.lastIndexOf("/")) };
+    });
 }

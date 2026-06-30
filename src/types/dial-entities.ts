@@ -2,7 +2,7 @@ export interface DialModel {
   id: string;
   reference: string;
   name: string;
-  type: 'model' | 'application';
+  type: "model" | "application";
   version?: string;
   applicationTypeSchemaId?: string;
   mcp?: boolean;
@@ -21,7 +21,7 @@ export interface DialToolset {
   id: string;
   reference: string;
   name: string;
-  type: 'toolset';
+  type: "toolset";
   version?: string;
   mcp?: boolean;
   features?: { mcp?: boolean };
@@ -49,3 +49,11 @@ export interface AppSettings {
   isCodeInterpreterEnabled?: boolean;
   theme?: string;
 }
+
+export interface DialPrompt {
+  id: string;
+  name: string;
+  folderId: string;
+}
+
+export type PromptsMap = Record<string, DialPrompt>;

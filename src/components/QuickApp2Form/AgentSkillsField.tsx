@@ -1,6 +1,6 @@
-'use client';
-import { FC } from 'react';
-import { AgentSkillsSelector } from '@/components/common/AgentSkillsSelector/AgentSkillsSelector';
+"use client";
+import { FC } from "react";
+import AgentSkillsSelector from "@/components/common/AgentSkillsSelector/AgentSkillsSelector";
 
 interface AgentSkillsFieldProps {
   value: string[];
