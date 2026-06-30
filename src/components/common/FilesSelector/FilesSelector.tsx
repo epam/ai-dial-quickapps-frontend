@@ -1,23 +1,16 @@
-'use client';
+"use client";
 
-import { IconPlus, IconX, IconFile } from '@tabler/icons-react';
-import React, { MouseEvent, useCallback } from 'react';
+import { IconFile, IconPlus, IconX } from "@tabler/icons-react";
+import React, { type MouseEvent, useCallback, useState } from "react";
 
-import { CommonI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Translation } from '@/types/translation';
-import { decodeApiUrl } from '@/utils/api';
-import { DialNoDataContent } from '@epam/ai-dial-ui-kit';
+import { DialNoDataContent } from "@epam/ai-dial-ui-kit";
 
-interface Props {
-  files: string[];
-  readonly?: boolean;
-  addBtnTooltip?: string;
-  tooltip?: string;
-  onRemoveFile?: (document: string) => void;
-  onAddFiles?: (documents: string[]) => void;
-}
+import { CommonI18nKeys } from "@/constants/i18n";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Translation } from "@/types/translation";
+import { decodeApiUrl } from "@/utils/api";
 
+import { FileManagerModal } from "./FileManagerModal";
 
 interface SelectedFileProps {
   document: string;
@@ -30,7 +23,7 @@ const SelectedFile: React.FC<SelectedFileProps> = ({
   readonly,
   onRemove,
 }) => {
-  const displayName = decodeApiUrl(document).split('/').pop() ?? document;
+  const displayName = decodeApiUrl(document).split("/").pop() ?? document;
 
   return (
     <div className="flex items-center gap-2 text-sm">
@@ -52,6 +45,15 @@ const SelectedFile: React.FC<SelectedFileProps> = ({
   );
 };
 
+interface Props {
+  files: string[];
+  readonly?: boolean;
+  addBtnTooltip?: string;
+  tooltip?: string;
+  onRemoveFile?: (document: string) => void;
+  onAddFiles?: (documents: string[]) => void;
+}
+
 export const FilesSelector: React.FC<Props> = ({
   files,
   readonly,
@@ -60,13 +62,19 @@ export const FilesSelector: React.FC<Props> = ({
   onRemoveFile,
 }) => {
   const { t } = useTranslation(Translation.Common);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleOpenFilesModal = useCallback(
-    (e: MouseEvent<HTMLButtonElement>) => {
-      e.preventDefault();
-      // FileManagerModal will be wired in W1-5 when DataContext is available.
-      // For now, trigger a no-op so the button is present for layout purposes.
-      onAddFiles?.([]);
+  const handleOpenModal = useCallback((e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setIsModalOpen(true);
+  }, []);
+
+  const handleModalClose = useCallback(
+    (fileIds: string[]) => {
+      setIsModalOpen(false);
+      if (fileIds.length > 0) {
+        onAddFiles?.(fileIds);
+      }
     },
     [onAddFiles],
   );
@@ -74,16 +82,16 @@ export const FilesSelector: React.FC<Props> = ({
   return (
     <div className="relative grow space-y-4 divide-tertiary">
       <div className="flex flex-col">
-        <div className="absolute right-0 top-[-26px]">
+        <div className="absolute end-0 top-[-26px]">
           <button
             type="button"
             disabled={readonly}
-            onClick={handleOpenFilesModal}
+            onClick={handleOpenModal}
             title={addBtnTooltip}
             className="flex items-center gap-1 text-xs text-accent-primary hover:text-accent-secondary disabled:cursor-not-allowed disabled:opacity-50"
           >
             <IconPlus size={18} />
-            Add
+            {t(CommonI18nKeys.AddCommon)}
           </button>
         </div>
         {!files.length ? (
@@ -104,6 +112,7 @@ export const FilesSelector: React.FC<Props> = ({
           </div>
         )}
       </div>
+      <FileManagerModal isOpen={isModalOpen} onClose={handleModalClose} />
     </div>
   );
 };

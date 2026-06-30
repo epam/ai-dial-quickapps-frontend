@@ -1,6 +1,6 @@
-import type { DialModel, DialToolset } from '@/types/dial-entities';
+import type { DialModel, DialToolset } from "@/types/dial-entities";
 
-const DIAL_API_VERSION = '2025-01-01-preview';
+const DIAL_API_VERSION = "2025-01-01-preview";
 
 interface CoreApiEntity {
   id: string;
@@ -43,7 +43,7 @@ function mapCoreToDialModel(entity: CoreApiEntity): DialModel {
     id: decodeURIComponent(entity.id),
     reference: entity.reference,
     name: entity.display_name ?? entity.id,
-    type: entity.object as 'model' | 'application',
+    type: entity.object as "model" | "application",
     version: entity.display_version,
     applicationTypeSchemaId: entity.application_type_schema_id,
     mcp: entity.mcp,
@@ -59,13 +59,13 @@ function mapCoreToDialModel(entity: CoreApiEntity): DialModel {
 }
 
 function mapApiToDialToolset(data: ToolsetApiEntity): DialToolset {
-  const rawId = data.id ?? data.toolset ?? data.name ?? '';
+  const rawId = data.id ?? data.toolset ?? data.name ?? "";
   const id = decodeURIComponent(rawId);
   return {
     id,
     reference: data.reference ?? id,
     name: data.display_name ?? id,
-    type: 'toolset',
+    type: "toolset",
     version: data.display_version,
     mcp: data.mcp,
     features: data.features,
@@ -87,24 +87,51 @@ export async function fetchDialModels(): Promise<DialModel[]> {
 export async function saveDialApp(
   appId: string,
   applicationProperties: unknown,
-): Promise<{ id: string; applicationProperties: unknown; [key: string]: unknown }> {
+): Promise<{
+  id: string;
+  applicationProperties: unknown;
+  [key: string]: unknown;
+}> {
   const encodedId = encodeURIComponent(appId);
   const res = await fetch(
     `/api/dial/openai/applications/${encodedId}?api-version=${DIAL_API_VERSION}`,
     {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ applicationProperties }),
     },
   );
   if (!res.ok) {
-    const body = await res.text().catch(() => '');
+    const body = await res.text().catch(() => "");
     throw new Error(`DIAL API ${res.status}: ${body}`);
   }
-  return res.json() as Promise<{ id: string; applicationProperties: unknown; [key: string]: unknown }>;
+  return res.json() as Promise<{
+    id: string;
+    applicationProperties: unknown;
+    [key: string]: unknown;
+  }>;
 }
 
 export async function fetchDialToolsets(): Promise<DialToolset[]> {
-  const res = await dialFetch<{ data: ToolsetApiEntity[] }>('/openai/toolsets');
+  const res = await dialFetch<{ data: ToolsetApiEntity[] }>("/openai/toolsets");
   return res.data.map(mapApiToDialToolset);
+}
+
+export interface DialFileMetadataItem {
+  name: string;
+  bucket?: string;
+  parentPath?: string | null;
+  contentType?: string;
+  contentLength?: number;
+  nodeType: "ITEM" | "FOLDER";
+  items?: DialFileMetadataItem[];
+}
+
+export async function fetchDialFiles(
+  path = "files",
+): Promise<DialFileMetadataItem[]> {
+  const res = await dialFetch<{ items?: DialFileMetadataItem[] }>(
+    `/v1/metadata/${path}?limit=1000&recursive=true`,
+  );
+  return res.items ?? [];
 }
