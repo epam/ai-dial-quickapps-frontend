@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-import type { ChipEntity } from './AgentAndToolsetChip';
+import type { ChipEntity } from "./AgentAndToolsetChip";
 
 interface ChipTooltipContentProps {
   id: string;
@@ -34,9 +34,7 @@ export const ChipTooltipContent: React.FC<ChipTooltipContentProps> = ({
       <div className="flex items-center gap-3">
         <div className="flex min-w-0 flex-1 flex-col text-sm">
           <span className="w-full truncate">{name}</span>
-          {version && (
-            <span className="text-secondary">v{version}</span>
-          )}
+          {version && <span className="text-secondary">v{version}</span>}
         </div>
       </div>
     </div>

@@ -29,7 +29,6 @@ export const CodeInterpreterField: FC<CodeInterpreterFieldProps> = ({
       isOn={value}
       handleSwitch={() => onChange(!value)}
       disabled={disabled}
-      switchOFFText={value ? t(MarketplaceI18nKeys.OnToggle) : t(MarketplaceI18nKeys.OffToggle)}
       additionalText={t(MarketplaceI18nKeys.UseToExecuteCustomPythonCode)}
       className="flex items-center gap-2"
       tooltip={tooltip}

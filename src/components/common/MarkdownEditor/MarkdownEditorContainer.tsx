@@ -1,27 +1,32 @@
-'use client';
+"use client";
 
-import { type OnValidate } from '@monaco-editor/react';
-import { type PreviewType } from '@uiw/react-md-editor';
-import {
-  type FC,
-  type ReactNode,
-  useCallback,
-  useState,
-} from 'react';
+import { type OnValidate } from "@monaco-editor/react";
+import { type PreviewType } from "@uiw/react-md-editor";
+import { type FC, type ReactNode, useCallback, useState } from "react";
 
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 
-import { Label } from '@/components/common/Forms/Label';
-import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
+import { Label } from "@/components/common/Forms/Label";
+import { ToggleSwitch } from "@/components/common/ToggleSwitch/ToggleSwitch";
+import { useThemeContext } from "@/context/ThemeContext";
+import { ThemeId } from "@/types/theme";
 
-import {
-  DialMarkdownEditor,
-  EditorTheme,
-  EditorThemes,
-} from './MarkdownEditor';
+import { LazyDialJsonEditor, LazyDialMarkdownEditor } from "@epam/ai-dial-ui-kit";
 
-const MonacoEditor = dynamic(
-  () => import('@monaco-editor/react').then((mod) => mod.Editor),
+export enum EditorThemes {
+  dark = "dark",
+  light = "light",
+}
+
+export type EditorTheme = `${EditorThemes}`;
+
+const DialMarkdownEditor = dynamic(
+  async () => (await LazyDialMarkdownEditor()).DialMarkdownEditor,
+  { ssr: false },
+);
+
+const DialJsonEditor = dynamic(
+  async () => (await LazyDialJsonEditor()).DialJsonEditor,
   { ssr: false },
 );
 
@@ -38,11 +43,6 @@ export interface DialMarkdownEditorContainerProps {
   placeholder?: string;
 }
 
-const monacoEditorOptions = {
-  minimap: { enabled: false },
-  scrollBeyondLastLine: false,
-  automaticLayout: true,
-};
 
 export const DialMarkdownEditorContainer: FC<
   DialMarkdownEditorContainerProps
@@ -53,18 +53,21 @@ export const DialMarkdownEditorContainer: FC<
   headerContent,
   switcherLabel,
   height = 300,
-  theme = EditorThemes.dark,
+  theme,
   onValidateJSON,
-  preview = 'edit',
+  preview = "edit",
   placeholder,
 }) => {
+  const { currentTheme } = useThemeContext();
+  const resolvedTheme: EditorTheme =
+    theme ?? (currentTheme?.id === ThemeId.Light ? EditorThemes.light : EditorThemes.dark);
   const [isJSONContentMode, setIsJSONContentMode] = useState(false);
   // Keep Monaco mounted once activated to avoid remount flicker when toggling back.
   const [isEditorMounted, setIsEditorMounted] = useState(false);
 
   const handleChange = useCallback(
     (val: string | undefined) => {
-      onChangeValue?.(val ?? '');
+      onChangeValue?.(val ?? "");
     },
     [onChangeValue],
   );
@@ -87,9 +90,7 @@ export const DialMarkdownEditorContainer: FC<
               <ToggleSwitch
                 isOn={isJSONContentMode}
                 handleSwitch={handleToggleSwitch}
-                switchOnText="ON"
-                switchOFFText="OFF"
-                additionalText={switcherLabel}
+                additionalText={switcherLabel as string}
               />
             )}
           </div>
@@ -102,14 +103,12 @@ export const DialMarkdownEditorContainer: FC<
           style={{ height: `${height}px` }}
         >
           {isEditorMounted && (
-            <MonacoEditor
+            <DialJsonEditor
               value={value}
               onChange={handleChange}
-              onValidate={onValidateJSON}
-              language="json"
-              theme={theme === EditorThemes.dark ? 'vs-dark' : 'light'}
-              height={height}
-              options={monacoEditorOptions}
+              onValidateJSON={onValidateJSON}
+              currentTheme={resolvedTheme === EditorThemes.dark ? "vs-dark" : "light"}
+              options={{ minimap: { enabled: false }, scrollBeyondLastLine: false, automaticLayout: true }}
             />
           )}
         </div>
@@ -119,7 +118,7 @@ export const DialMarkdownEditorContainer: FC<
           onChange={onChangeValue}
           height={height}
           preview={preview}
-          theme={theme}
+          theme={resolvedTheme as EditorThemes}
           placeholder={placeholder}
         />
       )}

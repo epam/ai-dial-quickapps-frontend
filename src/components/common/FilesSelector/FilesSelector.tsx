@@ -3,7 +3,11 @@
 import { IconPlus, IconX, IconFile } from '@tabler/icons-react';
 import React, { MouseEvent, useCallback } from 'react';
 
+import { CommonI18nKeys } from '@/constants/i18n';
+import { useTranslation } from '@/hooks/useTranslation';
+import { Translation } from '@/types/translation';
 import { decodeApiUrl } from '@/utils/api';
+import { DialNoDataContent } from '@epam/ai-dial-ui-kit';
 
 interface Props {
   files: string[];
@@ -14,11 +18,6 @@ interface Props {
   onAddFiles?: (documents: string[]) => void;
 }
 
-const NoFiles: React.FC = () => (
-  <div className="flex items-center justify-center py-4 text-sm text-secondary">
-    No files selected
-  </div>
-);
 
 interface SelectedFileProps {
   document: string;
@@ -60,6 +59,8 @@ export const FilesSelector: React.FC<Props> = ({
   onAddFiles,
   onRemoveFile,
 }) => {
+  const { t } = useTranslation(Translation.Common);
+
   const handleOpenFilesModal = useCallback(
     (e: MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
@@ -86,7 +87,10 @@ export const FilesSelector: React.FC<Props> = ({
           </button>
         </div>
         {!files.length ? (
-          <NoFiles />
+          <DialNoDataContent
+            title={t(CommonI18nKeys.NoContextFilesAdded)}
+            containerClassName="rounded border border-primary p-4"
+          />
         ) : (
           <div className="flex flex-col gap-y-2 overflow-auto rounded border border-primary p-2">
             {files.map((file) => (

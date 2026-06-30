@@ -7,6 +7,7 @@ export enum SettingsI18nKeys {
 // common.json
 export enum CommonI18nKeys {
   NoAgentsAndToolsetsAdded = 'No Agents & Toolsets added',
+  NoContextFilesAdded = 'No context files added',
   AddAgentsAndToolsets = 'Add Agents and Toolsets',
   AddCommon = 'Add',
   OFFCommon = 'OFF',

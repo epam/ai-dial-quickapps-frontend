@@ -1,22 +1,34 @@
 "use client";
-import { FC, useCallback, useState } from "react";
-import { useTranslation } from "@/hooks/useTranslation";
-import { Translation } from "@/types/translation";
+import type { ChipEntity } from "@/components/common/AgentAndToolsetSelector/AgentAndToolsetChip";
+import { AgentAndToolsetSelector } from "@/components/common/AgentAndToolsetSelector/AgentAndToolsetSelector";
+import { ToggleSwitch } from "@/components/common/ToggleSwitch/ToggleSwitch";
 import { CommonI18nKeys, MarketplaceI18nKeys } from "@/constants/i18n";
 import { useDataContext } from "@/context/DataContext";
-import { AgentOrToolsetSchemaKeys } from "@/form/quickApp2Form";
+import { useThemeContext } from "@/context/ThemeContext";
 import type { QuickApp2Form } from "@/form/quickApp2Form";
+import { AgentOrToolsetSchemaKeys } from "@/form/quickApp2Form";
+import { useTranslation } from "@/hooks/useTranslation";
 import { DialAppTransportType } from "@/types/quick-apps";
+import { ThemeId } from "@/types/theme";
+import { Translation } from "@/types/translation";
 import { isApplicationId } from "@/utils/api";
-import { doesAgentSupportMcp } from "@/utils/application";
-import { AgentAndToolsetSelector } from "@/components/common/AgentAndToolsetSelector/AgentAndToolsetSelector";
+import {
+  ButtonVariant,
+  DialButton,
+  DialNeutralButton,
+  DialNeutralIconButton,
+  ElementSize,
+  LazyDialJsonEditor,
+} from "@epam/ai-dial-ui-kit";
+import { IconArrowsMaximize, IconArrowsMinimize } from "@tabler/icons-react";
+import dynamic from "next/dynamic";
+import { FC, useCallback, useState } from "react";
 import { DialAppConfigurationModal } from "./DialAppConfigurationModal";
-import { MonacoEditor } from "@/components/common/MonacoEditor";
-import type { ChipEntity } from "@/components/common/AgentAndToolsetSelector/AgentAndToolsetChip";
-import { ToggleSwitch } from "@/components/common/ToggleSwitch/ToggleSwitch";
-import { ButtonVariant, DialButton } from "@epam/ai-dial-ui-kit";
-import classNames from "classnames";
 
+const DialJsonEditor = dynamic(
+  async () => (await LazyDialJsonEditor()).DialJsonEditor,
+  { ssr: false },
+);
 interface AgentsAndToolsetsFieldProps {
   agentsAndToolsets: QuickApp2Form["agentsAndToolsets"];
   agentsAndToolsetsJson: string;
@@ -43,9 +55,13 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
   jsonError,
 }) => {
   const { t } = useTranslation(Translation.Marketplace);
+  const { currentTheme } = useThemeContext();
+  const editorMonacoTheme =
+    currentTheme?.id === ThemeId.Light ? "light" : "vs-dark";
   const { modelsMap, toolsetsMap } = useDataContext();
 
   const [editorError, setEditorError] = useState<string | undefined>(undefined);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [configuringChip, setConfiguringChip] = useState<{
     id: string;
     transport?: DialAppTransportType;
@@ -118,7 +134,6 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
               isOn={true}
               handleSwitch={handleJsonSwitchClick}
               disabled={readonly}
-              switchOFFText={t(MarketplaceI18nKeys.OnToggle)}
               additionalText={t(MarketplaceI18nKeys.JSONLabel)}
               className="flex w-fit items-center gap-2"
               tooltip={
@@ -127,34 +142,67 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
                   : t(MarketplaceI18nKeys.SwitchToMarketplaceView)
               }
             />
+            <DialNeutralIconButton
+              size={ElementSize.Small}
+              icon={
+                isFullscreen ? (
+                  <IconArrowsMinimize size={16} />
+                ) : (
+                  <IconArrowsMaximize size={16} />
+                )
+              }
+              onClick={() => setIsFullscreen((prev) => !prev)}
+            />
           </div>
-          <MonacoEditor
-            value={agentsAndToolsetsJson}
-            onChange={(val) => onJsonChange(val ?? "")}
-            language="json"
-            height={300}
-            options={{ readOnly: readonly }}
-          />
-          {(editorError ?? jsonError) && (
-            <p className="text-xs text-error">{editorError ?? jsonError}</p>
-          )}
-          {!readonly && (
-            <div className="flex justify-end gap-2">
-              <DialButton
-                variant={ButtonVariant.Neutral}
-                onClick={() => {
-                  setEditorError(undefined);
-                  onJsonViewChange(false);
-                }}
-                label={t(MarketplaceI18nKeys.DiscardMarketplace)}
-              />
-              <DialButton
-                variant={ButtonVariant.Primary}
-                onClick={handleJsonSwitchClick}
-                label={t(MarketplaceI18nKeys.SaveJSON)}
+          <div
+            className={
+              isFullscreen
+                ? "fixed inset-0 z-50 flex flex-col gap-2 bg-layer-2 p-4"
+                : "flex flex-col gap-2"
+            }
+          >
+            {isFullscreen && (
+              <div className="flex items-center justify-end">
+                <DialNeutralIconButton
+                  size={ElementSize.Small}
+                  icon={<IconArrowsMinimize size={16} />}
+                  onClick={() => setIsFullscreen(false)}
+                />
+              </div>
+            )}
+            <div
+              style={{ height: isFullscreen ? "calc(100% - 80px)" : "300px" }}
+            >
+              <DialJsonEditor
+                value={agentsAndToolsetsJson}
+                onChange={(val) => onJsonChange(val ?? "")}
+                currentTheme={editorMonacoTheme}
+                options={{ readOnly: readonly, automaticLayout: true }}
               />
             </div>
-          )}
+            {(editorError ?? jsonError) && (
+              <p className="text-xs text-error">{editorError ?? jsonError}</p>
+            )}
+            {!readonly && (
+              <div className="flex justify-end gap-2">
+                <DialNeutralButton
+                  size={ElementSize.Small}
+                  onClick={() => {
+                    setEditorError(undefined);
+                    setIsFullscreen(false);
+                    onJsonViewChange(false);
+                  }}
+                  label={t(MarketplaceI18nKeys.DiscardMarketplace)}
+                />
+                <DialButton
+                  variant={ButtonVariant.Primary}
+                  size={ElementSize.Small}
+                  onClick={handleJsonSwitchClick}
+                  label={t(MarketplaceI18nKeys.SaveJSON)}
+                />
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         <AgentAndToolsetSelector

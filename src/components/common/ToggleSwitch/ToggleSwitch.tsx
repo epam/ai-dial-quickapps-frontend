@@ -1,88 +1,44 @@
-import { IconAlertTriangleFilled } from '@tabler/icons-react';
-import { useId } from 'react';
+"use client";
 
-import classNames from 'classnames';
+import { IconAlertTriangleFilled } from "@tabler/icons-react";
+import { DialSwitch, DialTooltip } from "@epam/ai-dial-ui-kit";
+import { FC, useId } from "react";
 
-import { DialTooltip } from '@epam/ai-dial-ui-kit';
-import { ToggleSwitchProps } from './view-props';
+import classNames from "classnames";
 
-interface SwitchStateTextProps {
-  switchText: string;
+interface ToggleSwitchProps {
   isOn: boolean;
+  handleSwitch: () => void;
+  additionalText?: string;
+  className?: string;
   disabled?: boolean;
+  tooltip?: string;
+  warning?: string;
 }
 
-const SwitchStateText = ({
-  switchText,
+export const ToggleSwitch: FC<ToggleSwitchProps> = ({
   isOn,
-  disabled,
-}: SwitchStateTextProps) => (
-  <span
-    className={classNames(
-      'h-4 text-xs',
-      isOn && 'px-1',
-      isOn && !disabled ? 'text-controls-permanent' : 'text-primary',
-      disabled && '!text-controls-accent-disable',
-    )}
-  >
-    {switchText}
-  </span>
-);
-
-export function ToggleSwitch({
-  isOn,
-  switchOnText,
-  switchOFFText,
+  handleSwitch,
   additionalText,
   className,
+  disabled,
   tooltip,
   warning,
-  disabled,
-  handleSwitch,
-}: ToggleSwitchProps) {
-  const id = useId();
-  const switchText = isOn ? switchOnText : switchOFFText;
-  const switchClassName = classNames(
-    'flex h-[22px] w-[50px] min-w-[50px] shrink-0 items-center justify-between rounded-full px-[5px] py-1 transition-all duration-200',
-    isOn ? 'flex-row bg-accent-primary' : 'flex-row-reverse bg-layer-4',
-    disabled ? 'cursor-not-allowed' : 'cursor-pointer',
-    disabled && '!bg-controls-disable-accent',
-  );
+}) => {
+  const switchId = useId();
 
-  return (
-    <DialTooltip triggerClassName={className} tooltip={tooltip}>
-      <div data-qa="toggle-switch">
-        <input
-          type="checkbox"
-          disabled={disabled}
-          onChange={handleSwitch}
-          id={id}
-          className="sr-only h-0"
-          checked={isOn}
-        />
-        <label htmlFor={id} className={switchClassName}>
-          {switchText && (
-            <SwitchStateText
-              switchText={switchText}
-              isOn={isOn}
-              disabled={disabled}
-            />
-          )}
-          <span
-            className={classNames(
-              'size-3 rounded-full',
-              disabled ? 'bg-layer-4' : 'bg-controls-enable-primary',
-            )}
-          ></span>
-        </label>
-      </div>
-      {additionalText && (
-        <span
-          className={classNames(disabled && 'text-controls-primary-disable')}
-        >
-          {additionalText}
-        </span>
-      )}
+  const inner = (
+    <div
+      className={classNames("flex items-center gap-2", className)}
+      data-qa="toggle-switch"
+    >
+      <DialSwitch
+        switchId={switchId}
+        isOn={isOn}
+        label={additionalText}
+        disabled={disabled}
+        onChange={() => handleSwitch()}
+      />
       {warning && (
         <DialTooltip
           tooltip={warning}
@@ -92,6 +48,11 @@ export function ToggleSwitch({
           <IconAlertTriangleFilled size={20} />
         </DialTooltip>
       )}
-    </DialTooltip>
+    </div>
   );
-}
+
+  if (tooltip) {
+    return <DialTooltip tooltip={tooltip}>{inner}</DialTooltip>;
+  }
+  return inner;
+};

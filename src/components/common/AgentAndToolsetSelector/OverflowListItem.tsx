@@ -1,12 +1,12 @@
-'use client';
-import React, { useCallback } from 'react';
-import classNames from 'classnames';
-import { getEntityNameFromId, getVersionFromId } from '@/utils/api';
-import { CloseButtonSmall } from '@/components/common/CloseButtons';
-import { DialTooltip } from '@epam/ai-dial-ui-kit';
-import { ChipTitle } from './ChipTitle';
-import { ChipTooltipContent } from './ChipTooltipContent';
-import type { ChipEntity } from './AgentAndToolsetChip';
+"use client";
+import React, { useCallback } from "react";
+import classNames from "classnames";
+import { getEntityNameFromId, getVersionFromId } from "@/utils/api";
+import { CloseButtonSmall } from "@/components/common/CloseButtons";
+import { DialTooltip } from "@epam/ai-dial-ui-kit";
+import { ChipTitle } from "./ChipTitle";
+import { ChipTooltipContent } from "./ChipTooltipContent";
+import type { ChipEntity } from "./AgentAndToolsetChip";
 
 interface OverflowListItemProps {
   id: string;
@@ -57,9 +57,9 @@ export const OverflowListItem: React.FC<OverflowListItemProps> = ({
     >
       <div
         className={classNames(
-          'flex w-full items-center justify-between gap-3 px-3 py-2 transition-colors',
-          'cursor-pointer',
-          isError ? 'hover:bg-error' : 'hover:bg-accent-primary-alpha',
+          "flex w-full items-center justify-between gap-3 px-3 py-2 transition-colors",
+          "cursor-pointer",
+          isError ? "hover:bg-error" : "hover:bg-accent-primary-alpha",
         )}
         onClick={handleClick}
       >
@@ -67,7 +67,7 @@ export const OverflowListItem: React.FC<OverflowListItemProps> = ({
           <ChipTitle name={name} version={version} isError={isError} />
         </div>
         <CloseButtonSmall
-          className={classNames(isError && 'hover:enabled:text-error')}
+          className={classNames(isError && "hover:enabled:text-error")}
           onClick={handleRemove}
         />
       </div>

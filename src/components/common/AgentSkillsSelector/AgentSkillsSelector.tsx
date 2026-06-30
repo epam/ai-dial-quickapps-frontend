@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
 import { MarketplaceI18nKeys } from '@/constants/i18n';
-import { DialLinkButton } from '@epam/ai-dial-ui-kit';
+import { DialLinkButton, DialNoDataContent } from '@epam/ai-dial-ui-kit';
 
 interface AgentSkillsSelectorProps {
   value: string[];
@@ -43,10 +43,11 @@ export const AgentSkillsSelector: React.FC<AgentSkillsSelectorProps> = ({
         />
       </div>
       {!value.length ? (
-        <div className="flex flex-col items-center justify-center rounded border border-primary py-4">
-          <IconBulb size={60} className="mb-2 text-secondary" stroke={0.5} />
-          <span>{t(MarketplaceI18nKeys.NoAgentSkillsAdded)}</span>
-        </div>
+        <DialNoDataContent
+          title={t(MarketplaceI18nKeys.NoAgentSkillsAdded)}
+          icon={<IconBulb size={60} stroke={0.5} />}
+          containerClassName="rounded border border-primary p-4"
+        />
       ) : (
         <div className="flex flex-col gap-2 overflow-hidden rounded">
           {value.map((promptId) => (

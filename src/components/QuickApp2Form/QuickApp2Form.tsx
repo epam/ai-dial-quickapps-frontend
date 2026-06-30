@@ -1,37 +1,41 @@
 "use client";
 import { FC, useCallback } from "react";
-import { useForm, Controller, type SubmitHandler } from "react-hook-form";
+import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 
-import { useTranslation } from "@/hooks/useTranslation";
-import { Translation } from "@/types/translation";
 import { MarketplaceI18nKeys } from "@/constants/i18n";
 import { useAppContext } from "@/context/AppContext";
 import { useDataContext } from "@/context/DataContext";
 import {
-  QuickApp2Schema,
-  type QuickApp2Form as QuickApp2FormType,
   AgentOrToolsetSchemaKeys,
   getQuickApp2FormData,
+  type QuickApp2Form as QuickApp2FormType,
 } from "@/form/quickApp2Form";
+import { useTranslation } from "@/hooks/useTranslation";
 import { DialAppTransportType } from "@/types/quick-apps";
-import { isApplicationId } from "@/utils/api";
-import { doesAgentSupportMcp } from "@/utils/application";
+import { Translation } from "@/types/translation";
 
-import { FormCollapsibleSection } from "@/components/common/FormCollapsibleSection";
-import { TemperatureSlider } from "@/components/common/Temperature";
 import { FilesSelector } from "@/components/common/FilesSelector/FilesSelector";
-import { DialMarkdownEditorContainer } from "@/components/common/MarkdownEditor/MarkdownEditorContainer";
-import { MultipleComboBox } from "@/components/common/MultipleComboBox";
+import { FormCollapsibleSection } from "@/components/common/FormCollapsibleSection";
 import { Field } from "@/components/common/Forms/Field";
+import { DialMarkdownEditorContainer } from "@/components/common/MarkdownEditor/MarkdownEditorContainer";
+import { TemperatureSlider } from "@/components/common/Temperature";
 
-import { ModelField } from "./ModelField";
+import { ToggleSwitch } from "@/components/common/ToggleSwitch/ToggleSwitch";
+
 import { AgentsAndToolsetsField } from "./AgentsAndToolsetsField";
+import { AgentSkillsField } from "./AgentSkillsField";
 import { CodeInterpreterField } from "./CodeInterpreterField";
 import { ConversationStartersList } from "./ConversationStartersField";
+import { ModelField } from "./ModelField";
 import { StartersBehaviourRadioGroup } from "./StartersBehaviourRadioGroup";
-import { AgentSkillsField } from "./AgentSkillsField";
 
-import { ButtonVariant, DialButton, DialInput } from "@epam/ai-dial-ui-kit";
+import {
+  ButtonVariant,
+  DialButton,
+  DialFormItem,
+  DialInput,
+  DialTagInput,
+} from "@epam/ai-dial-ui-kit";
 
 interface QuickApp2FormProps {
   onSave: (data: QuickApp2FormType) => void;
@@ -140,10 +144,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         dataQa="orchestrator-section"
       >
         {/* Model */}
-        <div className="mb-4 flex flex-col gap-1">
-          <label className="text-sm font-medium">
-            {t(MarketplaceI18nKeys.ModelMarketplace)}
-          </label>
+        <DialFormItem label={t(MarketplaceI18nKeys.ModelMarketplace)}>
           <Controller
             control={control}
             name="model"
@@ -157,13 +158,10 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
               />
             )}
           />
-        </div>
+        </DialFormItem>
 
         {/* Temperature */}
-        <div className="mb-4 flex flex-col gap-1">
-          <label className="text-sm font-medium">
-            {t(MarketplaceI18nKeys.TemperatureMarketplace)}
-          </label>
+        <DialFormItem label={t(MarketplaceI18nKeys.TemperatureMarketplace)}>
           <Controller
             control={control}
             name="temperature"
@@ -176,13 +174,10 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
               />
             )}
           />
-        </div>
+        </DialFormItem>
 
         {/* Instructions */}
-        <div className="mb-4 flex flex-col gap-1">
-          <label className="text-sm font-medium">
-            {t(MarketplaceI18nKeys.InstructionsMarketplace)}
-          </label>
+        <DialFormItem label={t(MarketplaceI18nKeys.InstructionsMarketplace)}>
           <Controller
             control={control}
             name="instructions"
@@ -194,8 +189,10 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
               />
             )}
           />
-        </div>
+        </DialFormItem>
       </FormCollapsibleSection>
+
+      <hr className="border-secondary" />
 
       {/* Context & Tools section */}
       <FormCollapsibleSection
@@ -205,10 +202,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         dataQa="context-and-tools-section"
       >
         {/* Agents & Toolsets */}
-        <div className="mb-4 flex flex-col gap-1">
-          <label className="text-sm font-medium">
-            {t(MarketplaceI18nKeys.AgentsAndToolsets)}
-          </label>
+        <DialFormItem label={t(MarketplaceI18nKeys.AgentsAndToolsets)}>
           <AgentsAndToolsetsField
             agentsAndToolsets={agentsAndToolsets}
             agentsAndToolsetsJson={agentsAndToolsetsJson}
@@ -221,13 +215,13 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
             tooltip={sharedTooltip}
             jsonError={errors.agentsAndToolsetsJson?.message}
           />
-        </div>
+        </DialFormItem>
 
         {/* Context files */}
-        <div className="mb-4 flex flex-col gap-1">
-          <label className="text-sm font-medium">
-            {t(MarketplaceI18nKeys.ContextFiles)}
-          </label>
+        <DialFormItem
+          label={t(MarketplaceI18nKeys.ContextFiles)}
+          description={t(MarketplaceI18nKeys.ContextFilesInfo)}
+        >
           <Controller
             control={control}
             name="documentRelativeUrl"
@@ -243,14 +237,15 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
               />
             )}
           />
-        </div>
+        </DialFormItem>
 
         {/* Code Interpreter */}
         {settings.isCodeInterpreterEnabled && (
-          <div className="mb-4 flex flex-col gap-1">
-            <label className="text-sm font-medium">
-              {t(MarketplaceI18nKeys.CodeInterpreter)}
-            </label>
+          <DialFormItem
+            label={t(MarketplaceI18nKeys.CodeInterpreter)}
+            description={t(MarketplaceI18nKeys.CodeInterpreterInfo)}
+            className="mb-4"
+          >
             <Controller
               control={control}
               name="codeInterpreter"
@@ -263,9 +258,11 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
                 />
               )}
             />
-          </div>
+          </DialFormItem>
         )}
       </FormCollapsibleSection>
+
+      <hr className="border-secondary" />
 
       {/* Agent Skills section */}
       <FormCollapsibleSection
@@ -287,6 +284,8 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         />
       </FormCollapsibleSection>
 
+      <hr className="border-secondary" />
+
       {/* User Attachments section */}
       <FormCollapsibleSection
         name={t(MarketplaceI18nKeys.UserAttachments)}
@@ -294,32 +293,26 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         dataQa="user-attachments-section"
       >
         {/* Attachment types */}
-        <div className="mb-4 flex flex-col gap-1">
-          <label className="text-sm font-medium">
-            {t(MarketplaceI18nKeys.AttachmentTypes)}
-          </label>
+        <DialFormItem
+          label={t(MarketplaceI18nKeys.AttachmentTypes)}
+          description={t(MarketplaceI18nKeys.InputMIMEType)}
+        >
           <Controller
             control={control}
             name="inputAttachmentTypes"
             render={({ field }) => (
-              <MultipleComboBox<string>
-                initialSelectedItems={field.value}
-                onChangeSelectedItems={field.onChange}
-                getItemLabel={(item) => item}
-                getItemValue={(item) => item}
+              <DialTagInput
+                initialTags={field.value}
+                onChange={field.onChange}
                 disabled={isReadonly}
-                placeholder={t(MarketplaceI18nKeys.InputMIMEType)}
-                tooltip={sharedTooltip}
+                placeholder={t(MarketplaceI18nKeys.EnterAttachmentTypes)}
               />
             )}
           />
-        </div>
+        </DialFormItem>
 
         {/* Max attachments */}
-        <div className="mb-4 flex flex-col gap-1">
-          <label className="text-sm font-medium">
-            {t(MarketplaceI18nKeys.MaxAttachmentsNumber)}
-          </label>
+        <DialFormItem label={t(MarketplaceI18nKeys.MaxAttachmentsNumber)}>
           <Controller
             control={control}
             name="maxInputAttachments"
@@ -341,8 +334,10 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
               />
             )}
           />
-        </div>
+        </DialFormItem>
       </FormCollapsibleSection>
+
+      <hr className="border-secondary" />
 
       {/* Conversation Starters section */}
       <FormCollapsibleSection
@@ -351,10 +346,10 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         dataQa="conversation-starters-section"
       >
         {/* Intro text */}
-        <div className="mb-4 flex flex-col gap-1">
-          <label className="text-sm font-medium">
-            {t(MarketplaceI18nKeys.IntroText)}
-          </label>
+        <DialFormItem
+          label={t(MarketplaceI18nKeys.IntroText)}
+          description={t(MarketplaceI18nKeys.OptionalTextShownAboveTheStarters)}
+        >
           <Controller
             control={control}
             name="introText"
@@ -368,10 +363,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
               />
             )}
           />
-          <p className="text-xs text-secondary">
-            {t(MarketplaceI18nKeys.OptionalTextShownAboveTheStarters)}
-          </p>
-        </div>
+        </DialFormItem>
 
         {/* Starters list */}
         <div className="mb-4">
@@ -423,10 +415,10 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
             </div>
 
             {/* Starters behavior */}
-            <div className="mb-4 flex flex-col gap-2">
-              <label className="text-sm font-medium">
-                {t(MarketplaceI18nKeys.StartersBehavior)}
-              </label>
+            <DialFormItem
+              label={t(MarketplaceI18nKeys.StartersBehavior)}
+              className="mb-4"
+            >
               <Controller
                 control={control}
                 name="autoSubmit"
@@ -439,10 +431,12 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
                   />
                 )}
               />
-            </div>
+            </DialFormItem>
           </FormCollapsibleSection>
         )}
       </FormCollapsibleSection>
+
+      <hr className="border-secondary" />
 
       {/* Advanced settings */}
       <FormCollapsibleSection
@@ -450,24 +444,20 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         dataQa="advanced-settings-section"
       >
         {/* Time awareness */}
-        <div className="flex items-center gap-3">
-          <Controller
-            control={control}
-            name="timestamp"
-            render={({ field }) => (
-              <input
-                type="checkbox"
-                checked={field.value}
-                onChange={(e) => field.onChange(e.target.checked)}
-                disabled={isReadonly}
-                className="accent-accent"
-              />
-            )}
-          />
-          <label className="text-sm font-medium">
-            {t(MarketplaceI18nKeys.TimeAwareness)}
-          </label>
-        </div>
+        <Controller
+          control={control}
+          name="timestamp"
+          render={({ field }) => (
+            <ToggleSwitch
+              isOn={field.value}
+              handleSwitch={() => field.onChange(!field.value)}
+              disabled={isReadonly}
+              additionalText={t(MarketplaceI18nKeys.TimeAwareness)}
+              className="flex items-center gap-2"
+              tooltip={sharedTooltip}
+            />
+          )}
+        />
       </FormCollapsibleSection>
 
       {/* Form actions */}

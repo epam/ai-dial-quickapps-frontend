@@ -9,20 +9,8 @@ import { AgentsAndToolsetsModalQueryParams } from '@/constants/quick-apps';
 import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
 import { AgentAndToolsetChip, type ChipEntity } from './AgentAndToolsetChip';
 import { AgentAndToolsetModal } from './AgentAndToolsetModal';
-import { DialLinkButton } from '@epam/ai-dial-ui-kit';
+import { DialLinkButton, DialNoDataContent } from '@epam/ai-dial-ui-kit';
 
-const NoAgentsAndToolsets: React.FC = () => {
-  const { t } = useTranslation(Translation.Common);
-  return (
-    <div
-      data-qa="no-agents-and-toolsets"
-      className="flex flex-col items-center justify-center rounded border border-primary py-4"
-    >
-      <IconLayoutGrid size={60} className="mb-2 text-secondary" stroke={0.5} />
-      <span>{t(CommonI18nKeys.NoAgentsAndToolsetsAdded)}</span>
-    </div>
-  );
-};
 
 interface AgentAndToolsetSelectorProps {
   value: string[];
@@ -106,7 +94,6 @@ export const AgentAndToolsetSelector: React.FC<
                   isOn={false}
                   handleSwitch={onJsonSwitchClick}
                   disabled={readonly}
-                  switchOFFText={t(CommonI18nKeys.OFFCommon)}
                   additionalText={t(CommonI18nKeys.JSONCommon)}
                   className="flex w-fit items-center gap-2"
                   tooltip={t(
@@ -120,7 +107,12 @@ export const AgentAndToolsetSelector: React.FC<
           )}
         </div>
         {!value.length ? (
-          <NoAgentsAndToolsets />
+          <DialNoDataContent
+            data-qa="no-agents-and-toolsets"
+            title={t(CommonI18nKeys.NoAgentsAndToolsetsAdded)}
+            icon={<IconLayoutGrid size={60} stroke={0.5} />}
+            containerClassName="rounded border border-primary p-4"
+          />
         ) : (
           <div
             data-qa="agents-and-toolsets-list"

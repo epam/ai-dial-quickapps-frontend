@@ -1,11 +1,15 @@
-'use client';
-import React, { useCallback, useMemo, useState } from 'react';
-import classNames from 'classnames';
-import { useDataContext } from '@/context/DataContext';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Translation } from '@/types/translation';
-import { MarketplaceI18nKeys } from '@/constants/i18n';
-import { DialPrimaryButton, DialNeutralButton } from '@epam/ai-dial-ui-kit';
+"use client";
+import React, { useCallback, useMemo, useState } from "react";
+import classNames from "classnames";
+import { useDataContext } from "@/context/DataContext";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Translation } from "@/types/translation";
+import { MarketplaceI18nKeys } from "@/constants/i18n";
+import {
+  DialPrimaryButton,
+  DialNeutralButton,
+  DialTag,
+} from "@epam/ai-dial-ui-kit";
 
 interface AgentAndToolsetModalProps {
   initialSelectedIds: string[];
@@ -28,10 +32,10 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     new Set(initialSelectedIds),
   );
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
 
   const allItems = useMemo(
-    () => [...models.filter((m) => m.type === 'application'), ...toolsets],
+    () => [...models.filter((m) => m.type === "application"), ...toolsets],
     [models, toolsets],
   );
 
@@ -65,7 +69,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-blackout">
       <div className="flex h-[80vh] w-[600px] max-w-[90vw] flex-col rounded-lg bg-layer-1 shadow-xl">
-        <div className="flex items-center justify-between border-b border-tertiary px-6 py-4">
+        <div className="flex items-center justify-be/tween border-b border-tertiary px-6 py-1">
           <h2 className="text-base font-semibold">
             {t(MarketplaceI18nKeys.AgentsAndToolsets)}
           </h2>
@@ -86,21 +90,36 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
             autoFocus
           />
         </div>
+        {selectedIds.size > 0 && (
+          <div className="flex flex-wrap gap-1 border-b border-tertiary px-6 py-3">
+            {[...selectedIds].map((id) => {
+              const item = allItems.find((i) => i.id === id);
+              return (
+                <DialTag
+                  key={id}
+                  label={item?.name ?? id}
+                  closable
+                  onRemove={() => toggle(id)}
+                />
+              );
+            })}
+          </div>
+        )}
         <div className="flex-1 overflow-y-auto px-6 py-3">
           {filtered.map((item) => (
             <div
               key={item.id}
               className={classNames(
-                'mb-1 flex cursor-pointer items-center gap-3 rounded px-3 py-2 hover:bg-layer-3',
-                selectedIds.has(item.id) && 'bg-layer-3',
+                "mb-1 flex cursor-pointer items-center gap-3 rounded px-3 py-2 hover:bg-layer-3",
+                selectedIds.has(item.id) && "bg-layer-3",
               )}
               onClick={() => toggle(item.id)}
             >
               <div
                 className={classNames(
-                  'h-4 w-4 shrink-0 rounded border border-primary',
+                  "h-4 w-4 shrink-0 rounded border border-primary",
                   selectedIds.has(item.id) &&
-                    'border-accent-primary bg-accent-primary',
+                    "border-accent-primary bg-accent-primary",
                 )}
               />
               <div className="min-w-0">
@@ -110,7 +129,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
             </div>
           ))}
         </div>
-        <div className="flex justify-end gap-2 border-t border-tertiary px-6 py-4">
+        <div className="flex justify-end gap-2 border-t border-tertiary px-6 py-1">
           <DialNeutralButton label="Cancel" onClick={onClose} />
           <DialPrimaryButton label="Apply" onClick={handleConfirm} />
         </div>
