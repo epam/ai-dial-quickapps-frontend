@@ -3,7 +3,7 @@ import { useId } from 'react';
 
 import classNames from 'classnames';
 
-import { Tooltip } from '@/components/common/Tooltip';
+import { DialTooltip } from '@epam/ai-dial-ui-kit';
 import { ToggleSwitchProps } from './view-props';
 
 interface SwitchStateTextProps {
@@ -50,7 +50,7 @@ export function ToggleSwitch({
   );
 
   return (
-    <Tooltip triggerClassName={className} tooltip={tooltip}>
+    <DialTooltip triggerClassName={className} tooltip={tooltip}>
       <div data-qa="toggle-switch">
         <input
           type="checkbox"
@@ -84,14 +84,14 @@ export function ToggleSwitch({
         </span>
       )}
       {warning && (
-        <Tooltip
+        <DialTooltip
           tooltip={warning}
           triggerClassName="flex shrink-0 text-warning"
           contentClassName="z-[2000]"
         >
           <IconAlertTriangleFilled size={20} />
-        </Tooltip>
+        </DialTooltip>
       )}
-    </Tooltip>
+    </DialTooltip>
   );
 }

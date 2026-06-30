@@ -3,7 +3,7 @@ import { ComponentType, FC, forwardRef } from 'react';
 
 import classNames from 'classnames';
 
-import { Tooltip } from '@/components/common/Tooltip';
+import { DialTooltip } from '@epam/ai-dial-ui-kit';
 
 import omit from 'lodash-es/omit';
 
@@ -33,13 +33,13 @@ export const Label: FC<LabelProps> = ({
     {children}
     {mandatory && <span className="ml-1 inline text-accent-primary">*</span>}
     {info && (
-      <Tooltip
+      <DialTooltip
         tooltip={info}
         triggerClassName="flex shrink-0 p-1 text-secondary hover:text-accent-primary"
         contentClassName="z-[2000]"
       >
         <IconHelp size={16} />
-      </Tooltip>
+      </DialTooltip>
     )}
   </label>
 );

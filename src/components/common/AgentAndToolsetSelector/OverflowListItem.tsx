@@ -3,7 +3,7 @@ import React, { useCallback } from 'react';
 import classNames from 'classnames';
 import { getEntityNameFromId, getVersionFromId } from '@/utils/api';
 import { CloseButtonSmall } from '@/components/common/CloseButtons';
-import { Tooltip } from '@/components/common/Tooltip';
+import { DialTooltip } from '@epam/ai-dial-ui-kit';
 import { ChipTitle } from './ChipTitle';
 import { ChipTooltipContent } from './ChipTooltipContent';
 import type { ChipEntity } from './AgentAndToolsetChip';
@@ -44,8 +44,7 @@ export const OverflowListItem: React.FC<OverflowListItemProps> = ({
   );
 
   return (
-    <Tooltip
-      placement="left"
+    <DialTooltip
       tooltip={
         <ChipTooltipContent
           id={id}
@@ -72,6 +71,6 @@ export const OverflowListItem: React.FC<OverflowListItemProps> = ({
           onClick={handleRemove}
         />
       </div>
-    </Tooltip>
+    </DialTooltip>
   );
 };

@@ -1,14 +1,15 @@
-import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from "next-auth/jwt";
+import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
 
-const COOKIE_NAME = 'dial_session';
+const COOKIE_NAME = "dial_session";
 
 interface SessionData {
   token: string;
   dialApiHost: string;
 }
 
-async function getSession(): Promise<SessionData | null> {
+const getDialSession = async (): Promise<SessionData | null> => {
   const cookieStore = await cookies();
   const cookie = cookieStore.get(COOKIE_NAME);
   if (!cookie) return null;
@@ -17,30 +18,49 @@ async function getSession(): Promise<SessionData | null> {
   } catch {
     return null;
   }
-}
+};
 
 type RouteContext = { params: Promise<{ path: string[] }> };
 
-async function proxyDial(req: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  const session = await getSession();
-  if (!session) {
-    return NextResponse.json({ error: 'No active session. Send INIT first.' }, { status: 401 });
+const proxyDial = async (
+  req: NextRequest,
+  { params }: RouteContext,
+): Promise<NextResponse> => {
+  let token: string | undefined;
+  let dialApiHost: string | undefined;
+
+  // Prefer the next-auth JWT (Keycloak login). Fall back to dial_session only
+  // when there is no JWT — i.e. the app is embedded in an iframe and the host
+  // provided credentials via the INIT postMessage.
+  const jwtToken = await getToken({ req });
+  if (jwtToken?.accessToken) {
+    token = jwtToken.accessToken;
+    dialApiHost = process.env.DIAL_CORE_URL;
+  } else {
+    const dialSession = await getDialSession();
+    token = dialSession?.token;
+    dialApiHost = dialSession?.dialApiHost;
   }
 
-  const { token, dialApiHost } = session;
+  if (!token || !dialApiHost) {
+    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+  }
+
   const { path } = await params;
-  const pathStr = path.join('/');
+  const pathStr = path.join("/");
   const search = req.nextUrl.searchParams.toString();
-  const backendUrl = `${dialApiHost}/${pathStr}${search ? `?${search}` : ''}`;
+  const backendUrl = `${dialApiHost}/${pathStr}${search ? `?${search}` : ""}`;
 
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
   };
-  const contentType = req.headers.get('content-type');
-  if (contentType) headers['Content-Type'] = contentType;
+  const contentType = req.headers.get("content-type");
+  if (contentType) headers["Content-Type"] = contentType;
 
   const body =
-    req.method !== 'GET' && req.method !== 'HEAD' ? await req.text() : undefined;
+    req.method !== "GET" && req.method !== "HEAD"
+      ? await req.text()
+      : undefined;
 
   const backendRes = await fetch(backendUrl, {
     method: req.method,
@@ -52,10 +72,11 @@ async function proxyDial(req: NextRequest, { params }: RouteContext): Promise<Ne
   return new NextResponse(responseBody, {
     status: backendRes.status,
     headers: {
-      'Content-Type': backendRes.headers.get('content-type') ?? 'application/json',
+      "Content-Type":
+        backendRes.headers.get("content-type") ?? "application/json",
     },
   });
-}
+};
 
 export const GET = proxyDial;
 export const POST = proxyDial;

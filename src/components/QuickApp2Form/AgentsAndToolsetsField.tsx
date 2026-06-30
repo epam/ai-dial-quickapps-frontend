@@ -1,24 +1,24 @@
-'use client';
-import { FC, useCallback, useState } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Translation } from '@/types/translation';
-import { CommonI18nKeys, MarketplaceI18nKeys } from '@/constants/i18n';
-import { useDataContext } from '@/context/DataContext';
-import { AgentOrToolsetSchemaKeys } from '@/form/quickApp2Form';
-import type { QuickApp2Form } from '@/form/quickApp2Form';
-import { DialAppTransportType } from '@/types/quick-apps';
-import { isApplicationId } from '@/utils/api';
-import { doesAgentSupportMcp } from '@/utils/application';
-import { AgentAndToolsetSelector } from '@/components/common/AgentAndToolsetSelector/AgentAndToolsetSelector';
-import { DialAppConfigurationModal } from './DialAppConfigurationModal';
-import { MonacoEditor } from '@/components/common/MonacoEditor';
-import type { ChipEntity } from '@/components/common/AgentAndToolsetSelector/AgentAndToolsetChip';
-import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
-import { ButtonVariant, DialButton } from '@epam/ai-dial-ui-kit';
-import classNames from 'classnames';
+"use client";
+import { FC, useCallback, useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Translation } from "@/types/translation";
+import { CommonI18nKeys, MarketplaceI18nKeys } from "@/constants/i18n";
+import { useDataContext } from "@/context/DataContext";
+import { AgentOrToolsetSchemaKeys } from "@/form/quickApp2Form";
+import type { QuickApp2Form } from "@/form/quickApp2Form";
+import { DialAppTransportType } from "@/types/quick-apps";
+import { isApplicationId } from "@/utils/api";
+import { doesAgentSupportMcp } from "@/utils/application";
+import { AgentAndToolsetSelector } from "@/components/common/AgentAndToolsetSelector/AgentAndToolsetSelector";
+import { DialAppConfigurationModal } from "./DialAppConfigurationModal";
+import { MonacoEditor } from "@/components/common/MonacoEditor";
+import type { ChipEntity } from "@/components/common/AgentAndToolsetSelector/AgentAndToolsetChip";
+import { ToggleSwitch } from "@/components/common/ToggleSwitch/ToggleSwitch";
+import { ButtonVariant, DialButton } from "@epam/ai-dial-ui-kit";
+import classNames from "classnames";
 
 interface AgentsAndToolsetsFieldProps {
-  agentsAndToolsets: QuickApp2Form['agentsAndToolsets'];
+  agentsAndToolsets: QuickApp2Form["agentsAndToolsets"];
   agentsAndToolsetsJson: string;
   isJsonView: boolean;
   onAgentsChange: (ids: string[]) => void;
@@ -130,8 +130,9 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
           </div>
           <MonacoEditor
             value={agentsAndToolsetsJson}
-            onChange={(val) => onJsonChange(val ?? '')}
+            onChange={(val) => onJsonChange(val ?? "")}
             language="json"
+            height={300}
             options={{ readOnly: readonly }}
           />
           {(editorError ?? jsonError) && (
@@ -140,7 +141,7 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
           {!readonly && (
             <div className="flex justify-end gap-2">
               <DialButton
-                variant={ButtonVariant.Secondary}
+                variant={ButtonVariant.Neutral}
                 onClick={() => {
                   setEditorError(undefined);
                   onJsonViewChange(false);

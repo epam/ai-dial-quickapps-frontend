@@ -21,7 +21,7 @@ import {
 import classNames from 'classnames';
 
 import { CloseButtonSmall } from '@/components/common/CloseButtons';
-import { Tooltip } from '@/components/common/Tooltip';
+import { DialTooltip } from '@epam/ai-dial-ui-kit';
 
 import { useCombobox, useMultipleSelection } from 'downshift';
 
@@ -237,7 +237,7 @@ export function MultipleComboBox<T>({
   }, [isOpen, update, refs.floating, refs.reference]);
 
   return (
-    <Tooltip tooltip={tooltip}>
+    <DialTooltip tooltip={tooltip}>
       <div
         className={classNames(
           'relative w-full bg-transparent',
@@ -273,7 +273,7 @@ export function MultipleComboBox<T>({
                         {connectorLabel}
                       </span>
                     )}
-                    <Tooltip
+                    <DialTooltip
                       tooltip={getItemLabel(selectedItemForRender).trim()}
                       contentClassName="text-xs"
                     >
@@ -307,7 +307,7 @@ export function MultipleComboBox<T>({
                           }}
                         />
                       </span>
-                    </Tooltip>
+                    </DialTooltip>
                   </Fragment>
                 );
               })}
@@ -383,6 +383,6 @@ export function MultipleComboBox<T>({
           </div>
         ) : null}
       </div>
-    </Tooltip>
+    </DialTooltip>
   );
 }

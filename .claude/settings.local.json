@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(node *)",
-      "WebFetch(domain:themes.aks.dev.dial.parts)"
+      "WebFetch(domain:themes.aks.dev.dial.parts)",
+      "mcp__ai-dial-ui-kit__searchEntity",
+      "mcp__ai-dial-ui-kit__getEntityDetails"
     ]
   },
   "enabledMcpjsonServers": [

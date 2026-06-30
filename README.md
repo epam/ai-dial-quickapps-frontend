@@ -6,10 +6,13 @@ Standalone Next.js app that renders the QuickApp2 editor. Designed to be embedde
 
 ```bash
 npm install
+cp .env.template .env.local   # fill in values — see Environment variables below
 npm run dev
 ```
 
 Open `http://localhost:3000` to use the **dev harness** — it embeds the editor, sends an `INIT` message with mock data, and logs all postMessage traffic. The harness is only available in development; in production `/` redirects to `/editor`.
+
+When a Keycloak session is active the harness pre-fills the token field automatically so you don't need to paste tokens manually.
 
 ## Commands
 
@@ -19,15 +22,62 @@ Open `http://localhost:3000` to use the **dev harness** — it embeds the editor
 | `npm run build` | Type-check and build     |
 | `npm run lint`  | Run ESLint               |
 
+## Authentication
+
+The editor supports two authentication modes that coexist:
+
+**Embedded mode** — ai-dial-chat embeds the editor as an iframe and sends an `INIT` postMessage containing a bearer token and DIAL API host. The editor stores these server-side in an httpOnly cookie (`dial_session`) and uses them for all proxied DIAL API calls. No Keycloak setup is required for this path.
+
+**Standalone mode** — when accessed directly (or via the dev harness), the editor uses [NextAuth.js](https://next-auth.js.org) with Keycloak. After sign-in the access token is kept server-side and injected into the DIAL API proxy automatically. Token refresh is handled transparently.
+
+The proxy at `/api/dial/[...path]` tries the `dial_session` cookie first; if absent it falls back to the NextAuth session token.
+
+### Keycloak client setup
+
+Create a confidential client in your Keycloak realm:
+
+- **Valid redirect URIs**: `{NEXTAUTH_URL}/api/auth/callback/keycloak`
+- **Web origins**: `{NEXTAUTH_URL}`
+
 ## Environment variables
 
-Copy `.env.template` to `.env.local` and adjust values as needed.
+Copy `.env.template` to `.env.local` and fill in values. All variables without a `NEXT_PUBLIC_` prefix are server-side only.
 
-| Variable                              | Required | Default                                                                  | Description                                                                                                                                           |
-| ------------------------------------- | :------: | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_ALLOWED_ORIGIN`          |    No    | `*`                                                                      | Origin allowed to send `postMessage` events to the `/editor` iframe. Set to the exact `ai-dial-chat` URL in production (e.g. `https://chat.example.com`). Using `*` accepts messages from any origin — fine for local dev, **unsafe for production**. |
-| `NEXT_PUBLIC_QUICK_APPS_DEFAULT_MODEL`|    No    | `gpt-4o`                                                                 | Model ID pre-selected in the form when no model is stored in the app config.                                                                          |
-| `NEXT_PUBLIC_QUICK_APPS_SCHEMA_2_ID`  |    No    | `https://mydial.epam.com/custom_application_schemas/quickapps2`          | `applicationTypeSchemaId` used to identify QuickApp2 applications. Override only if your DIAL instance uses a non-standard schema registry URL.       |
+### Server
+
+| Variable | Required | Default | Description |
+| --- | :---: | --- | --- |
+| `PORT` | No | `4207` | Port the dev/production server listens on. Also update `NEXTAUTH_URL` when changing this. |
+
+### Authentication
+
+| Variable | Required | Description |
+| --- | :---: | --- |
+| `NEXTAUTH_SECRET` | Yes | Secret for signing session cookies. Generate with `openssl rand -base64 32`. |
+| `NEXTAUTH_URL` | Yes | Public URL of this app, e.g. `https://quickapps.example.com`. Required for OAuth callback registration. |
+| `AUTH_KEYCLOAK_ISSUER` | Yes | Keycloak realm URL, e.g. `https://keycloak.example.com/realms/dial` |
+| `AUTH_KEYCLOAK_CLIENT_ID` | Yes | Keycloak client ID |
+| `AUTH_KEYCLOAK_CLIENT_SECRET` | Yes | Keycloak client secret |
+
+### DIAL core
+
+| Variable | Required | Description |
+| --- | :---: | --- |
+| `DIAL_CORE_URL` | Yes | Base URL of the DIAL core API, e.g. `https://core.example.com`. Used as the proxy target in standalone mode and as the default host in the dev harness. |
+
+### Themes
+
+| Variable | Required | Default | Description |
+| --- | :---: | --- | --- |
+| `THEMES_URL` | No | — | URL to the DIAL themes `config.json`. Falls back to CSS variable defaults if unset. |
+
+### Client-side
+
+| Variable | Required | Default | Description |
+| --- | :---: | --- | --- |
+| `NEXT_PUBLIC_ALLOWED_ORIGIN` | No | `*` | Origin allowed to send `postMessage` events to the `/editor` iframe. Set to the exact ai-dial-chat URL in production (e.g. `https://chat.example.com`). Using `*` accepts messages from any origin — fine for local dev, **unsafe for production**. |
+| `NEXT_PUBLIC_QUICK_APPS_DEFAULT_MODEL` | No | `gpt-4o` | Model ID pre-selected in the form when no model is stored in the app config. |
+| `NEXT_PUBLIC_QUICK_APPS_SCHEMA_2_ID` | No | `https://mydial.epam.com/custom_application_schemas/quickapps2` | `applicationTypeSchemaId` used to identify QuickApp2 applications. Override only if your DIAL instance uses a non-standard schema registry URL. |
 
 ## postMessage protocol
 

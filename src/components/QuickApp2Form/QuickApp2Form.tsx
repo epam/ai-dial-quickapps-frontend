@@ -1,37 +1,37 @@
-'use client';
-import { FC, useCallback } from 'react';
-import { useForm, Controller, type SubmitHandler } from 'react-hook-form';
+"use client";
+import { FC, useCallback } from "react";
+import { useForm, Controller, type SubmitHandler } from "react-hook-form";
 
-import { useTranslation } from '@/hooks/useTranslation';
-import { Translation } from '@/types/translation';
-import { MarketplaceI18nKeys } from '@/constants/i18n';
-import { useAppContext } from '@/context/AppContext';
-import { useDataContext } from '@/context/DataContext';
+import { useTranslation } from "@/hooks/useTranslation";
+import { Translation } from "@/types/translation";
+import { MarketplaceI18nKeys } from "@/constants/i18n";
+import { useAppContext } from "@/context/AppContext";
+import { useDataContext } from "@/context/DataContext";
 import {
   QuickApp2Schema,
   type QuickApp2Form as QuickApp2FormType,
   AgentOrToolsetSchemaKeys,
   getQuickApp2FormData,
-} from '@/form/quickApp2Form';
-import { DialAppTransportType } from '@/types/quick-apps';
-import { isApplicationId } from '@/utils/api';
-import { doesAgentSupportMcp } from '@/utils/application';
+} from "@/form/quickApp2Form";
+import { DialAppTransportType } from "@/types/quick-apps";
+import { isApplicationId } from "@/utils/api";
+import { doesAgentSupportMcp } from "@/utils/application";
 
-import { FormCollapsibleSection } from '@/components/common/FormCollapsibleSection';
-import { TemperatureSlider } from '@/components/common/Temperature';
-import { FilesSelector } from '@/components/common/FilesSelector/FilesSelector';
-import { DialMarkdownEditorContainer } from '@/components/common/MarkdownEditor/MarkdownEditorContainer';
-import { MultipleComboBox } from '@/components/common/MultipleComboBox';
-import { Field } from '@/components/common/Forms/Field';
+import { FormCollapsibleSection } from "@/components/common/FormCollapsibleSection";
+import { TemperatureSlider } from "@/components/common/Temperature";
+import { FilesSelector } from "@/components/common/FilesSelector/FilesSelector";
+import { DialMarkdownEditorContainer } from "@/components/common/MarkdownEditor/MarkdownEditorContainer";
+import { MultipleComboBox } from "@/components/common/MultipleComboBox";
+import { Field } from "@/components/common/Forms/Field";
 
-import { ModelField } from './ModelField';
-import { AgentsAndToolsetsField } from './AgentsAndToolsetsField';
-import { CodeInterpreterField } from './CodeInterpreterField';
-import { ConversationStartersList } from './ConversationStartersField';
-import { StartersBehaviourRadioGroup } from './StartersBehaviourRadioGroup';
-import { AgentSkillsField } from './AgentSkillsField';
+import { ModelField } from "./ModelField";
+import { AgentsAndToolsetsField } from "./AgentsAndToolsetsField";
+import { CodeInterpreterField } from "./CodeInterpreterField";
+import { ConversationStartersList } from "./ConversationStartersField";
+import { StartersBehaviourRadioGroup } from "./StartersBehaviourRadioGroup";
+import { AgentSkillsField } from "./AgentSkillsField";
 
-import { ButtonVariant, DialButton, DialInput } from '@epam/ai-dial-ui-kit';
+import { ButtonVariant, DialButton, DialInput } from "@epam/ai-dial-ui-kit";
 
 interface QuickApp2FormProps {
   onSave: (data: QuickApp2FormType) => void;
@@ -54,12 +54,16 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   const availableModelIds = models.map((m) => m.id);
 
   const sharedTooltip = app.isShared
-    ? t(MarketplaceI18nKeys.CannotChangeSharedApp, { context: 'field' })
+    ? t(MarketplaceI18nKeys.CannotChangeSharedApp, { context: "field" })
     : undefined;
 
   const isReadonly = readonly || !!app.isShared;
 
-  const defaultValues = getQuickApp2FormData(app, toolSupportingModelIds, availableModelIds);
+  const defaultValues = getQuickApp2FormData(
+    app,
+    toolSupportingModelIds,
+    availableModelIds,
+  );
 
   const {
     control,
@@ -69,15 +73,15 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     formState: { errors },
   } = useForm<QuickApp2FormType>({ defaultValues });
 
-  const isJsonView = watch('isJsonView');
-  const starters = watch('starters');
-  const agentsAndToolsets = watch('agentsAndToolsets');
-  const agentsAndToolsetsJson = watch('agentsAndToolsetsJson');
-  const model = watch('model');
-  const codeInterpreter = watch('codeInterpreter');
-  const agentSkills = watch('agentSkills');
-  const chatMessageInputDisabled = watch('chatMessageInputDisabled');
-  const autoSubmit = watch('autoSubmit');
+  const isJsonView = watch("isJsonView");
+  const starters = watch("starters");
+  const agentsAndToolsets = watch("agentsAndToolsets");
+  const agentsAndToolsetsJson = watch("agentsAndToolsetsJson");
+  const model = watch("model");
+  const codeInterpreter = watch("codeInterpreter");
+  const agentSkills = watch("agentSkills");
+  const chatMessageInputDisabled = watch("chatMessageInputDisabled");
+  const autoSubmit = watch("autoSubmit");
 
   const hasNonEmptyStarters = starters.some(
     (s) => s.title.trim() || s.text.trim(),
@@ -85,15 +89,20 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
 
   const handleAgentsChange = useCallback(
     (ids: string[]) => {
-      const currentMap: Record<string, QuickApp2FormType['agentsAndToolsets'][number]> =
-        Object.fromEntries(
-          agentsAndToolsets.map((a) => [a[AgentOrToolsetSchemaKeys.id], a]),
-        );
+      const currentMap: Record<
+        string,
+        QuickApp2FormType["agentsAndToolsets"][number]
+      > = Object.fromEntries(
+        agentsAndToolsets.map((a) => [a[AgentOrToolsetSchemaKeys.id], a]),
+      );
       const next = ids.map((id) => {
         if (currentMap[id]) return currentMap[id];
         return { [AgentOrToolsetSchemaKeys.id]: id };
       });
-      setValue('agentsAndToolsets', next as QuickApp2FormType['agentsAndToolsets']);
+      setValue(
+        "agentsAndToolsets",
+        next as QuickApp2FormType["agentsAndToolsets"],
+      );
     },
     [agentsAndToolsets, setValue],
   );
@@ -110,13 +119,19 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
           },
         };
       });
-      setValue('agentsAndToolsets', next as QuickApp2FormType['agentsAndToolsets']);
+      setValue(
+        "agentsAndToolsets",
+        next as QuickApp2FormType["agentsAndToolsets"],
+      );
     },
     [agentsAndToolsets, setValue],
   );
 
   return (
-    <form onSubmit={handleSubmit(onSave as SubmitHandler<QuickApp2FormType>)} className="flex flex-col">
+    <form
+      onSubmit={handleSubmit(onSave as SubmitHandler<QuickApp2FormType>)}
+      className="flex flex-col"
+    >
       {/* Orchestrator section */}
       <FormCollapsibleSection
         name={t(MarketplaceI18nKeys.Orchestrator)}
@@ -199,8 +214,8 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
             agentsAndToolsetsJson={agentsAndToolsetsJson}
             isJsonView={isJsonView}
             onAgentsChange={handleAgentsChange}
-            onJsonChange={(json) => setValue('agentsAndToolsetsJson', json)}
-            onJsonViewChange={(v) => setValue('isJsonView', v)}
+            onJsonChange={(json) => setValue("agentsAndToolsetsJson", json)}
+            onJsonViewChange={(v) => setValue("isJsonView", v)}
             onConfigureAgent={handleConfigureAgent}
             readonly={isReadonly}
             tooltip={sharedTooltip}
@@ -224,9 +239,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
                 onRemoveFile={(doc) =>
                   field.onChange(field.value.filter((f) => f !== doc))
                 }
-                onAddFiles={(docs) =>
-                  field.onChange([...field.value, ...docs])
-                }
+                onAddFiles={(docs) => field.onChange([...field.value, ...docs])}
               />
             )}
           />
@@ -312,7 +325,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
             name="maxInputAttachments"
             render={({ field }) => (
               <Field
-                value={field.value?.toString() ?? ''}
+                value={field.value?.toString() ?? ""}
                 onChange={(e) => {
                   const val = e.target.value;
                   field.onChange(val ? Number(val) : undefined);
@@ -322,7 +335,9 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
                 disabled={isReadonly}
                 title={sharedTooltip}
                 placeholder={t(MarketplaceI18nKeys.EnterMaxAttachments)}
-                error={errors.maxInputAttachments?.message as string | undefined}
+                error={
+                  errors.maxInputAttachments?.message as string | undefined
+                }
               />
             )}
           />
@@ -345,8 +360,8 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
             name="introText"
             render={({ field }) => (
               <DialInput
-                value={field.value ?? ''}
-                onChange={(val) => field.onChange(val ?? '')}
+                value={field.value ?? ""}
+                onChange={(val) => field.onChange(val ?? "")}
                 disabled={isReadonly}
                 placeholder={t(MarketplaceI18nKeys.EnterIntroText)}
                 containerClassName="w-full"
@@ -400,7 +415,9 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
                   {t(MarketplaceI18nKeys.DisableChatInput)}
                 </p>
                 <p className="text-xs text-secondary">
-                  {t(MarketplaceI18nKeys.DisableChatInputSoUsersCanOnlyUseStarters)}
+                  {t(
+                    MarketplaceI18nKeys.DisableChatInputSoUsersCanOnlyUseStarters,
+                  )}
                 </p>
               </div>
             </div>
@@ -458,7 +475,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         <div className="sticky bottom-0 flex justify-end gap-2 border-t border-primary bg-layer-1 px-5 py-3">
           {onDiscard && (
             <DialButton
-              variant={ButtonVariant.Secondary}
+              variant={ButtonVariant.Neutral}
               onClick={onDiscard}
               type="button"
               label={t(MarketplaceI18nKeys.DiscardMarketplace)}

@@ -11,9 +11,8 @@ import classNames from 'classnames';
 
 import { withErrorMessage } from '@/components/common/Forms/FieldErrorMessage';
 import { withLabel } from '@/components/common/Forms/Label';
-import { Tooltip } from '@/components/common/Tooltip';
 
-import { DialButton } from '@epam/ai-dial-ui-kit';
+import { DialButton, DialTooltip } from '@epam/ai-dial-ui-kit';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: boolean | string;
@@ -33,7 +32,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     }, []);
 
     return (
-      <Tooltip tooltip={tooltip} triggerClassName="grow">
+      <DialTooltip tooltip={tooltip} triggerClassName="grow">
         <div className="relative">
           <input
             {...rest}
@@ -61,7 +60,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             />
           )}
         </div>
-      </Tooltip>
+      </DialTooltip>
     );
   },
 );

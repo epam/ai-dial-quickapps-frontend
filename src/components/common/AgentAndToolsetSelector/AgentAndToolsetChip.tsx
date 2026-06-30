@@ -7,7 +7,6 @@ import { isApplicationId, isToolsetId, getEntityNameFromId, getVersionFromId } f
 import { doesAgentSupportMcp } from '@/utils/application';
 
 import { CloseButtonSmall } from '@/components/common/CloseButtons';
-import { Tooltip } from '@/components/common/Tooltip';
 
 import { ChipTitle } from './ChipTitle';
 import { ChipTooltipContent } from './ChipTooltipContent';
@@ -15,6 +14,7 @@ import { ChipTooltipContent } from './ChipTooltipContent';
 import {
   ButtonVariant,
   DialGhostIconButton,
+  DialTooltip,
   ElementSize,
 } from '@epam/ai-dial-ui-kit';
 
@@ -223,7 +223,7 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
 
   return (
     <ChipWrapper isError={isError} isCustomTool={isCustomTool}>
-      <Tooltip isTriggerClickable tooltip={tooltipContent}>
+      <DialTooltip tooltip={tooltipContent}>
         <ChipBody
           id={id}
           item={item}
@@ -234,7 +234,7 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
           readonly={readonly}
           onClick={onItemClick}
         />
-      </Tooltip>
+      </DialTooltip>
 
       {!readonly && (
         <ChipConfigureButton item={item} onConfigure={onConfigure} />
