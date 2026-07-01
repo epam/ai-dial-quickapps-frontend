@@ -1,29 +1,37 @@
-'use client';
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+"use client";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
-import { AppContextProvider, type AppState } from '@/context/AppContext';
-import { DataContextProvider } from '@/context/DataContext';
-import { buildQuickApp2Config } from '@/form/quickApp2Form';
-import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
-import { QuickApp2Config } from '@/types/quick-apps';
-import { saveDialApp } from '@/utils/dialClient';
-import type { DialApp, AppSettings } from '@/types/dial-entities';
-import { QuickApp2Form } from '@/components/QuickApp2Form/QuickApp2Form';
+import { AppContextProvider, type AppState } from "@/context/AppContext";
+import { DataContextProvider } from "@/context/DataContext";
+import { buildQuickApp2Config } from "@/form/quickApp2Form";
+import type { QuickApp2Form as QuickApp2FormType } from "@/form/quickApp2Form";
+import { QuickApp2Config } from "@/types/quick-apps";
+import { saveDialApp } from "@/utils/dialClient";
+import type { DialApp, AppSettings } from "@/types/dial-entities";
+import { QuickApp2Form } from "@/components/QuickApp2Form/QuickApp2Form";
 
-const ALLOWED_ORIGIN = process.env.NEXT_PUBLIC_ALLOWED_ORIGIN ?? '*';
+const ALLOWED_ORIGIN = process.env.NEXT_PUBLIC_ALLOWED_ORIGIN ?? "*";
 
 type InboundMessage =
-  | { type: 'INIT'; payload: { app: DialApp; token: string; dialApiHost: string; settings: AppSettings } }
-  | { type: 'TRIGGER_SAVE' }
-  | { type: 'TRIGGER_AUTO_SAVE'; payload?: { ignoreDirty?: boolean } }
-  | { type: 'RESET' };
+  | {
+      type: "INIT";
+      payload: {
+        app: DialApp;
+        token: string;
+        dialApiHost: string;
+        settings: AppSettings;
+      };
+    }
+  | { type: "TRIGGER_SAVE" }
+  | { type: "TRIGGER_AUTO_SAVE"; payload?: { ignoreDirty?: boolean } }
+  | { type: "RESET" };
 
 const postToParent = (msg: object) => {
-  window.parent.postMessage(msg, ALLOWED_ORIGIN === '*' ? '*' : ALLOWED_ORIGIN);
+  window.parent.postMessage(msg, ALLOWED_ORIGIN === "*" ? "*" : ALLOWED_ORIGIN);
 };
 
 const isAllowedOrigin = (origin: string): boolean =>
-  ALLOWED_ORIGIN === '*' || origin === ALLOWED_ORIGIN;
+  ALLOWED_ORIGIN === "*" || origin === ALLOWED_ORIGIN;
 
 interface EditorInnerProps {
   appState: AppState;
@@ -32,7 +40,12 @@ interface EditorInnerProps {
   resetKey: number;
 }
 
-const EditorInner = ({ appState, onSave, onDirtyChange, resetKey }: EditorInnerProps) => {
+const EditorInner = ({
+  appState,
+  onSave,
+  onDirtyChange,
+  resetKey,
+}: EditorInnerProps) => {
   const handleSave = useCallback(
     async (data: QuickApp2FormType) => {
       await onSave(data, false);
@@ -41,12 +54,11 @@ const EditorInner = ({ appState, onSave, onDirtyChange, resetKey }: EditorInnerP
   );
 
   return (
-    <AppContextProvider value={appState}>
-      <QuickApp2Form
-        key={resetKey}
-        onSave={handleSave}
-      />
-    </AppContextProvider>
+    <div className="bg-layer-2">
+      <AppContextProvider value={appState}>
+        <QuickApp2Form key={resetKey} onSave={handleSave} />
+      </AppContextProvider>
+    </div>
   );
 };
 
@@ -56,7 +68,7 @@ export default function EditorClient() {
   const isDirtyRef = useRef(false);
 
   useEffect(() => {
-    postToParent({ type: 'READY' });
+    postToParent({ type: "READY" });
 
     const handleMessage = async (event: MessageEvent) => {
       if (!isAllowedOrigin(event.origin)) return;
@@ -64,33 +76,35 @@ export default function EditorClient() {
       if (!msg?.type) return;
 
       switch (msg.type) {
-        case 'INIT': {
+        case "INIT": {
           const { app, token, dialApiHost, settings } = msg.payload;
-          await fetch('/api/session', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+          await fetch("/api/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ token, dialApiHost }),
           });
           setAppState({ app, settings, isReady: true });
           break;
         }
-        case 'TRIGGER_SAVE':
-        case 'TRIGGER_AUTO_SAVE': {
-          const isAutoSave = msg.type === 'TRIGGER_AUTO_SAVE';
+        case "TRIGGER_SAVE":
+        case "TRIGGER_AUTO_SAVE": {
+          const isAutoSave = msg.type === "TRIGGER_AUTO_SAVE";
           window.dispatchEvent(
-            new CustomEvent('dial-editor-trigger-save', { detail: { isAutoSave } }),
+            new CustomEvent("dial-editor-trigger-save", {
+              detail: { isAutoSave },
+            }),
           );
           break;
         }
-        case 'RESET': {
+        case "RESET": {
           setResetKey((k) => k + 1);
           break;
         }
       }
     };
 
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
   }, []);
 
   const formRef = useRef<HTMLDivElement>(null);
@@ -98,7 +112,10 @@ export default function EditorClient() {
     const el = formRef.current;
     if (!el) return;
     const ro = new ResizeObserver(() => {
-      postToParent({ type: 'HEIGHT_CHANGE', payload: { height: el.scrollHeight } });
+      postToParent({
+        type: "HEIGHT_CHANGE",
+        payload: { height: el.scrollHeight },
+      });
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -107,19 +124,28 @@ export default function EditorClient() {
   const handleSave = useCallback(
     async (data: QuickApp2FormType, isAutoSave = false) => {
       if (!appState) return;
-      const existingConfig = appState.app.applicationProperties as QuickApp2Config | undefined;
-      const allEntitiesMap = {} as Record<string, { id: string; name?: string; type?: string }>;
+      const existingConfig = appState.app.applicationProperties as
+        | QuickApp2Config
+        | undefined;
+      const allEntitiesMap = {} as Record<
+        string,
+        { id: string; name?: string; type?: string }
+      >;
       try {
-        const newConfig = buildQuickApp2Config({ data, allEntitiesMap, existingConfig });
+        const newConfig = buildQuickApp2Config({
+          data,
+          allEntitiesMap,
+          existingConfig,
+        });
         const updatedApp = await saveDialApp(appState.app.id, newConfig);
         if (isAutoSave) {
-          postToParent({ type: 'AUTO_SAVE_COMPLETE' });
+          postToParent({ type: "AUTO_SAVE_COMPLETE" });
         } else {
-          postToParent({ type: 'SAVE_SUCCESS', payload: { updatedApp } });
+          postToParent({ type: "SAVE_SUCCESS", payload: { updatedApp } });
         }
       } catch (err) {
-        const error = err instanceof Error ? err.message : 'Save failed';
-        postToParent({ type: 'SAVE_ERROR', payload: { error } });
+        const error = err instanceof Error ? err.message : "Save failed";
+        postToParent({ type: "SAVE_ERROR", payload: { error } });
       }
     },
     [appState],
@@ -128,7 +154,7 @@ export default function EditorClient() {
   const handleDirtyChange = useCallback((isDirty: boolean) => {
     if (isDirtyRef.current !== isDirty) {
       isDirtyRef.current = isDirty;
-      postToParent({ type: 'DIRTY_STATE', payload: { isDirty } });
+      postToParent({ type: "DIRTY_STATE", payload: { isDirty } });
     }
   }, []);
 

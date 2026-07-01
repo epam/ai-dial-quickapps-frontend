@@ -1,30 +1,6 @@
 1. Model selection - there should be popup on click, and it should have content as before. Now it shows dropdown.
 2. context and tools - popup should be as in old app (but use ui kit). And there is no logic that the tool can need to be configured, and it's shown on the card, and then in input and there should be popup for configuration. All this logic is missing and it was present in old version.
-3. context files - when popup opens, the list is always empty and request fails with 404.
-4. agent skills - when popup opens, the list is always empty and request fails with 404. The buttons in the popup are different from what we had in old version.
 
-Input from other agent investigation:
-Here is a thorough summary of the current state of every file you asked about.
+The reference project at C:/projects/dial/ai-dial-chat/apps/chat/src/ is a Next.js + Redux/RxJS app. It stores state in a Redux store with RxJS epics for async side effects, and all DIAL Core API calls go through a layered storage abstraction (ApiEntityStorage → PromptService → epics). Don't copy the Redux/Observable infrastructure — extract only the HTTP contracts: URL patterns, request bodies, and response shapes.
 
-Summary of What Needs Work
-
-┌──────────────────────────────────────────────┬───────────────────────────────────────────────┐
-│ Item │ Status │
-├──────────────────────────────────────────────┼───────────────────────────────────────────────┤
-│ FilesSelector "Add" button │ Stub — no modal wired, passes emptyarray │
-├──────────────────────────────────────────────┼───────────────────────────────────────────────┤
-│ DataContext file loading │ FILES_LOADED never dispatched,fetchDialFiles │
-│ │ doesn't exist │
-├──────────────────────────────────────────────┼───────────────────────────────────────────────┤
-│ AgentSkillsSelector "Add" button │ Hardcoded disabled, no picker wired │
-├──────────────────────────────────────────────┼───────────────────────────────────────────────┤
-│ AgentSkillsSelector display names │ Shows raw URLs, no name resolution │
-├──────────────────────────────────────────────┼───────────────────────────────────────────────┤
-│ ModelField click-outside close │ Missing useClickOutside or equivalent │
-├──────────────────────────────────────────────┼───────────────────────────────────────────────┤
-│ inputAttachmentTypes / maxInputAttachments │ Not deserialized from saved config │
-│ hydration │ │
-├──────────────────────────────────────────────┼───────────────────────────────────────────────┤
-│ DialAppConfigurationModal backdrop/Escape │ Not implemented │
-│ dismiss │ │
-└──────────────────────────────────────────────┴───────────────────────────────────────────────┘
+Key patterns to know: prompt files require { id, folderId, name, description, content } in PUT bodies (id = prompts/{bucket}/{name}, folderId = parent path); prompt content is fetched via GET /api/{entityId} in their app (maps to DIAL Core /v1/prompts/{bucket}/{name}); display names strip .json and \_\_version suffixes; folder paths are mapped from internal prompts/public/Folder → Organization/Folder and prompts/{bucket}/Folder → My prompts/Folder; locale strings live in apps/chat/public/locales/en/ with namespace files like marketplace.json, promptbar.json, chat.json.

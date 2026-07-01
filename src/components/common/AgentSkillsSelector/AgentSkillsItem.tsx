@@ -1,48 +1,180 @@
 "use client";
-import { IconTrashX } from "@tabler/icons-react";
-import { FC, memo } from "react";
+import {
+  IconAlertCircleFilled,
+  IconChevronDown,
+  IconPencilMinus,
+  IconTrashX,
+} from "@tabler/icons-react";
+import classNames from "classnames";
+import { FC, memo, useCallback, useState } from "react";
+
+import { MarketplaceI18nKeys } from "@/constants/i18n";
 import { useDataContext } from "@/context/DataContext";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Translation } from "@/types/translation";
 import { DialIconButton } from "@epam/ai-dial-ui-kit";
 
 interface AgentSkillsItemProps {
   promptId: string;
   onDelete?: (promptId: string) => void;
+  onEdit?: (promptId: string) => void;
   readonly?: boolean;
+}
+
+interface PromptFileContent {
+  name?: string;
+  description?: string;
+  content?: string;
+}
+
+function getDisplayName(name: string): string {
+  return name.replace(/\.json$/i, "").replace(/__[\d.]+$/, "");
+}
+
+function getFriendlyFolderPath(folderId: string): string {
+  if (folderId === "prompts/public") return "Organization";
+  if (folderId.startsWith("prompts/public/")) {
+    const sub = folderId.slice("prompts/public/".length);
+    return `Organization/${sub}`;
+  }
+  // personal: "prompts/{bucket}" or "prompts/{bucket}/sub/..."
+  const parts = folderId.split("/");
+  const sub = parts.slice(2).join("/");
+  return sub ? `My prompts/${sub}` : "My prompts";
+}
+
+function promptPathUrl(promptId: string): string {
+  const suffix = promptId.replace(/^prompts\//, "");
+  const encoded = suffix.split("/").map(encodeURIComponent).join("/");
+  return `/api/dial/v1/prompts/${encoded}`;
 }
 
 const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
   promptId,
   onDelete,
+  onEdit,
   readonly,
 }) => {
+  const { t } = useTranslation(Translation.Marketplace);
   const { promptsMap } = useDataContext();
   const prompt = promptsMap[promptId];
-  const displayName = prompt?.name ?? promptId.split("/").pop() ?? promptId;
-  const folderPath =
+
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [promptContent, setPromptContent] = useState<PromptFileContent | null>(
+    null,
+  );
+  const [isContentLoading, setIsContentLoading] = useState(false);
+  const [hasContentError, setHasContentError] = useState(false);
+
+  const rawName = prompt?.name ?? promptId.split("/").pop() ?? promptId;
+  const displayName = getDisplayName(rawName);
+  const rawFolderId =
     prompt?.folderId ?? promptId.split("/").slice(0, -1).join("/");
+  const folderPath = getFriendlyFolderPath(rawFolderId);
+  const isOwn = !promptId.startsWith("prompts/public/");
+  const canEdit = isOwn && !readonly && !!onEdit;
+
+  const handleToggleExpand = useCallback(async () => {
+    const nextExpanded = !isExpanded;
+    setIsExpanded(nextExpanded);
+    if (nextExpanded && promptContent == null && !isContentLoading) {
+      setIsContentLoading(true);
+      setHasContentError(false);
+      try {
+        const res = await fetch(promptPathUrl(promptId));
+        if (!res.ok) throw new Error(`${res.status}`);
+        const text = await res.text();
+        try {
+          const data = JSON.parse(text) as PromptFileContent;
+          setPromptContent(data);
+        } catch {
+          // Raw text response (e.g. markdown skill)
+          setPromptContent({ content: text });
+        }
+      } catch {
+        setHasContentError(true);
+      } finally {
+        setIsContentLoading(false);
+      }
+    }
+  }, [isExpanded, promptContent, isContentLoading, promptId]);
 
   return (
-    <div className="flex flex-col bg-layer-3 py-2" data-qa="agent-skill">
-      <div className="flex items-center gap-2 px-3">
-        <div className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate text-sm font-medium text-primary">
-            {displayName}
-          </span>
-          {folderPath && (
-            <span className="truncate text-xs text-secondary">
-              {folderPath}
+    <div
+      className="flex flex-col divide-y divide-tertiary bg-layer-3 py-2"
+      data-qa="agent-skill"
+    >
+      <div className="p-3">
+        <div className="flex items-center gap-2">
+          <DialIconButton
+            className="flex size-5 h-full items-start"
+            icon={
+              <IconChevronDown
+                size={20}
+                className={classNames(
+                  "transition-transform",
+                  isExpanded && "rotate-180",
+                )}
+              />
+            }
+            onClick={handleToggleExpand}
+          />
+
+          <div className="flex min-w-0 flex-1 flex-col">
+            <span className="truncate text-sm font-medium text-primary">
+              {displayName}
             </span>
+            {folderPath && (
+              <span className="truncate text-xs text-secondary">
+                {folderPath}
+              </span>
+            )}
+          </div>
+
+          {!readonly && (
+            <div className="flex gap-2 text-secondary">
+              {canEdit && (
+                <DialIconButton
+                  icon={<IconPencilMinus size={16} />}
+                  data-qa="edit-skill"
+                  onClick={() => onEdit(promptId)}
+                />
+              )}
+              {onDelete && (
+                <DialIconButton
+                  icon={<IconTrashX size={16} />}
+                  data-qa="delete-skill"
+                  onClick={() => onDelete(promptId)}
+                />
+              )}
+            </div>
           )}
         </div>
 
-        {!readonly && onDelete && (
-          <DialIconButton
-            icon={<IconTrashX size={16} />}
-            onClick={() => onDelete(promptId)}
-            data-qa="delete-skill"
-          />
+        {isContentLoading && (
+          <div className="mt-2 flex justify-center py-1">
+            <span className="text-xs text-secondary">Loading…</span>
+          </div>
+        )}
+
+        {hasContentError && (
+          <div
+            className="mt-2 flex items-center gap-1 px-7 text-error"
+            data-qa="error-message"
+          >
+            <IconAlertCircleFilled size={16} className="shrink-0" />
+            <span className="break-words text-xs">
+              {t(MarketplaceI18nKeys.AgentSkillLoadError)}
+            </span>
+          </div>
         )}
       </div>
+
+      {isExpanded && promptContent != null && (
+        <div className="max-h-[160px] overflow-auto whitespace-pre-wrap break-words px-10 py-3 font-mono text-xs text-primary">
+          {promptContent.content}
+        </div>
+      )}
     </div>
   );
 };

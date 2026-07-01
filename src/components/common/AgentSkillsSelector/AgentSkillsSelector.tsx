@@ -25,6 +25,15 @@ const AgentSkillsSelector: FC<AgentSkillsSelectorProps> = ({
 }) => {
   const { t } = useTranslation(Translation.Marketplace);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editPromptId, setEditPromptId] = useState<string | null>(null);
+
+  const handleEdit = useCallback((promptId: string) => {
+    setEditPromptId(promptId);
+  }, []);
+
+  const handleEditClose = useCallback(() => {
+    setEditPromptId(null);
+  }, []);
 
   const handleRemove = useCallback(
     (promptId: string) => onChange(value.filter((id) => id !== promptId)),
@@ -74,6 +83,7 @@ const AgentSkillsSelector: FC<AgentSkillsSelectorProps> = ({
               key={promptId}
               promptId={promptId}
               onDelete={handleRemove}
+              onEdit={handleEdit}
               readonly={readonly}
             />
           ))}
@@ -84,6 +94,15 @@ const AgentSkillsSelector: FC<AgentSkillsSelectorProps> = ({
         <AgentSkillsModal
           initialSelectedIds={value}
           onClose={handleCloseModal}
+          onConfirm={handleConfirm}
+        />
+      )}
+
+      {editPromptId && !readonly && (
+        <AgentSkillsModal
+          initialSelectedIds={value}
+          editPromptId={editPromptId}
+          onClose={handleEditClose}
           onConfirm={handleConfirm}
         />
       )}

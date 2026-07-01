@@ -141,14 +141,13 @@ export async function fetchDialFiles(
   return res.items ?? [];
 }
 
-export async function fetchDialPrompts(): Promise<DialPrompt[]> {
-  const { bucket } = await dialFetch<{ bucket: string }>("/v1/bucket");
-  const encodedBucket = encodeURIComponent(bucket);
+async function fetchPromptsFromBucket(bucket: string): Promise<DialPrompt[]> {
+  const qs = new URLSearchParams({ bucket, limit: '1000', recursive: 'true' });
   let res: { items?: DialFileMetadataItem[] };
   try {
-    res = await dialFetch<{ items?: DialFileMetadataItem[] }>(
-      `/v1/metadata/prompts/${encodedBucket}/?limit=1000&recursive=true`,
-    );
+    const response = await fetch(`/api/dial-prompts/list?${qs}`);
+    if (!response.ok) return [];
+    res = (await response.json()) as { items?: DialFileMetadataItem[] };
   } catch {
     return [];
   }
@@ -161,4 +160,13 @@ export async function fetchDialPrompts(): Promise<DialPrompt[]> {
       const id = parts.join("/");
       return { id, name: item.name, folderId: id.slice(0, id.lastIndexOf("/")) };
     });
+}
+
+export async function fetchDialPrompts(): Promise<DialPrompt[]> {
+  const { bucket } = await dialFetch<{ bucket: string }>("/v1/bucket");
+  const [personal, organization] = await Promise.all([
+    fetchPromptsFromBucket(bucket),
+    fetchPromptsFromBucket("public"),
+  ]);
+  return [...personal, ...organization];
 }
