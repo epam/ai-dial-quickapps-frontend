@@ -1,12 +1,154 @@
-'use client';
-import { IconChevronDown, IconSearch } from '@tabler/icons-react';
-import { FC, useRef, useState } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Translation } from '@/types/translation';
-import { MarketplaceI18nKeys } from '@/constants/i18n';
-import { useDataContext } from '@/context/DataContext';
-import { DialModel } from '@/types/dial-entities';
-import classNames from 'classnames';
+"use client";
+import classNames from "classnames";
+import { FC, useCallback, useMemo, useState } from "react";
+
+import { MarketplaceI18nKeys } from "@/constants/i18n";
+import { useDataContext } from "@/context/DataContext";
+import { useTranslation } from "@/hooks/useTranslation";
+import { DialModel } from "@/types/dial-entities";
+import { Translation } from "@/types/translation";
+import {
+  DialLinkButton,
+  DialNoDataContent,
+  DialPopup,
+  DialSearch,
+  DialSelect,
+  DialTabs,
+  PopupSize,
+  SelectSize,
+} from "@epam/ai-dial-ui-kit";
+
+import { ModelIcon } from "@/components/common/ModelIcon/ModelIcon";
+import { TopicsLine } from "@/components/common/TopicsLine/TopicsLine";
+import { IconBulb } from "@tabler/icons-react";
+
+interface ModelGroup {
+  name: string;
+  type: string;
+  models: DialModel[];
+  description?: string;
+  topics: string[];
+  iconUrl?: string;
+}
+
+function groupModelsByName(models: DialModel[]): ModelGroup[] {
+  const map = new Map<string, DialModel[]>();
+  for (const m of models) {
+    const bucket = map.get(m.name) ?? [];
+    bucket.push(m);
+    map.set(m.name, bucket);
+  }
+  return Array.from(map.entries()).map(([name, models]) => ({
+    name,
+    type: models[0].type,
+    models,
+    description: (models[0] as { description?: string }).description,
+    topics: models[0].topics ?? [],
+    iconUrl: models[0].iconUrl,
+  }));
+}
+
+const VERSION_SELECT_CLASS =
+  "!w-fit !border-none !bg-transparent !shadow-none !outline-none !ring-0 !p-0";
+
+interface ModelCardProps {
+  group: ModelGroup;
+  isSelected: boolean;
+  currentModelId: string;
+  versionPrefix: string;
+  onSelect: (id: string) => void;
+}
+
+const ModelCard: FC<ModelCardProps> = ({
+  group,
+  isSelected,
+  currentModelId,
+  versionPrefix,
+  onSelect,
+}) => {
+  const representativeId =
+    group.models.find((m) => m.id === currentModelId)?.id ?? group.models[0].id;
+  const representative = group.models.find((m) => m.id === representativeId)!;
+  const hasVersions = group.models.length > 1;
+  const versionOptions = hasVersions
+    ? group.models.map((m) => ({ value: m.id, label: m.version ?? m.id }))
+    : [];
+
+  return (
+    <article
+      className={classNames(
+        "relative box-border flex cursor-pointer flex-col gap-[14px] rounded-[16px] border p-[11px] md:p-[15px] xl:p-[19px]",
+        "bg-layer-0 shadow-[0_1px_3px_rgba(0,0,0,0.04)]",
+        "transition-[transform,box-shadow] duration-[180ms] ease-out",
+        "hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.04)]",
+        isSelected ? "border-accent-primary" : "border-[rgba(0,0,0,0.07)]",
+      )}
+      onClick={!hasVersions ? () => onSelect(representativeId) : undefined}
+    >
+      {/* AppIdentity block */}
+      <div className="flex min-w-0 items-start gap-3">
+        <ModelIcon
+          name={group.name}
+          iconUrl={group.iconUrl}
+          size={44}
+          radius={12}
+        />
+
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="dial-caption-text mb-2 font-semibold uppercase tracking-[0.06em] text-accent-primary">
+            {group.type}
+          </span>
+          <span className="dial-body-semi-text min-w-0 truncate text-primary">
+            {group.name}
+          </span>
+
+          {/* Version row — always occupies space */}
+          <div className="dial-tiny-text flex min-h-[20px] items-center overflow-hidden gap-1">
+            {(hasVersions || representative.version) && (
+              <span className="shrink-0 text-secondary">{versionPrefix}</span>
+            )}
+            {hasVersions ? (
+              <div
+                className="max-w-full overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <DialSelect
+                  size={SelectSize.Sm}
+                  options={versionOptions}
+                  value={representativeId}
+                  customSelectedValue={
+                    representative.version ?? representativeId
+                  }
+                  className={VERSION_SELECT_CLASS}
+                  listClassName="!w-fit"
+                  onChange={(v) => onSelect(v as string)}
+                />
+              </div>
+            ) : representative.version ? (
+              <span className="truncate text-primary">
+                {representative.version}
+              </span>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      {/* Description */}
+      {group.description && (
+        <p className="dial-small-text line-clamp-2 text-secondary">
+          {group.description}
+        </p>
+      )}
+
+      {/* Topics — min-h keeps space reserved when empty */}
+      <div className="min-h-[22px]">
+        <TopicsLine topics={group.topics} />
+      </div>
+    </article>
+  );
+};
+
+const TAB_IDS = { favorites: "favorites", catalog: "catalog" } as const;
 
 interface ModelFieldProps {
   value: string;
@@ -25,88 +167,192 @@ export const ModelField: FC<ModelFieldProps> = ({
 }) => {
   const { t } = useTranslation(Translation.Marketplace);
   const { models } = useDataContext();
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState('');
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useState(TAB_IDS.catalog);
 
-  const availableModels = models.filter(
-    (m) => m.type === 'model' || m.type === 'application',
+  const tabs = useMemo(
+    () => [
+      { id: TAB_IDS.favorites, label: t(MarketplaceI18nKeys.MyFavorites) },
+      { id: TAB_IDS.catalog, label: t(MarketplaceI18nKeys.CatalogTab) },
+    ],
+    [t],
   );
 
-  const filtered = search
-    ? availableModels.filter(
-        (m) =>
-          m.name.toLowerCase().includes(search.toLowerCase()) ||
-          m.id.toLowerCase().includes(search.toLowerCase()),
-      )
-    : availableModels;
+  const availableModels = useMemo(
+    () => models.filter((m) => m.type === "model" || m.type === "application"),
+    [models],
+  );
+
+  const allGroups = useMemo(
+    () => groupModelsByName(availableModels),
+    [availableModels],
+  );
 
   const selectedModel = availableModels.find((m) => m.id === value);
-  const displayName = selectedModel?.name ?? value ?? t(MarketplaceI18nKeys.SelectModel);
+  const displayName =
+    selectedModel?.name ?? value ?? t(MarketplaceI18nKeys.SelectModel);
 
-  const handleSelect = (m: DialModel) => {
-    onChange(m.id);
-    setOpen(false);
-    setSearch('');
-  };
+  const selectedGroup = allGroups.find((g) =>
+    g.models.some((m) => m.id === value),
+  );
+  const hasVersions = (selectedGroup?.models.length ?? 0) > 1;
+  const cardVersionOptions = hasVersions
+    ? (selectedGroup?.models ?? []).map((m) => ({
+        value: m.id,
+        label: m.version ?? m.id,
+      }))
+    : [];
+
+  const filteredGroups = useMemo(() => {
+    if (!search || activeTab === TAB_IDS.favorites) return allGroups;
+    const q = search.toLowerCase();
+    return allGroups.filter((g) => g.name.toLowerCase().includes(q));
+  }, [allGroups, search, activeTab]);
+
+  const handleSelect = useCallback(
+    (modelId: string) => {
+      onChange(modelId);
+      setIsOpen(false);
+      setSearch("");
+    },
+    [onChange],
+  );
+
+  const handleOpen = useCallback(() => {
+    if (!disabled) setIsOpen(true);
+  }, [disabled]);
+
+  const handleClose = useCallback(() => {
+    setIsOpen(false);
+    setSearch("");
+    setActiveTab(TAB_IDS.catalog);
+  }, []);
 
   return (
-    <div ref={containerRef} className="relative" title={tooltip}>
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={() => setOpen((o) => !o)}
+    <div title={tooltip}>
+      {/* Collapsed card */}
+      <div
         className={classNames(
-          'flex w-full items-center justify-between rounded border px-3 py-2 text-left text-sm',
-          error ? 'border-error' : 'border-primary',
-          disabled ? 'cursor-not-allowed opacity-50' : 'hover:border-accent-primary',
+          "flex items-center gap-3 rounded border bg-layer-3 px-4 py-3",
+          error ? "border-error" : "border-tertiary",
+          disabled && "opacity-50",
         )}
       >
-        <span className="truncate">{displayName}</span>
-        <IconChevronDown size={16} className="ml-2 shrink-0 text-secondary" />
-      </button>
+        <ModelIcon
+          name={displayName}
+          iconUrl={selectedModel?.iconUrl}
+          size={32}
+          radius={8}
+        />
 
-      {error && <p className="mt-1 text-xs text-error">{error}</p>}
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <span
+            className={classNames(
+              "dial-small-semi-text truncate",
+              selectedModel ? "text-primary" : "text-secondary",
+            )}
+          >
+            {displayName}
+          </span>
 
-      {open && !disabled && (
-        <div className="absolute z-50 mt-1 w-full rounded border border-primary bg-layer-2 shadow-lg">
-          <div className="flex items-center gap-2 border-b border-primary px-3 py-2">
-            <IconSearch size={16} className="shrink-0 text-secondary" />
-            <input
-              autoFocus
+          {(hasVersions || selectedModel?.version) && (
+            <div className="dial-tiny-text flex items-center gap-1">
+              <span className="shrink-0 text-secondary">
+                {t(MarketplaceI18nKeys.VersionPrefixMarketplace)}
+              </span>
+              {hasVersions ? (
+                <div className="w-fit" onClick={(e) => e.stopPropagation()}>
+                  <DialSelect
+                    size={SelectSize.Sm}
+                    options={cardVersionOptions}
+                    value={value}
+                    customSelectedValue={selectedModel?.version ?? value}
+                    disabled={disabled}
+                    className={VERSION_SELECT_CLASS}
+                    listClassName="!w-fit"
+                    onChange={(v) => onChange(v as string)}
+                  />
+                </div>
+              ) : (
+                <span className="text-secondary">{selectedModel?.version}</span>
+              )}
+            </div>
+          )}
+        </div>
+
+        <DialLinkButton
+          className="shrink-0"
+          label={t(MarketplaceI18nKeys.Change)}
+          onClick={handleOpen}
+          disabled={disabled}
+        />
+      </div>
+
+      {error && <p className="dial-tiny-text mt-1 text-error">{error}</p>}
+
+      <DialPopup
+        open={isOpen}
+        header={t(MarketplaceI18nKeys.SelectModel)}
+        size={PopupSize.Lg}
+        onClose={handleClose}
+      >
+        {/* Sticky header: search + tabs */}
+        <div className="flex justify-between gap-3 border-b border-tertiary px-6 pb-3 pt-4  bg-layer-2">
+          <div className="flex-1 bg-layer-0">
+            <DialSearch
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={t(MarketplaceI18nKeys.SelectModel)}
-              className="w-full bg-transparent text-sm outline-none placeholder:text-secondary"
+              placeholder={t(MarketplaceI18nKeys.SearchPlaceholder)}
+              onChange={setSearch}
             />
           </div>
-          <ul className="max-h-60 overflow-y-auto">
-            {filtered.length === 0 ? (
-              <li className="px-3 py-2 text-sm text-secondary">
-                {t(MarketplaceI18nKeys.SelectModel)}
-              </li>
-            ) : (
-              filtered.map((m) => (
-                <li
-                  key={m.id}
-                  onClick={() => handleSelect(m)}
-                  className={classNames(
-                    'cursor-pointer px-3 py-2 text-sm hover:bg-layer-3',
-                    m.id === value && 'bg-layer-3 font-medium',
-                  )}
-                >
-                  <div className="truncate">{m.name}</div>
-                  {m.version && (
-                    <div className="text-xs text-secondary">
-                      {t(MarketplaceI18nKeys.VersionPrefixMarketplace)}{m.version}
-                    </div>
-                  )}
-                </li>
-              ))
-            )}
-          </ul>
+          <DialTabs tabs={tabs} activeTab={activeTab} onClick={setActiveTab} />
         </div>
-      )}
+
+        {/* Scrollable 3×3 grid */}
+        <div
+          className="overflow-y-auto px-6 py-4 bg-layer-2"
+          style={{ maxHeight: "calc(3 * 166px + 2 * 16px + 32px)" }}
+        >
+          {activeTab === TAB_IDS.favorites ? (
+            <div className="flex items-center justify-center py-8">
+              <DialNoDataContent
+                title={t(MarketplaceI18nKeys.NoFavoritesYet)}
+                icon={<IconBulb size={48} stroke={0.5} />}
+              />
+            </div>
+          ) : filteredGroups.length === 0 ? (
+            <div className="flex items-center justify-center py-8">
+              <DialNoDataContent
+                title={t(MarketplaceI18nKeys.NA)}
+                icon={<IconBulb size={48} stroke={0.5} />}
+              />
+            </div>
+          ) : (
+            <div
+              className="grid"
+              style={{
+                gridTemplateColumns: "repeat(3, minmax(0px, 1fr))",
+                gridTemplateRows: "repeat(3, 166px)",
+                gap: "16px",
+              }}
+            >
+              {filteredGroups.map((group) => (
+                <ModelCard
+                  key={group.name}
+                  group={group}
+                  isSelected={group.models.some((m) => m.id === value)}
+                  currentModelId={value}
+                  versionPrefix={t(
+                    MarketplaceI18nKeys.VersionPrefixMarketplace,
+                  )}
+                  onSelect={handleSelect}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </DialPopup>
     </div>
   );
 };

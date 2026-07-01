@@ -135,6 +135,10 @@ export enum MarketplaceI18nKeys {
   TimeAwareness = "Time awareness",
   SelectModel = "Select model",
   VersionPrefixMarketplace = "Version: ",
+  MyFavorites = "My Favorites",
+  CatalogTab = "Catalog",
+  SearchPlaceholder = "Search",
+  NoFavoritesYet = "No favorites yet",
 }
 
 // common.json — dialFileManager namespace

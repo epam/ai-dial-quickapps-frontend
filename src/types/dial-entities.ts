@@ -4,8 +4,10 @@ export interface DialModel {
   name: string;
   type: "model" | "application";
   version?: string;
+  iconUrl?: string;
   applicationTypeSchemaId?: string;
   mcp?: boolean;
+  topics?: string[];
   features?: {
     temperature?: boolean;
     tools?: boolean;

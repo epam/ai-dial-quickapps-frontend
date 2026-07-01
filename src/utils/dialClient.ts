@@ -7,8 +7,10 @@ interface CoreApiEntity {
   reference: string;
   display_name?: string;
   display_version?: string;
+  icon_url?: string;
   object: string;
   application_type_schema_id?: string;
+  topics?: string[];
   mcp?: boolean;
   features?: {
     temperature?: boolean;
@@ -45,7 +47,16 @@ function mapCoreToDialModel(entity: CoreApiEntity): DialModel {
     name: entity.display_name ?? entity.id,
     type: entity.object as "model" | "application",
     version: entity.display_version,
+    iconUrl: entity.icon_url
+      ? /^https?:\/\//i.test(entity.icon_url)
+        ? entity.icon_url
+        : entity.icon_url
+            .split("/")
+            .map((s) => decodeURIComponent(s))
+            .join("/")
+      : undefined,
     applicationTypeSchemaId: entity.application_type_schema_id,
+    topics: entity.topics,
     mcp: entity.mcp,
     features: entity.features
       ? {

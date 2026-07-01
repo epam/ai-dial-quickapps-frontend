@@ -1,7 +1,9 @@
 <!-- BEGIN:nextjs-agent-rules -->
+
 # This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+
 <!-- END:nextjs-agent-rules -->
 
 ## Architecture
@@ -30,14 +32,12 @@ Use the `@/*` path alias (resolves to `src/`) for all imports that would otherwi
 
 Use these local skills for specific workflows:
 
-- `.claude/skills/incremental-implementation/SKILL.md` — multi-file changes and refactors
 - `.claude/skills/code-review-and-quality/SKILL.md` — quality pass before merge or on explicit review requests
 - `.claude/skills/feature-research/SKILL.md` — broad feature research and trade-off analysis before implementation
 - `.claude/skills/figma/SKILL.md` — translating Figma designs into React components
 
 Default behavior:
 
-- Implementation work follows incremental slices with per-slice verification.
 - Before merge (or on explicit review requests), run the five-axis quality review.
 
 ## TypeScript module imports
@@ -52,10 +52,13 @@ Prefer string enums for named finite sets of statuses, modes, variants, or lifec
 
 ```ts
 // Preferred
-enum UploadStatus { Idle = 'idle', Loading = 'loading' }
+enum UploadStatus {
+  Idle = "idle",
+  Loading = "loading",
+}
 
 // Avoid for reused, exported, or logic-compared values
-type UploadStatus = 'idle' | 'loading';
+type UploadStatus = "idle" | "loading";
 ```
 
 Place enums in `src/types/` or `src/constants/`.

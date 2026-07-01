@@ -1,12 +1,18 @@
 "use client";
 import { FC, useState } from "react";
-import { useTranslation } from "@/hooks/useTranslation";
-import { Translation } from "@/types/translation";
+
+import { ModelIcon } from "@/components/common/ModelIcon/ModelIcon";
 import { MarketplaceI18nKeys } from "@/constants/i18n";
 import { useDataContext } from "@/context/DataContext";
+import { useTranslation } from "@/hooks/useTranslation";
 import { DialAppTransportType } from "@/types/quick-apps";
-import { doesAgentSupportMcp } from "@/utils/application";
-import { ButtonVariant, DialButton } from "@epam/ai-dial-ui-kit";
+import { Translation } from "@/types/translation";
+import {
+  DialPopup,
+  DialPrimaryButton,
+  DialRadioButton,
+  PopupSize,
+} from "@epam/ai-dial-ui-kit";
 
 interface DialAppConfigurationModalProps {
   agentId: string;
@@ -24,73 +30,77 @@ export const DialAppConfigurationModal: FC<DialAppConfigurationModalProps> = ({
   const { t } = useTranslation(Translation.Marketplace);
   const { modelsMap } = useDataContext();
   const agent = modelsMap[agentId];
-  const supportsMcp = agent ? doesAgentSupportMcp(agent) : false;
+
+  const doesSupportChatCompletion = agent?.type === "model";
 
   const [selectedTransport, setSelectedTransport] =
     useState<DialAppTransportType>(
       transport ??
-        (supportsMcp
-          ? DialAppTransportType.MCP
-          : DialAppTransportType.ChatCompletion),
+        (doesSupportChatCompletion
+          ? DialAppTransportType.ChatCompletion
+          : DialAppTransportType.MCP),
     );
 
+  const handleApply = () => {
+    onSave(selectedTransport);
+    onClose();
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-blackout">
-      <div className="w-96 rounded-lg bg-layer-2 p-6 shadow-xl">
-        <h2 className="mb-4 text-lg font-semibold">
-          {t(MarketplaceI18nKeys.AgentSettings)}
-        </h2>
-        <p className="mb-4 text-sm text-secondary">
-          {t(MarketplaceI18nKeys.AgentSettingsDescription)}
-        </p>
-
-        <div className="mb-6">
-          <label className="mb-2 block text-sm font-medium">
-            {t(MarketplaceI18nKeys.ConnectVia)}
-          </label>
-          <div className="flex flex-col gap-2">
-            {supportsMcp && (
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  checked={selectedTransport === DialAppTransportType.MCP}
-                  onChange={() =>
-                    setSelectedTransport(DialAppTransportType.MCP)
-                  }
-                  className="accent-accent"
-                />
-                <span>{t(MarketplaceI18nKeys.MCP)}</span>
-              </label>
-            )}
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                checked={
-                  selectedTransport === DialAppTransportType.ChatCompletion
-                }
-                onChange={() =>
-                  setSelectedTransport(DialAppTransportType.ChatCompletion)
-                }
-                className="accent-accent"
-              />
-              <span>{t(MarketplaceI18nKeys.ChatCompletion)}</span>
-            </label>
-          </div>
-        </div>
-
-        <div className="flex justify-end gap-2">
-          <DialButton
-            variant={ButtonVariant.Neutral}
-            onClick={onClose}
-            label={t(MarketplaceI18nKeys.DiscardMarketplace)}
-          />
-          <DialButton
-            variant={ButtonVariant.Primary}
-            onClick={() => onSave(selectedTransport)}
+    <DialPopup
+      open
+      header={t(MarketplaceI18nKeys.AdvancedSettings)}
+      size={PopupSize.Sm}
+      onClose={onClose}
+      footer={
+        <div className="flex justify-end px-6 py-4">
+          <DialPrimaryButton
             label={t(MarketplaceI18nKeys.ApplyChanges)}
+            onClick={handleApply}
+          />
+        </div>
+      }
+    >
+      <div className="flex flex-col divide-y divide-tertiary">
+        {agent && (
+          <div className="flex items-center gap-3 px-6 py-4">
+            <ModelIcon name={agent.name} iconUrl={agent.iconUrl} size={40} radius={10} />
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <span className="dial-small-semi-text truncate text-primary">
+                {agent.name}
+              </span>
+              {agent.version && (
+                <span className="dial-tiny-text truncate text-secondary">
+                  {agent.version}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-3 px-6 py-4">
+          <span className="dial-tiny-text text-secondary">
+            {t(MarketplaceI18nKeys.ConnectVia)}
+          </span>
+          <DialRadioButton
+            name="transport"
+            value={DialAppTransportType.MCP}
+            inputId={DialAppTransportType.MCP}
+            label={t(MarketplaceI18nKeys.MCP)}
+            checked={selectedTransport === DialAppTransportType.MCP}
+            onChange={(v) => setSelectedTransport(v as DialAppTransportType)}
+          />
+          <DialRadioButton
+            name="transport"
+            value={DialAppTransportType.ChatCompletion}
+            inputId={DialAppTransportType.ChatCompletion}
+            label={t(MarketplaceI18nKeys.ChatCompletion)}
+            checked={selectedTransport === DialAppTransportType.ChatCompletion}
+            disabled={!doesSupportChatCompletion}
+            onChange={(v) => setSelectedTransport(v as DialAppTransportType)}
           />
         </div>
       </div>
-    </div>
+    </DialPopup>
   );
 };
