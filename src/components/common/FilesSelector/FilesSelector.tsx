@@ -3,14 +3,14 @@
 import { IconFile, IconPlus, IconX } from "@tabler/icons-react";
 import React, { type MouseEvent, useCallback, useState } from "react";
 
-import { DialNoDataContent } from "@epam/ai-dial-ui-kit";
+import { DialLinkButton, DialNoDataContent } from "@epam/ai-dial-ui-kit";
 
 import { CommonI18nKeys } from "@/constants/i18n";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Translation } from "@/types/translation";
 import { decodeApiUrl } from "@/utils/api";
 
-import { FileManagerModal } from "./FileManagerModal";
+import FileManagerModal from "./FileManagerModal";
 
 interface SelectedFileProps {
   document: string;
@@ -83,16 +83,15 @@ export const FilesSelector: React.FC<Props> = ({
     <div className="relative grow space-y-4 divide-tertiary">
       <div className="flex flex-col">
         <div className="absolute end-0 top-[-26px]">
-          <button
-            type="button"
-            disabled={readonly}
+          <DialLinkButton
+            tooltipProps={{
+              tooltip: addBtnTooltip ?? t(CommonI18nKeys.AddCommon),
+            }}
+            disabled={!!readonly}
+            iconBefore={<IconPlus size={18} />}
+            label={t(CommonI18nKeys.AddCommon)}
             onClick={handleOpenModal}
-            title={addBtnTooltip}
-            className="flex items-center gap-1 text-xs text-accent-primary hover:text-accent-secondary disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <IconPlus size={18} />
-            {t(CommonI18nKeys.AddCommon)}
-          </button>
+          />
         </div>
         {!files.length ? (
           <DialNoDataContent
@@ -112,7 +111,7 @@ export const FilesSelector: React.FC<Props> = ({
           </div>
         )}
       </div>
-      <FileManagerModal isOpen={isModalOpen} onClose={handleModalClose} />
+      <FileManagerModal isOpen={isModalOpen} initialFileIds={files} onClose={handleModalClose} />
     </div>
   );
 };

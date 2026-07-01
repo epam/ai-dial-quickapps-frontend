@@ -238,7 +238,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
                 onRemoveFile={(doc) =>
                   field.onChange(field.value.filter((f) => f !== doc))
                 }
-                onAddFiles={(docs) => field.onChange([...field.value, ...docs])}
+                onAddFiles={(docs) => field.onChange(docs)}
               />
             )}
           />

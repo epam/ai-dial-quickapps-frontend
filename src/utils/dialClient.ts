@@ -72,6 +72,11 @@ function mapApiToDialToolset(data: ToolsetApiEntity): DialToolset {
   };
 }
 
+export async function fetchDialBucket(): Promise<string> {
+  const { bucket } = await dialFetch<{ bucket: string }>("/v1/bucket");
+  return bucket;
+}
+
 export async function fetchDialModels(): Promise<DialModel[]> {
   const [modelsRes, appsRes] = await Promise.all([
     dialFetch<{ data: CoreApiEntity[] }>(

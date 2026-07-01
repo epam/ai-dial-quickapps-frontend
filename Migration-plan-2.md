@@ -2,7 +2,6 @@
 2. context and tools - popup should be as in old app (but use ui kit). And there is no logic that the tool can need to be configured, and it's shown on the card, and then in input and there should be popup for configuration. All this logic is missing and it was present in old version.
 3. context files - when popup opens, the list is always empty and request fails with 404.
 4. agent skills - when popup opens, the list is always empty and request fails with 404. The buttons in the popup are different from what we had in old version.
-5. conversation starters are missing a lot of functionality
 
 Input from other agent investigation:
 Here is a thorough summary of the current state of every file you asked about.
