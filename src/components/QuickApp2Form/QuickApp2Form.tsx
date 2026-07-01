@@ -87,9 +87,14 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   const chatMessageInputDisabled = watch("chatMessageInputDisabled");
   const autoSubmit = watch("autoSubmit");
 
-  const hasNonEmptyStarters = starters.some(
-    (s) => s.title.trim() || s.text.trim(),
+  const hasStarters = starters.some(
+    (s) => s.title.trim() && s.text.trim(),
   );
+  const startersSettingsTooltip =
+    sharedTooltip ??
+    (!hasStarters
+      ? t(MarketplaceI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings)
+      : undefined);
 
   const handleAgentsChange = useCallback(
     (ids: string[]) => {
@@ -345,26 +350,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         description={t(MarketplaceI18nKeys.StartersDescription)}
         dataQa="conversation-starters-section"
       >
-        {/* Intro text */}
-        <DialFormItem
-          label={t(MarketplaceI18nKeys.IntroText)}
-          description={t(MarketplaceI18nKeys.OptionalTextShownAboveTheStarters)}
-        >
-          <Controller
-            control={control}
-            name="introText"
-            render={({ field }) => (
-              <DialInput
-                value={field.value ?? ""}
-                onChange={(val) => field.onChange(val ?? "")}
-                disabled={isReadonly}
-                placeholder={t(MarketplaceI18nKeys.EnterIntroText)}
-                containerClassName="w-full"
-              />
-            )}
-          />
-        </DialFormItem>
-
         {/* Starters list */}
         <div className="mb-4">
           <Controller
@@ -381,59 +366,86 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
           />
         </div>
 
-        {/* Starters settings */}
-        {hasNonEmptyStarters && (
-          <FormCollapsibleSection
-            name={t(MarketplaceI18nKeys.StartersSettings)}
-            dataQa="starters-settings"
-          >
-            {/* Disable chat input */}
-            <div className="mb-4 flex items-center gap-3">
-              <Controller
-                control={control}
-                name="chatMessageInputDisabled"
-                render={({ field }) => (
-                  <input
-                    type="checkbox"
-                    checked={field.value}
-                    onChange={(e) => field.onChange(e.target.checked)}
-                    disabled={isReadonly}
-                    className="accent-accent"
-                  />
-                )}
+        {/* Starters settings — always visible; controls disabled until a valid starter exists */}
+        <div className="mt-1 flex flex-col gap-3">
+          <div>
+            <h3 className="text-sm font-semibold">
+              {t(MarketplaceI18nKeys.StartersSettings)}
+            </h3>
+            <p className="mt-1 text-sm text-secondary">
+              {t(
+                MarketplaceI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings,
+              )}
+            </p>
+          </div>
+
+          {/* Intro text */}
+          <Controller
+            control={control}
+            name="introText"
+            render={({ field }) => (
+              <DialInput
+                labelProps={{
+                  label: t(MarketplaceI18nKeys.IntroText),
+                  caption: t(
+                    MarketplaceI18nKeys.OptionalTextShownAboveTheStarters,
+                  ),
+                }}
+                value={field.value ?? ""}
+                onChange={(val) => field.onChange(val ?? "")}
+                disabled={isReadonly || !hasStarters}
+                placeholder={t(MarketplaceI18nKeys.EnterIntroText)}
+                containerClassName="w-full"
+                tooltipText={startersSettingsTooltip}
               />
-              <div>
+            )}
+          />
+
+          {/* Starters behavior */}
+          <DialFormItem label={t(MarketplaceI18nKeys.StartersBehavior)}>
+            <Controller
+              control={control}
+              name="autoSubmit"
+              render={({ field }) => (
+                <StartersBehaviourRadioGroup
+                  value={field.value}
+                  onChange={field.onChange}
+                  disabled={isReadonly || !hasStarters}
+                  tooltip={startersSettingsTooltip}
+                />
+              )}
+            />
+          </DialFormItem>
+
+          {/* Disable chat input */}
+          <Controller
+            control={control}
+            name="chatMessageInputDisabled"
+            render={({ field }) => (
+              <div className="flex flex-col gap-1">
                 <p className="text-sm font-medium">
                   {t(MarketplaceI18nKeys.DisableChatInput)}
                 </p>
-                <p className="text-xs text-secondary">
-                  {t(
+                <ToggleSwitch
+                  isOn={field.value}
+                  handleSwitch={() => field.onChange(!field.value)}
+                  disabled={isReadonly || !hasStarters}
+                  additionalText={t(
                     MarketplaceI18nKeys.DisableChatInputSoUsersCanOnlyUseStarters,
                   )}
-                </p>
+                  tooltip={startersSettingsTooltip}
+                  warning={
+                    !autoSubmit && chatMessageInputDisabled
+                      ? t(
+                          MarketplaceI18nKeys.PayAttentionTheUserWontBeAbleToEdit,
+                        )
+                      : undefined
+                  }
+                />
               </div>
-            </div>
-
-            {/* Starters behavior */}
-            <DialFormItem
-              label={t(MarketplaceI18nKeys.StartersBehavior)}
-              className="mb-4"
-            >
-              <Controller
-                control={control}
-                name="autoSubmit"
-                render={({ field }) => (
-                  <StartersBehaviourRadioGroup
-                    value={field.value}
-                    onChange={field.onChange}
-                    disabled={isReadonly}
-                    tooltip={sharedTooltip}
-                  />
-                )}
-              />
-            </DialFormItem>
-          </FormCollapsibleSection>
-        )}
+            )}
+          />
+        </div>
       </FormCollapsibleSection>
 
       <hr className="border-secondary" />
