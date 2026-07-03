@@ -2,6 +2,7 @@
 import {
   IconAlertCircleFilled,
   IconChevronDown,
+  IconCircleCheckFilled,
   IconPencilMinus,
   IconTrashX,
 } from "@tabler/icons-react";
@@ -10,7 +11,9 @@ import { FC, memo, useCallback, useState } from "react";
 
 import { MarketplaceI18nKeys } from "@/constants/i18n";
 import { useDataContext } from "@/context/DataContext";
+import { useSkillValidation } from "@/hooks/useSkillValidation";
 import { useTranslation } from "@/hooks/useTranslation";
+import { SkillValidationStatus } from "@/types/skill-validation";
 import { Translation } from "@/types/translation";
 import { DialIconButton } from "@epam/ai-dial-ui-kit";
 
@@ -65,6 +68,12 @@ const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
   );
   const [isContentLoading, setIsContentLoading] = useState(false);
   const [hasContentError, setHasContentError] = useState(false);
+
+  const skillValidation = useSkillValidation(promptId);
+  const isSkillInvalid = skillValidation.status === SkillValidationStatus.Invalid;
+  const isSkillValidating =
+    skillValidation.status === SkillValidationStatus.Validating;
+  const isSkillValid = skillValidation.status === SkillValidationStatus.Valid;
 
   const rawName = prompt?.name ?? promptId.split("/").pop() ?? promptId;
   const displayName = getDisplayName(rawName);
@@ -121,8 +130,15 @@ const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
           />
 
           <div className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate text-sm font-medium text-primary">
+            <span className="flex items-center gap-1.5 truncate text-sm font-medium text-primary">
               {displayName}
+              {isSkillValid && (
+                <IconCircleCheckFilled
+                  size={14}
+                  className="shrink-0 text-accent-secondary"
+                  data-qa="valid-skill-icon"
+                />
+              )}
             </span>
             {folderPath && (
               <span className="truncate text-xs text-secondary">
@@ -165,6 +181,25 @@ const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
             <IconAlertCircleFilled size={16} className="shrink-0" />
             <span className="break-words text-xs">
               {t(MarketplaceI18nKeys.AgentSkillLoadError)}
+            </span>
+          </div>
+        )}
+
+        {isSkillValidating && (
+          <div className="mt-2 flex justify-center py-1">
+            <span className="text-xs text-secondary">Validating…</span>
+          </div>
+        )}
+
+        {isSkillInvalid && (
+          <div
+            className="mt-2 flex items-center gap-1 px-7 text-error"
+            data-qa="skill-validation-error"
+          >
+            <IconAlertCircleFilled size={16} className="shrink-0" />
+            <span className="break-words text-xs">
+              {skillValidation.message ||
+                t(MarketplaceI18nKeys.AgentSkillsInvalidError)}
             </span>
           </div>
         )}

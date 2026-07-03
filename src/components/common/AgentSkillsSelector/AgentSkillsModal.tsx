@@ -1,5 +1,6 @@
 "use client";
 import {
+  IconAlertCircleFilled,
   IconBulb,
   IconChevronRight,
   IconCircleCheckFilled,
@@ -11,9 +12,12 @@ import classNames from "classnames";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 
 import { MarketplaceI18nKeys } from "@/constants/i18n";
+import { useAppContext } from "@/context/AppContext";
 import { useDataContext } from "@/context/DataContext";
+import { useSkillValidation } from "@/hooks/useSkillValidation";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DialPrompt } from "@/types/dial-entities";
+import { SkillValidationStatus } from "@/types/skill-validation";
 import { Translation } from "@/types/translation";
 import {
   DialCheckbox,
@@ -432,6 +436,16 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
   const [content, setContent] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [validatedPromptId, setValidatedPromptId] = useState<string | null>(
+    editPromptId ?? null,
+  );
+  const [revalidateToken, setRevalidateToken] = useState(0);
+  const skillValidation = useSkillValidation(
+    validatedPromptId ?? "",
+    revalidateToken,
+  );
+  const { app } = useAppContext();
+  const canValidateSkill = !!app?.id && !!validatedPromptId;
 
   useEffect(() => {
     if (!editPromptId) return;
@@ -492,6 +506,8 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
         });
         if (!res.ok) throw new Error(`Save failed: ${res.status}`);
         await refreshPrompts();
+        setValidatedPromptId(editPromptId);
+        setRevalidateToken((prev) => prev + 1);
         onEdited?.();
       } else {
         const bucketRes = await fetch("/api/dial/v1/bucket");
@@ -513,6 +529,8 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
         });
         if (!res.ok) throw new Error(`Save failed: ${res.status}`);
         await refreshPrompts();
+        setValidatedPromptId(newId);
+        setRevalidateToken((prev) => prev + 1);
         onCreated(newId);
       }
     } catch (err) {
@@ -562,16 +580,53 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
               <span className="ms-1 text-accent-primary">*</span>
             </span>
             <span className="flex items-center">
-              <DialTooltip
-                tooltip={t(MarketplaceI18nKeys.AgentSkillValidationPendingHint)}
-              >
-                <span className="me-2 flex cursor-help items-center gap-1.5 text-secondary">
-                  <IconCircleCheckFilled size={16} className="opacity-50" />
-                  <span className="text-xs">
-                    {t(MarketplaceI18nKeys.AgentSkillValidationPending)}
+              {!canValidateSkill && (
+                <DialTooltip
+                  tooltip={t(
+                    MarketplaceI18nKeys.AgentSkillValidationPendingHint,
+                  )}
+                >
+                  <span className="me-2 flex cursor-help items-center gap-1.5 text-secondary">
+                    <IconCircleCheckFilled size={16} className="opacity-50" />
+                    <span className="text-xs">
+                      {t(MarketplaceI18nKeys.AgentSkillValidationPending)}
+                    </span>
                   </span>
-                </span>
-              </DialTooltip>
+                </DialTooltip>
+              )}
+              {canValidateSkill &&
+                skillValidation.status === SkillValidationStatus.Validating && (
+                  <span className="me-2 flex items-center gap-1.5 text-secondary">
+                    <span className="text-xs">
+                      {t(MarketplaceI18nKeys.AgentSkillValidationPending)}
+                    </span>
+                  </span>
+                )}
+              {canValidateSkill &&
+                skillValidation.status === SkillValidationStatus.Valid && (
+                  <span className="me-2 flex items-center gap-1.5 text-accent-secondary">
+                    <IconCircleCheckFilled size={16} />
+                    <span className="text-xs">
+                      {t(MarketplaceI18nKeys.ValidAgentSkill)}
+                    </span>
+                  </span>
+                )}
+              {canValidateSkill &&
+                skillValidation.status === SkillValidationStatus.Invalid && (
+                  <DialTooltip
+                    tooltip={
+                      skillValidation.message ||
+                      t(MarketplaceI18nKeys.AgentSkillsInvalidError)
+                    }
+                  >
+                    <span className="me-2 flex cursor-help items-center gap-1.5 text-error">
+                      <IconAlertCircleFilled size={16} />
+                      <span className="text-xs">
+                        {t(MarketplaceI18nKeys.AgentSkillsInvalidError)}
+                      </span>
+                    </span>
+                  </DialTooltip>
+                )}
               <DialTooltip
                 tooltip={
                   <span>

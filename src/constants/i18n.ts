@@ -124,6 +124,8 @@ export enum MarketplaceI18nKeys {
   AddAgentSkill = "Add Agent Skill",
   EditPrompt = "Edit Prompt",
   AgentSkillLoadError = "Failed to load prompt content",
+  ValidAgentSkill = "Valid Agent Skill",
+  AgentSkillsInvalidError = "This prompt is not a valid Agent Skill.",
   OrganizationSection = "Organization",
   MyPromptsSection = "My prompts",
   SkillsLowercase = "skills",
