@@ -61,6 +61,8 @@ type AgentOrToolsetFormType = z.infer<typeof AgentOrToolsetSchema>;
 const AttachmentTypesSchema = z.array(z.string());
 const MaxInputAttachmentsSchema = z.coerce.number().int().positive();
 
+export const MIME_TYPE_REGEX = /^([a-zA-Z0-9!*\-.+]+|\*)\/([a-zA-Z0-9!*\-.+]+|\*)$/;
+
 export const QuickApp2Schema = z
   .object({
     instructions: z.string(),

@@ -1,6 +1,6 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FC, useCallback, useEffect, useMemo } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 
 import { MarketplaceI18nKeys } from "@/constants/i18n";
@@ -12,6 +12,7 @@ import {
   getAgentsAndToolsetsFormValue,
   getQuickApp2FormData,
   getQuickApp2Toolsets,
+  MIME_TYPE_REGEX,
   QuickApp2Schema,
   type QuickApp2Form as QuickApp2FormType,
 } from "@/form/quickApp2Form";
@@ -81,6 +82,8 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     watch,
     setValue,
     getValues,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<QuickApp2FormType>({
     defaultValues,
@@ -181,6 +184,30 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
       setValue("isJsonView", false);
     },
     [setValue],
+  );
+
+  const [attachmentTypesResetKey, setAttachmentTypesResetKey] = useState(0);
+
+  const handleAttachmentTypesChange = useCallback(
+    (tags: string[], prevTags: string[]) => {
+      const addedTags = tags.filter((tag) => !prevTags.includes(tag));
+      const hasInvalidTag = addedTags.some(
+        (tag) => !MIME_TYPE_REGEX.test(tag),
+      );
+      if (hasInvalidTag) {
+        setError("inputAttachmentTypes", {
+          type: "manual",
+          message: t(MarketplaceI18nKeys.PleaseMatchTheMimeFormat),
+        });
+        // DialTagInput adds tags optimistically to its own state, so force
+        // it to remount and resync with the last valid RHF value.
+        setAttachmentTypesResetKey((key) => key + 1);
+        return;
+      }
+      clearErrors("inputAttachmentTypes");
+      setValue("inputAttachmentTypes", tags, { shouldValidate: true });
+    },
+    [setError, clearErrors, setValue, t],
   );
 
   const handleDiscardJson = useCallback(() => {
@@ -365,10 +392,15 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
             name="inputAttachmentTypes"
             render={({ field }) => (
               <DialTagInput
+                key={attachmentTypesResetKey}
                 initialTags={field.value}
-                onChange={field.onChange}
+                onChange={(tags) =>
+                  handleAttachmentTypesChange(tags, field.value)
+                }
                 disabled={isReadonly}
                 placeholder={t(MarketplaceI18nKeys.EnterAttachmentTypes)}
+                invalid={!!errors.inputAttachmentTypes}
+                errorText={errors.inputAttachmentTypes?.message}
               />
             )}
           />

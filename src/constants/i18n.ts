@@ -79,6 +79,7 @@ export enum MarketplaceI18nKeys {
   PayAttentionTheUserWontBeAbleToEdit = "Pay attention: the user won't be able to edit the populated input prompt",
   InputMIMEType = "Input the MIME type and press 'Enter' to add",
   EnterAttachmentTypes = "Enter one or more attachment types",
+  PleaseMatchTheMimeFormat = "Please match the MIME format",
   MaxAttachmentsNumber = "Max. attachments number",
   EnterMaxAttachments = "Enter the maximum number of attachments",
   SelectDocuments = "Select documents",
