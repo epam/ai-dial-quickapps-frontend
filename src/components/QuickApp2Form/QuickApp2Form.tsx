@@ -1,7 +1,7 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
-import { Controller, useForm, type SubmitHandler } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 
 import { MarketplaceI18nKeys } from "@/constants/i18n";
 import { ToolsetTypes } from "@/constants/quick-apps";
@@ -44,14 +44,16 @@ import {
 } from "@epam/ai-dial-ui-kit";
 
 interface QuickApp2FormProps {
-  onSave: (data: QuickApp2FormType) => void;
+  onSave: (data: QuickApp2FormType, isAutoSave?: boolean) => void;
   onDiscard?: () => void;
+  onDirtyChange?: (isDirty: boolean) => void;
   readonly?: boolean;
 }
 
 export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   onSave,
   onDiscard,
+  onDirtyChange,
   readonly,
 }) => {
   const { t } = useTranslation(Translation.Marketplace);
@@ -84,7 +86,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     getValues,
     setError,
     clearErrors,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<QuickApp2FormType>({
     defaultValues,
     resolver: zodResolver(QuickApp2Schema),
@@ -95,6 +97,28 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     setValue("toolSupportingModelIds", toolSupportingModelIds);
     setValue("availableModelIds", availableModelIds, { shouldValidate: true });
   }, [toolSupportingModelIds, availableModelIds, setValue]);
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+
+  useEffect(() => {
+    const handleTriggerSave = (event: Event) => {
+      const { isAutoSave, ignoreDirty } =
+        (event as CustomEvent<{ isAutoSave?: boolean; ignoreDirty?: boolean }>)
+          .detail ?? {};
+      if (isReadonly) return;
+      if (isAutoSave && !ignoreDirty && !isDirty) return;
+      void handleSubmit((data) => onSave(data, isAutoSave))();
+    };
+
+    window.addEventListener("dial-editor-trigger-save", handleTriggerSave);
+    return () =>
+      window.removeEventListener(
+        "dial-editor-trigger-save",
+        handleTriggerSave,
+      );
+  }, [handleSubmit, isDirty, isReadonly, onSave]);
 
   const allEntitiesMap = useMemo(
     () => ({ ...modelsMap, ...toolsetsMap }),
@@ -221,7 +245,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
 
   return (
     <form
-      onSubmit={handleSubmit(onSave as SubmitHandler<QuickApp2FormType>)}
+      onSubmit={handleSubmit((data) => onSave(data, false))}
       className="flex flex-col"
     >
       {/* Orchestrator section */}

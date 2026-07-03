@@ -31,10 +31,15 @@ interface EditorInnerProps {
   resetKey: number;
 }
 
-const EditorInner = ({ appState, onSave, resetKey }: EditorInnerProps) => {
+const EditorInner = ({
+  appState,
+  onSave,
+  onDirtyChange,
+  resetKey,
+}: EditorInnerProps) => {
   const handleSave = useCallback(
-    async (data: QuickApp2FormType) => {
-      await onSave(data, false);
+    async (data: QuickApp2FormType, isAutoSave = false) => {
+      await onSave(data, isAutoSave);
     },
     [onSave],
   );
@@ -42,7 +47,11 @@ const EditorInner = ({ appState, onSave, resetKey }: EditorInnerProps) => {
   return (
     <div className="bg-layer-2">
       <AppContextProvider value={appState}>
-        <QuickApp2Form key={resetKey} onSave={handleSave} />
+        <QuickApp2Form
+          key={resetKey}
+          onSave={handleSave}
+          onDirtyChange={onDirtyChange}
+        />
       </AppContextProvider>
     </div>
   );
