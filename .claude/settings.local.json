@@ -4,7 +4,9 @@
       "Bash(node *)",
       "WebFetch(domain:themes.aks.dev.dial.parts)",
       "mcp__ai-dial-ui-kit__searchEntity",
-      "mcp__ai-dial-ui-kit__getEntityDetails"
+      "mcp__ai-dial-ui-kit__getEntityDetails",
+      "Bash(npx tsc *)",
+      "Skill(run)"
     ]
   },
   "enabledMcpjsonServers": [

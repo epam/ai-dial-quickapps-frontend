@@ -8,21 +8,24 @@ import { useThemeContext } from "@/context/ThemeContext";
 import type { QuickApp2Form } from "@/form/quickApp2Form";
 import { AgentOrToolsetSchemaKeys } from "@/form/quickApp2Form";
 import { useTranslation } from "@/hooks/useTranslation";
-import { DialAppTransportType } from "@/types/quick-apps";
+import { AnyToolset, DialAppTransportType } from "@/types/quick-apps";
 import { ThemeId } from "@/types/theme";
 import { Translation } from "@/types/translation";
 import { isApplicationId } from "@/utils/api";
 import {
   ButtonVariant,
+  ConfirmationPopupVariant,
   DialButton,
+  DialConfirmationPopup,
   DialNeutralButton,
   DialNeutralIconButton,
   ElementSize,
   LazyDialJsonEditor,
 } from "@epam/ai-dial-ui-kit";
 import { IconArrowsMaximize, IconArrowsMinimize } from "@tabler/icons-react";
+import sortBy from "lodash-es/sortBy";
 import dynamic from "next/dynamic";
-import { FC, useCallback, useState } from "react";
+import { FC, useCallback, useMemo, useState } from "react";
 import { DialAppConfigurationModal } from "./DialAppConfigurationModal";
 
 const DialJsonEditor = dynamic(
@@ -35,7 +38,9 @@ interface AgentsAndToolsetsFieldProps {
   isJsonView: boolean;
   onAgentsChange: (ids: string[]) => void;
   onJsonChange: (json: string) => void;
-  onJsonViewChange: (isJson: boolean) => void;
+  onSwitchToJsonView: () => void;
+  onSwitchToSimpleView: (toolsets: AnyToolset[]) => void;
+  onDiscardJson: () => void;
   onConfigureAgent: (id: string, transport: DialAppTransportType) => void;
   readonly?: boolean;
   tooltip?: string;
@@ -48,7 +53,9 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
   isJsonView,
   onAgentsChange,
   onJsonChange,
-  onJsonViewChange,
+  onSwitchToJsonView,
+  onSwitchToSimpleView,
+  onDiscardJson,
   onConfigureAgent,
   readonly,
   tooltip,
@@ -62,6 +69,7 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
 
   const [editorError, setEditorError] = useState<string | undefined>(undefined);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isDiscardConfirmOpen, setIsDiscardConfirmOpen] = useState(false);
   const [configuringChip, setConfiguringChip] = useState<{
     id: string;
     transport?: DialAppTransportType;
@@ -72,8 +80,13 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
     ...toolsetsMap,
   };
 
-  const selectedIds = agentsAndToolsets.map(
-    (a) => a[AgentOrToolsetSchemaKeys.id],
+  const selectedIds = useMemo(
+    () =>
+      sortBy(
+        agentsAndToolsets.map((a) => a[AgentOrToolsetSchemaKeys.id]),
+        [(id) => (allItemsMap[id]?.name ?? id).toLowerCase()],
+      ),
+    [agentsAndToolsets, allItemsMap],
   );
 
   const handleAgentsChange = useCallback(
@@ -93,14 +106,27 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
           return;
         }
         setEditorError(undefined);
-        onJsonViewChange(false);
+        onSwitchToSimpleView(parsed as AnyToolset[]);
       } catch {
         setEditorError(t(CommonI18nKeys.ShouldBeAValidJSON));
       }
     } else {
-      onJsonViewChange(true);
+      onSwitchToJsonView();
     }
-  }, [isJsonView, agentsAndToolsetsJson, onJsonViewChange, t]);
+  }, [
+    isJsonView,
+    agentsAndToolsetsJson,
+    onSwitchToSimpleView,
+    onSwitchToJsonView,
+    t,
+  ]);
+
+  const handleDiscardConfirm = useCallback(() => {
+    setEditorError(undefined);
+    setIsFullscreen(false);
+    setIsDiscardConfirmOpen(false);
+    onDiscardJson();
+  }, [onDiscardJson]);
 
   const handleConfigureClick = useCallback(
     (item: ChipEntity) => {
@@ -187,11 +213,7 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
               <div className="flex justify-end gap-2">
                 <DialNeutralButton
                   size={ElementSize.Small}
-                  onClick={() => {
-                    setEditorError(undefined);
-                    setIsFullscreen(false);
-                    onJsonViewChange(false);
-                  }}
+                  onClick={() => setIsDiscardConfirmOpen(true)}
                   label={t(MarketplaceI18nKeys.DiscardMarketplace)}
                 />
                 <DialButton
@@ -225,6 +247,18 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
           onSave={handleConfigureSave}
         />
       )}
+
+      <DialConfirmationPopup
+        variant={ConfirmationPopupVariant.Danger}
+        open={isDiscardConfirmOpen}
+        header={t(MarketplaceI18nKeys.DiscardChanges)}
+        description={t(MarketplaceI18nKeys.DiscardJsonChangesConfirmation)}
+        confirmLabel={t(MarketplaceI18nKeys.DiscardMarketplace)}
+        cancelLabel={t(MarketplaceI18nKeys.ContinueEditing)}
+        onConfirm={handleDiscardConfirm}
+        onCancel={() => setIsDiscardConfirmOpen(false)}
+        onClose={() => setIsDiscardConfirmOpen(false)}
+      />
     </div>
   );
 };

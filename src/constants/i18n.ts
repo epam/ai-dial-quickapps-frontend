@@ -38,6 +38,8 @@ export enum CommonI18nKeys {
   CopyApplicationEndpointURL = "Copy endpoint URL to easily integrate application into your workflows",
   ShouldBeAnArray = "Should be an array",
   ShouldBeAValidJSON = "Should be a valid JSON",
+  LoggedInToolset = "Logged in",
+  ToolsetSignInFailed = "Failed to update toolset credentials",
 }
 
 // chat.json
@@ -139,6 +141,12 @@ export enum MarketplaceI18nKeys {
   CatalogTab = "Catalog",
   SearchPlaceholder = "Search",
   NoFavoritesYet = "No favorites yet",
+  SelectAgentsAndToolsets = "Select Agents & Toolsets",
+  SelectedLabel = "Selected",
+  NoResourcesSelected = "No resources selected",
+  LoginToolsetAction = "Log in",
+  LogoutToolsetAction = "Log out",
+  ApiKeyLabel = "API key",
 }
 
 // common.json — dialFileManager namespace

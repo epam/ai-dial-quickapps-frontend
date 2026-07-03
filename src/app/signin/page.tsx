@@ -1,16 +1,21 @@
 "use client";
 
-import { FC, memo, useEffect } from "react";
+import { FC, memo, Suspense, useEffect } from "react";
 import { signIn, useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 
 import { AUTH_WINDOW_CLOSE_KEY } from "@/constants/auth";
 
-const SignInPage: FC = () => {
+const SignInContent: FC = () => {
+  const searchParams = useSearchParams();
+  const provider = searchParams.get("provider") ?? "keycloak";
   const { status } = useSession();
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      void signIn("keycloak", { callbackUrl: "/signin" });
+      void signIn(provider, {
+        callbackUrl: `/signin?provider=${encodeURIComponent(provider)}`,
+      });
     } else if (status === "authenticated") {
       window.opener?.postMessage(
         { type: AUTH_WINDOW_CLOSE_KEY },
@@ -18,7 +23,7 @@ const SignInPage: FC = () => {
       );
       window.close();
     }
-  }, [status]);
+  }, [status, provider]);
 
   return (
     <div className="flex h-screen items-center justify-center">
@@ -26,5 +31,11 @@ const SignInPage: FC = () => {
     </div>
   );
 };
+
+const SignInPage: FC = () => (
+  <Suspense>
+    <SignInContent />
+  </Suspense>
+);
 
 export default memo(SignInPage);

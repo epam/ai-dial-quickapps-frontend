@@ -1,4 +1,3 @@
-1. Model selection - there should be popup on click, and it should have content as before. Now it shows dropdown.
 2. context and tools - popup should be as in old app (but use ui kit). And there is no logic that the tool can need to be configured, and it's shown on the card, and then in input and there should be popup for configuration. All this logic is missing and it was present in old version.
 
 The reference project at C:/projects/dial/ai-dial-chat/apps/chat/src/ is a Next.js + Redux/RxJS app. It stores state in a Redux store with RxJS epics for async side effects, and all DIAL Core API calls go through a layered storage abstraction (ApiEntityStorage → PromptService → epics). Don't copy the Redux/Observable infrastructure — extract only the HTTP contracts: URL patterns, request bodies, and response shapes.

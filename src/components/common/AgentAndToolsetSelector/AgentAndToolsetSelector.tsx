@@ -9,6 +9,7 @@ import { AgentsAndToolsetsModalQueryParams } from '@/constants/quick-apps';
 import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
 import { AgentAndToolsetChip, type ChipEntity } from './AgentAndToolsetChip';
 import { AgentAndToolsetModal } from './AgentAndToolsetModal';
+import { ToolsetLoginModal } from './ToolsetLoginModal';
 import { DialLinkButton, DialNoDataContent } from '@epam/ai-dial-ui-kit';
 
 
@@ -43,6 +44,7 @@ export const AgentAndToolsetSelector: React.FC<
   const [isSelectModalOpen, setSelectModalOpen] = useState(
     searchParams.get(AgentsAndToolsetsModalQueryParams.Modal) === '1',
   );
+  const [loginToolset, setLoginToolset] = useState<ChipEntity | null>(null);
 
   const handleOpenSelectModal = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -127,6 +129,7 @@ export const AgentAndToolsetSelector: React.FC<
                 readonly={readonly}
                 onItemClick={onItemClick}
                 onConfigure={onConfigureClick}
+                onLoginToolset={setLoginToolset}
               />
             ))}
           </div>
@@ -137,9 +140,15 @@ export const AgentAndToolsetSelector: React.FC<
         <AgentAndToolsetModal
           initialSelectedIds={value}
           allItemsMap={allItemsMap}
-          saveSliderStateInURL
           onClose={handleCloseModal}
           onConfirm={handleConfirmSelection}
+        />
+      )}
+
+      {loginToolset && (
+        <ToolsetLoginModal
+          toolset={loginToolset}
+          onClose={() => setLoginToolset(null)}
         />
       )}
     </div>

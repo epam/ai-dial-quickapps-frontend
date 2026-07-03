@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 z.config({ jitless: true });
 
@@ -6,15 +6,20 @@ import {
   DEFAULT_QUICK_APPS_MODEL,
   DialDeploymentToolsetToolTypes,
   ToolsetTypes,
-} from '@/constants/quick-apps';
+} from "@/constants/quick-apps";
 import {
   doesAgentSupportMcp,
   getQuick2AppDocumentUrl,
   getQuickAppItemNameFromConfig,
   migrateMCPToolsetIdName,
   type DialAIEntityModel,
-} from '@/utils/application';
-import { decodeApiUrl, encodeApiUrl, isApplicationId, isToolsetId } from '@/utils/api';
+} from "@/utils/application";
+import {
+  decodeApiUrl,
+  encodeApiUrl,
+  isApplicationId,
+  isToolsetId,
+} from "@/utils/api";
 import {
   AnyToolset,
   CodeInterpreterToolset,
@@ -30,26 +35,24 @@ import {
   isDialDeploymentToolset,
   isMcpToolset,
   isUnknownToolset,
-} from '@/types/quick-apps';
+} from "@/types/quick-apps";
 
-import omit from 'lodash-es/omit';
-import sortBy from 'lodash-es/sortBy';
-import { nanoid } from 'nanoid';
+import omit from "lodash-es/omit";
+import sortBy from "lodash-es/sortBy";
+import { nanoid } from "nanoid";
 
 export const DEFAULT_TEMPERATURE = 1;
 
 export enum AgentOrToolsetSchemaKeys {
-  id = '[schema]:id',
-  tool = '[schema]:tool',
-  isDialDeploymentTool = '[schema]:isDialDeploymentTool',
-  name = '[schema]:name',
+  id = "[schema]:id",
+  tool = "[schema]:tool",
+  isDialDeploymentTool = "[schema]:isDialDeploymentTool",
+  name = "[schema]:name",
 }
 
 const AgentOrToolsetSchema = z.object({
   [AgentOrToolsetSchemaKeys.id]: z.string(),
-  [AgentOrToolsetSchemaKeys.tool]: z
-    .record(z.string(), z.any())
-    .optional(),
+  [AgentOrToolsetSchemaKeys.tool]: z.record(z.string(), z.any()).optional(),
   [AgentOrToolsetSchemaKeys.isDialDeploymentTool]: z.boolean().optional(),
 });
 
@@ -91,16 +94,16 @@ export const QuickApp2Schema = z
         const parsed: unknown[] = JSON.parse(data.agentsAndToolsetsJson);
         if (!Array.isArray(parsed)) {
           ctx.addIssue({
-            code: 'custom',
-            path: ['agentsAndToolsetsJson'],
-            message: 'Should be an array',
+            code: "custom",
+            path: ["agentsAndToolsetsJson"],
+            message: "Should be an array",
           });
         }
       } catch {
         ctx.addIssue({
-          code: 'custom',
-          path: ['agentsAndToolsetsJson'],
-          message: 'Should be a valid JSON',
+          code: "custom",
+          path: ["agentsAndToolsetsJson"],
+          message: "Should be a valid JSON",
         });
       }
     }
@@ -109,18 +112,19 @@ export const QuickApp2Schema = z
       !data.availableModelIds || data.availableModelIds.includes(data.model);
     if (!modelExists) {
       ctx.addIssue({
-        code: 'custom',
-        path: ['model'],
-        message: 'Not available agent selected. Please, change the agent to proceed',
+        code: "custom",
+        path: ["model"],
+        message:
+          "Not available agent selected. Please, change the agent to proceed",
       });
       return;
     }
 
     if (data.toolSupportingModelIds?.includes(data.model) === false) {
       ctx.addIssue({
-        code: 'custom',
-        path: ['model'],
-        message: 'Selected model does not support tools',
+        code: "custom",
+        path: ["model"],
+        message: "Selected model does not support tools",
       });
     }
   });
@@ -165,7 +169,7 @@ export const getAgentsAndToolsetsFormValue = (
     return {
       [AgentOrToolsetSchemaKeys.id]: id
         ? decodeApiUrl(id)
-        : (item[AgentOrToolsetSchemaKeys.name] ?? 'unknown'),
+        : (item[AgentOrToolsetSchemaKeys.name] ?? "unknown"),
       [AgentOrToolsetSchemaKeys.tool]: item,
       [AgentOrToolsetSchemaKeys.isDialDeploymentTool]:
         AgentOrToolsetSchemaKeys.isDialDeploymentTool in item
@@ -176,28 +180,35 @@ export const getAgentsAndToolsetsFormValue = (
 };
 
 export const getQuickApp2FormData = (
-  app?: { applicationProperties?: unknown },
+  app?: {
+    applicationProperties?: unknown;
+    inputAttachmentTypes?: unknown;
+    maxInputAttachments?: unknown;
+  },
   toolSupportingModelIds?: string[],
   availableModelIds?: string[],
 ): QuickApp2Form => {
-  const appProperties = app?.applicationProperties as QuickApp2Config | undefined;
+  const appProperties = app?.applicationProperties as
+    | QuickApp2Config
+    | undefined;
   let model = appProperties?.orchestrator?.deployment?.deployment_id;
   if (!model) {
     const defaultModelId =
-      process.env.NEXT_PUBLIC_QUICK_APPS_DEFAULT_MODEL ?? DEFAULT_QUICK_APPS_MODEL;
+      process.env.NEXT_PUBLIC_QUICK_APPS_DEFAULT_MODEL ??
+      DEFAULT_QUICK_APPS_MODEL;
     model = toolSupportingModelIds?.includes(defaultModelId)
       ? defaultModelId
-      : (toolSupportingModelIds?.[0] ?? '');
+      : (toolSupportingModelIds?.[0] ?? "");
   }
   const timestamp =
-    'timestamp' in (appProperties?.features ?? {})
+    "timestamp" in (appProperties?.features ?? {})
       ? !!appProperties?.features?.timestamp
       : true;
 
   return {
     documentRelativeUrl: getQuick2AppDocumentUrl(app) ?? [],
     model,
-    instructions: appProperties?.orchestrator?.system_prompt?.content ?? '',
+    instructions: appProperties?.orchestrator?.system_prompt?.content ?? "",
     temperature:
       appProperties?.orchestrator?.deployment?.parameters?.temperature ??
       DEFAULT_TEMPERATURE,
@@ -206,8 +217,9 @@ export const getQuickApp2FormData = (
       appProperties?.tool_sets?.some(
         (toolset) => toolset.type === ToolsetTypes.CodeInterpreter,
       ) ?? false,
-    inputAttachmentTypes: [],
-    maxInputAttachments: undefined,
+    inputAttachmentTypes:
+      (app?.inputAttachmentTypes as string[] | undefined) ?? [],
+    maxInputAttachments: app?.maxInputAttachments as number | undefined,
     agentsAndToolsetsJson: JSON.stringify(
       appProperties?.tool_sets ?? [],
       null,
@@ -215,19 +227,20 @@ export const getQuickApp2FormData = (
     ),
     introText: appProperties?.conversation_starters?.intro_text,
     chatMessageInputDisabled:
-      appProperties?.conversation_starters?.chat_message_input_disabled ?? false,
+      appProperties?.conversation_starters?.chat_message_input_disabled ??
+      false,
     autoSubmit: appProperties?.conversation_starters?.auto_submit ?? true,
     starters: [
       ...(appProperties?.conversation_starters?.starters ?? []).map(
         (starter) => ({ ...starter, id: nanoid() }),
       ),
-      { id: nanoid(), title: '', text: '' },
+      { id: nanoid(), title: "", text: "" },
     ],
     isJsonView: false,
     toolSupportingModelIds,
     availableModelIds,
     agentSkills: (appProperties?.skills ?? [])
-      .filter((s): s is DialPromptSkill => s.type === 'dial-prompt')
+      .filter((s): s is DialPromptSkill => s.type === "dial-prompt")
       .map((s) => decodeApiUrl(s.url)),
     timestamp,
   };
@@ -239,7 +252,10 @@ export const buildQuickApp2Config = ({
   existingConfig,
 }: {
   data: QuickApp2Form;
-  allEntitiesMap: Record<string, DialAIEntityModel & { id: string; name?: string; type?: string }>;
+  allEntitiesMap: Record<
+    string,
+    DialAIEntityModel & { id: string; name?: string; type?: string }
+  >;
   existingConfig?: QuickApp2Config;
 }): QuickApp2Config => {
   const toolSets = getQuickApp2Toolsets({ allEntitiesMap, data });
@@ -249,42 +265,43 @@ export const buildQuickApp2Config = ({
     .map(({ title, text }) => ({ title, text }));
 
   const skills = data.agentSkills.map((url) => ({
-    type: 'dial-prompt' as const,
+    type: "dial-prompt" as const,
     url,
   }));
 
   const timestampFeature = data.timestamp
-    ? { injection_strategy: 'tool_call' as const }
+    ? { injection_strategy: "tool_call" as const }
     : null;
 
   return {
     orchestrator: {
+      ...existingConfig?.orchestrator,
       deployment: {
         deployment_id: data.model,
         parameters: { temperature: data.temperature },
       },
       system_prompt: {
-        type: 'custom',
+        type: "custom",
         variables: existingConfig?.orchestrator?.system_prompt?.variables ?? {},
         content: data.instructions,
       },
     },
-    contexts: existingConfig?.contexts ?? [],
+    contexts: data.documentRelativeUrl.map((url) => ({
+      url,
+      type: "file" as const,
+    })),
     tool_sets: toolSets,
     conversation_starters: {
       intro_text: data.introText || undefined,
-      chat_message_input_disabled: data.chatMessageInputDisabled || undefined,
+      chat_message_input_disabled: data.chatMessageInputDisabled,
       auto_submit: data.autoSubmit,
       starters,
     },
-    ...(data.inputAttachmentTypes.length && {
-      input_attachment_types: data.inputAttachmentTypes,
-    }),
-    ...(data.maxInputAttachments != null && {
-      max_input_attachments: data.maxInputAttachments,
-    }),
     ...(skills.length && { skills }),
-    features: { timestamp: timestampFeature },
+    features: {
+      ...existingConfig?.features,
+      timestamp: timestampFeature,
+    },
   };
 };
 
@@ -292,7 +309,10 @@ export const getQuickApp2Toolsets = ({
   allEntitiesMap,
   data,
 }: {
-  allEntitiesMap: Record<string, DialAIEntityModel & { id: string; name?: string; type?: string }>;
+  allEntitiesMap: Record<
+    string,
+    DialAIEntityModel & { id: string; name?: string; type?: string }
+  >;
   data: QuickApp2Form;
 }): AnyToolset[] => {
   const {
@@ -307,7 +327,8 @@ export const getQuickApp2Toolsets = ({
     otherToolsets: UnknownToolset[];
   }>(
     (acc, agentAndToolset) => {
-      const entity = allEntitiesMap[agentAndToolset[AgentOrToolsetSchemaKeys.id]];
+      const entity =
+        allEntitiesMap[agentAndToolset[AgentOrToolsetSchemaKeys.id]];
       const toolData = omit(
         agentAndToolset[AgentOrToolsetSchemaKeys.tool] ?? {},
         Object.values(AgentOrToolsetSchemaKeys),
@@ -319,27 +340,33 @@ export const getQuickApp2Toolsets = ({
             ...toolData,
             name: getQuickAppItemNameFromConfig(toolData as DialAppToolset),
             type: ToolsetTypes.DialApp,
-            deployment_id: encodeApiUrl(agentAndToolset[AgentOrToolsetSchemaKeys.id]),
+            deployment_id: encodeApiUrl(
+              agentAndToolset[AgentOrToolsetSchemaKeys.id],
+            ),
           });
         } else if (isToolsetId(agentAndToolset[AgentOrToolsetSchemaKeys.id])) {
           acc.dialMCPToolsets.push({
             ...toolData,
-            deployment_id: encodeApiUrl(agentAndToolset[AgentOrToolsetSchemaKeys.id]),
+            deployment_id: encodeApiUrl(
+              agentAndToolset[AgentOrToolsetSchemaKeys.id],
+            ),
             type: ToolsetTypes.DialMcp,
           });
         } else if (
           agentAndToolset[AgentOrToolsetSchemaKeys.tool] &&
           agentAndToolset[AgentOrToolsetSchemaKeys.isDialDeploymentTool]
         ) {
-          acc.dialDeploymentsToolsets.push(toolData as DialDeploymentSimpleTool);
+          acc.dialDeploymentsToolsets.push(
+            toolData as DialDeploymentSimpleTool,
+          );
         } else if (agentAndToolset[AgentOrToolsetSchemaKeys.tool]) {
           acc.otherToolsets.push(toolData);
         }
         return acc;
       }
 
-      const isModel = entity.type === 'model';
-      const isApp = entity.type === 'application';
+      const isModel = entity.type === "model";
+      const isApp = entity.type === "application";
 
       if (isModel) {
         acc.dialDeploymentsToolsets.push({
@@ -355,7 +382,8 @@ export const getQuickApp2Toolsets = ({
           deployment_id: encodeApiUrl(entity.id),
           ...(doesAgentSupportMcp(entity) && {
             transport:
-              (toolData as DialAppToolset).transport ?? DialAppTransportType.MCP,
+              (toolData as DialAppToolset).transport ??
+              DialAppTransportType.MCP,
           }),
         });
       } else {
@@ -380,7 +408,7 @@ export const getQuickApp2Toolsets = ({
     ...dialMCPToolsets,
     ...dialAppToolsets,
     {
-      name: 'dial-deployment-tool-set',
+      name: "dial-deployment-tool-set",
       type: ToolsetTypes.DialDeployment,
       tools: [...dialDeploymentsToolsets],
     },
@@ -388,7 +416,7 @@ export const getQuickApp2Toolsets = ({
     ...(data.codeInterpreter
       ? [
           {
-            template_name: 'py_interpreter',
+            template_name: "py_interpreter",
             type: ToolsetTypes.CodeInterpreter,
           } as CodeInterpreterToolset,
         ]

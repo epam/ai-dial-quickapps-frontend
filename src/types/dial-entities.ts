@@ -1,3 +1,38 @@
+export enum ApplicationStatus {
+  Deployed = "DEPLOYED",
+  Deploying = "DEPLOYING",
+  Undeployed = "UNDEPLOYED",
+  Undeploying = "UNDEPLOYING",
+  Failed = "FAILED",
+  Redeployed = "REDEPLOYED",
+  Redeploying = "REDEPLOYING",
+}
+
+export enum ToolsetAuthType {
+  OAuth = "OAUTH",
+  ApiKey = "API_KEY",
+  None = "NONE",
+}
+
+export enum ToolsetAuthStatus {
+  SignedIn = "SIGNED_IN",
+  SignedOut = "SIGNED_OUT",
+  Failed = "FAILED",
+}
+
+export interface ToolsetAuthSettings {
+  authenticationType: ToolsetAuthType;
+  authStatus?: ToolsetAuthStatus;
+  apiKeyHeader?: string;
+  authorizationEndpoint?: string;
+  tokenEndpoint?: string;
+  clientId?: string;
+  scopesSupported?: string[];
+  codeChallenge?: string;
+  codeChallengeMethod?: string;
+  redirectUri?: string;
+}
+
 export interface DialModel {
   id: string;
   reference: string;
@@ -14,6 +49,8 @@ export interface DialModel {
     systemPrompt?: boolean;
     mcp?: boolean;
   };
+  functionStatus?: ApplicationStatus;
+  description?: string;
   [key: string]: unknown;
 }
 
@@ -25,8 +62,12 @@ export interface DialToolset {
   name: string;
   type: "toolset";
   version?: string;
+  iconUrl?: string;
   mcp?: boolean;
   features?: { mcp?: boolean };
+  authSettings?: ToolsetAuthSettings;
+  description?: string;
+  topics?: string[];
   [key: string]: unknown;
 }
 

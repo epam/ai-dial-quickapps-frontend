@@ -4,8 +4,12 @@ import { FC, memo } from "react";
 
 import { useAuth } from "@/hooks/use-auth";
 
-const LoginPrompt: FC = () => {
-  const { openLoginWindow, isWindowOpen } = useAuth();
+interface LoginPromptProps {
+  provider: string;
+}
+
+const LoginPrompt: FC<LoginPromptProps> = ({ provider }) => {
+  const { openLoginWindow, isWindowOpen } = useAuth(provider);
 
   return (
     <div className="flex h-screen flex-col items-center justify-center gap-4">
@@ -15,7 +19,7 @@ const LoginPrompt: FC = () => {
         disabled={isWindowOpen}
         onClick={openLoginWindow}
       >
-        {isWindowOpen ? "Sign-in window is open…" : "Sign in with Keycloak"}
+        {isWindowOpen ? "Sign-in window is open…" : "Sign in"}
       </button>
     </div>
   );

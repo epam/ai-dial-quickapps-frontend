@@ -45,60 +45,66 @@ Copy `.env.template` to `.env.local` and fill in values. All variables without a
 
 ### Server
 
-| Variable | Required | Default | Description |
-| --- | :---: | --- | --- |
-| `PORT` | No | `4207` | Port the dev/production server listens on. Also update `NEXTAUTH_URL` when changing this. |
+| Variable | Required | Default | Description                                                                               |
+| -------- | :------: | ------- | ----------------------------------------------------------------------------------------- |
+| `PORT`   |    No    | `4207`  | Port the dev/production server listens on. Also update `NEXTAUTH_URL` when changing this. |
 
 ### Authentication
 
-| Variable | Required | Description |
-| --- | :---: | --- |
-| `NEXTAUTH_SECRET` | Yes | Secret for signing session cookies. Generate with `openssl rand -base64 32`. |
-| `NEXTAUTH_URL` | Yes | Public URL of this app, e.g. `https://quickapps.example.com`. Required for OAuth callback registration. |
-| `AUTH_KEYCLOAK_ISSUER` | Yes | Keycloak realm URL, e.g. `https://keycloak.example.com/realms/dial` |
-| `AUTH_KEYCLOAK_CLIENT_ID` | Yes | Keycloak client ID |
-| `AUTH_KEYCLOAK_CLIENT_SECRET` | Yes | Keycloak client secret |
+| Variable                      | Required | Description                                                                                             |
+| ----------------------------- | :------: | ------------------------------------------------------------------------------------------------------- |
+| `NEXTAUTH_SECRET`             |   Yes    | Secret for signing session cookies. Generate with `openssl rand -base64 32`.                            |
+| `NEXTAUTH_URL`                |   Yes    | Public URL of this app, e.g. `https://quickapps.example.com`. Required for OAuth callback registration. |
+| `AUTH_KEYCLOAK_ISSUER`        |   Yes    | Keycloak realm URL, e.g. `https://keycloak.example.com/realms/dial`                                     |
+| `AUTH_KEYCLOAK_CLIENT_ID`     |   Yes    | Keycloak client ID                                                                                      |
+| `AUTH_KEYCLOAK_CLIENT_SECRET` |   Yes    | Keycloak client secret                                                                                  |
 
 ### DIAL core
 
-| Variable | Required | Description |
-| --- | :---: | --- |
-| `DIAL_CORE_URL` | Yes | Base URL of the DIAL core API, e.g. `https://core.example.com`. Used as the proxy target in standalone mode and as the default host in the dev harness. |
+| Variable        | Required | Description                                                                                                                                             |
+| --------------- | :------: | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DIAL_CORE_URL` |   Yes    | Base URL of the DIAL core API, e.g. `https://core.example.com`. Used as the proxy target in standalone mode and as the default host in the dev harness. |
 
 ### Themes
 
-| Variable | Required | Default | Description |
-| --- | :---: | --- | --- |
-| `THEMES_URL` | No | — | URL to the DIAL themes `config.json`. Falls back to CSS variable defaults if unset. |
+| Variable     | Required | Default | Description                                                                         |
+| ------------ | :------: | ------- | ----------------------------------------------------------------------------------- |
+| `THEMES_URL` |    No    | —       | URL to the DIAL themes `config.json`. Falls back to CSS variable defaults if unset. |
 
 ### Client-side
 
-| Variable | Required | Default | Description |
-| --- | :---: | --- | --- |
-| `NEXT_PUBLIC_ALLOWED_ORIGIN` | No | `*` | Origin allowed to send `postMessage` events to the `/editor` iframe. Set to the exact ai-dial-chat URL in production (e.g. `https://chat.example.com`). Using `*` accepts messages from any origin — fine for local dev, **unsafe for production**. |
-| `NEXT_PUBLIC_QUICK_APPS_DEFAULT_MODEL` | No | `gpt-4o` | Model ID pre-selected in the form when no model is stored in the app config. |
-| `NEXT_PUBLIC_QUICK_APPS_SCHEMA_2_ID` | No | `https://mydial.epam.com/custom_application_schemas/quickapps2` | `applicationTypeSchemaId` used to identify QuickApp2 applications. Override only if your DIAL instance uses a non-standard schema registry URL. |
+| Variable                               | Required | Default                                                         | Description                                                                                                                                                                                                                                         |
+| -------------------------------------- | :------: | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_ALLOWED_ORIGIN`           |    No    | `*`                                                             | Origin allowed to send `postMessage` events to the `/editor` iframe. Set to the exact ai-dial-chat URL in production (e.g. `https://chat.example.com`). Using `*` accepts messages from any origin — fine for local dev, **unsafe for production**. |
+| `NEXT_PUBLIC_QUICK_APPS_DEFAULT_MODEL` |    No    | `gpt-4o`                                                        | Model ID pre-selected in the form when no model is stored in the app config.                                                                                                                                                                        |
+| `NEXT_PUBLIC_QUICK_APPS_SCHEMA_2_ID`   |    No    | `https://mydial.epam.com/custom_application_schemas/quickapps2` | `applicationTypeSchemaId` used to identify QuickApp2 applications. Override only if your DIAL instance uses a non-standard schema registry URL.                                                                                                     |
 
 ## postMessage protocol
 
 The `/editor` page communicates with its host via `postMessage`. Both sides validate `event.origin` against `NEXT_PUBLIC_ALLOWED_ORIGIN`.
 
+In Dev mode the messages can be sent via console, e.g.
+
+```
+document.querySelector('iframe').contentWindow.postMessage({ type: 'TRIGGER_SAVE' }, '*')
+```
+
 **Host → iframe**
 
-| Message type         | Payload                                              | Description                                  |
-| -------------------- | ---------------------------------------------------- | -------------------------------------------- |
-| `INIT`               | `{ app, token, dialApiHost, settings }`              | Initialises the editor with app data          |
-| `TRIGGER_SAVE`       | —                                                    | Triggers a manual save                        |
-| `TRIGGER_AUTO_SAVE`  | `{ ignoreDirty?: boolean }`                          | Triggers an auto-save                         |
-| `RESET`              | —                                                    | Resets the form to the last saved state       |
+| Message type        | Payload                                 | Description                             |
+| ------------------- | --------------------------------------- | --------------------------------------- |
+| `INIT`              | `{ app, token, dialApiHost, settings }` | Initialises the editor with app data    |
+| `TRIGGER_SAVE`      | —                                       | Triggers a manual save                  |
+| `TRIGGER_AUTO_SAVE` | `{ ignoreDirty?: boolean }`             | Triggers an auto-save                   |
+| `RESET`             | —                                       | Resets the form to the last saved state |
 
 **Iframe → host**
 
-| Message type        | Payload                  | Description                                      |
-| ------------------- | ------------------------ | ------------------------------------------------ |
-| `READY`             | —                        | Editor mounted; host should send `INIT`           |
-| `DIRTY_STATE`       | `{ isDirty: boolean }`   | Form dirty state changed                         |
-| `SAVE_SUCCESS`      | `{ updatedApp }`         | Save completed successfully                      |
-| `SAVE_ERROR`        | `{ error: string }`      | Save failed                                      |
-| `AUTO_SAVE_COMPLETE`| —                        | Auto-save completed successfully                 |
-| `HEIGHT_CHANGE`     | `{ height: number }`     | Editor height changed (for iframe resize)        |
+| Message type         | Payload                | Description                               |
+| -------------------- | ---------------------- | ----------------------------------------- |
+| `READY`              | —                      | Editor mounted; host should send `INIT`   |
+| `DIRTY_STATE`        | `{ isDirty: boolean }` | Form dirty state changed                  |
+| `SAVE_SUCCESS`       | `{ updatedApp }`       | Save completed successfully               |
+| `SAVE_ERROR`         | `{ error: string }`    | Save failed                               |
+| `AUTO_SAVE_COMPLETE` | —                      | Auto-save completed successfully          |
+| `HEIGHT_CHANGE`      | `{ height: number }`   | Editor height changed (for iframe resize) |

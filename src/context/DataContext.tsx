@@ -85,11 +85,13 @@ function reducer(state: DataState, action: DataAction): DataState {
 
 interface DataContextValue extends DataState {
   refreshPrompts: () => Promise<void>;
+  refreshToolsets: () => Promise<void>;
 }
 
 const DataContext = createContext<DataContextValue>({
   ...initialState,
   refreshPrompts: async () => undefined,
+  refreshToolsets: async () => undefined,
 });
 
 export function DataContextProvider({
@@ -123,8 +125,13 @@ export function DataContextProvider({
     dispatch({ type: "PROMPTS_LOADED", payload: prompts });
   };
 
+  const refreshToolsets = async () => {
+    const toolsets = await fetchDialToolsets();
+    dispatch({ type: "TOOLSETS_LOADED", payload: toolsets });
+  };
+
   return (
-    <DataContext.Provider value={{ ...state, refreshPrompts }}>
+    <DataContext.Provider value={{ ...state, refreshPrompts, refreshToolsets }}>
       {children}
     </DataContext.Provider>
   );

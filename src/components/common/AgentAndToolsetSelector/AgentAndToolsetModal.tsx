@@ -1,139 +1,242 @@
 "use client";
 import React, { useCallback, useMemo, useState } from "react";
 import classNames from "classnames";
+import sortBy from "lodash-es/sortBy";
+import { IconLayoutGrid } from "@tabler/icons-react";
+
+import { ModelIcon } from "@/components/common/ModelIcon/ModelIcon";
+import { TopicsLine } from "@/components/common/TopicsLine/TopicsLine";
+import { CommonI18nKeys, MarketplaceI18nKeys } from "@/constants/i18n";
 import { useDataContext } from "@/context/DataContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Translation } from "@/types/translation";
-import { MarketplaceI18nKeys } from "@/constants/i18n";
+import { isApplicationId } from "@/utils/api";
+import { getEntityStatus } from "@/utils/get-entity-status";
 import {
-  DialPrimaryButton,
   DialNeutralButton,
-  DialTag,
+  DialNoDataContent,
+  DialPopup,
+  DialPrimaryButton,
+  DialSearch,
+  PopupSize,
 } from "@epam/ai-dial-ui-kit";
+
+import { AgentAndToolsetChip, type ChipEntity } from "./AgentAndToolsetChip";
 
 interface AgentAndToolsetModalProps {
   initialSelectedIds: string[];
-  allItemsMap: Record<
-    string,
-    { id: string; name?: string; type?: string } | undefined
-  >;
+  allItemsMap: Record<string, ChipEntity | undefined>;
   onClose: () => void;
   onConfirm: (ids: string[]) => void;
-  saveSliderStateInURL?: boolean;
 }
+
+interface AgentAndToolsetCardProps {
+  item: ChipEntity;
+  isSelected: boolean;
+  onToggle: (id: string) => void;
+}
+
+const AgentAndToolsetCard: React.FC<AgentAndToolsetCardProps> = ({
+  item,
+  isSelected,
+  onToggle,
+}) => {
+  const { t } = useTranslation(Translation.Common);
+  const name = item.name ?? item.id;
+  const iconUrl =
+    typeof item.iconUrl === "string" ? (item.iconUrl as string) : undefined;
+  const description =
+    typeof item.description === "string"
+      ? (item.description as string)
+      : undefined;
+  const { isError } = getEntityStatus(item);
+  const entityTypeLabel = t(
+    isApplicationId(item.id)
+      ? CommonI18nKeys.AgentEntityType
+      : CommonI18nKeys.ToolsetEntityType,
+  );
+
+  return (
+    <article
+      data-qa="agent-toolset-card"
+      onClick={() => onToggle(item.id)}
+      className={classNames(
+        "relative box-border flex cursor-pointer flex-col gap-[14px] rounded-[16px] border p-[11px] md:p-[15px]",
+        "bg-layer-0 shadow-[0_1px_3px_rgba(0,0,0,0.04)]",
+        "transition-[transform,box-shadow] duration-[180ms] ease-out",
+        "hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.04)]",
+        isError
+          ? "border-error"
+          : isSelected
+            ? "border-accent-primary"
+            : "border-[rgba(0,0,0,0.07)]",
+      )}
+    >
+      <div className="flex min-w-0 items-start gap-3">
+        <ModelIcon name={name} iconUrl={iconUrl} size={44} radius={12} />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="dial-caption-text mb-2 font-semibold uppercase tracking-[0.06em] text-accent-primary">
+            {entityTypeLabel}
+          </span>
+          <span className="dial-body-semi-text min-w-0 truncate text-primary">
+            {name}
+          </span>
+          {item.version && (
+            <span className="dial-tiny-text truncate text-secondary">
+              {item.version}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {description && (
+        <p className="dial-small-text line-clamp-2 text-secondary">
+          {description}
+        </p>
+      )}
+
+      <div className="min-h-[22px]">
+        <TopicsLine topics={(item.topics as string[] | undefined) ?? []} />
+      </div>
+    </article>
+  );
+};
 
 export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
   initialSelectedIds,
+  allItemsMap,
   onClose,
   onConfirm,
 }) => {
   const { t } = useTranslation(Translation.Marketplace);
-  const { models, toolsets } = useDataContext();
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(
-    new Set(initialSelectedIds),
-  );
+  const { models, toolsets, status } = useDataContext();
+  const isLoading = status === "loading" || status === "idle";
+
+  const [selectedIds, setSelectedIds] = useState<string[]>(initialSelectedIds);
   const [search, setSearch] = useState("");
 
-  const allItems = useMemo(
+  const allItems = useMemo<ChipEntity[]>(
     () => [...models.filter((m) => m.type === "application"), ...toolsets],
     [models, toolsets],
   );
 
-  const filtered = useMemo(() => {
-    if (!search.trim()) return allItems;
-    const q = search.toLowerCase();
-    return allItems.filter(
+  const sortedItems = useMemo(
+    () => sortBy(allItems, [(item) => (item.name ?? item.id).toLowerCase()]),
+    [allItems],
+  );
+
+  const filteredItems = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return sortedItems;
+    return sortedItems.filter(
       (item) =>
-        item.name.toLowerCase().includes(q) ||
-        item.id.toLowerCase().includes(q),
+        (item.name ?? "").toLowerCase().includes(query) ||
+        item.id.toLowerCase().includes(query),
     );
-  }, [allItems, search]);
+  }, [sortedItems, search]);
+
+  const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
 
   const toggle = useCallback((id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  }, []);
+
+  const handleRemoveSelected = useCallback((id: string) => {
+    setSelectedIds((prev) => prev.filter((x) => x !== id));
   }, []);
 
   const handleConfirm = useCallback(() => {
-    const existing = initialSelectedIds.filter((id) => selectedIds.has(id));
-    const added = [...selectedIds].filter(
-      (id) => !initialSelectedIds.includes(id),
+    const existing = initialSelectedIds.filter((id) =>
+      selectedIds.includes(id),
     );
+    const added = selectedIds.filter((id) => !initialSelectedIds.includes(id));
     onConfirm([...existing, ...added]);
   }, [initialSelectedIds, onConfirm, selectedIds]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-blackout">
-      <div className="flex h-[80vh] w-[600px] max-w-[90vw] flex-col rounded-lg bg-layer-1 shadow-xl">
-        <div className="flex items-center justify-be/tween border-b border-tertiary px-6 py-1">
-          <h2 className="text-base font-semibold">
-            {t(MarketplaceI18nKeys.AgentsAndToolsets)}
-          </h2>
-          <button
+    <DialPopup
+      open
+      header={t(MarketplaceI18nKeys.SelectAgentsAndToolsets)}
+      size={PopupSize.Lg}
+      onClose={onClose}
+      footer={
+        <div className="flex w-full justify-end gap-2 px-6 py-4">
+          <DialNeutralButton
+            label={t(CommonI18nKeys.Cancel)}
             onClick={onClose}
-            className="text-secondary hover:text-primary"
-          >
-            ✕
-          </button>
-        </div>
-        <div className="border-b border-tertiary px-6 py-3">
-          <input
-            type="text"
-            className="w-full rounded border border-tertiary bg-layer-2 px-3 py-2 text-sm outline-none"
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            autoFocus
+          />
+          <DialPrimaryButton
+            label={t(MarketplaceI18nKeys.ApplyChanges)}
+            onClick={handleConfirm}
           />
         </div>
-        {selectedIds.size > 0 && (
-          <div className="flex flex-wrap gap-1 border-b border-tertiary px-6 py-3">
-            {[...selectedIds].map((id) => {
-              const item = allItems.find((i) => i.id === id);
-              return (
-                <DialTag
-                  key={id}
-                  label={item?.name ?? id}
-                  closable
-                  onRemove={() => toggle(id)}
-                />
-              );
-            })}
-          </div>
-        )}
-        <div className="flex-1 overflow-y-auto px-6 py-3">
-          {filtered.map((item) => (
-            <div
-              key={item.id}
-              className={classNames(
-                "mb-1 flex cursor-pointer items-center gap-3 rounded px-3 py-2 hover:bg-layer-3",
-                selectedIds.has(item.id) && "bg-layer-3",
-              )}
-              onClick={() => toggle(item.id)}
-            >
+      }
+    >
+      <div className="flex max-h-[60vh] flex-col gap-3 px-6 py-4">
+        <DialSearch
+          placeholder={t(MarketplaceI18nKeys.SearchPlaceholder)}
+          value={search}
+          onChange={setSearch}
+          autoFocus
+        />
+
+        <div>
+          {selectedIds.length ? (
+            <>
+              <p className="mb-2 text-xs text-secondary">
+                {t(MarketplaceI18nKeys.SelectedLabel)}
+              </p>
               <div
-                className={classNames(
-                  "h-4 w-4 shrink-0 rounded border border-primary",
-                  selectedIds.has(item.id) &&
-                    "border-accent-primary bg-accent-primary",
-                )}
-              />
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{item.name}</p>
-                <p className="truncate text-xs text-secondary">{item.type}</p>
+                data-qa="agents-and-toolsets-selected-list"
+                className="flex min-h-[34px] flex-wrap gap-1"
+              >
+                {selectedIds.map((id) => (
+                  <AgentAndToolsetChip
+                    key={id}
+                    id={id}
+                    item={allItemsMap[id]}
+                    onRemove={handleRemoveSelected}
+                    isInSelectionList
+                  />
+                ))}
               </div>
-            </div>
-          ))}
+            </>
+          ) : (
+            <p className="flex h-[34px] items-center text-xs text-secondary">
+              {t(MarketplaceI18nKeys.NoResourcesSelected)}
+            </p>
+          )}
         </div>
-        <div className="flex justify-end gap-2 border-t border-tertiary px-6 py-1">
-          <DialNeutralButton label="Cancel" onClick={onClose} />
-          <DialPrimaryButton label="Apply" onClick={handleConfirm} />
+
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {isLoading ? (
+            <div className="flex h-40 items-center justify-center">
+              <div className="size-6 animate-spin rounded-full border-2 border-tertiary border-t-accent-primary" />
+            </div>
+          ) : filteredItems.length === 0 ? (
+            <DialNoDataContent
+              title={t(CommonI18nKeys.NoAgentsAndToolsetsAdded)}
+              icon={<IconLayoutGrid size={60} stroke={0.5} />}
+            />
+          ) : (
+            <div
+              data-qa="agents-and-toolsets-grid"
+              className="grid grid-cols-2 gap-2 sm:grid-cols-3"
+            >
+              {filteredItems.map((item) => (
+                <AgentAndToolsetCard
+                  key={item.id}
+                  item={item}
+                  isSelected={selectedSet.has(item.id)}
+                  onToggle={toggle}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
-    </div>
+    </DialPopup>
   );
 };

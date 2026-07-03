@@ -3,8 +3,13 @@ import React, { useMemo } from 'react';
 
 import classNames from 'classnames';
 
+import type {
+  ApplicationStatus,
+  ToolsetAuthSettings,
+} from '@/types/dial-entities';
 import { isApplicationId, isToolsetId, getEntityNameFromId, getVersionFromId } from '@/utils/api';
 import { doesAgentSupportMcp } from '@/utils/application';
+import { getEntityStatus } from '@/utils/get-entity-status';
 
 import { ChipTooltipContent } from './ChipTooltipContent';
 
@@ -23,6 +28,8 @@ export interface ChipEntity {
   mcp?: boolean;
   features?: { mcp?: boolean };
   applicationTypeSchemaId?: string;
+  functionStatus?: ApplicationStatus;
+  authSettings?: ToolsetAuthSettings;
   [key: string]: unknown;
 }
 
@@ -44,7 +51,11 @@ const ChipConfigureButton: React.FC<ChipConfigureButtonProps> = ({
   item,
   onConfigure,
 }) => {
-  const isConfigurableApp = item && doesAgentSupportMcp(item) && !!onConfigure;
+  const isConfigurableApp =
+    item &&
+    isApplicationId(item.id) &&
+    doesAgentSupportMcp(item) &&
+    !!onConfigure;
 
   if (!isConfigurableApp) return null;
 
@@ -66,6 +77,7 @@ interface AgentAndToolsetChipProps {
   readonly?: boolean;
   onItemClick?: (id: string) => void;
   onConfigure?: (item: ChipEntity) => void;
+  onLoginToolset?: (item: ChipEntity) => void;
   isInSelectionList?: boolean;
 }
 
@@ -76,9 +88,10 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
   readonly,
   onItemClick,
   onConfigure,
+  onLoginToolset,
   isInSelectionList,
 }) => {
-  const isError = !item;
+  const status = getEntityStatus(item);
 
   const name = !item
     ? getEntityNameFromId(id, { removeVersion: true })
@@ -99,13 +112,16 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
         item={item}
         name={name}
         version={version}
+        status={status}
         isInSelectionList={isInSelectionList}
         isCustomTool={isCustomTool}
         readonly={readonly}
       />
     ),
-    [id, item, name, version, isInSelectionList, readonly, isCustomTool],
+    [id, item, name, version, status, isInSelectionList, readonly, isCustomTool],
   );
+
+  const canLogin = status.isLoggedOut && !!onLoginToolset && !!item;
 
   const handleRemove = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -113,7 +129,12 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
   };
 
   const handleClick = (_e: React.MouseEvent<HTMLDivElement>) => {
-    if (!readonly) onItemClick?.(id);
+    if (readonly) return;
+    if (canLogin) {
+      onLoginToolset?.(item as ChipEntity);
+      return;
+    }
+    onItemClick?.(id);
   };
 
   return (
@@ -124,10 +145,10 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
           icon={<EntityIcon id={id} />}
           closable={!readonly}
           onRemove={handleRemove}
-          onClick={onItemClick ? handleClick : undefined}
+          onClick={onItemClick || canLogin ? handleClick : undefined}
           className={classNames(
             isCustomTool && 'bg-layer-4',
-            isError && 'bg-error',
+            status.isError && 'bg-error',
           )}
         />
       </DialTooltip>

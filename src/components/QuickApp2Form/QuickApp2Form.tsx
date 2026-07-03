@@ -1,17 +1,20 @@
 "use client";
-import { FC, useCallback } from "react";
+import { FC, useCallback, useMemo } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 
+import { ToolsetTypes } from "@/constants/quick-apps";
 import { MarketplaceI18nKeys } from "@/constants/i18n";
 import { useAppContext } from "@/context/AppContext";
 import { useDataContext } from "@/context/DataContext";
 import {
   AgentOrToolsetSchemaKeys,
+  getAgentsAndToolsetsFormValue,
   getQuickApp2FormData,
+  getQuickApp2Toolsets,
   type QuickApp2Form as QuickApp2FormType,
 } from "@/form/quickApp2Form";
 import { useTranslation } from "@/hooks/useTranslation";
-import { DialAppTransportType } from "@/types/quick-apps";
+import { AnyToolset, DialAppTransportType } from "@/types/quick-apps";
 import { Translation } from "@/types/translation";
 
 import { FilesSelector } from "@/components/common/FilesSelector/FilesSelector";
@@ -74,8 +77,14 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     handleSubmit,
     watch,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm<QuickApp2FormType>({ defaultValues });
+
+  const allEntitiesMap = useMemo(
+    () => ({ ...modelsMap, ...toolsetsMap }),
+    [modelsMap, toolsetsMap],
+  );
 
   const isJsonView = watch("isJsonView");
   const starters = watch("starters");
@@ -135,6 +144,41 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     },
     [agentsAndToolsets, setValue],
   );
+
+  const handleSwitchToJsonView = useCallback(() => {
+    const toolsets = getQuickApp2Toolsets({
+      data: getValues(),
+      allEntitiesMap,
+    });
+    setValue("agentsAndToolsetsJson", JSON.stringify(toolsets, null, 2));
+    setValue("isJsonView", true);
+  }, [allEntitiesMap, getValues, setValue]);
+
+  const handleSwitchToSimpleView = useCallback(
+    (toolsets: AnyToolset[]) => {
+      setValue(
+        "agentsAndToolsets",
+        getAgentsAndToolsetsFormValue(
+          toolsets,
+        ) as QuickApp2FormType["agentsAndToolsets"],
+      );
+      setValue(
+        "codeInterpreter",
+        toolsets.some((toolset) => toolset.type === ToolsetTypes.CodeInterpreter),
+      );
+      setValue("isJsonView", false);
+    },
+    [setValue],
+  );
+
+  const handleDiscardJson = useCallback(() => {
+    const toolsets = getQuickApp2Toolsets({
+      data: getValues(),
+      allEntitiesMap,
+    });
+    setValue("agentsAndToolsetsJson", JSON.stringify(toolsets, null, 2));
+    setValue("isJsonView", false);
+  }, [allEntitiesMap, getValues, setValue]);
 
   return (
     <form
@@ -214,7 +258,9 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
             isJsonView={isJsonView}
             onAgentsChange={handleAgentsChange}
             onJsonChange={(json) => setValue("agentsAndToolsetsJson", json)}
-            onJsonViewChange={(v) => setValue("isJsonView", v)}
+            onSwitchToJsonView={handleSwitchToJsonView}
+            onSwitchToSimpleView={handleSwitchToSimpleView}
+            onDiscardJson={handleDiscardJson}
             onConfigureAgent={handleConfigureAgent}
             readonly={isReadonly}
             tooltip={sharedTooltip}

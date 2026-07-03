@@ -1,24 +1,5 @@
 import { getToken } from "next-auth/jwt";
-import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-
-const COOKIE_NAME = "dial_session";
-
-interface SessionData {
-  token: string;
-  dialApiHost: string;
-}
-
-const getDialSession = async (): Promise<SessionData | null> => {
-  const cookieStore = await cookies();
-  const cookie = cookieStore.get(COOKIE_NAME);
-  if (!cookie) return null;
-  try {
-    return JSON.parse(cookie.value) as SessionData;
-  } catch {
-    return null;
-  }
-};
 
 type RouteContext = { params: Promise<{ path: string[] }> };
 
@@ -26,24 +7,19 @@ const proxyDial = async (
   req: NextRequest,
   { params }: RouteContext,
 ): Promise<NextResponse> => {
-  let token: string | undefined;
-  let dialApiHost: string | undefined;
-
-  // Prefer the next-auth JWT (Keycloak login). Fall back to dial_session only
-  // when there is no JWT — i.e. the app is embedded in an iframe and the host
-  // provided credentials via the INIT postMessage.
   const jwtToken = await getToken({ req });
-  if (jwtToken?.accessToken) {
-    token = jwtToken.accessToken;
-    dialApiHost = process.env.DIAL_CORE_URL;
-  } else {
-    const dialSession = await getDialSession();
-    token = dialSession?.token;
-    dialApiHost = dialSession?.dialApiHost;
+  if (!jwtToken?.accessToken) {
+    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
 
-  if (!token || !dialApiHost) {
-    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+  const token = jwtToken.accessToken;
+  const dialApiHost = process.env.DIAL_CORE_URL;
+
+  if (!dialApiHost) {
+    return NextResponse.json(
+      { error: "DIAL_CORE_URL is not configured." },
+      { status: 500 },
+    );
   }
 
   // Use pathname directly to preserve trailing slashes (e.g. /v1/metadata/files/bucket/)

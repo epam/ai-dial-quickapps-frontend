@@ -149,6 +149,7 @@ const ModelCard: FC<ModelCardProps> = ({
 };
 
 const TAB_IDS = { favorites: "favorites", catalog: "catalog" } as const;
+type ModelFieldTab = (typeof TAB_IDS)[keyof typeof TAB_IDS];
 
 interface ModelFieldProps {
   value: string;
@@ -169,7 +170,7 @@ export const ModelField: FC<ModelFieldProps> = ({
   const { models } = useDataContext();
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [activeTab, setActiveTab] = useState(TAB_IDS.catalog);
+  const [activeTab, setActiveTab] = useState<ModelFieldTab>(TAB_IDS.catalog);
 
   const tabs = useMemo(
     () => [
@@ -222,6 +223,10 @@ export const ModelField: FC<ModelFieldProps> = ({
   const handleOpen = useCallback(() => {
     if (!disabled) setIsOpen(true);
   }, [disabled]);
+
+  const handleTabChange = useCallback((tabId: string) => {
+    setActiveTab(tabId as ModelFieldTab);
+  }, []);
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
@@ -306,7 +311,7 @@ export const ModelField: FC<ModelFieldProps> = ({
               onChange={setSearch}
             />
           </div>
-          <DialTabs tabs={tabs} activeTab={activeTab} onClick={setActiveTab} />
+          <DialTabs tabs={tabs} activeTab={activeTab} onClick={handleTabChange} />
         </div>
 
         {/* Scrollable 3×3 grid */}

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AUTH_WINDOW_CLOSE_KEY } from "@/constants/auth";
 
-export const useAuth = () => {
+export const useAuth = (provider: string) => {
   const { data: session, status: sessionStatus } = useSession();
   const authWindowRef = useRef<Window | null>(null);
   const [isWindowOpen, setIsWindowOpen] = useState(false);
@@ -12,11 +12,11 @@ export const useAuth = () => {
     if (isWindowOpen) return;
     setIsWindowOpen(true);
     authWindowRef.current = window.open(
-      "/signin",
+      `/signin?provider=${encodeURIComponent(provider)}`,
       "_blank",
       "width=600,height=600",
     );
-  }, [isWindowOpen]);
+  }, [isWindowOpen, provider]);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
