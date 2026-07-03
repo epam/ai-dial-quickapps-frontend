@@ -1,6 +1,6 @@
 # Quick Apps Frontend
 
-Standalone Next.js app that renders the QuickApp2 editor. Designed to be embedded as an `<iframe>` inside `ai-dial-chat` and communicate with the host via `postMessage`.
+Standalone Next.js app for QuickApp2 settings editer. Designed to be embedded as an `<iframe>` inside `ai-dial-chat` and communicate with the host via `postMessage`.
 
 ## Development
 
@@ -10,10 +10,6 @@ cp .env.template .env.local   # fill in values — see Environment variables bel
 npm run dev
 ```
 
-Open `http://localhost:3000` to use the **dev harness** — it embeds the editor, sends an `INIT` message with mock data, and logs all postMessage traffic. The harness is only available in development; in production `/` redirects to `/editor`.
-
-When a Keycloak session is active the harness pre-fills the token field automatically so you don't need to paste tokens manually.
-
 ## Commands
 
 | Command         | Description              |
@@ -22,13 +18,23 @@ When a Keycloak session is active the harness pre-fills the token field automati
 | `npm run build` | Type-check and build     |
 | `npm run lint`  | Run ESLint               |
 
+## Docker build
+
+From the project root, run:
+
+`docker build -t ai-dial-quickapps-frontend .`
+
+Then to run it, mapping the container's port 3003 to a local port:
+
+`docker run -p 3003:3003 ai-dial-quickapps-frontend`
+
+App will be available at http://localhost:3003.
+
 ## Authentication
 
 The editor supports two authentication modes that coexist:
 
-**Embedded mode** — ai-dial-chat embeds the editor as an iframe and sends an `INIT` postMessage containing a bearer token and DIAL API host. The editor stores these server-side in an httpOnly cookie (`dial_session`) and uses them for all proxied DIAL API calls. No Keycloak setup is required for this path.
-
-**Standalone mode** — when accessed directly (or via the dev harness), the editor uses [NextAuth.js](https://next-auth.js.org) with Keycloak. After sign-in the access token is kept server-side and injected into the DIAL API proxy automatically. Token refresh is handled transparently.
+The editor uses [NextAuth.js](https://next-auth.js.org) with Keycloak. After sign-in the access token is kept server-side and injected into the DIAL API proxy automatically. Token refresh is handled transparently.
 
 The proxy at `/api/dial/[...path]` tries the `dial_session` cookie first; if absent it falls back to the NextAuth session token.
 
@@ -47,7 +53,7 @@ Copy `.env.template` to `.env.local` and fill in values. All variables without a
 
 | Variable | Required | Default | Description                                                                               |
 | -------- | :------: | ------- | ----------------------------------------------------------------------------------------- |
-| `PORT`   |    No    | `4207`  | Port the dev/production server listens on. Also update `NEXTAUTH_URL` when changing this. |
+| `PORT`   |    No    | `4600`  | Port the dev/production server listens on. Also update `NEXTAUTH_URL` when changing this. |
 
 ### Authentication
 
@@ -91,12 +97,11 @@ document.querySelector('iframe').contentWindow.postMessage({ type: 'TRIGGER_SAVE
 
 **Host → iframe**
 
-| Message type        | Payload                                 | Description                             |
-| ------------------- | --------------------------------------- | --------------------------------------- |
-| `INIT`              | `{ app, token, dialApiHost, settings }` | Initialises the editor with app data    |
-| `TRIGGER_SAVE`      | —                                       | Triggers a manual save                  |
-| `TRIGGER_AUTO_SAVE` | `{ ignoreDirty?: boolean }`             | Triggers an auto-save                   |
-| `RESET`             | —                                       | Resets the form to the last saved state |
+| Message type        | Payload                     | Description                             |
+| ------------------- | --------------------------- | --------------------------------------- |
+| `TRIGGER_SAVE`      | —                           | Triggers a manual save                  |
+| `TRIGGER_AUTO_SAVE` | `{ ignoreDirty?: boolean }` | Triggers an auto-save                   |
+| `RESET`             | —                           | Resets the form to the last saved state |
 
 **Iframe → host**
 

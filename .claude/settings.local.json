@@ -14,5 +14,10 @@
     "figma",
     "ai-dial-ui-kit",
     "playwright"
+  ],
+  "disabledMcpjsonServers": [
+    "atlassian",
+    "figma",
+    "playwright"
   ]
 }

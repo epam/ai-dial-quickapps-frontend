@@ -2,8 +2,8 @@
 import { FC, useCallback, useMemo } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 
-import { ToolsetTypes } from "@/constants/quick-apps";
 import { MarketplaceI18nKeys } from "@/constants/i18n";
+import { ToolsetTypes } from "@/constants/quick-apps";
 import { useAppContext } from "@/context/AppContext";
 import { useDataContext } from "@/context/DataContext";
 import {
@@ -96,9 +96,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   const chatMessageInputDisabled = watch("chatMessageInputDisabled");
   const autoSubmit = watch("autoSubmit");
 
-  const hasStarters = starters.some(
-    (s) => s.title.trim() && s.text.trim(),
-  );
+  const hasStarters = starters.some((s) => s.title.trim() && s.text.trim());
   const startersSettingsTooltip =
     sharedTooltip ??
     (!hasStarters
@@ -164,7 +162,9 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
       );
       setValue(
         "codeInterpreter",
-        toolsets.some((toolset) => toolset.type === ToolsetTypes.CodeInterpreter),
+        toolsets.some(
+          (toolset) => toolset.type === ToolsetTypes.CodeInterpreter,
+        ),
       );
       setValue("isJsonView", false);
     },
