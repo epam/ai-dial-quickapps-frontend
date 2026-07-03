@@ -1,4 +1,5 @@
 import type {
+  AppSettings,
   DialApp,
   DialModel,
   DialPrompt,
@@ -249,6 +250,12 @@ function encodeApplicationPropertiesForApi(properties: unknown): unknown {
   }
 
   return encoded;
+}
+
+export async function fetchAppSettings(): Promise<AppSettings> {
+  const res = await fetch("/api/settings");
+  if (!res.ok) return {};
+  return res.json() as Promise<AppSettings>;
 }
 
 export async function fetchDialApp(appId: string): Promise<DialApp | null> {

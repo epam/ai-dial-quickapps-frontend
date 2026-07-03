@@ -77,6 +77,12 @@ Copy `.env.template` to `.env.local` and fill in values. All variables without a
 | ------------ | :------: | ------- | ----------------------------------------------------------------------------------- |
 | `THEMES_URL` |    No    | —       | URL to the DIAL themes `config.json`. Falls back to CSS variable defaults if unset. |
 
+### Feature flags
+
+| Variable                    | Required | Default | Description                                                                                                                              |
+| ---------------------------- | :------: | ------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `CODE_INTERPRETER_ENABLED`  |    No    | `false` | Enables the Code Interpreter toggle in the QuickApp2 editor. Served to the client via `GET /api/settings`, mirroring the `ENABLED_FEATURES` flag in `ai-dial-chat`. |
+
 ### Client-side
 
 | Variable                               | Required | Default                                                         | Description                                                                                                                                                                                                                                         |

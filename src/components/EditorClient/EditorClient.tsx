@@ -6,7 +6,7 @@ import { DataContextProvider } from "@/context/DataContext";
 import { buildQuickApp2Config } from "@/form/quickApp2Form";
 import type { QuickApp2Form as QuickApp2FormType } from "@/form/quickApp2Form";
 import { QuickApp2Config } from "@/types/quick-apps";
-import { fetchDialApp, saveDialApp } from "@/utils/dialClient";
+import { fetchAppSettings, fetchDialApp, saveDialApp } from "@/utils/dialClient";
 import { QuickApp2Form } from "@/components/QuickApp2Form/QuickApp2Form";
 import { DEFAULT_QUICK_APPS_SCHEMA_2_ID } from "@/constants/quick-apps";
 
@@ -62,8 +62,8 @@ export default function EditorClient() {
     const appId = new URLSearchParams(window.location.search).get("id");
     if (appId && !isInitializedRef.current) {
       isInitializedRef.current = true;
-      fetchDialApp(appId)
-        .then((app) => {
+      Promise.all([fetchDialApp(appId), fetchAppSettings()])
+        .then(([app, settings]) => {
           if (cancelled) return;
           setAppState({
             app: app ?? {
@@ -71,7 +71,7 @@ export default function EditorClient() {
               name: "",
               applicationTypeSchemaId: DEFAULT_QUICK_APPS_SCHEMA_2_ID,
             },
-            settings: {},
+            settings,
             isReady: true,
           });
         })
