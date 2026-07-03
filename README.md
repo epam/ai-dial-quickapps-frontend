@@ -83,6 +83,12 @@ Copy `.env.template` to `.env.local` and fill in values. All variables without a
 | ---------------------------- | :------: | ------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `CODE_INTERPRETER_ENABLED`  |    No    | `false` | Enables the Code Interpreter toggle in the QuickApp2 editor. Served to the client via `GET /api/settings`, mirroring the `ENABLED_FEATURES` flag in `ai-dial-chat`. |
 
+### Security
+
+| Variable                  | Required | Default  | Description                                                                                                                                                                       |
+| -------------------------- | :------: | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ALLOWED_FRAME_ANCESTORS` |    No    | `'self'` | Space-separated list of origins allowed to embed this app in an `<iframe>`, sent as the CSP `frame-ancestors` directive. Set to the exact `ai-dial-chat` URL(s) in production. |
+
 ### Client-side
 
 | Variable                               | Required | Default                                                         | Description                                                                                                                                                                                                                                         |
@@ -90,6 +96,10 @@ Copy `.env.template` to `.env.local` and fill in values. All variables without a
 | `NEXT_PUBLIC_ALLOWED_ORIGIN`           |    No    | `*`                                                             | Origin allowed to send `postMessage` events to the `/editor` iframe. Set to the exact ai-dial-chat URL in production (e.g. `https://chat.example.com`). Using `*` accepts messages from any origin — fine for local dev, **unsafe for production**. |
 | `NEXT_PUBLIC_QUICK_APPS_DEFAULT_MODEL` |    No    | `gpt-4o`                                                        | Model ID pre-selected in the form when no model is stored in the app config.                                                                                                                                                                        |
 | `NEXT_PUBLIC_QUICK_APPS_SCHEMA_2_ID`   |    No    | `https://mydial.epam.com/custom_application_schemas/quickapps2` | `applicationTypeSchemaId` used to identify QuickApp2 applications. Override only if your DIAL instance uses a non-standard schema registry URL.                                                                                                     |
+
+## Content Security Policy
+
+This app sends a `Content-Security-Policy: frame-ancestors ...` header (configured in `next.config.ts`) to control which origins are allowed to embed it in an `<iframe>`. By default `frame-ancestors 'self'` is sent, meaning no other site can frame it until `ALLOWED_FRAME_ANCESTORS` is set. In production, set it to the exact `ai-dial-chat` origin(s) that embed the `/editor` page.
 
 ## postMessage protocol
 

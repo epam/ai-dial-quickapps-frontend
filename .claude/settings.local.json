@@ -6,7 +6,11 @@
       "mcp__ai-dial-ui-kit__searchEntity",
       "mcp__ai-dial-ui-kit__getEntityDetails",
       "Bash(npx tsc *)",
-      "Skill(run)"
+      "Skill(run)",
+      "Bash(npm run *)",
+      "Bash(git -C /c/projects/dial/ai-dial-quickapps-frontend stash)",
+      "Bash(git -C /c/projects/dial/ai-dial-quickapps-frontend stash pop)",
+      "Bash(curl -sI http://localhost:4600/editor)"
     ]
   },
   "enabledMcpjsonServers": [
