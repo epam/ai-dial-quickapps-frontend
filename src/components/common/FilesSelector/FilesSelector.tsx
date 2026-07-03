@@ -1,9 +1,14 @@
 "use client";
 
-import { IconFile, IconPlus, IconX } from "@tabler/icons-react";
+import { IconFile, IconPlus, IconTrashX } from "@tabler/icons-react";
 import React, { type MouseEvent, useCallback, useState } from "react";
 
-import { DialLinkButton, DialNoDataContent } from "@epam/ai-dial-ui-kit";
+import {
+  ButtonAppearance,
+  DialIconButton,
+  DialLinkButton,
+  DialNoDataContent,
+} from "@epam/ai-dial-ui-kit";
 
 import { CommonI18nKeys } from "@/constants/i18n";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -32,14 +37,13 @@ const SelectedFile: React.FC<SelectedFileProps> = ({
         {displayName}
       </span>
       {!readonly && onRemove && (
-        <button
-          type="button"
+        <DialIconButton
+          icon={<IconTrashX size={16} />}
           onClick={() => onRemove(document)}
-          className="shrink-0 text-secondary hover:text-primary"
+          appearance={ButtonAppearance.Link}
+          title="Remove file"
           aria-label="Remove file"
-        >
-          <IconX size={14} />
-        </button>
+        />
       )}
     </div>
   );
@@ -111,7 +115,11 @@ export const FilesSelector: React.FC<Props> = ({
           </div>
         )}
       </div>
-      <FileManagerModal isOpen={isModalOpen} initialFileIds={files} onClose={handleModalClose} />
+      <FileManagerModal
+        isOpen={isModalOpen}
+        initialFileIds={files}
+        onClose={handleModalClose}
+      />
     </div>
   );
 };

@@ -1,5 +1,6 @@
 "use client";
-import { FC, useCallback, useMemo } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FC, useCallback, useEffect, useMemo } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 
 import { MarketplaceI18nKeys } from "@/constants/i18n";
@@ -11,6 +12,7 @@ import {
   getAgentsAndToolsetsFormValue,
   getQuickApp2FormData,
   getQuickApp2Toolsets,
+  QuickApp2Schema,
   type QuickApp2Form as QuickApp2FormType,
 } from "@/form/quickApp2Form";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -55,10 +57,11 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   const { app, settings } = useAppContext();
   const { models, toolsets, modelsMap, toolsetsMap, files } = useDataContext();
 
-  const toolSupportingModelIds = models
-    .filter((m) => m.features?.tools)
-    .map((m) => m.id);
-  const availableModelIds = models.map((m) => m.id);
+  const toolSupportingModelIds = useMemo(
+    () => models.filter((m) => m.features?.tools).map((m) => m.id),
+    [models],
+  );
+  const availableModelIds = useMemo(() => models.map((m) => m.id), [models]);
 
   const sharedTooltip = app.isShared
     ? t(MarketplaceI18nKeys.CannotChangeSharedApp, { context: "field" })
@@ -79,7 +82,16 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     setValue,
     getValues,
     formState: { errors },
-  } = useForm<QuickApp2FormType>({ defaultValues });
+  } = useForm<QuickApp2FormType>({
+    defaultValues,
+    resolver: zodResolver(QuickApp2Schema),
+    mode: "onChange",
+  });
+
+  useEffect(() => {
+    setValue("toolSupportingModelIds", toolSupportingModelIds);
+    setValue("availableModelIds", availableModelIds, { shouldValidate: true });
+  }, [toolSupportingModelIds, availableModelIds, setValue]);
 
   const allEntitiesMap = useMemo(
     () => ({ ...modelsMap, ...toolsetsMap }),
@@ -517,25 +529,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
           )}
         />
       </FormCollapsibleSection>
-
-      {/* Form actions */}
-      {!readonly && (
-        <div className="sticky bottom-0 flex justify-end gap-2 border-t border-primary bg-layer-1 px-5 py-3">
-          {onDiscard && (
-            <DialButton
-              variant={ButtonVariant.Neutral}
-              onClick={onDiscard}
-              type="button"
-              label={t(MarketplaceI18nKeys.DiscardMarketplace)}
-            />
-          )}
-          <DialButton
-            variant={ButtonVariant.Primary}
-            type="submit"
-            label={t(MarketplaceI18nKeys.ApplyChanges)}
-          />
-        </div>
-      )}
     </form>
   );
 };

@@ -79,11 +79,11 @@ const ModelCard: FC<ModelCardProps> = ({
       className={classNames(
         "relative box-border flex cursor-pointer flex-col gap-[14px] rounded-[16px] border p-[11px] md:p-[15px] xl:p-[19px]",
         "bg-layer-0 shadow-[0_1px_3px_rgba(0,0,0,0.04)]",
-        "transition-[transform,box-shadow] duration-[180ms] ease-out",
-        "hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.04)]",
+        "transition-shadow duration-[180ms] ease-out",
+        "hover:shadow-[0_6px_16px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.04)]",
         isSelected ? "border-accent-primary" : "border-[rgba(0,0,0,0.07)]",
       )}
-      onClick={!hasVersions ? () => onSelect(representativeId) : undefined}
+      onClick={() => onSelect(representativeId)}
     >
       {/* AppIdentity block */}
       <div className="flex min-w-0 items-start gap-3">
@@ -135,7 +135,7 @@ const ModelCard: FC<ModelCardProps> = ({
 
       {/* Description */}
       {group.description && (
-        <p className="dial-small-text line-clamp-2 text-secondary">
+        <p className="dial-small-text line-clamp-2 min-h-0 shrink-0 leading-[1.4] text-secondary">
           {group.description}
         </p>
       )}
@@ -314,11 +314,8 @@ export const ModelField: FC<ModelFieldProps> = ({
           <DialTabs tabs={tabs} activeTab={activeTab} onClick={handleTabChange} />
         </div>
 
-        {/* Scrollable 3×3 grid */}
-        <div
-          className="overflow-y-auto px-6 py-4 bg-layer-2"
-          style={{ maxHeight: "calc(3 * 166px + 2 * 16px + 32px)" }}
-        >
+        {/* Scrollable grid: 1 column on small screens, 3×3 on large */}
+        <div className="max-h-[70vh] overflow-y-auto bg-layer-2 px-6 py-4">
           {activeTab === TAB_IDS.favorites ? (
             <div className="flex items-center justify-center py-8">
               <DialNoDataContent
@@ -334,14 +331,7 @@ export const ModelField: FC<ModelFieldProps> = ({
               />
             </div>
           ) : (
-            <div
-              className="grid"
-              style={{
-                gridTemplateColumns: "repeat(3, minmax(0px, 1fr))",
-                gridTemplateRows: "repeat(3, 166px)",
-                gap: "16px",
-              }}
-            >
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
               {filteredGroups.map((group) => (
                 <ModelCard
                   key={group.name}
