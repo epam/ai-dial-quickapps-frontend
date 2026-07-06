@@ -1,6 +1,7 @@
 "use client";
 import classNames from "classnames";
 import { FC, memo, useCallback, useState } from "react";
+import { resolveIconUrl } from "@/utils/resolve-icon-url";
 
 interface ModelIconProps {
   name: string;
@@ -8,22 +9,6 @@ interface ModelIconProps {
   size: number;
   radius?: number;
 }
-
-const isAbsoluteUrl = (url: string) => /^https?:\/\//i.test(url);
-
-const encodeApiPath = (path: string) =>
-  path
-    .split("/")
-    .map((segment) => encodeURIComponent(segment))
-    .join("/");
-
-const resolveIconUrl = (iconUrl: string): string => {
-  if (isAbsoluteUrl(iconUrl)) return iconUrl;
-  if (iconUrl.startsWith("files/")) {
-    return `/api/dial/v1/${encodeApiPath(iconUrl)}`;
-  }
-  return `/api/themes/image/${encodeURIComponent(iconUrl)}`;
-};
 
 const ModelIcon: FC<ModelIconProps> = memo(
   ({ name, iconUrl, size, radius = 8 }) => {
