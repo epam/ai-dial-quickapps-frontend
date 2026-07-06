@@ -207,7 +207,7 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
               />
             </div>
             {(editorError ?? jsonError) && (
-              <p className="text-xs text-error">{editorError ?? jsonError}</p>
+              <p className="dial-tiny-text text-error">{editorError ?? jsonError}</p>
             )}
             {!readonly && (
               <div className="flex justify-end gap-2">

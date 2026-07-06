@@ -103,19 +103,19 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({
       <div className="flex flex-col gap-4 px-6 py-4">
         <div className="flex items-center gap-3">
           <ModelIcon name={toolset.name ?? toolset.id} size={40} radius={10} />
-          <span className="text-sm font-semibold text-primary">
+          <span className="dial-small-semi-text text-primary">
             {toolset.name ?? toolset.id}
           </span>
         </div>
 
         {isOAuth ? (
           <div className="flex flex-col gap-3">
-            <p className="text-sm text-secondary">
+            <p className="dial-small-text text-secondary">
               {isSignedIn
                 ? t(CommonI18nKeys.LoggedInToolset)
                 : t(CommonI18nKeys.LoggedOutToolset)}
             </p>
-            {error && <p className="text-xs text-error">{error}</p>}
+            {error && <p className="dial-tiny-text text-error">{error}</p>}
             <div className="flex justify-end gap-2">
               <DialNeutralButton
                 label={t(CommonI18nKeys.Cancel)}
@@ -147,7 +147,7 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({
               type="password"
               disabled={isSignedIn}
             />
-            {error && <p className="text-xs text-error">{error}</p>}
+            {error && <p className="dial-tiny-text text-error">{error}</p>}
             <div className="flex justify-end gap-2">
               <DialNeutralButton
                 label={t(CommonI18nKeys.Cancel)}

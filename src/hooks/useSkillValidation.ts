@@ -34,9 +34,9 @@ export function useSkillValidation(
     if (!deploymentId || !promptId) return;
 
     let isCancelled = false;
-    setState({ status: SkillValidationStatus.Validating });
 
     const validate = async () => {
+      setState({ status: SkillValidationStatus.Validating });
       try {
         const res = await fetch("/api/skill-validate", {
           method: "POST",

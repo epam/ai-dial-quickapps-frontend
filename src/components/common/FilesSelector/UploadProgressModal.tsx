@@ -27,7 +27,6 @@ const UploadProgressModal: FC<UploadProgressModalProps> = ({
     return (
       <div
         className="h-1 w-full overflow-hidden rounded-full bg-layer-1"
-        data-qa="uploading-indicator"
         role="progressbar"
         aria-valuemin={0}
         aria-valuemax={100}
@@ -61,7 +60,7 @@ const UploadProgressModal: FC<UploadProgressModalProps> = ({
       header={
         <div className="flex flex-col gap-2">
           <div>{uploadProgressTitle}</div>
-          <div className="text-sm text-secondary" data-qa="uploading-items-count">
+          <div className="dial-small-text text-secondary">
             {uploadProgressText}
           </div>
         </div>

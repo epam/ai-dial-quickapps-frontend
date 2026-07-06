@@ -24,10 +24,9 @@ export const Label: FC<LabelProps> = ({
 }) => (
   <label
     className={classNames(
-      'flex items-center gap-1 text-xs text-secondary',
+      'dial-tiny-text flex items-center gap-1 text-secondary',
       isSubgroup ? 'mb-1' : 'mb-2',
     )}
-    data-qa={htmlFor?.concat('-label')}
     htmlFor={htmlFor}
   >
     {children}
@@ -58,7 +57,7 @@ export function withLabel<T extends object, R>(
 ) {
   const LabelWrapper = forwardRef<R, WithLabelProps & T>(
     ({ info, mandatory, isSubgroup, ...props }, ref) => (
-      <div className="flex flex-col" data-qa={props.id}>
+      <div className="flex flex-col">
         <Label
           htmlFor={props?.id}
           mandatory={mandatory}

@@ -42,7 +42,7 @@ export const ToolsetLinkButton: FC<ToolsetLinkButtonProps> = ({
     <button
       type="button"
       onClick={handleCopy}
-      className="flex items-center gap-1 text-xs text-secondary hover:text-primary"
+      className="dial-tiny-text flex items-center gap-1 text-secondary hover:text-primary"
       title="Copy MCP URL"
     >
       {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}

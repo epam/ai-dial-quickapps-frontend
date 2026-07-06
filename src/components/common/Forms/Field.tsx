@@ -17,11 +17,10 @@ import { DialButton, DialTooltip } from '@epam/ai-dial-ui-kit';
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: boolean | string;
   tooltip?: ReactNode;
-  dataQa?: string;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ error, className, tooltip, dataQa, type, ...rest }, ref) => {
+  ({ error, className, tooltip, type, ...rest }, ref) => {
     const [isVisible, setIsVisible] = useState(false);
 
     const inputType =
@@ -38,7 +37,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             {...rest}
             ref={ref}
             className={classNames(
-              'peer mx-0 w-full rounded border border-primary bg-transparent px-3 py-2 text-sm text-primary outline-none',
+              'dial-small-text peer mx-0 w-full rounded border border-primary bg-transparent px-3 py-2 text-primary outline-none',
               'placeholder:text-secondary',
               'hover:border-accent-primary focus:border-focus',
               'disabled:cursor-not-allowed disabled:border-transparent disabled:bg-controls-disable disabled:text-controls-primary-disable',
@@ -46,7 +45,6 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               type === 'password' && 'pr-9',
               className,
             )}
-            data-qa={dataQa}
             type={inputType}
           />
 

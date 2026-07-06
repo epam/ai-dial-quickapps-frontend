@@ -183,10 +183,11 @@ const FileManagerModal: FC<FileManagerModalProps> = ({
 
   // Reset selection when modal closes
   useEffect(() => {
-    if (!isOpen) {
+    const reset = () => {
       setSelectedPaths(new Set());
       hasInitialized.current = false;
-    }
+    };
+    if (!isOpen) reset();
   }, [isOpen]);
 
   // Pre-populate selection from initialFileIds once the file tree is loaded.
@@ -201,7 +202,8 @@ const FileManagerModal: FC<FileManagerModalProps> = ({
       const file = filesByPath.get(id);
       if (file) paths.add(file.path);
     }
-    if (paths.size > 0) setSelectedPaths(paths);
+    const apply = () => setSelectedPaths(paths);
+    if (paths.size > 0) apply();
   }, [filesByPath, initialFileIds]);
 
   const expandFolderFileIds = useCallback(
@@ -439,7 +441,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({
       >
         {notification != null && (
           <div
-            className={`flex flex-col gap-1 px-6 py-3 text-sm text-primary-bg ${notificationBgClass}`}
+            className={`dial-small-text flex flex-col gap-1 px-6 py-3 text-primary-bg ${notificationBgClass}`}
           >
             {notification.title != null && (
               <span className="font-semibold">{notification.title}</span>

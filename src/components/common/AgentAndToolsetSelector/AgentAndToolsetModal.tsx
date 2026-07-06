@@ -58,7 +58,6 @@ const AgentAndToolsetCard: React.FC<AgentAndToolsetCardProps> = ({
 
   return (
     <article
-      data-qa="agent-toolset-card"
       onClick={() => onToggle(item.id)}
       className={classNames(
         "relative box-border flex cursor-pointer flex-col gap-[14px] rounded-[16px] border p-[11px] md:p-[15px]",
@@ -185,13 +184,10 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
         <div>
           {selectedIds.length ? (
             <>
-              <p className="mb-2 text-xs text-secondary">
+              <p className="dial-tiny-text mb-2 text-secondary">
                 {t(MarketplaceI18nKeys.SelectedLabel)}
               </p>
-              <div
-                data-qa="agents-and-toolsets-selected-list"
-                className="flex min-h-[34px] flex-wrap gap-1"
-              >
+              <div className="flex min-h-[34px] flex-wrap gap-1">
                 {selectedIds.map((id) => (
                   <AgentAndToolsetChip
                     key={id}
@@ -204,7 +200,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
               </div>
             </>
           ) : (
-            <p className="flex h-[34px] items-center text-xs text-secondary">
+            <p className="dial-tiny-text flex h-[34px] items-center text-secondary">
               {t(MarketplaceI18nKeys.NoResourcesSelected)}
             </p>
           )}
@@ -221,10 +217,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
               icon={<IconLayoutGrid size={60} stroke={0.5} />}
             />
           ) : (
-            <div
-              data-qa="agents-and-toolsets-grid"
-              className="grid grid-cols-2 gap-2 sm:grid-cols-3"
-            >
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {filteredItems.map((item) => (
                 <AgentAndToolsetCard
                   key={item.id}

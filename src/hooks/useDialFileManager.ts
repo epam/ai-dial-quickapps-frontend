@@ -374,10 +374,14 @@ export const useDialFileManager = ({
     if (activeTab === DialFileManagerTabs.MyFiles && !bucket) return;
 
     let cancelled = false;
-    setIsLoading(true);
-    setError(null);
+    const run = () => {
+      setIsLoading(true);
+      setError(null);
 
-    fetchByTab(activeTab, bucket, folderPath, sharedRootMetaRef.current)
+      return fetchByTab(activeTab, bucket, folderPath, sharedRootMetaRef.current);
+    };
+
+    run()
       .then(({ items: flat, permissions }) => {
         if (cancelled) return;
         setCache((prev) => {

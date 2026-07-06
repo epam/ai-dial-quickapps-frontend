@@ -60,10 +60,24 @@ export const OverflowButton = <T,>({
     [onItemClick],
   );
 
+  const setReferenceRef = useCallback(
+    (node: HTMLButtonElement | null) => {
+      refs.setReference(node);
+    },
+    [refs],
+  );
+
+  const setFloatingRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      refs.setFloating(node);
+    },
+    [refs],
+  );
+
   return (
     <>
       <DialButton
-        ref={refs.setReference}
+        ref={setReferenceRef}
         {...getReferenceProps()}
         className={classNames(
           "box-border flex h-[34px] shrink-0 items-center rounded border px-3 py-1.5 transition-colors",
@@ -75,7 +89,7 @@ export const OverflowButton = <T,>({
 
       {isOpen && (
         <div
-          ref={refs.setFloating}
+          ref={setFloatingRef}
           style={floatingStyles}
           {...getFloatingProps()}
           className="z-50 mt-1.5 max-h-[324px] w-[294px] rounded-md border border-tertiary bg-layer-1 shadow-lg"

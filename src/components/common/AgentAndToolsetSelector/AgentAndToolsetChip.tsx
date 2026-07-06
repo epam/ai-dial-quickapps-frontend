@@ -138,7 +138,7 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
   };
 
   return (
-    <div className="group relative" data-qa="agent-chip">
+    <div className="group relative">
       <DialTooltip tooltip={tooltipContent}>
         <DialTag
           label={name}

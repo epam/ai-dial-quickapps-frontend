@@ -10,7 +10,6 @@ interface FormSectionProps {
   children: ReactNode;
   openByDefault?: boolean;
   description?: ReactNode;
-  dataQa?: string;
 }
 
 export const FormCollapsibleSection = ({
@@ -18,7 +17,6 @@ export const FormCollapsibleSection = ({
   children,
   openByDefault = false,
   description,
-  dataQa,
 }: FormSectionProps) => {
   const [isOpen, setIsOpen] = useState(openByDefault);
 
@@ -27,7 +25,7 @@ export const FormCollapsibleSection = ({
   }, []);
 
   return (
-    <div className="flex flex-col px-5 py-4" data-qa={dataQa}>
+    <div className="flex flex-col px-5 py-4">
       <DialButton
         onClick={handleToggle}
         className="flex h-fit items-center gap-2 px-0 dial-small-semi-text"

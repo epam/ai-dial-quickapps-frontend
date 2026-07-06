@@ -6,14 +6,16 @@ const frameAncestors = process.env.ALLOWED_FRAME_ANCESTORS?.trim() || "'self'";
 
 const isDev = process.env.NODE_ENV === "development";
 
+const monacoCdnOrigin = "https://cdn.jsdelivr.net";
+
 const cspHeader = `
   default-src 'self';
-  script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""};
-  style-src 'self' 'unsafe-inline';
+  script-src 'self' 'unsafe-inline' ${monacoCdnOrigin}${isDev ? " 'unsafe-eval'" : ""};
+  style-src 'self' 'unsafe-inline' ${monacoCdnOrigin};
   img-src 'self' data: blob: https:;
-  font-src 'self';
+  font-src 'self' ${monacoCdnOrigin};
   worker-src 'self' blob:;
-  connect-src 'self';
+  connect-src 'self' ${monacoCdnOrigin};
   object-src 'none';
   base-uri 'self';
   form-action 'self';

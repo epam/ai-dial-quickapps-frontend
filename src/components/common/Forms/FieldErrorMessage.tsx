@@ -13,7 +13,6 @@ export const FieldErrorMessage = ({ error, className }: Props) => {
   return (
     <div
       className={classNames('text-xxs text-error', className)}
-      data-qa="error-message"
     >
       {error}
     </div>

@@ -58,20 +58,20 @@ export const ChipTooltipContent: React.FC<ChipTooltipContentProps> = ({
   return (
     <div className="flex max-w-[440px] flex-col px-2 py-1">
       {showUnavailable && (
-        <p className="mb-1 text-xs text-error">
+        <p className="dial-tiny-text mb-1 text-error">
           {t(CommonI18nKeys.NotAvailableEntityTypePleaseChange, {
             entityType: t(entityTypeKey),
           })}
         </p>
       )}
       {statusMessage && (
-        <p className="mb-1 text-xs text-error">{statusMessage}</p>
+        <p className="dial-tiny-text mb-1 text-error">{statusMessage}</p>
       )}
       {showReadonlyHint && (
-        <p className="mb-1 text-xs text-secondary">Read-only</p>
+        <p className="dial-tiny-text mb-1 text-secondary">Read-only</p>
       )}
       <div className="flex items-center gap-3">
-        <div className="flex min-w-0 flex-1 flex-col text-sm">
+        <div className="dial-small-text flex min-w-0 flex-1 flex-col">
           <span className="w-full truncate">{name}</span>
           {version && <span className="text-secondary">v{version}</span>}
         </div>

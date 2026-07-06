@@ -9,3 +9,9 @@ export interface SkillValidationState {
   status: SkillValidationStatus;
   message?: string;
 }
+
+export enum AgentSkillsModalView {
+  List = "list",
+  Create = "create",
+  Edit = "edit",
+}

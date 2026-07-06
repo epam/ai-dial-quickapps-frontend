@@ -74,7 +74,7 @@ export const AgentAndToolsetSelector: React.FC<
     <div className="relative grow space-y-4">
       <div className="flex flex-col">
         <div className="absolute right-0 top-[-29px] flex items-center">
-          <span data-qa="add-agents-button">
+          <span>
             <DialLinkButton
               tooltipProps={{
                 tooltip:
@@ -91,7 +91,7 @@ export const AgentAndToolsetSelector: React.FC<
           {!!onJsonSwitchClick && (
             <>
               <div className="ml-1 mr-3 h-3 w-0 border-l border-primary" />
-              <span data-qa="agents-and-toolsets-json-toggle">
+              <span>
                 <ToggleSwitch
                   isOn={false}
                   handleSwitch={onJsonSwitchClick}
@@ -110,16 +110,12 @@ export const AgentAndToolsetSelector: React.FC<
         </div>
         {!value.length ? (
           <DialNoDataContent
-            data-qa="no-agents-and-toolsets"
             title={t(CommonI18nKeys.NoAgentsAndToolsetsAdded)}
             icon={<IconLayoutGrid size={60} stroke={0.5} />}
             containerClassName="rounded border border-primary p-4"
           />
         ) : (
-          <div
-            data-qa="agents-and-toolsets-list"
-            className="flex flex-wrap gap-1 rounded border border-primary p-2"
-          >
+          <div className="flex flex-wrap gap-1 rounded border border-primary p-2">
             {value.map((id) => (
               <AgentAndToolsetChip
                 key={id}

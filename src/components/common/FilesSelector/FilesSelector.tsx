@@ -31,7 +31,7 @@ const SelectedFile: React.FC<SelectedFileProps> = ({
   const displayName = decodeApiUrl(document).split("/").pop() ?? document;
 
   return (
-    <div className="flex items-center gap-2 text-sm">
+    <div className="dial-small-text flex items-center gap-2">
       <IconFile size={16} className="shrink-0 text-secondary" />
       <span className="min-w-0 flex-1 truncate" title={displayName}>
         {displayName}

@@ -25,7 +25,6 @@ export const ChipTitle: React.FC<ChipTitleProps> = ({
       )}
     >
       <span
-        data-qa="chip-name"
         className={classNames(
           'min-w-0 truncate',
           isError && !isCustomTool ? 'text-error' : 'text-primary',
@@ -35,7 +34,6 @@ export const ChipTitle: React.FC<ChipTitleProps> = ({
       </span>
       {version && (
         <span
-          data-qa="chip-version"
           className={classNames(
             'truncate',
             'min-w-8 max-w-[50%]',

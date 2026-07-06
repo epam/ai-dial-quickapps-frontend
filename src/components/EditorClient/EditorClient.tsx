@@ -7,7 +7,7 @@ import { buildQuickApp2Config } from "@/form/quickApp2Form";
 import type { QuickApp2Form as QuickApp2FormType } from "@/form/quickApp2Form";
 import { QuickApp2Config } from "@/types/quick-apps";
 import { fetchAppSettings, fetchDialApp, saveDialApp } from "@/utils/dialClient";
-import { QuickApp2Form } from "@/components/QuickApp2Form/QuickApp2Form";
+import { QuickApp2Form } from "@/components/QuickApp2Form";
 import { DEFAULT_QUICK_APPS_SCHEMA_2_ID } from "@/constants/quick-apps";
 
 const ALLOWED_ORIGIN = process.env.NEXT_PUBLIC_ALLOWED_ORIGIN ?? "*";

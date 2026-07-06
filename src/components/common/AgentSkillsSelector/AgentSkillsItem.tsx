@@ -111,7 +111,6 @@ const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
   return (
     <div
       className="flex flex-col divide-y divide-tertiary bg-layer-3 py-2"
-      data-qa="agent-skill"
     >
       <div className="p-3">
         <div className="flex items-center gap-2">
@@ -130,18 +129,17 @@ const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
           />
 
           <div className="flex min-w-0 flex-1 flex-col">
-            <span className="flex items-center gap-1.5 truncate text-sm font-medium text-primary">
+            <span className="dial-small-text flex items-center gap-1.5 truncate font-medium text-primary">
               {displayName}
               {isSkillValid && (
                 <IconCircleCheckFilled
                   size={14}
                   className="shrink-0 text-accent-secondary"
-                  data-qa="valid-skill-icon"
                 />
               )}
             </span>
             {folderPath && (
-              <span className="truncate text-xs text-secondary">
+              <span className="dial-tiny-text truncate text-secondary">
                 {folderPath}
               </span>
             )}
@@ -152,14 +150,12 @@ const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
               {canEdit && (
                 <DialIconButton
                   icon={<IconPencilMinus size={16} />}
-                  data-qa="edit-skill"
                   onClick={() => onEdit(promptId)}
                 />
               )}
               {onDelete && (
                 <DialIconButton
                   icon={<IconTrashX size={16} />}
-                  data-qa="delete-skill"
                   onClick={() => onDelete(promptId)}
                 />
               )}
@@ -169,17 +165,16 @@ const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
 
         {isContentLoading && (
           <div className="mt-2 flex justify-center py-1">
-            <span className="text-xs text-secondary">Loading…</span>
+            <span className="dial-tiny-text text-secondary">Loading…</span>
           </div>
         )}
 
         {hasContentError && (
           <div
             className="mt-2 flex items-center gap-1 px-7 text-error"
-            data-qa="error-message"
           >
             <IconAlertCircleFilled size={16} className="shrink-0" />
-            <span className="break-words text-xs">
+            <span className="dial-tiny-text break-words">
               {t(MarketplaceI18nKeys.AgentSkillLoadError)}
             </span>
           </div>
@@ -187,17 +182,16 @@ const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
 
         {isSkillValidating && (
           <div className="mt-2 flex justify-center py-1">
-            <span className="text-xs text-secondary">Validating…</span>
+            <span className="dial-tiny-text text-secondary">Validating…</span>
           </div>
         )}
 
         {isSkillInvalid && (
           <div
             className="mt-2 flex items-center gap-1 px-7 text-error"
-            data-qa="skill-validation-error"
           >
             <IconAlertCircleFilled size={16} className="shrink-0" />
-            <span className="break-words text-xs">
+            <span className="dial-tiny-text break-words">
               {skillValidation.message ||
                 t(MarketplaceI18nKeys.AgentSkillsInvalidError)}
             </span>
@@ -206,7 +200,7 @@ const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
       </div>
 
       {isExpanded && promptContent != null && (
-        <div className="max-h-[160px] overflow-auto whitespace-pre-wrap break-words px-10 py-3 font-mono text-xs text-primary">
+        <div className="dial-tiny-text max-h-[160px] overflow-auto whitespace-pre-wrap break-words px-10 py-3 font-mono text-primary">
           {promptContent.content}
         </div>
       )}

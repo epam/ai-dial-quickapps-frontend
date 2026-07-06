@@ -21,7 +21,7 @@ export const TemperatureSlider: FC<TemperatureSliderProps> = ({
   onChangeTemperature,
 }) => {
   return (
-    <div data-qa="temp-slider" className="max-w-lg">
+    <div className="max-w-lg">
       <DialSlider
         value={temperature ?? DEFAULT_TEMPERATURE}
         min={0}

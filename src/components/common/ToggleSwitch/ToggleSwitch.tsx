@@ -30,7 +30,6 @@ export const ToggleSwitch: FC<ToggleSwitchProps> = ({
   const inner = (
     <div
       className={classNames("flex items-center gap-2", className)}
-      data-qa="toggle-switch"
     >
       <DialSwitch
         switchId={switchId}
