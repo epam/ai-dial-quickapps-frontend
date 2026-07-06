@@ -10,7 +10,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 Single Next.js 16 app (App Router), no monorepo. All source lives under `src/`:
 
-- `app/` — App Router pages and layouts. The main feature lives at `app/editor/` — an iframe-embedded app that communicates with its host via `postMessage`.
+- `app/` — App Router pages and layouts. The main feature lives at `app/page.tsx` (root route `/`) — an iframe-embedded app that communicates with its host via `postMessage`.
 - `components/` — React components. Shared reusables go in `components/common/`; form-specific components go in `components/QuickApp2Form/`.
 - `context/` — React context providers (`AppContext`, `DataContext`).
 - `form/` — `react-hook-form` schema definitions and form data builders (validated with `zod`).

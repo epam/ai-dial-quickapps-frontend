@@ -34,16 +34,16 @@ App will be available at http://localhost:3003.
 
 The editor supports two authentication modes that coexist:
 
-The editor uses [NextAuth.js](https://next-auth.js.org) with Keycloak. After sign-in the access token is kept server-side and injected into the DIAL API proxy automatically. Token refresh is handled transparently.
+The editor uses [NextAuth.js](https://next-auth.js.org) and supports multiple OAuth/OIDC providers: Keycloak, Azure AD, Google, Auth0, Okta, and Cognito. Enable a provider by setting all of its required environment variables (see [Environment variables](#environment-variables) below); providers with missing configuration are skipped. Multiple providers can be enabled at the same time. After sign-in the access token is kept server-side and injected into the DIAL API proxy automatically. Token refresh is handled transparently per provider.
 
 The proxy at `/api/dial/[...path]` tries the `dial_session` cookie first; if absent it falls back to the NextAuth session token.
 
-### Keycloak client setup
+### Provider client setup
 
-Create a confidential client in your Keycloak realm:
+For each provider you enable, register a confidential OAuth client with:
 
-- **Valid redirect URIs**: `{NEXTAUTH_URL}/api/auth/callback/keycloak`
-- **Web origins**: `{NEXTAUTH_URL}`
+- **Valid redirect URI**: `{NEXTAUTH_URL}/api/auth/callback/{provider}` — where `{provider}` is `keycloak`, `azure-ad`, `google`, `auth0`, `okta`, or `cognito`.
+- **Web origin**: `{NEXTAUTH_URL}`
 
 ## Environment variables
 
@@ -57,13 +57,65 @@ Copy `.env.template` to `.env.local` and fill in values. All variables without a
 
 ### Authentication
 
-| Variable                      | Required | Description                                                                                             |
-| ----------------------------- | :------: | ------------------------------------------------------------------------------------------------------- |
-| `NEXTAUTH_SECRET`             |   Yes    | Secret for signing session cookies. Generate with `openssl rand -base64 32`.                            |
-| `NEXTAUTH_URL`                |   Yes    | Public URL of this app, e.g. `https://quickapps.example.com`. Required for OAuth callback registration. |
-| `AUTH_KEYCLOAK_ISSUER`        |   Yes    | Keycloak realm URL, e.g. `https://keycloak.example.com/realms/dial`                                     |
-| `AUTH_KEYCLOAK_CLIENT_ID`     |   Yes    | Keycloak client ID                                                                                      |
-| `AUTH_KEYCLOAK_CLIENT_SECRET` |   Yes    | Keycloak client secret                                                                                  |
+| Variable          | Required | Description                                                                                             |
+| ----------------- | :------: | --------------------------------------------------------------------------------------------------------- |
+| `NEXTAUTH_SECRET` |   Yes    | Secret for signing session cookies. Generate with `openssl rand -base64 32`.                            |
+| `NEXTAUTH_URL`    |   Yes    | Public URL of this app, e.g. `https://quickapps.example.com`. Required for OAuth callback registration. |
+
+At least one OAuth provider below must be fully configured (all of its non-`_NAME` variables set). `*_NAME` variables are optional and override the display name shown on the sign-in button (defaults to `SSO`).
+
+#### Keycloak
+
+| Variable                      | Required | Description                                                          |
+| ------------------------------ | :------: | --------------------------------------------------------------------- |
+| `AUTH_KEYCLOAK_ISSUER`        |   Yes    | Keycloak realm URL, e.g. `https://keycloak.example.com/realms/dial` |
+| `AUTH_KEYCLOAK_CLIENT_ID`     |   Yes    | Keycloak client ID                                                   |
+| `AUTH_KEYCLOAK_CLIENT_SECRET` |   Yes    | Keycloak client secret                                               |
+| `AUTH_KEYCLOAK_NAME`          |    No    | Sign-in button label                                                 |
+
+#### Azure AD
+
+| Variable                      | Required | Description             |
+| ------------------------------ | :------: | ------------------------ |
+| `AUTH_AZURE_AD_CLIENT_ID`     |   Yes    | Azure AD application (client) ID |
+| `AUTH_AZURE_AD_CLIENT_SECRET` |   Yes    | Azure AD client secret   |
+| `AUTH_AZURE_AD_TENANT_ID`     |   Yes    | Azure AD tenant ID       |
+| `AUTH_AZURE_AD_NAME`          |    No    | Sign-in button label     |
+
+#### Google
+
+| Variable                   | Required | Description           |
+| --------------------------- | :------: | ----------------------- |
+| `AUTH_GOOGLE_CLIENT_ID`     |   Yes    | Google OAuth client ID |
+| `AUTH_GOOGLE_CLIENT_SECRET` |   Yes    | Google OAuth client secret |
+| `AUTH_GOOGLE_NAME`          |    No    | Sign-in button label   |
+
+#### Auth0
+
+| Variable                  | Required | Description                                        |
+| -------------------------- | :------: | --------------------------------------------------- |
+| `AUTH_AUTH0_CLIENT_ID`     |   Yes    | Auth0 application client ID                        |
+| `AUTH_AUTH0_CLIENT_SECRET` |   Yes    | Auth0 application client secret                    |
+| `AUTH_AUTH0_ISSUER`        |   Yes    | Auth0 tenant domain URL, e.g. `https://dial.us.auth0.com` |
+| `AUTH_AUTH0_NAME`          |    No    | Sign-in button label                               |
+
+#### Okta
+
+| Variable                 | Required | Description                                       |
+| ------------------------- | :------: | --------------------------------------------------- |
+| `AUTH_OKTA_CLIENT_ID`     |   Yes    | Okta application client ID                         |
+| `AUTH_OKTA_CLIENT_SECRET` |   Yes    | Okta application client secret                     |
+| `AUTH_OKTA_ISSUER`        |   Yes    | Okta authorization server URL, e.g. `https://dial.okta.com/oauth2/default` |
+| `AUTH_OKTA_NAME`          |    No    | Sign-in button label                               |
+
+#### Cognito
+
+| Variable                    | Required | Description                                                       |
+| ----------------------------- | :------: | -------------------------------------------------------------------- |
+| `AUTH_COGNITO_CLIENT_ID`     |   Yes    | Cognito app client ID                                              |
+| `AUTH_COGNITO_CLIENT_SECRET` |   Yes    | Cognito app client secret                                          |
+| `AUTH_COGNITO_ISSUER`        |   Yes    | Cognito user pool issuer URL, e.g. `https://cognito-idp.us-east-1.amazonaws.com/us-east-1_xxxxx` |
+| `AUTH_COGNITO_NAME`          |    No    | Sign-in button label                                               |
 
 ### DIAL core
 
@@ -93,17 +145,17 @@ Copy `.env.template` to `.env.local` and fill in values. All variables without a
 
 | Variable                               | Required | Default                                                         | Description                                                                                                                                                                                                                                         |
 | -------------------------------------- | :------: | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_ALLOWED_ORIGIN`           |    No    | `*`                                                             | Origin allowed to send `postMessage` events to the `/editor` iframe. Set to the exact ai-dial-chat URL in production (e.g. `https://chat.example.com`). Using `*` accepts messages from any origin — fine for local dev, **unsafe for production**. |
+| `NEXT_PUBLIC_ALLOWED_ORIGIN`           |    No    | `*`                                                             | Origin allowed to send `postMessage` events to the editor iframe. Set to the exact ai-dial-chat URL in production (e.g. `https://chat.example.com`). Using `*` accepts messages from any origin — fine for local dev, **unsafe for production**. |
 | `NEXT_PUBLIC_QUICK_APPS_DEFAULT_MODEL` |    No    | `gpt-4o`                                                        | Model ID pre-selected in the form when no model is stored in the app config.                                                                                                                                                                        |
 | `NEXT_PUBLIC_QUICK_APPS_SCHEMA_2_ID`   |    No    | `https://mydial.epam.com/custom_application_schemas/quickapps2` | `applicationTypeSchemaId` used to identify QuickApp2 applications. Override only if your DIAL instance uses a non-standard schema registry URL.                                                                                                     |
 
 ## Content Security Policy
 
-This app sends a `Content-Security-Policy: frame-ancestors ...` header (configured in `next.config.ts`) to control which origins are allowed to embed it in an `<iframe>`. By default `frame-ancestors 'self'` is sent, meaning no other site can frame it until `ALLOWED_FRAME_ANCESTORS` is set. In production, set it to the exact `ai-dial-chat` origin(s) that embed the `/editor` page.
+This app sends a `Content-Security-Policy: frame-ancestors ...` header (configured in `next.config.ts`) to control which origins are allowed to embed it in an `<iframe>`. By default `frame-ancestors 'self'` is sent, meaning no other site can frame it until `ALLOWED_FRAME_ANCESTORS` is set. In production, set it to the exact `ai-dial-chat` origin(s) that embed this app.
 
 ## postMessage protocol
 
-The `/editor` page communicates with its host via `postMessage`. Both sides validate `event.origin` against `NEXT_PUBLIC_ALLOWED_ORIGIN`.
+The editor page (at `/`) communicates with its host via `postMessage`. Both sides validate `event.origin` against `NEXT_PUBLIC_ALLOWED_ORIGIN`.
 
 In Dev mode the messages can be sent via console, e.g.
 
