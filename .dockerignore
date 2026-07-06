@@ -1,0 +1,21 @@
+# Node / local files
+node_modules
+.next
+.DS_Store
+*.log
+
+# Environment / secrets
+.env
+.env.local
+
+# Editor / IDE
+.vscode
+.idea
+
+# Test / build outputs
+coverage
+test-results
+e2e
+
+# Git
+.git

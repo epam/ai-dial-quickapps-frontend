@@ -1,0 +1,49 @@
+import { IconChevronDown } from "@tabler/icons-react";
+import { ReactNode, useCallback, useState } from "react";
+
+import classNames from "classnames";
+
+import { DialButton } from "@epam/ai-dial-ui-kit";
+
+interface FormSectionProps {
+  name: string;
+  children: ReactNode;
+  openByDefault?: boolean;
+  description?: ReactNode;
+}
+
+export const FormCollapsibleSection = ({
+  name,
+  children,
+  openByDefault = false,
+  description,
+}: FormSectionProps) => {
+  const [isOpen, setIsOpen] = useState(openByDefault);
+
+  const handleToggle = useCallback(() => {
+    setIsOpen((prev) => !prev);
+  }, []);
+
+  return (
+    <div className="flex flex-col px-5 py-4">
+      <DialButton
+        onClick={handleToggle}
+        className="flex h-fit items-center gap-2 px-0 dial-small-semi-text"
+        aria-expanded={isOpen}
+        label={name}
+        iconBefore={
+          <IconChevronDown
+            className={classNames("duration-200", !isOpen && "-rotate-90")}
+            size={20}
+          />
+        }
+      />
+      {description && (
+        <p className="ml-7 mt-2 dial-tiny-text text-secondary">{description}</p>
+      )}
+      {isOpen && (
+        <div className="ml-7 mt-3 flex flex-col gap-3">{children}</div>
+      )}
+    </div>
+  );
+};
