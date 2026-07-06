@@ -3,6 +3,6 @@
 @tailwind utilities;
 
 body {
-  background-color: var(--bg-layer-0, #000000);
-  color: var(--text-primary, #EEF1F7);
+  background-color: var(--bg-layer-0, #FCFCFC);
+  color: var(--text-primary, #161B2D);
 }
