@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useMemo } from "react";
 
 import { useTranslation } from "@/hooks/useTranslation";
 import { Translation } from "@/types/translation";
 import { CommonI18nKeys } from "@/constants/i18n";
 import { isToolsetId } from "@/utils/api";
-import type { EntityStatus } from "@/utils/get-entity-status";
+import {
+  getEntityStatusMessage,
+  type EntityStatus,
+} from "@/utils/get-entity-status";
 
 import type { ChipEntity } from "./AgentAndToolsetChip";
 
@@ -37,23 +40,10 @@ export const ChipTooltipContent: React.FC<ChipTooltipContentProps> = ({
     ? CommonI18nKeys.ToolsetEntityType
     : CommonI18nKeys.AgentEntityType;
 
-  const statusMessage = (() => {
-    if (!status) return undefined;
-    if (status.isLoggedOut) {
-      // Clicking the chip opens the sign-in popup directly (no scroll target
-      // exists in this simplified selector), so always use the "click on" copy.
-      return readonly
-        ? t(CommonI18nKeys.LoggedOutToolset)
-        : t(CommonI18nKeys.LoggedOutToolsetClickOn);
-    }
-    if (status.isDeploying) return t(CommonI18nKeys.DeployingApp);
-    if (status.isUndeploying) return t(CommonI18nKeys.UndeployingApp);
-    if (status.isRedeploying) return t(CommonI18nKeys.RedeployingApp);
-    // Deploying/undeploying an app isn't an action available from this
-    // selector, so never suggest clicking — just report the status.
-    if (status.isUndeployed) return t(CommonI18nKeys.UndeployedApp);
-    return undefined;
-  })();
+  const statusMessage = useMemo(
+    () => getEntityStatusMessage(status, readonly, t),
+    [status, readonly, t],
+  );
 
   return (
     <div className="flex max-w-[440px] flex-col px-2 py-1">
