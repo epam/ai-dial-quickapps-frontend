@@ -1,6 +1,8 @@
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 
+import { getDialAuthHeaders } from "@/utils/server/dial-server-auth";
+
 type RouteContext = { params: Promise<{ path: string[] }> };
 
 const proxyDial = async (
@@ -29,9 +31,7 @@ const proxyDial = async (
   const search = req.nextUrl.search;
   const backendUrl = `${dialApiHost}${dialPath}${search}`;
 
-  const headers: Record<string, string> = {
-    Authorization: `Bearer ${token}`,
-  };
+  const headers: Record<string, string> = getDialAuthHeaders(token);
   const contentType = req.headers.get("content-type");
   if (contentType) headers["Content-Type"] = contentType;
 

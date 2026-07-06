@@ -1,38 +1,10 @@
-import { getToken } from 'next-auth/jwt';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
-const COOKIE_NAME = 'dial_session';
-
-interface SessionData {
-  token: string;
-  dialApiHost: string;
-}
-
-const getDialSession = async (): Promise<SessionData | null> => {
-  const cookieStore = await cookies();
-  const cookie = cookieStore.get(COOKIE_NAME);
-  if (!cookie) return null;
-  try {
-    return JSON.parse(cookie.value) as SessionData;
-  } catch {
-    return null;
-  }
-};
-
-const getAuth = async (
-  req: NextRequest,
-): Promise<{ token?: string; dialApiHost?: string }> => {
-  const jwtToken = await getToken({ req });
-  if (jwtToken?.accessToken) {
-    return {
-      token: jwtToken.accessToken as string,
-      dialApiHost: process.env.DIAL_CORE_URL,
-    };
-  }
-  const session = await getDialSession();
-  return { token: session?.token, dialApiHost: session?.dialApiHost };
-};
+import {
+  getDialAuth,
+  getDialAuthHeaders,
+  JSON_CONTENT_TYPE_HEADERS,
+} from '@/utils/server/dial-server-auth';
 
 /**
  * GET /api/dial-files/list
@@ -48,7 +20,7 @@ const getAuth = async (
  * from incoming URLs before the catch-all proxy handler can forward it.
  */
 export async function GET(req: NextRequest): Promise<NextResponse> {
-  const { token, dialApiHost } = await getAuth(req);
+  const { token, dialApiHost } = await getDialAuth(req);
   if (!token || !dialApiHost) {
     return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 });
   }
@@ -75,12 +47,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const dialUrl = `${dialApiHost}/v1/metadata/files/${bucket}/${folderSegment}?${qs}`;
 
   const dialRes = await fetch(dialUrl, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: getDialAuthHeaders(token),
   });
 
   const body = await dialRes.text();
   return new NextResponse(body, {
     status: dialRes.status,
-    headers: { 'Content-Type': 'application/json' },
+    headers: JSON_CONTENT_TYPE_HEADERS,
   });
 }

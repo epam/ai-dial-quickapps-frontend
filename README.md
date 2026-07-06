@@ -53,7 +53,7 @@ Copy `.env.template` to `.env.local` and fill in values. All variables without a
 
 | Variable | Required | Default | Description                                                                               |
 | -------- | :------: | ------- | ----------------------------------------------------------------------------------------- |
-| `PORT`   |    No    | `4600`  | Port the dev/production server listens on. Also update `NEXTAUTH_URL` when changing this. |
+| `PORT`   |    No    | `4207`  | Port the dev/production server listens on. Also update `NEXTAUTH_URL` when changing this. |
 
 ### Authentication
 
@@ -79,14 +79,14 @@ Copy `.env.template` to `.env.local` and fill in values. All variables without a
 
 ### Feature flags
 
-| Variable                    | Required | Default | Description                                                                                                                              |
-| ---------------------------- | :------: | ------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `CODE_INTERPRETER_ENABLED`  |    No    | `false` | Enables the Code Interpreter toggle in the QuickApp2 editor. Served to the client via `GET /api/settings`, mirroring the `ENABLED_FEATURES` flag in `ai-dial-chat`. |
+| Variable                   | Required | Default | Description                                                                                                                                                         |
+| -------------------------- | :------: | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CODE_INTERPRETER_ENABLED` |    No    | `false` | Enables the Code Interpreter toggle in the QuickApp2 editor. Served to the client via `GET /api/settings`, mirroring the `ENABLED_FEATURES` flag in `ai-dial-chat`. |
 
 ### Security
 
-| Variable                  | Required | Default  | Description                                                                                                                                                                       |
-| -------------------------- | :------: | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Variable                  | Required | Default  | Description                                                                                                                                                                    |
+| ------------------------- | :------: | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `ALLOWED_FRAME_ANCESTORS` |    No    | `'self'` | Space-separated list of origins allowed to embed this app in an `<iframe>`, sent as the CSP `frame-ancestors` directive. Set to the exact `ai-dial-chat` URL(s) in production. |
 
 ### Client-side
