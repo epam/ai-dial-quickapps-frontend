@@ -15,3 +15,13 @@ export enum AgentSkillsModalView {
   Create = "create",
   Edit = "edit",
 }
+
+export enum PromptFolderRoot {
+  Organization = "organization",
+  Personal = "personal",
+}
+
+export interface FriendlyFolderPath {
+  root: PromptFolderRoot;
+  sub: string;
+}

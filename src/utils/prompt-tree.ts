@@ -1,4 +1,5 @@
 import { DialPrompt } from "@/types/dial-entities";
+import { FriendlyFolderPath, PromptFolderRoot } from "@/types/skill-validation";
 
 export interface PromptTreeNode {
   id: string;
@@ -73,6 +74,21 @@ export const promptPathUrl = (promptId: string): string => {
   const suffix = promptId.replace(/^prompts\//, "");
   const encoded = suffix.split("/").map(encodeURIComponent).join("/");
   return `/api/dial/v1/prompts/${encoded}`;
+};
+
+export const getFriendlyFolderPath = (folderId: string): FriendlyFolderPath => {
+  if (folderId === "prompts/public") {
+    return { root: PromptFolderRoot.Organization, sub: "" };
+  }
+  if (folderId.startsWith("prompts/public/")) {
+    return {
+      root: PromptFolderRoot.Organization,
+      sub: folderId.slice("prompts/public/".length),
+    };
+  }
+  // personal: "prompts/{bucket}" or "prompts/{bucket}/sub/..."
+  const parts = folderId.split("/");
+  return { root: PromptFolderRoot.Personal, sub: parts.slice(2).join("/") };
 };
 
 export const getAllPromptIds = (node: PromptTreeNode): string[] => {

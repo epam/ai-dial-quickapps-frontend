@@ -13,8 +13,16 @@ import { MarketplaceI18nKeys } from "@/constants/i18n";
 import { useDataContext } from "@/context/DataContext";
 import { useSkillValidation } from "@/hooks/useSkillValidation";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SkillValidationStatus } from "@/types/skill-validation";
+import {
+  PromptFolderRoot,
+  SkillValidationStatus,
+} from "@/types/skill-validation";
 import { Translation } from "@/types/translation";
+import {
+  getDisplayName,
+  getFriendlyFolderPath,
+  promptPathUrl,
+} from "@/utils/prompt-tree";
 import { DialIconButton } from "@epam/ai-dial-ui-kit";
 
 interface AgentSkillsItemProps {
@@ -28,28 +36,6 @@ interface PromptFileContent {
   name?: string;
   description?: string;
   content?: string;
-}
-
-function getDisplayName(name: string): string {
-  return name.replace(/\.json$/i, "").replace(/__[\d.]+$/, "");
-}
-
-function getFriendlyFolderPath(folderId: string): string {
-  if (folderId === "prompts/public") return "Organization";
-  if (folderId.startsWith("prompts/public/")) {
-    const sub = folderId.slice("prompts/public/".length);
-    return `Organization/${sub}`;
-  }
-  // personal: "prompts/{bucket}" or "prompts/{bucket}/sub/..."
-  const parts = folderId.split("/");
-  const sub = parts.slice(2).join("/");
-  return sub ? `My prompts/${sub}` : "My prompts";
-}
-
-function promptPathUrl(promptId: string): string {
-  const suffix = promptId.replace(/^prompts\//, "");
-  const encoded = suffix.split("/").map(encodeURIComponent).join("/");
-  return `/api/dial/v1/prompts/${encoded}`;
 }
 
 const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
@@ -79,7 +65,15 @@ const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
   const displayName = getDisplayName(rawName);
   const rawFolderId =
     prompt?.folderId ?? promptId.split("/").slice(0, -1).join("/");
-  const folderPath = getFriendlyFolderPath(rawFolderId);
+  const friendlyFolderPath = getFriendlyFolderPath(rawFolderId);
+  const folderRootLabel = t(
+    friendlyFolderPath.root === PromptFolderRoot.Organization
+      ? MarketplaceI18nKeys.OrganizationSection
+      : MarketplaceI18nKeys.MyPromptsSection,
+  );
+  const folderPath = friendlyFolderPath.sub
+    ? `${folderRootLabel}/${friendlyFolderPath.sub}`
+    : folderRootLabel;
   const isOwn = !promptId.startsWith("prompts/public/");
   const canEdit = isOwn && !readonly && !!onEdit;
 
@@ -165,7 +159,9 @@ const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
 
         {isContentLoading && (
           <div className="mt-2 flex justify-center py-1">
-            <span className="dial-tiny-text text-secondary">Loading…</span>
+            <span className="dial-tiny-text text-secondary">
+              {t(MarketplaceI18nKeys.AgentSkillContentLoading)}
+            </span>
           </div>
         )}
 
@@ -182,7 +178,9 @@ const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
 
         {isSkillValidating && (
           <div className="mt-2 flex justify-center py-1">
-            <span className="dial-tiny-text text-secondary">Validating…</span>
+            <span className="dial-tiny-text text-secondary">
+              {t(MarketplaceI18nKeys.AgentSkillValidating)}
+            </span>
           </div>
         )}
 
