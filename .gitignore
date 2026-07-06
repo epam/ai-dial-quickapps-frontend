@@ -41,4 +41,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-*/settings.local.json
+./.claude/settings.local.json
+.vscode/*
