@@ -28,7 +28,9 @@ const SelectedFile: React.FC<SelectedFileProps> = ({
   readonly,
   onRemove,
 }) => {
+  const { t } = useTranslation(Translation.Common);
   const displayName = decodeApiUrl(document).split("/").pop() ?? document;
+  const removeFileLabel = t(CommonI18nKeys.RemoveFile);
 
   return (
     <div className="dial-small-text flex items-center gap-2">
@@ -41,8 +43,8 @@ const SelectedFile: React.FC<SelectedFileProps> = ({
           icon={<IconTrashX size={16} />}
           onClick={() => onRemove(document)}
           appearance={ButtonAppearance.Link}
-          title="Remove file"
-          aria-label="Remove file"
+          title={removeFileLabel}
+          aria-label={removeFileLabel}
         />
       )}
     </div>

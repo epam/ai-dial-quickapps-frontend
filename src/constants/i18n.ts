@@ -40,6 +40,7 @@ export enum CommonI18nKeys {
   ShouldBeAValidJSON = "Should be a valid JSON",
   LoggedInToolset = "Logged in",
   ToolsetSignInFailed = "Failed to update toolset credentials",
+  RemoveFile = "Remove file",
 }
 
 // chat.json

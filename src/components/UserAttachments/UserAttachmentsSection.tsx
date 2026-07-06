@@ -7,10 +7,10 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Translation } from "@/types/translation";
 
 import { FormCollapsibleSection } from "@/components/common/FormCollapsibleSection";
-import { Field } from "@/components/common/Forms/Field";
 
 import { DialTagInput } from "@epam/ai-dial-ui-kit";
 import { DialFormItem } from "@epam/ai-dial-ui-kit";
+import { DialInput } from "@epam/ai-dial-ui-kit";
 
 export interface UserAttachmentsSectionProps {
   control: Control<QuickApp2FormType>;
@@ -57,23 +57,25 @@ const UserAttachmentsSection: FC<UserAttachmentsSectionProps> = ({
         />
       </DialFormItem>
 
-      <DialFormItem label={t(MarketplaceI18nKeys.MaxAttachmentsNumber)}>
+      <DialFormItem
+        label={t(MarketplaceI18nKeys.MaxAttachmentsNumber)}
+        error={errors.maxInputAttachments?.message as string | undefined}
+      >
         <Controller
           control={control}
           name="maxInputAttachments"
           render={({ field }) => (
-            <Field
+            <DialInput
               value={field.value?.toString() ?? ""}
-              onChange={(e) => {
-                const val = e.target.value;
-                field.onChange(val ? Number(val) : undefined);
+              onChange={(value) => {
+                field.onChange(value ? Number(value) : undefined);
               }}
               type="number"
               min={1}
               disabled={isReadonly}
               title={tooltip}
               placeholder={t(MarketplaceI18nKeys.EnterMaxAttachments)}
-              error={errors.maxInputAttachments?.message as string | undefined}
+              invalid={!!errors.maxInputAttachments}
             />
           )}
         />

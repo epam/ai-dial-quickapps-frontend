@@ -1,11 +1,9 @@
 import { IconHelp } from '@tabler/icons-react';
-import { ComponentType, FC, forwardRef } from 'react';
+import { FC } from 'react';
 
 import classNames from 'classnames';
 
 import { DialTooltip } from '@epam/ai-dial-ui-kit';
-
-import omit from 'lodash-es/omit';
 
 interface LabelProps {
   children?: string;
@@ -42,40 +40,3 @@ export const Label: FC<LabelProps> = ({
     )}
   </label>
 );
-
-interface WithLabelProps {
-  id?: string;
-  label?: LabelProps['children'];
-  mandatory?: boolean;
-  isSubgroup?: boolean;
-  info?: LabelProps['info'];
-}
-
-export function withLabel<T extends object, R>(
-  Component: ComponentType<T>,
-  excludeLabel?: boolean,
-) {
-  const LabelWrapper = forwardRef<R, WithLabelProps & T>(
-    ({ info, mandatory, isSubgroup, ...props }, ref) => (
-      <div className="flex flex-col">
-        <Label
-          htmlFor={props?.id}
-          mandatory={mandatory}
-          info={info}
-          isSubgroup={isSubgroup}
-        >
-          {props.label}
-        </Label>
-
-        <Component
-          {...(omit(props, excludeLabel ? ['label'] : []) as T)}
-          ref={ref}
-        />
-      </div>
-    ),
-  );
-
-  LabelWrapper.displayName = 'LabelWrapper';
-
-  return LabelWrapper;
-}
