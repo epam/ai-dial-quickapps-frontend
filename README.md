@@ -53,7 +53,7 @@ Copy `.env.template` to `.env.local` and fill in values. All variables without a
 
 | Variable | Required | Default | Description                                                                               |
 | -------- | :------: | ------- | ----------------------------------------------------------------------------------------- |
-| `PORT`   |    No    | `4500`  | Port the dev/production server listens on. Also update `NEXTAUTH_URL` when changing this. |
+| `PORT`   |    No    | `4600`  | Port the dev/production server listens on. Also update `NEXTAUTH_URL` when changing this. |
 
 ### Authentication
 
@@ -170,6 +170,8 @@ document.querySelector('iframe').contentWindow.postMessage({ type: 'TRIGGER_SAVE
 | `TRIGGER_SAVE`      | —                           | Triggers a manual save                  |
 | `TRIGGER_AUTO_SAVE` | `{ ignoreDirty?: boolean }` | Triggers an auto-save                   |
 | `RESET`             | —                           | Resets the form to the last saved state |
+
+In addition to host-triggered `TRIGGER_AUTO_SAVE` messages, the editor auto-saves itself on a 30-second interval (only when the form is dirty) while mounted — no host action is required.
 
 **Iframe → host**
 

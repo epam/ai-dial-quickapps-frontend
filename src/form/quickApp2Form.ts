@@ -26,6 +26,7 @@ import {
   DialAppToolset,
   DialAppTransportType,
   DialDeploymentSimpleTool,
+  DialDeploymentToolset,
   DialPromptSkill,
   MCPToolset,
   QuickApp2Config,
@@ -248,6 +249,25 @@ export const getQuickApp2FormData = (
   };
 };
 
+const getJsonViewToolsets = (data: QuickApp2Form): AnyToolset[] => {
+  const parsed = JSON.parse(data.agentsAndToolsetsJson) as AnyToolset[];
+  const withoutCodeInterpreter = parsed.filter(
+    (toolset) => toolset.type !== ToolsetTypes.CodeInterpreter,
+  );
+
+  return [
+    ...withoutCodeInterpreter,
+    ...(data.codeInterpreter
+      ? [
+          {
+            template_name: "py_interpreter",
+            type: ToolsetTypes.CodeInterpreter,
+          } as CodeInterpreterToolset,
+        ]
+      : []),
+  ];
+};
+
 export const buildQuickApp2Config = ({
   data,
   allEntitiesMap,
@@ -260,7 +280,9 @@ export const buildQuickApp2Config = ({
   >;
   existingConfig?: QuickApp2Config;
 }): QuickApp2Config => {
-  const toolSets = getQuickApp2Toolsets({ allEntitiesMap, data });
+  const toolSets = data.isJsonView
+    ? getJsonViewToolsets(data)
+    : getQuickApp2Toolsets({ allEntitiesMap, data });
 
   const starters = data.starters
     .filter((s) => s.title.trim() || s.text.trim())
@@ -293,12 +315,14 @@ export const buildQuickApp2Config = ({
       type: "file" as const,
     })),
     tool_sets: toolSets,
-    conversation_starters: {
-      intro_text: data.introText || undefined,
-      chat_message_input_disabled: data.chatMessageInputDisabled,
-      auto_submit: data.autoSubmit,
-      starters,
-    },
+    conversation_starters: starters.length
+      ? {
+          intro_text: data.introText || undefined,
+          chat_message_input_disabled: data.chatMessageInputDisabled,
+          auto_submit: data.autoSubmit,
+          starters,
+        }
+      : null,
     ...(skills.length && { skills }),
     features: {
       ...existingConfig?.features,
@@ -413,7 +437,7 @@ export const getQuickApp2Toolsets = ({
       name: "dial-deployment-tool-set",
       type: ToolsetTypes.DialDeployment,
       tools: [...dialDeploymentsToolsets],
-    },
+    } as DialDeploymentToolset,
     ...otherToolsets,
     ...(data.codeInterpreter
       ? [

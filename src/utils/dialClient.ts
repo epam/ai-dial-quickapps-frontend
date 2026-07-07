@@ -20,7 +20,7 @@ const encodeDialPath = (id: string): string =>
   id.split("/").map(encodeURIComponent).join("/");
 
 /** Decode each path segment individually. */
-const decodeDialPath = (url: string): string =>
+export const decodeDialPath = (url: string): string =>
   url.split("/").map(decodeURIComponent).join("/");
 
 interface CoreApiEntity {
@@ -298,7 +298,7 @@ export async function saveDialApp(
 }> {
   const rawForSave = (app._rawForSave as Record<string, unknown>) ?? {};
   const body: Record<string, unknown> = {
-    display_name: rawForSave.display_name,
+    display_name: rawForSave.display_name ?? app.name,
     display_version: rawForSave.display_version,
     icon_url: rawForSave.icon_url,
     description: rawForSave.description,
@@ -311,7 +311,8 @@ export async function saveDialApp(
       rawForSave.max_input_attachments,
     reference: rawForSave.reference,
     description_keywords: rawForSave.description_keywords,
-    application_type_schema_id: rawForSave.application_type_schema_id,
+    application_type_schema_id:
+      rawForSave.application_type_schema_id ?? app.applicationTypeSchemaId,
     application_properties: encodeApplicationPropertiesForApi(
       applicationProperties,
     ),

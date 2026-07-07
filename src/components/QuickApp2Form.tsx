@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Resolver, useForm } from "react-hook-form";
 
+import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from "@/constants/editor";
 import { MarketplaceI18nKeys } from "@/constants/i18n";
 import { ToolsetTypes } from "@/constants/quick-apps";
 import { useAppContext } from "@/context/AppContext";
@@ -17,6 +18,7 @@ import {
   type QuickApp2Form as QuickApp2FormType,
 } from "@/form/quickApp2Form";
 import { useTranslation } from "@/hooks/useTranslation";
+import { DialAIEntityModel } from "@/utils/application";
 import { AnyToolset, DialAppTransportType } from "@/types/quick-apps";
 import { Translation } from "@/types/translation";
 
@@ -27,8 +29,17 @@ import ConversationStartersSection from "./ConversationStarters/ConversationStar
 import OrchestratorSection from "./Orchestrator/OrchestratorSection";
 import UserAttachmentsSection from "./UserAttachments/UserAttachmentsSection";
 
+export type QuickApp2AllEntitiesMap = Record<
+  string,
+  DialAIEntityModel & { id: string; name?: string; type?: string }
+>;
+
 interface QuickApp2FormProps {
-  onSave: (data: QuickApp2FormType, isAutoSave?: boolean) => void;
+  onSave: (
+    data: QuickApp2FormType,
+    allEntitiesMap: QuickApp2AllEntitiesMap,
+    isAutoSave?: boolean,
+  ) => void;
   onDiscard?: () => void;
   onDirtyChange?: (isDirty: boolean) => void;
   readonly?: boolean;
@@ -83,8 +94,19 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   }, [toolSupportingModelIds, availableModelIds, setValue]);
 
   useEffect(() => {
+    if (!settings.isCodeInterpreterEnabled) {
+      setValue("codeInterpreter", false);
+    }
+  }, [settings.isCodeInterpreterEnabled, setValue]);
+
+  useEffect(() => {
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
+
+  const allEntitiesMap = useMemo(
+    () => ({ ...modelsMap, ...toolsetsMap }),
+    [modelsMap, toolsetsMap],
+  );
 
   useEffect(() => {
     const handleTriggerSave = (event: Event) => {
@@ -93,21 +115,16 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
           .detail ?? {};
       if (isReadonly) return;
       if (isAutoSave && !ignoreDirty && !isDirty) return;
-      void handleSubmit((data) => onSave(data, isAutoSave))();
+      void handleSubmit((data) => onSave(data, allEntitiesMap, isAutoSave))();
     };
 
-    window.addEventListener("dial-editor-trigger-save", handleTriggerSave);
+    window.addEventListener(DIAL_EDITOR_TRIGGER_SAVE_EVENT, handleTriggerSave);
     return () =>
       window.removeEventListener(
-        "dial-editor-trigger-save",
+        DIAL_EDITOR_TRIGGER_SAVE_EVENT,
         handleTriggerSave,
       );
-  }, [handleSubmit, isDirty, isReadonly, onSave]);
-
-  const allEntitiesMap = useMemo(
-    () => ({ ...modelsMap, ...toolsetsMap }),
-    [modelsMap, toolsetsMap],
-  );
+  }, [handleSubmit, isDirty, isReadonly, onSave, allEntitiesMap]);
 
   const isJsonView = watch("isJsonView");
   const starters = watch("starters");
@@ -198,9 +215,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   const handleAttachmentTypesChange = useCallback(
     (tags: string[], prevTags: string[]) => {
       const addedTags = tags.filter((tag) => !prevTags.includes(tag));
-      const hasInvalidTag = addedTags.some(
-        (tag) => !MIME_TYPE_REGEX.test(tag),
-      );
+      const hasInvalidTag = addedTags.some((tag) => !MIME_TYPE_REGEX.test(tag));
       if (hasInvalidTag) {
         setError("inputAttachmentTypes", {
           type: "manual",
@@ -228,7 +243,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
 
   return (
     <form
-      onSubmit={handleSubmit((data) => onSave(data, false))}
+      onSubmit={handleSubmit((data) => onSave(data, allEntitiesMap, false))}
       className="flex flex-col"
     >
       <OrchestratorSection
@@ -250,9 +265,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         agentsAndToolsetsJson={agentsAndToolsetsJson}
         isJsonView={isJsonView}
         onAgentsChange={handleAgentsChange}
-        onJsonChange={(json: string) =>
-          setValue("agentsAndToolsetsJson", json)
-        }
+        onJsonChange={(json: string) => setValue("agentsAndToolsetsJson", json)}
         onSwitchToJsonView={handleSwitchToJsonView}
         onSwitchToSimpleView={handleSwitchToSimpleView}
         onDiscardJson={handleDiscardJson}

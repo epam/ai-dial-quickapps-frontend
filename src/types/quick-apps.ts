@@ -108,7 +108,7 @@ export interface QuickApp2Config {
   };
   contexts: FileContext[];
   tool_sets: AnyToolset[];
-  conversation_starters: ConversationStarters;
+  conversation_starters: ConversationStarters | null;
   input_attachment_types?: string[];
   max_input_attachments?: number;
   skills?: DialPromptSkill[];
