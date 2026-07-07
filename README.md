@@ -53,12 +53,12 @@ Copy `.env.template` to `.env.local` and fill in values. All variables without a
 
 | Variable | Required | Default | Description                                                                               |
 | -------- | :------: | ------- | ----------------------------------------------------------------------------------------- |
-| `PORT`   |    No    | `4207`  | Port the dev/production server listens on. Also update `NEXTAUTH_URL` when changing this. |
+| `PORT`   |    No    | `4500`  | Port the dev/production server listens on. Also update `NEXTAUTH_URL` when changing this. |
 
 ### Authentication
 
 | Variable          | Required | Description                                                                                             |
-| ----------------- | :------: | --------------------------------------------------------------------------------------------------------- |
+| ----------------- | :------: | ------------------------------------------------------------------------------------------------------- |
 | `NEXTAUTH_SECRET` |   Yes    | Secret for signing session cookies. Generate with `openssl rand -base64 32`.                            |
 | `NEXTAUTH_URL`    |   Yes    | Public URL of this app, e.g. `https://quickapps.example.com`. Required for OAuth callback registration. |
 
@@ -66,56 +66,56 @@ At least one OAuth provider below must be fully configured (all of its non-`_NAM
 
 #### Keycloak
 
-| Variable                      | Required | Description                                                          |
-| ------------------------------ | :------: | --------------------------------------------------------------------- |
+| Variable                      | Required | Description                                                         |
+| ----------------------------- | :------: | ------------------------------------------------------------------- |
 | `AUTH_KEYCLOAK_ISSUER`        |   Yes    | Keycloak realm URL, e.g. `https://keycloak.example.com/realms/dial` |
-| `AUTH_KEYCLOAK_CLIENT_ID`     |   Yes    | Keycloak client ID                                                   |
-| `AUTH_KEYCLOAK_CLIENT_SECRET` |   Yes    | Keycloak client secret                                               |
-| `AUTH_KEYCLOAK_NAME`          |    No    | Sign-in button label                                                 |
+| `AUTH_KEYCLOAK_CLIENT_ID`     |   Yes    | Keycloak client ID                                                  |
+| `AUTH_KEYCLOAK_CLIENT_SECRET` |   Yes    | Keycloak client secret                                              |
+| `AUTH_KEYCLOAK_NAME`          |    No    | Sign-in button label                                                |
 
 #### Azure AD
 
-| Variable                      | Required | Description             |
-| ------------------------------ | :------: | ------------------------ |
+| Variable                      | Required | Description                      |
+| ----------------------------- | :------: | -------------------------------- |
 | `AUTH_AZURE_AD_CLIENT_ID`     |   Yes    | Azure AD application (client) ID |
-| `AUTH_AZURE_AD_CLIENT_SECRET` |   Yes    | Azure AD client secret   |
-| `AUTH_AZURE_AD_TENANT_ID`     |   Yes    | Azure AD tenant ID       |
-| `AUTH_AZURE_AD_NAME`          |    No    | Sign-in button label     |
+| `AUTH_AZURE_AD_CLIENT_SECRET` |   Yes    | Azure AD client secret           |
+| `AUTH_AZURE_AD_TENANT_ID`     |   Yes    | Azure AD tenant ID               |
+| `AUTH_AZURE_AD_NAME`          |    No    | Sign-in button label             |
 
 #### Google
 
-| Variable                   | Required | Description           |
-| --------------------------- | :------: | ----------------------- |
-| `AUTH_GOOGLE_CLIENT_ID`     |   Yes    | Google OAuth client ID |
+| Variable                    | Required | Description                |
+| --------------------------- | :------: | -------------------------- |
+| `AUTH_GOOGLE_CLIENT_ID`     |   Yes    | Google OAuth client ID     |
 | `AUTH_GOOGLE_CLIENT_SECRET` |   Yes    | Google OAuth client secret |
-| `AUTH_GOOGLE_NAME`          |    No    | Sign-in button label   |
+| `AUTH_GOOGLE_NAME`          |    No    | Sign-in button label       |
 
 #### Auth0
 
-| Variable                  | Required | Description                                        |
-| -------------------------- | :------: | --------------------------------------------------- |
-| `AUTH_AUTH0_CLIENT_ID`     |   Yes    | Auth0 application client ID                        |
-| `AUTH_AUTH0_CLIENT_SECRET` |   Yes    | Auth0 application client secret                    |
+| Variable                   | Required | Description                                               |
+| -------------------------- | :------: | --------------------------------------------------------- |
+| `AUTH_AUTH0_CLIENT_ID`     |   Yes    | Auth0 application client ID                               |
+| `AUTH_AUTH0_CLIENT_SECRET` |   Yes    | Auth0 application client secret                           |
 | `AUTH_AUTH0_ISSUER`        |   Yes    | Auth0 tenant domain URL, e.g. `https://dial.us.auth0.com` |
-| `AUTH_AUTH0_NAME`          |    No    | Sign-in button label                               |
+| `AUTH_AUTH0_NAME`          |    No    | Sign-in button label                                      |
 
 #### Okta
 
-| Variable                 | Required | Description                                       |
-| ------------------------- | :------: | --------------------------------------------------- |
-| `AUTH_OKTA_CLIENT_ID`     |   Yes    | Okta application client ID                         |
-| `AUTH_OKTA_CLIENT_SECRET` |   Yes    | Okta application client secret                     |
+| Variable                  | Required | Description                                                                |
+| ------------------------- | :------: | -------------------------------------------------------------------------- |
+| `AUTH_OKTA_CLIENT_ID`     |   Yes    | Okta application client ID                                                 |
+| `AUTH_OKTA_CLIENT_SECRET` |   Yes    | Okta application client secret                                             |
 | `AUTH_OKTA_ISSUER`        |   Yes    | Okta authorization server URL, e.g. `https://dial.okta.com/oauth2/default` |
-| `AUTH_OKTA_NAME`          |    No    | Sign-in button label                               |
+| `AUTH_OKTA_NAME`          |    No    | Sign-in button label                                                       |
 
 #### Cognito
 
-| Variable                    | Required | Description                                                       |
-| ----------------------------- | :------: | -------------------------------------------------------------------- |
-| `AUTH_COGNITO_CLIENT_ID`     |   Yes    | Cognito app client ID                                              |
-| `AUTH_COGNITO_CLIENT_SECRET` |   Yes    | Cognito app client secret                                          |
+| Variable                     | Required | Description                                                                                      |
+| ---------------------------- | :------: | ------------------------------------------------------------------------------------------------ |
+| `AUTH_COGNITO_CLIENT_ID`     |   Yes    | Cognito app client ID                                                                            |
+| `AUTH_COGNITO_CLIENT_SECRET` |   Yes    | Cognito app client secret                                                                        |
 | `AUTH_COGNITO_ISSUER`        |   Yes    | Cognito user pool issuer URL, e.g. `https://cognito-idp.us-east-1.amazonaws.com/us-east-1_xxxxx` |
-| `AUTH_COGNITO_NAME`          |    No    | Sign-in button label                                               |
+| `AUTH_COGNITO_NAME`          |    No    | Sign-in button label                                                                             |
 
 ### DIAL core
 
@@ -143,11 +143,11 @@ At least one OAuth provider below must be fully configured (all of its non-`_NAM
 
 ### Client-side
 
-| Variable                               | Required | Default                                                         | Description                                                                                                                                                                                                                                         |
-| -------------------------------------- | :------: | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Variable                               | Required | Default                                                         | Description                                                                                                                                                                                                                                      |
+| -------------------------------------- | :------: | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `NEXT_PUBLIC_ALLOWED_ORIGIN`           |    No    | `*`                                                             | Origin allowed to send `postMessage` events to the editor iframe. Set to the exact ai-dial-chat URL in production (e.g. `https://chat.example.com`). Using `*` accepts messages from any origin — fine for local dev, **unsafe for production**. |
-| `NEXT_PUBLIC_QUICK_APPS_DEFAULT_MODEL` |    No    | `gpt-4o`                                                        | Model ID pre-selected in the form when no model is stored in the app config.                                                                                                                                                                        |
-| `NEXT_PUBLIC_QUICK_APPS_SCHEMA_2_ID`   |    No    | `https://mydial.epam.com/custom_application_schemas/quickapps2` | `applicationTypeSchemaId` used to identify QuickApp2 applications. Override only if your DIAL instance uses a non-standard schema registry URL.                                                                                                     |
+| `NEXT_PUBLIC_QUICK_APPS_DEFAULT_MODEL` |    No    | `gpt-4o`                                                        | Model ID pre-selected in the form when no model is stored in the app config.                                                                                                                                                                     |
+| `NEXT_PUBLIC_QUICK_APPS_SCHEMA_2_ID`   |    No    | `https://mydial.epam.com/custom_application_schemas/quickapps2` | `applicationTypeSchemaId` used to identify QuickApp2 applications. Override only if your DIAL instance uses a non-standard schema registry URL.                                                                                                  |
 
 ## Content Security Policy
 
