@@ -9,10 +9,10 @@ import { AUTH_WINDOW_CLOSE_KEY } from "@/constants/auth";
 const SignInContent: FC = () => {
   const searchParams = useSearchParams();
   const provider = searchParams.get("provider") ?? "keycloak";
-  const { status } = useSession();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (status === "unauthenticated" || session?.error) {
       void signIn(provider, {
         callbackUrl: `/signin?provider=${encodeURIComponent(provider)}`,
       });
@@ -23,7 +23,7 @@ const SignInContent: FC = () => {
       );
       window.close();
     }
-  }, [status, provider]);
+  }, [status, session, provider]);
 
   return (
     <div className="flex h-screen items-center justify-center">

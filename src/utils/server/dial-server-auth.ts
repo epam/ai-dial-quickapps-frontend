@@ -24,7 +24,7 @@ export const getDialAuth = async (
   req: NextRequest,
 ): Promise<{ token?: string; dialApiHost?: string }> => {
   const jwtToken = await getToken({ req });
-  if (jwtToken?.accessToken) {
+  if (jwtToken?.accessToken && !jwtToken.error) {
     return {
       token: jwtToken.accessToken as string,
       dialApiHost: process.env.DIAL_CORE_URL,

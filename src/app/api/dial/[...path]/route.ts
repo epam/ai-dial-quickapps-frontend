@@ -10,7 +10,7 @@ const proxyDial = async (
   { params }: RouteContext,
 ): Promise<NextResponse> => {
   const jwtToken = await getToken({ req });
-  if (!jwtToken?.accessToken) {
+  if (!jwtToken?.accessToken || jwtToken.error) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
 
