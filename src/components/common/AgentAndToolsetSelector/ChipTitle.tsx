@@ -18,12 +18,7 @@ export const ChipTitle: React.FC<ChipTitleProps> = ({
   className,
 }) => {
   return (
-    <div
-      className={classNames(
-        'flex min-w-0 items-baseline justify-between gap-x-2',
-        className,
-      )}
-    >
+    <div className={classNames('flex min-w-0 items-baseline justify-between gap-x-2', className)}>
       <span
         className={classNames(
           'min-w-0 truncate',

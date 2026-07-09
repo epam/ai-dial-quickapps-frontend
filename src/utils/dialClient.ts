@@ -5,24 +5,19 @@ import type {
   DialPrompt,
   DialToolset,
   ToolsetAuthSettings,
-} from "@/types/dial-entities";
-import type { QuickApp2Config } from "@/types/quick-apps";
-import {
-  ApplicationStatus,
-  ToolsetAuthStatus,
-  ToolsetAuthType,
-} from "@/types/dial-entities";
-import { handleUnauthorizedResponse } from "@/utils/handle-unauthorized-response";
+} from '@/types/dial-entities';
+import type { QuickApp2Config } from '@/types/quick-apps';
+import { ApplicationStatus, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
+import { handleUnauthorizedResponse } from '@/utils/handle-unauthorized-response';
 
-const DIAL_API_VERSION = "2025-01-01-preview";
+const DIAL_API_VERSION = '2025-01-01-preview';
 
 /** Encode each path segment individually, preserving '/' as a separator. */
-const encodeDialPath = (id: string): string =>
-  id.split("/").map(encodeURIComponent).join("/");
+const encodeDialPath = (id: string): string => id.split('/').map(encodeURIComponent).join('/');
 
 /** Decode each path segment individually. */
 export const decodeDialPath = (url: string): string =>
-  url.split("/").map(decodeURIComponent).join("/");
+  url.split('/').map(decodeURIComponent).join('/');
 
 interface CoreApiEntity {
   id: string;
@@ -80,21 +75,18 @@ function normalizeIconUrl(iconUrl?: string): string | undefined {
   if (!iconUrl) return undefined;
   if (/^https?:\/\//i.test(iconUrl)) return iconUrl;
   return iconUrl
-    .split("/")
+    .split('/')
     .map((s) => decodeURIComponent(s))
-    .join("/");
+    .join('/');
 }
 
-function mapAuthSettings(
-  authSettings?: ToolsetApiAuthSettings,
-): ToolsetAuthSettings | undefined {
+function mapAuthSettings(authSettings?: ToolsetApiAuthSettings): ToolsetAuthSettings | undefined {
   if (!authSettings?.authentication_type) return undefined;
   return {
     authenticationType: authSettings.authentication_type,
     // This app has no per-user/org credential split, so a user-level
     // sign-in takes precedence over an org-wide one.
-    authStatus:
-      authSettings.user_level_auth_status ?? authSettings.global_auth_status,
+    authStatus: authSettings.user_level_auth_status ?? authSettings.global_auth_status,
     apiKeyHeader: authSettings.api_key_header,
     authorizationEndpoint: authSettings.authorization_endpoint,
     tokenEndpoint: authSettings.token_endpoint,
@@ -112,7 +104,7 @@ async function dialFetch<T>(path: string): Promise<T> {
     if (handleUnauthorizedResponse(res)) {
       throw new Error(`DIAL API ${res.status} for ${path}: session expired`);
     }
-    const body = await res.text().catch(() => "");
+    const body = await res.text().catch(() => '');
     const err = new Error(`DIAL API ${res.status} for ${path}: ${body}`);
     console.error(err.message);
     throw err;
@@ -125,7 +117,7 @@ function mapCoreToDialModel(entity: CoreApiEntity): DialModel {
     id: decodeURIComponent(entity.id),
     reference: entity.reference,
     name: entity.display_name ?? entity.id,
-    type: entity.object as "model" | "application",
+    type: entity.object as 'model' | 'application',
     version: entity.display_version,
     iconUrl: normalizeIconUrl(entity.icon_url),
     applicationTypeSchemaId: entity.application_type_schema_id,
@@ -145,13 +137,13 @@ function mapCoreToDialModel(entity: CoreApiEntity): DialModel {
 }
 
 function mapApiToDialToolset(data: ToolsetApiEntity): DialToolset {
-  const rawId = data.id ?? data.toolset ?? data.name ?? "";
+  const rawId = data.id ?? data.toolset ?? data.name ?? '';
   const id = decodeURIComponent(rawId);
   return {
     id,
     reference: data.reference ?? id,
     name: data.display_name ?? id,
-    type: "toolset",
+    type: 'toolset',
     version: data.display_version,
     iconUrl: normalizeIconUrl(data.icon_url),
     mcp: data.mcp,
@@ -163,18 +155,14 @@ function mapApiToDialToolset(data: ToolsetApiEntity): DialToolset {
 }
 
 export async function fetchDialBucket(): Promise<string> {
-  const { bucket } = await dialFetch<{ bucket: string }>("/v1/bucket");
+  const { bucket } = await dialFetch<{ bucket: string }>('/v1/bucket');
   return bucket;
 }
 
 export async function fetchDialModels(): Promise<DialModel[]> {
   const [modelsRes, appsRes] = await Promise.all([
-    dialFetch<{ data: CoreApiEntity[] }>(
-      `/openai/models?api-version=${DIAL_API_VERSION}`,
-    ),
-    dialFetch<{ data: CoreApiEntity[] }>(
-      `/openai/applications?api-version=${DIAL_API_VERSION}`,
-    ),
+    dialFetch<{ data: CoreApiEntity[] }>(`/openai/models?api-version=${DIAL_API_VERSION}`),
+    dialFetch<{ data: CoreApiEntity[] }>(`/openai/applications?api-version=${DIAL_API_VERSION}`),
   ]);
   return [...modelsRes.data, ...appsRes.data].map(mapCoreToDialModel);
 }
@@ -211,21 +199,20 @@ function mapApplicationPropertiesFromApi(properties: unknown): unknown {
     result.skills = config.skills.map((skill) => ({
       ...skill,
       url: decodeDialPath((skill as { url: string }).url),
-    })) as QuickApp2Config["skills"];
+    })) as QuickApp2Config['skills'];
   }
 
   // Migrate deprecated orchestrator.deployment.name → deployment_id
   const dep = config?.orchestrator?.deployment as
-    | (QuickApp2Config["orchestrator"]["deployment"] & { name?: string })
-    | undefined;
-  if (dep && typeof dep.name === "string" && !dep.deployment_id) {
+    (QuickApp2Config['orchestrator']['deployment'] & { name?: string }) | undefined;
+  if (dep && typeof dep.name === 'string' && !dep.deployment_id) {
     result.orchestrator = {
       ...config.orchestrator,
       deployment: {
         ...dep,
         deployment_id: dep.name,
         name: undefined,
-      } as QuickApp2Config["orchestrator"]["deployment"],
+      } as QuickApp2Config['orchestrator']['deployment'],
     };
   }
 
@@ -250,14 +237,14 @@ function encodeApplicationPropertiesForApi(properties: unknown): unknown {
     encoded.skills = config.skills.map((skill) => ({
       ...skill,
       url: encodeDialPath((skill as { url: string }).url),
-    })) as QuickApp2Config["skills"];
+    })) as QuickApp2Config['skills'];
   }
 
   return encoded;
 }
 
 export async function fetchAppSettings(): Promise<AppSettings> {
-  const res = await fetch("/api/settings");
+  const res = await fetch('/api/settings');
   if (!res.ok) return {};
   return res.json() as Promise<AppSettings>;
 }
@@ -269,7 +256,7 @@ export async function fetchDialApp(appId: string): Promise<DialApp | null> {
     if (handleUnauthorizedResponse(res)) {
       throw new Error(`DIAL API ${res.status} for /${appId}: session expired`);
     }
-    const body = await res.text().catch(() => "");
+    const body = await res.text().catch(() => '');
     const err = new Error(`DIAL API ${res.status} for /${appId}: ${body}`);
     console.error(err.message);
     throw err;
@@ -284,11 +271,8 @@ export async function fetchDialApp(appId: string): Promise<DialApp | null> {
     id: appId,
     name: raw.display_name ?? appId,
     applicationTypeSchemaId: raw.application_type_schema_id,
-    applicationProperties: mapApplicationPropertiesFromApi(
-      raw.application_properties,
-    ),
-    inputAttachmentTypes:
-      (raw.input_attachment_types as string[] | undefined) ?? [],
+    applicationProperties: mapApplicationPropertiesFromApi(raw.application_properties),
+    inputAttachmentTypes: (raw.input_attachment_types as string[] | undefined) ?? [],
     maxInputAttachments: raw.max_input_attachments as number | undefined,
     // Stored so saveDialApp can reconstruct the full PUT body without data loss.
     _rawForSave: rawForSave,
@@ -311,36 +295,27 @@ export async function saveDialApp(
     description: rawForSave.description,
     features: rawForSave.features,
     input_attachment_types:
-      (app.inputAttachmentTypes as string[] | undefined) ??
-      rawForSave.input_attachment_types,
+      (app.inputAttachmentTypes as string[] | undefined) ?? rawForSave.input_attachment_types,
     max_input_attachments:
-      (app.maxInputAttachments as number | undefined) ??
-      rawForSave.max_input_attachments,
+      (app.maxInputAttachments as number | undefined) ?? rawForSave.max_input_attachments,
     reference: rawForSave.reference,
     description_keywords: rawForSave.description_keywords,
     application_type_schema_id:
       rawForSave.application_type_schema_id ?? app.applicationTypeSchemaId,
-    application_properties: encodeApplicationPropertiesForApi(
-      applicationProperties,
-    ),
+    application_properties: encodeApplicationPropertiesForApi(applicationProperties),
   };
   const res = await fetch(`/api/dial/v1/${encodeDialPath(app.id)}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
     if (handleUnauthorizedResponse(res)) {
       throw new Error(`DIAL API ${res.status}: session expired`);
     }
-    const text = await res.text().catch(() => "");
-    console.error("[saveDialApp] PUT body:", JSON.stringify(body, null, 2));
-    console.error(
-      "[saveDialApp] DIAL Core",
-      res.status,
-      res.headers.get("content-type"),
-      text,
-    );
+    const text = await res.text().catch(() => '');
+    console.error('[saveDialApp] PUT body:', JSON.stringify(body, null, 2));
+    console.error('[saveDialApp] DIAL Core', res.status, res.headers.get('content-type'), text);
     throw new Error(`DIAL API ${res.status}: ${text}`);
   }
   return res.json() as Promise<{
@@ -351,7 +326,7 @@ export async function saveDialApp(
 }
 
 export async function fetchDialToolsets(): Promise<DialToolset[]> {
-  const res = await dialFetch<{ data: ToolsetApiEntity[] }>("/openai/toolsets");
+  const res = await dialFetch<{ data: ToolsetApiEntity[] }>('/openai/toolsets');
   return res.data.map(mapApiToDialToolset);
 }
 
@@ -361,13 +336,11 @@ export interface DialFileMetadataItem {
   parentPath?: string | null;
   contentType?: string;
   contentLength?: number;
-  nodeType: "ITEM" | "FOLDER";
+  nodeType: 'ITEM' | 'FOLDER';
   items?: DialFileMetadataItem[];
 }
 
-export async function fetchDialFiles(
-  path = "files",
-): Promise<DialFileMetadataItem[]> {
+export async function fetchDialFiles(path = 'files'): Promise<DialFileMetadataItem[]> {
   const res = await dialFetch<{ items?: DialFileMetadataItem[] }>(
     `/v1/metadata/${path}?limit=1000&recursive=true`,
   );
@@ -375,7 +348,7 @@ export async function fetchDialFiles(
 }
 
 async function fetchPromptsFromBucket(bucket: string): Promise<DialPrompt[]> {
-  const qs = new URLSearchParams({ bucket, limit: "1000", recursive: "true" });
+  const qs = new URLSearchParams({ bucket, limit: '1000', recursive: 'true' });
   let res: { items?: DialFileMetadataItem[] };
   try {
     const response = await fetch(`/api/dial-prompts/list?${qs}`);
@@ -385,25 +358,25 @@ async function fetchPromptsFromBucket(bucket: string): Promise<DialPrompt[]> {
     return [];
   }
   return (res.items ?? [])
-    .filter((item) => item.nodeType === "ITEM")
+    .filter((item) => item.nodeType === 'ITEM')
     .map((item) => {
-      const parts = ["prompts", bucket];
+      const parts = ['prompts', bucket];
       if (item.parentPath) parts.push(item.parentPath);
       parts.push(item.name);
-      const id = parts.join("/");
+      const id = parts.join('/');
       return {
         id,
         name: item.name,
-        folderId: id.slice(0, id.lastIndexOf("/")),
+        folderId: id.slice(0, id.lastIndexOf('/')),
       };
     });
 }
 
 export async function fetchDialPrompts(): Promise<DialPrompt[]> {
-  const { bucket } = await dialFetch<{ bucket: string }>("/v1/bucket");
+  const { bucket } = await dialFetch<{ bucket: string }>('/v1/bucket');
   const [personal, organization] = await Promise.all([
     fetchPromptsFromBucket(bucket),
-    fetchPromptsFromBucket("public"),
+    fetchPromptsFromBucket('public'),
   ]);
   return [...personal, ...organization];
 }

@@ -1,5 +1,5 @@
-import { DialPrompt } from "@/types/dial-entities";
-import { FriendlyFolderPath, PromptFolderRoot } from "@/types/skill-validation";
+import { DialPrompt } from '@/types/dial-entities';
+import { FriendlyFolderPath, PromptFolderRoot } from '@/types/skill-validation';
 
 export interface PromptTreeNode {
   id: string;
@@ -8,10 +8,7 @@ export interface PromptTreeNode {
   children: PromptTreeNode[];
 }
 
-export const buildPromptTree = (
-  prompts: DialPrompt[],
-  bucketRoot: string,
-): PromptTreeNode => {
+export const buildPromptTree = (prompts: DialPrompt[], bucketRoot: string): PromptTreeNode => {
   const promptsByFolder = new Map<string, DialPrompt[]>();
   prompts.forEach((p) => {
     const list = promptsByFolder.get(p.folderId) ?? [];
@@ -24,7 +21,7 @@ export const buildPromptTree = (
     let fid = p.folderId;
     while (fid && fid !== bucketRoot) {
       allFolderIds.add(fid);
-      const lastSlash = fid.lastIndexOf("/");
+      const lastSlash = fid.lastIndexOf('/');
       if (lastSlash < 0) break;
       fid = fid.slice(0, lastSlash);
     }
@@ -33,7 +30,7 @@ export const buildPromptTree = (
   const nodeMap = new Map<string, PromptTreeNode>();
   const root: PromptTreeNode = {
     id: bucketRoot,
-    name: "",
+    name: '',
     prompts: promptsByFolder.get(bucketRoot) ?? [],
     children: [],
   };
@@ -42,14 +39,14 @@ export const buildPromptTree = (
   allFolderIds.forEach((fid) => {
     nodeMap.set(fid, {
       id: fid,
-      name: fid.split("/").pop() ?? fid,
+      name: fid.split('/').pop() ?? fid,
       prompts: promptsByFolder.get(fid) ?? [],
       children: [],
     });
   });
 
   allFolderIds.forEach((fid) => {
-    const lastSlash = fid.lastIndexOf("/");
+    const lastSlash = fid.lastIndexOf('/');
     const parentId = lastSlash > 0 ? fid.slice(0, lastSlash) : bucketRoot;
     const parent = nodeMap.get(parentId) ?? root;
     const child = nodeMap.get(fid)!;
@@ -68,27 +65,27 @@ export const nodeHasMatch = (node: PromptTreeNode, lower: string): boolean => {
 };
 
 export const getDisplayName = (name: string): string =>
-  name.replace(/\.json$/i, "").replace(/__[\d.]+$/, "");
+  name.replace(/\.json$/i, '').replace(/__[\d.]+$/, '');
 
 export const promptPathUrl = (promptId: string): string => {
-  const suffix = promptId.replace(/^prompts\//, "");
-  const encoded = suffix.split("/").map(encodeURIComponent).join("/");
+  const suffix = promptId.replace(/^prompts\//, '');
+  const encoded = suffix.split('/').map(encodeURIComponent).join('/');
   return `/api/dial/v1/prompts/${encoded}`;
 };
 
 export const getFriendlyFolderPath = (folderId: string): FriendlyFolderPath => {
-  if (folderId === "prompts/public") {
-    return { root: PromptFolderRoot.Organization, sub: "" };
+  if (folderId === 'prompts/public') {
+    return { root: PromptFolderRoot.Organization, sub: '' };
   }
-  if (folderId.startsWith("prompts/public/")) {
+  if (folderId.startsWith('prompts/public/')) {
     return {
       root: PromptFolderRoot.Organization,
-      sub: folderId.slice("prompts/public/".length),
+      sub: folderId.slice('prompts/public/'.length),
     };
   }
   // personal: "prompts/{bucket}" or "prompts/{bucket}/sub/..."
-  const parts = folderId.split("/");
-  return { root: PromptFolderRoot.Personal, sub: parts.slice(2).join("/") };
+  const parts = folderId.split('/');
+  return { root: PromptFolderRoot.Personal, sub: parts.slice(2).join('/') };
 };
 
 export const getAllPromptIds = (node: PromptTreeNode): string[] => {

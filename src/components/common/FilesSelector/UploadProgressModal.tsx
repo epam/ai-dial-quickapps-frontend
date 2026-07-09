@@ -50,19 +50,13 @@ const UploadProgressModal: FC<UploadProgressModalProps> = ({
       onClose={onCancel}
       footer={
         <div className="flex justify-end gap-2 px-6 py-4">
-          <DialButton
-            variant={ButtonVariant.Neutral}
-            label={cancelLabel}
-            onClick={onCancel}
-          />
+          <DialButton variant={ButtonVariant.Neutral} label={cancelLabel} onClick={onCancel} />
         </div>
       }
       header={
         <div className="flex flex-col gap-2">
           <div>{uploadProgressTitle}</div>
-          <div className="dial-small-text text-secondary">
-            {uploadProgressText}
-          </div>
+          <div className="dial-small-text text-secondary">{uploadProgressText}</div>
         </div>
       }
     >

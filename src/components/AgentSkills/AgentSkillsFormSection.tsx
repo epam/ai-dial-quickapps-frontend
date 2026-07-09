@@ -1,14 +1,14 @@
-import { FC, memo } from "react";
-import { Control, Controller } from "react-hook-form";
+import { FC, memo } from 'react';
+import { Control, Controller } from 'react-hook-form';
 
-import { MarketplaceI18nKeys } from "@/constants/i18n";
-import { QuickApp2Form as QuickApp2FormType } from "@/form/quickApp2Form";
-import { useTranslation } from "@/hooks/useTranslation";
-import { Translation } from "@/types/translation";
+import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
+import { useTranslation } from '@/hooks/useTranslation';
+import { Translation } from '@/types/translation';
 
-import { FormCollapsibleSection } from "@/components/common/FormCollapsibleSection";
+import { FormCollapsibleSection } from '@/components/common/FormCollapsibleSection';
 
-import { AgentSkillsField } from "./AgentSkillsField";
+import { AgentSkillsField } from './AgentSkillsField';
 
 export interface AgentSkillsFormSectionProps {
   control: Control<QuickApp2FormType>;

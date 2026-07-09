@@ -117,8 +117,7 @@ function normalizeCoreItem(
   const isFolder = (item.nodeType ?? '').toLowerCase() === 'folder';
 
   const folderPrefix = apiFolder ? apiFolder.replace(/\/$/, '') + '/' : '';
-  const rawPath =
-    item.url ?? `files/${bucket}/${folderPrefix}${name}`;
+  const rawPath = item.url ?? `files/${bucket}/${folderPrefix}${name}`;
   const path = isFolder && !rawPath.endsWith('/') ? `${rawPath}/` : rawPath;
 
   return {
@@ -130,15 +129,10 @@ function normalizeCoreItem(
     parentPath: item.parentPath ?? (apiFolder ? apiFolder.replace(/\/$/, '') : undefined),
     contentType: isFolder ? undefined : item.contentType,
     contentLength: isFolder ? undefined : item.contentLength,
-    updatedAt:
-      item.updatedAt != null
-        ? new Date(item.updatedAt).toISOString()
-        : undefined,
+    updatedAt: item.updatedAt != null ? new Date(item.updatedAt).toISOString() : undefined,
     permissions: item.permissions,
     author: item.author ?? item.owner,
-    folderId: isFolder
-      ? `${bucket}:${path}`
-      : `${bucket}:files/${bucket}/${folderPrefix}`,
+    folderId: isFolder ? `${bucket}:${path}` : `${bucket}:files/${bucket}/${folderPrefix}`,
   };
 }
 
@@ -163,7 +157,10 @@ export async function listFiles(params: {
     }
     throw new Error(`DIAL ${res.status}`);
   }
-  const data = (await res.json()) as { items?: CoreMetadataItem[]; permissions?: string[] };
+  const data = (await res.json()) as {
+    items?: CoreMetadataItem[];
+    permissions?: string[];
+  };
 
   return {
     items: (data.items ?? []).map((item) => normalizeCoreItem(item, bucket, path)),
@@ -171,19 +168,20 @@ export async function listFiles(params: {
   };
 }
 
-export async function listPublicFiles(params?: {
-  path?: string;
-}): Promise<ListFilesResponse> {
-  return listFiles({ bucket: 'public', path: params?.path, permissions: false });
+export async function listPublicFiles(params?: { path?: string }): Promise<ListFilesResponse> {
+  return listFiles({
+    bucket: 'public',
+    path: params?.path,
+    permissions: false,
+  });
 }
 
-export async function listSharedFiles(_params?: {
-  path?: string;
-}): Promise<ListFilesResponse> {
-  const data = await dialPost<{ resources?: CoreMetadataItem[] }>(
-    '/v1/ops/resource/share/list',
-    { resourceTypes: ['FILE'], with: 'me', includeUserInfo: true },
-  );
+export async function listSharedFiles(): Promise<ListFilesResponse> {
+  const data = await dialPost<{ resources?: CoreMetadataItem[] }>('/v1/ops/resource/share/list', {
+    resourceTypes: ['FILE'],
+    with: 'me',
+    includeUserInfo: true,
+  });
 
   const resources = data.resources ?? [];
   const items = resources.map((item) => {
@@ -231,14 +229,15 @@ export async function createFolder(params: {
   };
 }
 
-export async function deleteFiles(
-  items: DeleteItemDto[],
-): Promise<DeleteFilesResponse> {
+export async function deleteFiles(items: DeleteItemDto[]): Promise<DeleteFilesResponse> {
   const results = await Promise.all(
     items.map(async (item) => {
-      const relPath = item.nodeType === 'FOLDER'
-        ? (item.path.endsWith('/') ? item.path : `${item.path}/`)
-        : item.path.replace(/\/$/, '');
+      const relPath =
+        item.nodeType === 'FOLDER'
+          ? item.path.endsWith('/')
+            ? item.path
+            : `${item.path}/`
+          : item.path.replace(/\/$/, '');
 
       const encoded = relPath
         .split('/')
@@ -250,10 +249,9 @@ export async function deleteFiles(
         if (item.nodeType === 'FOLDER') {
           await deleteFolderContents(item.bucket, relPath);
         }
-        const res = await fetch(
-          `${PROXY}/v1/files/${item.bucket}/${encoded}`,
-          { method: 'DELETE' },
-        );
+        const res = await fetch(`${PROXY}/v1/files/${item.bucket}/${encoded}`, {
+          method: 'DELETE',
+        });
         return { path: item.path, success: res.ok };
       } catch {
         return { path: item.path, success: false };
@@ -282,7 +280,9 @@ async function deleteFolderContents(bucket: string, folderPath: string): Promise
           .filter(Boolean)
           .map((s) => encodeURIComponent(s))
           .join('/');
-        await fetch(`${PROXY}/v1/files/${bucket}/${encoded}`, { method: 'DELETE' });
+        await fetch(`${PROXY}/v1/files/${bucket}/${encoded}`, {
+          method: 'DELETE',
+        });
       }),
     );
   } catch {
@@ -290,9 +290,7 @@ async function deleteFolderContents(bucket: string, folderPath: string): Promise
   }
 }
 
-export async function renameFiles(
-  items: RenameItemDto[],
-): Promise<RenameFilesResponse> {
+export async function renameFiles(items: RenameItemDto[]): Promise<RenameFilesResponse> {
   const results = await Promise.all(
     items.map(async (item) => {
       const sourceUrl = `files/${item.bucket}/${item.sourcePath}`;
@@ -312,10 +310,7 @@ export async function renameFiles(
   return { results };
 }
 
-export async function downloadFile(
-  bucket: string,
-  path: string,
-): Promise<Response> {
+export async function downloadFile(bucket: string, path: string): Promise<Response> {
   const encoded = path
     .split('/')
     .map((s) => encodeURIComponent(s))
@@ -330,9 +325,7 @@ export async function downloadFile(
   return res;
 }
 
-export async function downloadArchive(
-  items: ArchiveItemDto[],
-): Promise<Response> {
+export async function downloadArchive(items: ArchiveItemDto[]): Promise<Response> {
   if (items.length === 1 && items[0].nodeType === 'ITEM') {
     return downloadFile(items[0].bucket, items[0].path);
   }
@@ -364,9 +357,7 @@ export async function uploadFile(
     return new Promise<FileUploadResponse>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open('PUT', url);
-      Object.entries(conditionalHeader).forEach(([k, v]) =>
-        xhr.setRequestHeader(k, v),
-      );
+      Object.entries(conditionalHeader).forEach(([k, v]) => xhr.setRequestHeader(k, v));
 
       if (signal) signal.addEventListener('abort', () => xhr.abort());
 
@@ -385,9 +376,7 @@ export async function uploadFile(
       });
 
       xhr.addEventListener('error', () => reject(new Error('Upload network error')));
-      xhr.addEventListener('abort', () =>
-        reject(new DOMException('Upload aborted', 'AbortError')),
-      );
+      xhr.addEventListener('abort', () => reject(new DOMException('Upload aborted', 'AbortError')));
 
       xhr.send(file);
     });
@@ -395,7 +384,10 @@ export async function uploadFile(
 
   const res = await fetch(url, {
     method: 'PUT',
-    headers: { 'Content-Type': file.type || 'application/octet-stream', ...conditionalHeader },
+    headers: {
+      'Content-Type': file.type || 'application/octet-stream',
+      ...conditionalHeader,
+    },
     body: file,
     signal,
   });

@@ -1,15 +1,12 @@
-import React, { useMemo } from "react";
+import React, { useMemo } from 'react';
 
-import { useTranslation } from "@/hooks/useTranslation";
-import { Translation } from "@/types/translation";
-import { CommonI18nKeys } from "@/constants/i18n";
-import { isToolsetId } from "@/utils/api";
-import {
-  getEntityStatusMessage,
-  type EntityStatus,
-} from "@/utils/get-entity-status";
+import { useTranslation } from '@/hooks/useTranslation';
+import { Translation } from '@/types/translation';
+import { CommonI18nKeys } from '@/constants/i18n';
+import { isToolsetId } from '@/utils/api';
+import { getEntityStatusMessage, type EntityStatus } from '@/utils/get-entity-status';
 
-import type { ChipEntity } from "./AgentAndToolsetChip";
+import type { ChipEntity } from './AgentAndToolsetChip';
 
 interface ChipTooltipContentProps {
   id: string;
@@ -54,12 +51,8 @@ export const ChipTooltipContent: React.FC<ChipTooltipContentProps> = ({
           })}
         </p>
       )}
-      {statusMessage && (
-        <p className="dial-tiny-text mb-1 text-error">{statusMessage}</p>
-      )}
-      {showReadonlyHint && (
-        <p className="dial-tiny-text mb-1 text-secondary">Read-only</p>
-      )}
+      {statusMessage && <p className="dial-tiny-text mb-1 text-error">{statusMessage}</p>}
+      {showReadonlyHint && <p className="dial-tiny-text mb-1 text-secondary">Read-only</p>}
       <div className="flex items-center gap-3">
         <div className="dial-small-text flex min-w-0 flex-1 flex-col">
           <span className="w-full truncate">{name}</span>

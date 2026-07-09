@@ -1,18 +1,18 @@
-import { FC, memo } from "react";
-import { Control, Controller, FieldErrors } from "react-hook-form";
+import { FC, memo } from 'react';
+import { Control, Controller, FieldErrors } from 'react-hook-form';
 
-import { MarketplaceI18nKeys } from "@/constants/i18n";
-import { QuickApp2Form as QuickApp2FormType } from "@/form/quickApp2Form";
-import { useTranslation } from "@/hooks/useTranslation";
-import { Translation } from "@/types/translation";
+import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
+import { useTranslation } from '@/hooks/useTranslation';
+import { Translation } from '@/types/translation';
 
-import { FormCollapsibleSection } from "@/components/common/FormCollapsibleSection";
-import { DialMarkdownEditorContainer } from "@/components/common/MarkdownEditor/MarkdownEditorContainer";
-import { TemperatureSlider } from "@/components/common/Temperature";
+import { FormCollapsibleSection } from '@/components/common/FormCollapsibleSection';
+import { DialMarkdownEditorContainer } from '@/components/common/MarkdownEditor/MarkdownEditorContainer';
+import { TemperatureSlider } from '@/components/common/Temperature';
 
-import { ModelField } from "./ModelField";
+import { ModelField } from './ModelField';
 
-import { DialFormItem } from "@epam/ai-dial-ui-kit";
+import { DialFormItem } from '@epam/ai-dial-ui-kit';
 
 export interface OrchestratorSectionProps {
   control: Control<QuickApp2FormType>;

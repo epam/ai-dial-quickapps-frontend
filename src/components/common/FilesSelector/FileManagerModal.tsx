@@ -1,13 +1,5 @@
-"use client";
-import {
-  FC,
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+'use client';
+import { FC, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   ButtonVariant,
@@ -26,18 +18,18 @@ import {
   useDialFileManagerTabs,
   type DialFile,
   type FileManagerGridRow,
-} from "@epam/ai-dial-ui-kit";
+} from '@epam/ai-dial-ui-kit';
 
-import { DialFileManagerI18nKeys } from "@/constants/i18n";
-import { useDialFileManager } from "@/hooks/useDialFileManager";
-import { useTranslation } from "@/hooks/useTranslation";
-import { FileUploadStatus } from "@/types/file-manager";
-import { Translation } from "@/types/translation";
-import { isHiddenPath } from "@/utils/dial-file-path";
-import { listFiles } from "@/utils/dial-files-api";
-import { fetchDialBucket } from "@/utils/dialClient";
+import { DialFileManagerI18nKeys } from '@/constants/i18n';
+import { useDialFileManager } from '@/hooks/useDialFileManager';
+import { useTranslation } from '@/hooks/useTranslation';
+import { FileUploadStatus } from '@/types/file-manager';
+import { Translation } from '@/types/translation';
+import { isHiddenPath } from '@/utils/dial-file-path';
+import { listFiles } from '@/utils/dial-files-api';
+import { fetchDialBucket } from '@/utils/dialClient';
 
-import UploadProgressModal from "./UploadProgressModal";
+import UploadProgressModal from './UploadProgressModal';
 
 interface FileManagerModalProps {
   isOpen: boolean;
@@ -51,20 +43,16 @@ interface Notification {
   message: string;
 }
 
-const FileManagerModal: FC<FileManagerModalProps> = ({
-  isOpen,
-  initialFileIds,
-  onClose,
-}) => {
+const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, onClose }) => {
   const { t } = useTranslation(Translation.Common);
-  const [bucket, setBucket] = useState("");
+  const [bucket, setBucket] = useState('');
   const [notification, setNotification] = useState<Notification | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
     fetchDialBucket()
       .then(setBucket)
-      .catch(() => setBucket(""));
+      .catch(() => setBucket(''));
   }, [isOpen]);
 
   useEffect(() => {
@@ -77,10 +65,8 @@ const FileManagerModal: FC<FileManagerModalProps> = ({
     () => ({
       [DialFileManagerTabs.MyFiles]: t(DialFileManagerI18nKeys.TabMyFiles),
       [DialFileManagerTabs.Shared]: t(DialFileManagerI18nKeys.TabShared),
-      [DialFileManagerTabs.Organization]: t(
-        DialFileManagerI18nKeys.TabOrganization,
-      ),
-      [DialFileManagerTabs.Review]: "",
+      [DialFileManagerTabs.Organization]: t(DialFileManagerI18nKeys.TabOrganization),
+      [DialFileManagerTabs.Review]: '',
     }),
     [t],
   );
@@ -91,8 +77,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({
     tabs: allTabs,
   } = useDialFileManagerTabs(tabLabels, DialFileManagerTabs.MyFiles);
 
-  const rootLabel =
-    tabLabels[activeTab] || tabLabels[DialFileManagerTabs.MyFiles];
+  const rootLabel = tabLabels[activeTab] || tabLabels[DialFileManagerTabs.MyFiles];
 
   const tabs = useMemo(
     () => allTabs?.filter((tab) => tab.id !== DialFileManagerTabs.Review),
@@ -141,9 +126,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({
     forbiddenSymbolsRegExp: NOT_ALLOWED_SYMBOLS_REGEXP,
   });
 
-  const [selectedPaths, setSelectedPaths] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const [selectedPaths, setSelectedPaths] = useState<Set<string>>(() => new Set());
 
   const hasInitialized = useRef(false);
 
@@ -159,10 +142,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({
     const result = new Map<string, DialFile>();
     const collect = (nodes: DialFile[]) => {
       nodes.forEach((item) => {
-        if (
-          item.nodeType === DialFileNodeType.ITEM ||
-          item.nodeType === DialFileNodeType.FOLDER
-        ) {
+        if (item.nodeType === DialFileNodeType.ITEM || item.nodeType === DialFileNodeType.FOLDER) {
           result.set(item.path, item);
           if (item.id) result.set(item.id, item);
         }
@@ -209,11 +189,9 @@ const FileManagerModal: FC<FileManagerModalProps> = ({
   const expandFolderFileIds = useCallback(
     async (folder: DialFile): Promise<string[]> => {
       const folderBucket = folder.bucket ?? bucket;
-      const folderId = folder.id ?? "";
+      const folderId = folder.id ?? '';
       const prefix = `files/${folderBucket}/`;
-      const folderRelPath = folderId.startsWith(prefix)
-        ? folderId.slice(prefix.length)
-        : "";
+      const folderRelPath = folderId.startsWith(prefix) ? folderId.slice(prefix.length) : '';
       try {
         const result = await listFiles({
           bucket: folderBucket,
@@ -221,9 +199,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({
           recursive: true,
         });
         return result.items
-          .filter(
-            (item) => item.nodeType === "ITEM" && !isHiddenPath(item.path),
-          )
+          .filter((item) => item.nodeType === 'ITEM' && !isHiddenPath(item.path))
           .map((item) => item.path);
       } catch {
         return [];
@@ -238,10 +214,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({
       if (f.nodeType === DialFileNodeType.FOLDER) {
         const folderFileIds = await expandFolderFileIds(f);
         fileIds.push(...folderFileIds);
-      } else if (
-        f.nodeType === DialFileNodeType.ITEM &&
-        !isHiddenPath(f.path)
-      ) {
+      } else if (f.nodeType === DialFileNodeType.ITEM && !isHiddenPath(f.path)) {
         fileIds.push(f.id ?? f.path);
       }
     }
@@ -258,28 +231,18 @@ const FileManagerModal: FC<FileManagerModalProps> = ({
   }, [cancelUpload, clearUploadBatch]);
 
   const isOperationInProgress =
-    isDownloading ||
-    isDeleting ||
-    isRenaming ||
-    isCreatingFolder ||
-    uploadBatchState != null;
+    isDownloading || isDeleting || isRenaming || isCreatingFolder || uploadBatchState != null;
 
   const actionLabels = useMemo(() => {
     const labels: Partial<Record<DialFileManagerActions, string>> = {};
     if (DialFileManagerActions.Download in tabActionLabels) {
-      labels[DialFileManagerActions.Download] = t(
-        DialFileManagerI18nKeys.Download,
-      );
+      labels[DialFileManagerActions.Download] = t(DialFileManagerI18nKeys.Download);
     }
     if (DialFileManagerActions.Delete in tabActionLabels) {
-      labels[DialFileManagerActions.Delete] = t(
-        DialFileManagerI18nKeys.DeleteAction,
-      );
+      labels[DialFileManagerActions.Delete] = t(DialFileManagerI18nKeys.DeleteAction);
     }
     if (DialFileManagerActions.Rename in tabActionLabels) {
-      labels[DialFileManagerActions.Rename] = t(
-        DialFileManagerI18nKeys.RenameAction,
-      );
+      labels[DialFileManagerActions.Rename] = t(DialFileManagerI18nKeys.RenameAction);
     }
     return labels;
   }, [tabActionLabels, t]);
@@ -291,9 +254,9 @@ const FileManagerModal: FC<FileManagerModalProps> = ({
       dateLocale,
       dateOptions,
       additionalGridOptions: {
-        domLayout: "normal" as const,
+        domLayout: 'normal' as const,
         rowSelection: {
-          mode: "multiRow" as const,
+          mode: 'multiRow' as const,
           isRowSelectable: (node: { data?: FileManagerGridRow | null }) => {
             const row = node.data;
             if (row == null) return false;
@@ -325,20 +288,12 @@ const FileManagerModal: FC<FileManagerModalProps> = ({
         newFolder: { label: t(DialFileManagerI18nKeys.NewFolder) },
       },
     }),
-    [
-      tabs,
-      activeTab,
-      handleTabChangeWithReset,
-      t,
-      isNewButtonDisabled,
-      disabledNewButtonTooltip,
-    ],
+    [tabs, activeTab, handleTabChangeWithReset, t, isNewButtonDisabled, disabledNewButtonTooltip],
   );
 
   const bulkActionsToolbarOptions = useMemo(
     () => ({
-      getSelectionLabel: (count: number) =>
-        t(DialFileManagerI18nKeys.ItemsSelected, { count }),
+      getSelectionLabel: (count: number) => t(DialFileManagerI18nKeys.ItemsSelected, { count }),
       actionLabels,
     }),
     [t, actionLabels],
@@ -359,22 +314,22 @@ const FileManagerModal: FC<FileManagerModalProps> = ({
       actionLabels: {
         replace: t(DialFileManagerI18nKeys.ConflictReplace),
         duplicate: t(DialFileManagerI18nKeys.ConflictDuplicate),
-        cancel: t("Cancel"),
+        cancel: t('Cancel'),
       },
       strategyLabels: {
         replaceAll: t(DialFileManagerI18nKeys.ConflictReplaceAll),
         duplicateAll: t(DialFileManagerI18nKeys.ConflictDuplicateAll),
         decideForEach: t(DialFileManagerI18nKeys.ConflictDecideForEach),
       },
-      confirmLabel: t("Attach"),
-      cancelLabel: t("Cancel"),
+      confirmLabel: t('Attach'),
+      cancelLabel: t('Cancel'),
     }),
     [t],
   );
 
   const deleteConfirmationOptions = useMemo(
     () => ({
-      cancelLabel: t("Cancel"),
+      cancelLabel: t('Cancel'),
       confirmLabel: t(DialFileManagerI18nKeys.DeleteConfirmButton),
       titleRenderer: (names: string[]) =>
         names.length === 1
@@ -399,7 +354,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({
   );
 
   const uploadProgressText = useMemo(() => {
-    if (uploadBatchState == null) return "";
+    if (uploadBatchState == null) return '';
     const done = uploadBatchState.files.filter(
       (f) => f.status !== FileUploadStatus.Uploading,
     ).length;
@@ -411,10 +366,10 @@ const FileManagerModal: FC<FileManagerModalProps> = ({
 
   const notificationBgClass =
     notification?.variant === NotificationVariant.Error
-      ? "bg-error"
+      ? 'bg-error'
       : notification?.variant === NotificationVariant.Success
-        ? "bg-success"
-        : "bg-layer-3";
+        ? 'bg-success'
+        : 'bg-layer-3';
 
   return (
     <>
@@ -427,13 +382,11 @@ const FileManagerModal: FC<FileManagerModalProps> = ({
         hideClose={true}
         footer={
           <div className="flex justify-end gap-2 px-6 py-4">
-            <DialNeutralButton label={t("Cancel")} onClick={handleCancel} />
+            <DialNeutralButton label={t('Cancel')} onClick={handleCancel} />
             <DialButton
               variant={ButtonVariant.Primary}
               label={t(DialFileManagerI18nKeys.Attach)}
-              disabled={
-                selectedFiles.length === 0 || isLoading || isOperationInProgress
-              }
+              disabled={selectedFiles.length === 0 || isLoading || isOperationInProgress}
               onClick={handleAttach}
             />
           </div>
@@ -491,9 +444,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({
               deleteConfirmationOptions={deleteConfirmationOptions}
               conflictResolutionPopupOptions={conflictResolutionPopupOptions}
               forbiddenSymbolsRegExp={NOT_ALLOWED_SYMBOLS_REGEXP}
-              forbiddenSymbolsTooltip={t(
-                DialFileManagerI18nKeys.ForbiddenSymbolsTooltip,
-              )}
+              forbiddenSymbolsTooltip={t(DialFileManagerI18nKeys.ForbiddenSymbolsTooltip)}
               getDisabledTooltip={getDisabledTooltip}
             />
             {isDownloading && (
@@ -541,7 +492,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({
           batchState={uploadBatchState}
           uploadProgressTitle={t(DialFileManagerI18nKeys.UploadProgressTitle)}
           uploadProgressText={uploadProgressText}
-          cancelLabel={t("Cancel")}
+          cancelLabel={t('Cancel')}
           onCancel={handleUploadCancel}
         />
       )}

@@ -1,26 +1,23 @@
-"use client";
+'use client';
 
-import { FC, memo, Suspense, useEffect } from "react";
-import { signIn, useSession } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
+import { FC, memo, Suspense, useEffect } from 'react';
+import { signIn, useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 
-import { AUTH_WINDOW_CLOSE_KEY } from "@/constants/auth";
+import { AUTH_WINDOW_CLOSE_KEY } from '@/constants/auth';
 
 const SignInContent: FC = () => {
   const searchParams = useSearchParams();
-  const provider = searchParams.get("provider") ?? "keycloak";
+  const provider = searchParams.get('provider') ?? 'keycloak';
   const { data: session, status } = useSession();
 
   useEffect(() => {
-    if (status === "unauthenticated" || session?.error) {
+    if (status === 'unauthenticated' || session?.error) {
       void signIn(provider, {
         callbackUrl: `/signin?provider=${encodeURIComponent(provider)}`,
       });
-    } else if (status === "authenticated") {
-      window.opener?.postMessage(
-        { type: AUTH_WINDOW_CLOSE_KEY },
-        window.location.origin,
-      );
+    } else if (status === 'authenticated') {
+      window.opener?.postMessage({ type: AUTH_WINDOW_CLOSE_KEY }, window.location.origin);
       window.close();
     }
   }, [status, session, provider]);

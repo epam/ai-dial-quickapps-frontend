@@ -12,7 +12,6 @@ import { AgentAndToolsetModal } from './AgentAndToolsetModal';
 import { ToolsetLoginModal } from './ToolsetLoginModal';
 import { DialLinkButton, DialNoDataContent } from '@epam/ai-dial-ui-kit';
 
-
 interface AgentAndToolsetSelectorProps {
   value: string[];
   onChange: (agentAndToolset: string[]) => void;
@@ -25,9 +24,7 @@ interface AgentAndToolsetSelectorProps {
   onConfigureClick?: (item: ChipEntity) => void;
 }
 
-export const AgentAndToolsetSelector: React.FC<
-  AgentAndToolsetSelectorProps
-> = ({
+export const AgentAndToolsetSelector: React.FC<AgentAndToolsetSelectorProps> = ({
   value = [],
   readonly,
   addBtnTooltip,
@@ -77,10 +74,7 @@ export const AgentAndToolsetSelector: React.FC<
           <span>
             <DialLinkButton
               tooltipProps={{
-                tooltip:
-                  addBtnTooltip ??
-                  tooltip ??
-                  t(CommonI18nKeys.AddAgentsAndToolsets),
+                tooltip: addBtnTooltip ?? tooltip ?? t(CommonI18nKeys.AddAgentsAndToolsets),
               }}
               disabled={readonly}
               onClick={handleOpenSelectModal}
@@ -142,10 +136,7 @@ export const AgentAndToolsetSelector: React.FC<
       )}
 
       {loginToolset && (
-        <ToolsetLoginModal
-          toolset={loginToolset}
-          onClose={() => setLoginToolset(null)}
-        />
+        <ToolsetLoginModal toolset={loginToolset} onClose={() => setLoginToolset(null)} />
       )}
     </div>
   );

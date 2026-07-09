@@ -1,5 +1,5 @@
-import { ApplicationStatus, ToolsetAuthStatus, ToolsetAuthType } from "@/types/dial-entities";
-import { CommonI18nKeys } from "@/constants/i18n";
+import { ApplicationStatus, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
+import { CommonI18nKeys } from '@/constants/i18n';
 
 export interface EntityStatusFields {
   functionStatus?: ApplicationStatus;
@@ -19,9 +19,7 @@ export interface EntityStatus {
   isRedeploying: boolean;
 }
 
-export const getEntityStatus = (
-  entity?: EntityStatusFields,
-): EntityStatus => {
+export const getEntityStatus = (entity?: EntityStatusFields): EntityStatus => {
   if (!entity) {
     return {
       isInvalid: true,
@@ -66,15 +64,13 @@ export const getEntityStatus = (
 // Transient lifecycle states a deployable entity can be in, in priority
 // order: the first one that's true wins.
 export enum EntityStatusKind {
-  Deploying = "DEPLOYING",
-  Undeploying = "UNDEPLOYING",
-  Redeploying = "REDEPLOYING",
-  Undeployed = "UNDEPLOYED",
+  Deploying = 'DEPLOYING',
+  Undeploying = 'UNDEPLOYING',
+  Redeploying = 'REDEPLOYING',
+  Undeployed = 'UNDEPLOYED',
 }
 
-const getActiveStatusKind = (
-  status: EntityStatus,
-): EntityStatusKind | undefined => {
+const getActiveStatusKind = (status: EntityStatus): EntityStatusKind | undefined => {
   if (status.isDeploying) {
     return EntityStatusKind.Deploying;
   }

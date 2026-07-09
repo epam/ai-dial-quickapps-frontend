@@ -53,12 +53,12 @@ Prefer string enums for named finite sets of statuses, modes, variants, or lifec
 ```ts
 // Preferred
 enum UploadStatus {
-  Idle = "idle",
-  Loading = "loading",
+  Idle = 'idle',
+  Loading = 'loading',
 }
 
 // Avoid for reused, exported, or logic-compared values
-type UploadStatus = "idle" | "loading";
+type UploadStatus = 'idle' | 'loading';
 ```
 
 Place enums in `src/types/` or `src/constants/`.

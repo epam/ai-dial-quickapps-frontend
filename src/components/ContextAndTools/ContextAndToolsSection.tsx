@@ -1,19 +1,19 @@
-import { FC, memo } from "react";
-import { Control, Controller, FieldErrors } from "react-hook-form";
+import { FC, memo } from 'react';
+import { Control, Controller, FieldErrors } from 'react-hook-form';
 
-import { MarketplaceI18nKeys } from "@/constants/i18n";
-import { QuickApp2Form as QuickApp2FormType } from "@/form/quickApp2Form";
-import { useTranslation } from "@/hooks/useTranslation";
-import { AnyToolset, DialAppTransportType } from "@/types/quick-apps";
-import { Translation } from "@/types/translation";
+import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
+import { useTranslation } from '@/hooks/useTranslation';
+import { AnyToolset, DialAppTransportType } from '@/types/quick-apps';
+import { Translation } from '@/types/translation';
 
-import { FilesSelector } from "@/components/common/FilesSelector/FilesSelector";
-import { FormCollapsibleSection } from "@/components/common/FormCollapsibleSection";
+import { FilesSelector } from '@/components/common/FilesSelector/FilesSelector';
+import { FormCollapsibleSection } from '@/components/common/FormCollapsibleSection';
 
-import { AgentsAndToolsetsField } from "./AgentsAndToolsetsField";
-import { CodeInterpreterField } from "./CodeInterpreterField";
+import { AgentsAndToolsetsField } from './AgentsAndToolsetsField';
+import { CodeInterpreterField } from './CodeInterpreterField';
 
-import { DialFormItem } from "@epam/ai-dial-ui-kit";
+import { DialFormItem } from '@epam/ai-dial-ui-kit';
 
 export interface ContextAndToolsSectionProps {
   control: Control<QuickApp2FormType>;
@@ -21,7 +21,7 @@ export interface ContextAndToolsSectionProps {
   isReadonly: boolean;
   tooltip?: string;
   isCodeInterpreterEnabled: boolean;
-  agentsAndToolsets: QuickApp2FormType["agentsAndToolsets"];
+  agentsAndToolsets: QuickApp2FormType['agentsAndToolsets'];
   agentsAndToolsetsJson: string;
   isJsonView: boolean;
   onAgentsChange: (ids: string[]) => void;
@@ -85,9 +85,7 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
               files={field.value}
               readonly={isReadonly}
               tooltip={tooltip}
-              onRemoveFile={(doc) =>
-                field.onChange(field.value.filter((f) => f !== doc))
-              }
+              onRemoveFile={(doc) => field.onChange(field.value.filter((f) => f !== doc))}
               onAddFiles={(docs) => field.onChange(docs)}
             />
           )}

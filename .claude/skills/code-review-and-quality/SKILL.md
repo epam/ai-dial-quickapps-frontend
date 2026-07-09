@@ -20,11 +20,11 @@ Review every non-trivial change before it lands on the main branch. Use **five a
 
 ## Review modes
 
-| Mode             | Use when                            | Required context                                          |
-| ---------------- | ----------------------------------- | --------------------------------------------------------- |
-| **Local review** | Reviewing uncommitted local changes | `git status`, `git diff`, full changed files              |
-| **PR review**    | Reviewing a GitHub PR number or URL | PR metadata, PR diff, full changed files at PR head       |
-| **Self-review**  | Finishing an implementation slice   | Touched files, completed task, checks run                 |
+| Mode             | Use when                            | Required context                                    |
+| ---------------- | ----------------------------------- | --------------------------------------------------- |
+| **Local review** | Reviewing uncommitted local changes | `git status`, `git diff`, full changed files        |
+| **PR review**    | Reviewing a GitHub PR number or URL | PR metadata, PR diff, full changed files at PR head |
+| **Self-review**  | Finishing an implementation slice   | Touched files, completed task, checks run           |
 
 For PR review, read full changed files, not only diff hunks. Diffs show what changed; full files show whether the change fits the surrounding design.
 
@@ -82,13 +82,13 @@ For PR review, read full changed files, not only diff hunks. Diffs show what cha
 
 Select the smallest set that proves the change:
 
-| Change type                     | Expected validation                               |
-| ------------------------------- | ------------------------------------------------- |
-| Component / hook / util         | `npm run lint`                                    |
-| Type changes, new interfaces    | `npm run lint` + `npm run build`                  |
-| Context or form schema changes  | `npm run lint` + `npm run build`                  |
-| Broad cross-cutting change      | `npm run lint` + `npm run build`                  |
-| UI change                       | lint + build + manual visual check in dev server  |
+| Change type                    | Expected validation                              |
+| ------------------------------ | ------------------------------------------------ |
+| Component / hook / util        | `npm run lint`                                   |
+| Type changes, new interfaces   | `npm run lint` + `npm run build`                 |
+| Context or form schema changes | `npm run lint` + `npm run build`                 |
+| Broad cross-cutting change     | `npm run lint` + `npm run build`                 |
+| UI change                      | lint + build + manual visual check in dev server |
 
 Record skipped checks with a reason. A review without a verification story is incomplete.
 
@@ -113,13 +113,13 @@ Record skipped checks with a reason. A review without a verification story is in
 
 ## Decision policy
 
-| Verdict             | Use when                                                                                   |
-| ------------------- | ------------------------------------------------------------------------------------------ |
-| **Approve**         | No blocking issues; relevant checks are green or CI covers it                              |
-| **Approve/comment** | Only optional or low-risk improvements remain                                              |
-| **Request changes** | Required issues, failing checks, missing tests for risky behavior                         |
-| **Block**           | Security issue, data loss risk, broken public contract, secrets exposure                  |
-| **Comment only**    | Draft PR, exploratory review, or user asked for non-blocking feedback                     |
+| Verdict             | Use when                                                                 |
+| ------------------- | ------------------------------------------------------------------------ |
+| **Approve**         | No blocking issues; relevant checks are green or CI covers it            |
+| **Approve/comment** | Only optional or low-risk improvements remain                            |
+| **Request changes** | Required issues, failing checks, missing tests for risky behavior        |
+| **Block**           | Security issue, data loss risk, broken public contract, secrets exposure |
+| **Comment only**    | Draft PR, exploratory review, or user asked for non-blocking feedback    |
 
 ## Review checklist
 
@@ -127,18 +127,22 @@ Record skipped checks with a reason. A review without a verification story is in
 ## Review: [title]
 
 ### Context
+
 - [ ] I understand intent and expected behavior
 
 ### Correctness
+
 - [ ] Matches spec/task
 - [ ] Edge and error paths covered
 - [ ] Tests adequate and meaningful
 
 ### Readability
+
 - [ ] Clear names and flow
 - [ ] No unnecessary complexity
 
 ### Architecture
+
 - [ ] Fits src/ structure (components, utils, types, context, form)
 - [ ] No business logic or API calls inside components
 - [ ] postMessage handlers verify origin
@@ -146,37 +150,43 @@ Record skipped checks with a reason. A review without a verification story is in
 - [ ] @/* alias used instead of deep relative paths
 
 ### Security
+
 - [ ] postMessage origin validated
 - [ ] User input validated with zod at boundaries
 - [ ] No secrets; XSS-safe rendering
 
 ### Performance
+
 - [ ] No avoidable re-renders; memoization where appropriate
 - [ ] No sync heavy work in render
 
 ### Component conventions
+
 - [ ] memo + default export pattern used
 - [ ] Props interface named {ComponentName}Props
 - [ ] classNames used for conditional classes
 - [ ] UI kit components preferred over raw HTML
 
 ### RTL parity
+
 - [ ] Logical Tailwind classes used (ms-/me-, ps-/pe-, start-/end-)
 - [ ] Directional icons mirrored with rtl:scale-x-[-1]
 
 ### Verification
+
 - [ ] npm run lint passes
 - [ ] npm run build passes (when types/interfaces changed)
 - [ ] Manual/visual check noted if UI
 
 ### Verdict
+
 - [ ] Approve | [ ] Request changes (list blocking items)
 ```
 
 ## Rationalizations to reject
 
-| Excuse                     | Response                                                     |
-| -------------------------- | ------------------------------------------------------------ |
-| "It works, ship it"        | Readability, security, and architecture debt still compound. |
-| "Tests pass, so it's good" | Tests don't replace architecture or security review.         |
+| Excuse                     | Response                                                        |
+| -------------------------- | --------------------------------------------------------------- |
+| "It works, ship it"        | Readability, security, and architecture debt still compound.    |
+| "Tests pass, so it's good" | Tests don't replace architecture or security review.            |
 | "We'll clean up later"     | Cleanup before merge unless true emergency + tracked follow-up. |

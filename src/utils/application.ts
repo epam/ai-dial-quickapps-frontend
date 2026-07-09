@@ -1,12 +1,5 @@
-import {
-  DEFAULT_QUICK_APPS_SCHEMA_2_ID,
-} from '@/constants/quick-apps';
-import {
-  decodeApiUrl,
-  isApplicationId,
-  parseEntityApiKey,
-  splitEntityId,
-} from '@/utils/api';
+import { DEFAULT_QUICK_APPS_SCHEMA_2_ID } from '@/constants/quick-apps';
+import { decodeApiUrl, isApplicationId, parseEntityApiKey, splitEntityId } from '@/utils/api';
 import {
   DialAppToolset,
   DialDeploymentSimpleTool,
@@ -29,23 +22,15 @@ export interface DialAIEntityModel {
 export const isQuickApp2 = (entity: DialAIEntityModel) =>
   entity.applicationTypeSchemaId === getQuickAppsSchemaId2();
 
-export const isQuickApp2Editor = (type: string): boolean =>
-  getQuickAppsSchemaId2().endsWith(type);
+export const isQuickApp2Editor = (type: string): boolean => getQuickAppsSchemaId2().endsWith(type);
 
-export const getQuickApp2Config = (entity: {
-  applicationProperties?: unknown;
-}): QuickApp2Config => entity.applicationProperties as QuickApp2Config;
+export const getQuickApp2Config = (entity: { applicationProperties?: unknown }): QuickApp2Config =>
+  entity.applicationProperties as QuickApp2Config;
 
-export const getQuick2AppDocumentUrl = (entity?: {
-  applicationProperties?: unknown;
-}) =>
-  entity
-    ? getQuickApp2Config(entity)?.contexts?.map((c) => c.url)
-    : undefined;
+export const getQuick2AppDocumentUrl = (entity?: { applicationProperties?: unknown }) =>
+  entity ? getQuickApp2Config(entity)?.contexts?.map((c) => c.url) : undefined;
 
-export const migrateMCPToolsetIdName = (
-  item: MCPToolset & { dial_id?: string },
-): MCPToolset => {
+export const migrateMCPToolsetIdName = (item: MCPToolset & { dial_id?: string }): MCPToolset => {
   if (typeof item.dial_id === 'string') {
     return {
       ...omit(item, ['dial_id']),
@@ -78,10 +63,7 @@ export const getQuickAppItemNameFromConfig = (
   }
 
   if ('open_ai_tool' in item) {
-    return (
-      (item.open_ai_tool as { function?: { name?: string } })?.function?.name ||
-      'OpenAI Tool'
-    );
+    return (item.open_ai_tool as { function?: { name?: string } })?.function?.name || 'OpenAI Tool';
   }
 
   if ('name' in item && typeof (item as MCPToolset).name === 'string') {
@@ -100,9 +82,8 @@ export const getQuickAppItemNameFromConfig = (
 export const doesAgentSupportMcp = (entity?: DialAIEntityModel): boolean =>
   !!entity?.mcp || !!entity?.features?.mcp;
 
-export const doesModelAllowTemperature = (
-  model?: DialAIEntityModel,
-): boolean => !!(model as { features?: { temperature?: boolean } } | undefined)?.features?.temperature;
+export const doesModelAllowTemperature = (model?: DialAIEntityModel): boolean =>
+  !!(model as { features?: { temperature?: boolean } } | undefined)?.features?.temperature;
 
 export const isEntityIdPublic = (entity: { id: string }): boolean =>
   entity.id.startsWith('public/');

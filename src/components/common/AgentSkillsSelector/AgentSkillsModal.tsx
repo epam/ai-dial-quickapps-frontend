@@ -1,22 +1,17 @@
-"use client";
-import { IconPlus } from "@tabler/icons-react";
-import { FC, memo, useCallback, useMemo, useState } from "react";
+'use client';
+import { IconPlus } from '@tabler/icons-react';
+import { FC, memo, useCallback, useMemo, useState } from 'react';
 
-import { MarketplaceI18nKeys } from "@/constants/i18n";
-import { useDataContext } from "@/context/DataContext";
-import { useTranslation } from "@/hooks/useTranslation";
-import { AgentSkillsModalView } from "@/types/skill-validation";
-import { Translation } from "@/types/translation";
-import { buildPromptTree } from "@/utils/prompt-tree";
-import {
-  DialLinkButton,
-  DialPopup,
-  DialPrimaryButton,
-  DialSearch,
-} from "@epam/ai-dial-ui-kit";
+import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { useDataContext } from '@/context/DataContext';
+import { useTranslation } from '@/hooks/useTranslation';
+import { AgentSkillsModalView } from '@/types/skill-validation';
+import { Translation } from '@/types/translation';
+import { buildPromptTree } from '@/utils/prompt-tree';
+import { DialLinkButton, DialPopup, DialPrimaryButton, DialSearch } from '@epam/ai-dial-ui-kit';
 
-import CreatePromptForm from "./CreatePromptForm";
-import PromptTreeSection from "./PromptTreeSection";
+import CreatePromptForm from './CreatePromptForm';
+import PromptTreeSection from './PromptTreeSection';
 
 export interface AgentSkillsModalProps {
   initialSelectedIds: string[];
@@ -37,46 +32,36 @@ const AgentSkillsModal: FC<AgentSkillsModalProps> = ({
   const [view, setView] = useState<AgentSkillsModalView>(
     editPromptId ? AgentSkillsModalView.Edit : AgentSkillsModalView.List,
   );
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>(initialSelectedIds);
-  const [openFolderIds, setOpenFolderIds] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const [openFolderIds, setOpenFolderIds] = useState<Set<string>>(() => new Set());
 
   const orgPrompts = useMemo(
-    () => prompts.filter((p) => p.id.startsWith("prompts/public/")),
+    () => prompts.filter((p) => p.id.startsWith('prompts/public/')),
     [prompts],
   );
   const personalPrompts = useMemo(
-    () => prompts.filter((p) => !p.id.startsWith("prompts/public/")),
+    () => prompts.filter((p) => !p.id.startsWith('prompts/public/')),
     [prompts],
   );
 
   const personalBucketRoot = useMemo(() => {
     const first = personalPrompts[0];
-    if (!first) return "";
-    const parts = first.id.split("/");
-    return parts.length >= 2 ? `${parts[0]}/${parts[1]}` : "";
+    if (!first) return '';
+    const parts = first.id.split('/');
+    return parts.length >= 2 ? `${parts[0]}/${parts[1]}` : '';
   }, [personalPrompts]);
 
-  const orgTree = useMemo(
-    () => buildPromptTree(orgPrompts, "prompts/public"),
-    [orgPrompts],
-  );
+  const orgTree = useMemo(() => buildPromptTree(orgPrompts, 'prompts/public'), [orgPrompts]);
   const personalTree = useMemo(
-    () =>
-      personalBucketRoot
-        ? buildPromptTree(personalPrompts, personalBucketRoot)
-        : null,
+    () => (personalBucketRoot ? buildPromptTree(personalPrompts, personalBucketRoot) : null),
     [personalPrompts, personalBucketRoot],
   );
 
   const searchLower = searchTerm.toLowerCase();
 
   const handleTogglePrompt = useCallback((id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }, []);
 
   const handleSelectIds = useCallback((ids: string[], select: boolean) => {
@@ -111,8 +96,7 @@ const AgentSkillsModal: FC<AgentSkillsModalProps> = ({
   }, []);
 
   const isEmpty = prompts.length === 0 && view === AgentSkillsModalView.List;
-  const isFormView =
-    view === AgentSkillsModalView.Create || view === AgentSkillsModalView.Edit;
+  const isFormView = view === AgentSkillsModalView.Create || view === AgentSkillsModalView.Edit;
 
   return (
     <DialPopup
@@ -145,14 +129,10 @@ const AgentSkillsModal: FC<AgentSkillsModalProps> = ({
       {isFormView ? (
         <CreatePromptForm
           onBack={
-            view === AgentSkillsModalView.Edit
-              ? onClose
-              : () => setView(AgentSkillsModalView.List)
+            view === AgentSkillsModalView.Edit ? onClose : () => setView(AgentSkillsModalView.List)
           }
           onCreated={handleCreated}
-          editPromptId={
-            view === AgentSkillsModalView.Edit ? editPromptId : undefined
-          }
+          editPromptId={view === AgentSkillsModalView.Edit ? editPromptId : undefined}
           onEdited={view === AgentSkillsModalView.Edit ? onClose : undefined}
         />
       ) : (
