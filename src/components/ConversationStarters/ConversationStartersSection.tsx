@@ -1,18 +1,18 @@
-import { FC, memo } from "react";
-import { Control, Controller } from "react-hook-form";
+import { FC, memo } from 'react';
+import { Control, Controller } from 'react-hook-form';
 
-import { MarketplaceI18nKeys } from "@/constants/i18n";
-import { QuickApp2Form as QuickApp2FormType } from "@/form/quickApp2Form";
-import { useTranslation } from "@/hooks/useTranslation";
-import { Translation } from "@/types/translation";
+import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
+import { useTranslation } from '@/hooks/useTranslation';
+import { Translation } from '@/types/translation';
 
-import { FormCollapsibleSection } from "@/components/common/FormCollapsibleSection";
-import { ToggleSwitch } from "@/components/common/ToggleSwitch/ToggleSwitch";
+import { FormCollapsibleSection } from '@/components/common/FormCollapsibleSection';
+import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
 
-import { ConversationStartersList } from "./ConversationStartersField";
-import { StartersBehaviourRadioGroup } from "./StartersBehaviourRadioGroup";
+import { ConversationStartersList } from './ConversationStartersField';
+import { StartersBehaviourRadioGroup } from './StartersBehaviourRadioGroup';
 
-import { DialFormItem, DialInput } from "@epam/ai-dial-ui-kit";
+import { DialFormItem, DialInput } from '@epam/ai-dial-ui-kit';
 
 export interface ConversationStartersSectionProps {
   control: Control<QuickApp2FormType>;
@@ -56,9 +56,7 @@ const ConversationStartersSection: FC<ConversationStartersSectionProps> = ({
       {/* Starters settings — always visible; controls disabled until a valid starter exists */}
       <div className="mt-1 flex flex-col gap-3">
         <div>
-          <h3 className="dial-small-semi-text">
-            {t(MarketplaceI18nKeys.StartersSettings)}
-          </h3>
+          <h3 className="dial-small-semi-text">{t(MarketplaceI18nKeys.StartersSettings)}</h3>
           <p className="dial-small-text mt-1 text-secondary">
             {t(MarketplaceI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings)}
           </p>
@@ -71,12 +69,10 @@ const ConversationStartersSection: FC<ConversationStartersSectionProps> = ({
             <DialInput
               labelProps={{
                 label: t(MarketplaceI18nKeys.IntroText),
-                caption: t(
-                  MarketplaceI18nKeys.OptionalTextShownAboveTheStarters,
-                ),
+                caption: t(MarketplaceI18nKeys.OptionalTextShownAboveTheStarters),
               }}
-              value={field.value ?? ""}
-              onChange={(val) => field.onChange(val ?? "")}
+              value={field.value ?? ''}
+              onChange={(val) => field.onChange(val ?? '')}
               disabled={isReadonly || !hasStarters}
               placeholder={t(MarketplaceI18nKeys.EnterIntroText)}
               containerClassName="w-full"
@@ -112,9 +108,7 @@ const ConversationStartersSection: FC<ConversationStartersSectionProps> = ({
                 isOn={field.value}
                 handleSwitch={() => field.onChange(!field.value)}
                 disabled={isReadonly || !hasStarters}
-                additionalText={t(
-                  MarketplaceI18nKeys.DisableChatInputSoUsersCanOnlyUseStarters,
-                )}
+                additionalText={t(MarketplaceI18nKeys.DisableChatInputSoUsersCanOnlyUseStarters)}
                 tooltip={startersSettingsTooltip}
                 warning={
                   !autoSubmit && chatMessageInputDisabled

@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import {
-  encodeDialPath,
-  getDialAuth,
-  getDialAuthHeaders,
-} from '@/utils/server/dial-server-auth';
+import { encodeDialPath, getDialAuth, getDialAuthHeaders } from '@/utils/server/dial-server-auth';
 
 /**
  * POST /api/skill-validate
@@ -26,10 +22,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   };
 
   if (!deploymentId || !url) {
-    return NextResponse.json(
-      { error: 'Missing deploymentId or url' },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: 'Missing deploymentId or url' }, { status: 400 });
   }
 
   const dialUrl = `${dialApiHost}/v1/deployments/${encodeDialPath(deploymentId)}/route/v1/configuration-support/skills/validate`;

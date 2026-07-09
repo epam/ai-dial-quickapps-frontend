@@ -1,12 +1,12 @@
-"use client";
-import { IconBulb, IconPlus } from "@tabler/icons-react";
-import { FC, memo, useCallback, useState } from "react";
-import { useTranslation } from "@/hooks/useTranslation";
-import { Translation } from "@/types/translation";
-import { MarketplaceI18nKeys } from "@/constants/i18n";
-import { DialLinkButton, DialNoDataContent } from "@epam/ai-dial-ui-kit";
-import AgentSkillsItem from "./AgentSkillsItem";
-import AgentSkillsModal from "./AgentSkillsModal";
+'use client';
+import { IconBulb, IconPlus } from '@tabler/icons-react';
+import { FC, memo, useCallback, useState } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
+import { Translation } from '@/types/translation';
+import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { DialLinkButton, DialNoDataContent } from '@epam/ai-dial-ui-kit';
+import AgentSkillsItem from './AgentSkillsItem';
+import AgentSkillsModal from './AgentSkillsModal';
 
 interface AgentSkillsSelectorProps {
   value: string[];
@@ -60,8 +60,7 @@ const AgentSkillsSelector: FC<AgentSkillsSelectorProps> = ({
       <div className="absolute end-0 top-[-26px]">
         <DialLinkButton
           tooltipProps={{
-            tooltip:
-              addBtnTooltip ?? tooltip ?? t(MarketplaceI18nKeys.AddAgentSkills),
+            tooltip: addBtnTooltip ?? tooltip ?? t(MarketplaceI18nKeys.AddAgentSkills),
           }}
           disabled={!!readonly}
           iconBefore={<IconPlus size={18} />}

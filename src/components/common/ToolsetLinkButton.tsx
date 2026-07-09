@@ -11,10 +11,7 @@ interface ToolsetLinkButtonProps {
   dialCoreExternalUrl?: string;
 }
 
-const getMcpUrl = (
-  entityId: string,
-  dialCoreExternalUrl: string,
-): string => {
+const getMcpUrl = (entityId: string, dialCoreExternalUrl: string): string => {
   const encodedId = encodeApiUrl(entityId);
   if (isApplicationId(entityId)) {
     return `${dialCoreExternalUrl}/v1/deployments/${encodedId}/mcp`;

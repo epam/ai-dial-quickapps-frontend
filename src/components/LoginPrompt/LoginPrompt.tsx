@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { FC, memo } from "react";
+import { FC, memo } from 'react';
 
-import { useAuth } from "@/hooks/use-auth";
-import { DialNeutralButton } from "@epam/ai-dial-ui-kit";
+import { useAuth } from '@/hooks/use-auth';
+import { DialNeutralButton } from '@epam/ai-dial-ui-kit';
 
 interface LoginPromptProps {
   provider: string;
@@ -18,7 +18,7 @@ const LoginPrompt: FC<LoginPromptProps> = ({ provider }) => {
       <DialNeutralButton
         disabled={isWindowOpen}
         onClick={openLoginWindow}
-        label={isWindowOpen ? "Sign-in window is open…" : "Sign in"}
+        label={isWindowOpen ? 'Sign-in window is open…' : 'Sign in'}
       />
     </div>
   );

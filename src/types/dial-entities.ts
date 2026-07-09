@@ -1,23 +1,23 @@
 export enum ApplicationStatus {
-  Deployed = "DEPLOYED",
-  Deploying = "DEPLOYING",
-  Undeployed = "UNDEPLOYED",
-  Undeploying = "UNDEPLOYING",
-  Failed = "FAILED",
-  Redeployed = "REDEPLOYED",
-  Redeploying = "REDEPLOYING",
+  Deployed = 'DEPLOYED',
+  Deploying = 'DEPLOYING',
+  Undeployed = 'UNDEPLOYED',
+  Undeploying = 'UNDEPLOYING',
+  Failed = 'FAILED',
+  Redeployed = 'REDEPLOYED',
+  Redeploying = 'REDEPLOYING',
 }
 
 export enum ToolsetAuthType {
-  OAuth = "OAUTH",
-  ApiKey = "API_KEY",
-  None = "NONE",
+  OAuth = 'OAUTH',
+  ApiKey = 'API_KEY',
+  None = 'NONE',
 }
 
 export enum ToolsetAuthStatus {
-  SignedIn = "SIGNED_IN",
-  SignedOut = "SIGNED_OUT",
-  Failed = "FAILED",
+  SignedIn = 'SIGNED_IN',
+  SignedOut = 'SIGNED_OUT',
+  Failed = 'FAILED',
 }
 
 export interface ToolsetAuthSettings {
@@ -37,7 +37,7 @@ export interface DialModel {
   id: string;
   reference: string;
   name: string;
-  type: "model" | "application";
+  type: 'model' | 'application';
   version?: string;
   iconUrl?: string;
   applicationTypeSchemaId?: string;
@@ -60,7 +60,7 @@ export interface DialToolset {
   id: string;
   reference: string;
   name: string;
-  type: "toolset";
+  type: 'toolset';
   version?: string;
   iconUrl?: string;
   mcp?: boolean;

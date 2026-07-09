@@ -8,9 +8,7 @@ export function useTranslation(ns: Translation) {
 
   const translate = useCallback(
     (key: string, options?: TranslationOptions) =>
-      ((options
-        ? t(key, options as Record<string, unknown>)
-        : t(key)) as unknown as string) ?? key,
+      ((options ? t(key, options as Record<string, unknown>) : t(key)) as unknown as string) ?? key,
     [t],
   );
 

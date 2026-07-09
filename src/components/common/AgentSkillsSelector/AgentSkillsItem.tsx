@@ -1,29 +1,22 @@
-"use client";
+'use client';
 import {
   IconAlertCircleFilled,
   IconChevronDown,
   IconCircleCheckFilled,
   IconPencilMinus,
   IconTrashX,
-} from "@tabler/icons-react";
-import classNames from "classnames";
-import { FC, memo, useCallback, useState } from "react";
+} from '@tabler/icons-react';
+import classNames from 'classnames';
+import { FC, memo, useCallback, useState } from 'react';
 
-import { MarketplaceI18nKeys } from "@/constants/i18n";
-import { useDataContext } from "@/context/DataContext";
-import { useSkillValidation } from "@/hooks/useSkillValidation";
-import { useTranslation } from "@/hooks/useTranslation";
-import {
-  PromptFolderRoot,
-  SkillValidationStatus,
-} from "@/types/skill-validation";
-import { Translation } from "@/types/translation";
-import {
-  getDisplayName,
-  getFriendlyFolderPath,
-  promptPathUrl,
-} from "@/utils/prompt-tree";
-import { DialIconButton } from "@epam/ai-dial-ui-kit";
+import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { useDataContext } from '@/context/DataContext';
+import { useSkillValidation } from '@/hooks/useSkillValidation';
+import { useTranslation } from '@/hooks/useTranslation';
+import { PromptFolderRoot, SkillValidationStatus } from '@/types/skill-validation';
+import { Translation } from '@/types/translation';
+import { getDisplayName, getFriendlyFolderPath, promptPathUrl } from '@/utils/prompt-tree';
+import { DialIconButton } from '@epam/ai-dial-ui-kit';
 
 interface AgentSkillsItemProps {
   promptId: string;
@@ -38,33 +31,24 @@ interface PromptFileContent {
   content?: string;
 }
 
-const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
-  promptId,
-  onDelete,
-  onEdit,
-  readonly,
-}) => {
+const AgentSkillsItem: FC<AgentSkillsItemProps> = ({ promptId, onDelete, onEdit, readonly }) => {
   const { t } = useTranslation(Translation.Marketplace);
   const { promptsMap } = useDataContext();
   const prompt = promptsMap[promptId];
 
   const [isExpanded, setIsExpanded] = useState(false);
-  const [promptContent, setPromptContent] = useState<PromptFileContent | null>(
-    null,
-  );
+  const [promptContent, setPromptContent] = useState<PromptFileContent | null>(null);
   const [isContentLoading, setIsContentLoading] = useState(false);
   const [hasContentError, setHasContentError] = useState(false);
 
   const skillValidation = useSkillValidation(promptId);
   const isSkillInvalid = skillValidation.status === SkillValidationStatus.Invalid;
-  const isSkillValidating =
-    skillValidation.status === SkillValidationStatus.Validating;
+  const isSkillValidating = skillValidation.status === SkillValidationStatus.Validating;
   const isSkillValid = skillValidation.status === SkillValidationStatus.Valid;
 
-  const rawName = prompt?.name ?? promptId.split("/").pop() ?? promptId;
+  const rawName = prompt?.name ?? promptId.split('/').pop() ?? promptId;
   const displayName = getDisplayName(rawName);
-  const rawFolderId =
-    prompt?.folderId ?? promptId.split("/").slice(0, -1).join("/");
+  const rawFolderId = prompt?.folderId ?? promptId.split('/').slice(0, -1).join('/');
   const friendlyFolderPath = getFriendlyFolderPath(rawFolderId);
   const folderRootLabel = t(
     friendlyFolderPath.root === PromptFolderRoot.Organization
@@ -74,7 +58,7 @@ const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
   const folderPath = friendlyFolderPath.sub
     ? `${folderRootLabel}/${friendlyFolderPath.sub}`
     : folderRootLabel;
-  const isOwn = !promptId.startsWith("prompts/public/");
+  const isOwn = !promptId.startsWith('prompts/public/');
   const canEdit = isOwn && !readonly && !!onEdit;
 
   const handleToggleExpand = useCallback(async () => {
@@ -103,9 +87,7 @@ const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
   }, [isExpanded, promptContent, isContentLoading, promptId]);
 
   return (
-    <div
-      className="flex flex-col divide-y divide-tertiary bg-layer-3 py-2"
-    >
+    <div className="flex flex-col divide-y divide-tertiary bg-layer-3 py-2">
       <div className="p-3">
         <div className="flex items-center gap-2">
           <DialIconButton
@@ -113,10 +95,7 @@ const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
             icon={
               <IconChevronDown
                 size={20}
-                className={classNames(
-                  "transition-transform",
-                  isExpanded && "rotate-180",
-                )}
+                className={classNames('transition-transform', isExpanded && 'rotate-180')}
               />
             }
             onClick={handleToggleExpand}
@@ -126,16 +105,11 @@ const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
             <span className="dial-small-text flex items-center gap-1.5 truncate font-medium text-primary">
               {displayName}
               {isSkillValid && (
-                <IconCircleCheckFilled
-                  size={14}
-                  className="shrink-0 text-accent-secondary"
-                />
+                <IconCircleCheckFilled size={14} className="shrink-0 text-accent-secondary" />
               )}
             </span>
             {folderPath && (
-              <span className="dial-tiny-text truncate text-secondary">
-                {folderPath}
-              </span>
+              <span className="dial-tiny-text truncate text-secondary">{folderPath}</span>
             )}
           </div>
 
@@ -166,9 +140,7 @@ const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
         )}
 
         {hasContentError && (
-          <div
-            className="mt-2 flex items-center gap-1 px-7 text-error"
-          >
+          <div className="mt-2 flex items-center gap-1 px-7 text-error">
             <IconAlertCircleFilled size={16} className="shrink-0" />
             <span className="dial-tiny-text break-words">
               {t(MarketplaceI18nKeys.AgentSkillLoadError)}
@@ -185,13 +157,10 @@ const AgentSkillsItem: FC<AgentSkillsItemProps> = ({
         )}
 
         {isSkillInvalid && (
-          <div
-            className="mt-2 flex items-center gap-1 px-7 text-error"
-          >
+          <div className="mt-2 flex items-center gap-1 px-7 text-error">
             <IconAlertCircleFilled size={16} className="shrink-0" />
             <span className="dial-tiny-text break-words">
-              {skillValidation.message ||
-                t(MarketplaceI18nKeys.AgentSkillsInvalidError)}
+              {skillValidation.message || t(MarketplaceI18nKeys.AgentSkillsInvalidError)}
             </span>
           </div>
         )}

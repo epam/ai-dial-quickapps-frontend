@@ -1,5 +1,15 @@
 'use client';
-import { createContext, FC, memo, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  FC,
+  memo,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 import type { Theme, ThemeConfiguration } from '@/types/theme';
 import { ThemeId } from '@/types/theme';
@@ -8,8 +18,7 @@ import { applyThemeColors, getOsPreferredTheme } from '@/utils/apply-theme-color
 const THEMES_URL = '/api/themes';
 const STORAGE_KEY = 'dial-theme';
 
-const getQueryTheme = (): string | null =>
-  new URLSearchParams(window.location.search).get('theme');
+const getQueryTheme = (): string | null => new URLSearchParams(window.location.search).get('theme');
 
 interface ThemeContextValue {
   themes: Theme[];
@@ -101,7 +110,13 @@ const ThemeProvider: FC<ThemeProviderProps> = ({ children }) => {
   }, []);
 
   const value = useMemo<ThemeContextValue>(
-    () => ({ themes: config?.themes ?? [], selectedThemeId: activeThemeId, currentTheme, isLoading, setTheme }),
+    () => ({
+      themes: config?.themes ?? [],
+      selectedThemeId: activeThemeId,
+      currentTheme,
+      isLoading,
+      setTheme,
+    }),
     [config, activeThemeId, currentTheme, isLoading, setTheme],
   );
 

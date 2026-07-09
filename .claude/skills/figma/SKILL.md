@@ -32,12 +32,12 @@ If the design context includes **Code Connect** snippets, prefer those — they 
 
 Before writing any new code, check whether UI kit or existing project components cover the need:
 
-| Design need                    | Check first                          |
-| ------------------------------ | ------------------------------------ |
-| Buttons, inputs, modals, icons | `@epam/ai-dial-ui-kit`               |
-| Generic icons                  | `@tabler/icons-react`                |
-| Layout, spacing, color         | Tailwind CSS classes                 |
-| Project-specific patterns      | `src/components/` in this project    |
+| Design need                    | Check first                       |
+| ------------------------------ | --------------------------------- |
+| Buttons, inputs, modals, icons | `@epam/ai-dial-ui-kit`            |
+| Generic icons                  | `@tabler/icons-react`             |
+| Layout, spacing, color         | Tailwind CSS classes              |
+| Project-specific patterns      | `src/components/` in this project |
 
 Grep the codebase before building from scratch:
 

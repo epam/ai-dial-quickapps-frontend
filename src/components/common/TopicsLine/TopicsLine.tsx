@@ -9,10 +9,9 @@ export interface TopicTagProps {
   className?: string;
 }
 
-export const TopicTag: FC<TopicTagProps> = ({
-  label,
-  className = 'dial-tiny-text',
-}) => <DialTag label={label} className={classNames(className, 'text-secondary')} />;
+export const TopicTag: FC<TopicTagProps> = ({ label, className = 'dial-tiny-text' }) => (
+  <DialTag label={label} className={classNames(className, 'text-secondary')} />
+);
 
 const MAX_ROWS = 1;
 
@@ -21,10 +20,7 @@ export interface TopicsLineProps {
   overflowAriaLabel?: (count: number) => string;
 }
 
-export const TopicsLine: FC<TopicsLineProps> = ({
-  topics,
-  overflowAriaLabel,
-}) => {
+export const TopicsLine: FC<TopicsLineProps> = ({ topics, overflowAriaLabel }) => {
   const [visibleCount, setVisibleCount] = useState(topics.length);
   const topicsRef = useRef<HTMLDivElement>(null);
 
@@ -52,9 +48,7 @@ export const TopicsLine: FC<TopicsLineProps> = ({
       }
     }
 
-    setVisibleCount(
-      cutoff < children.length ? Math.max(0, cutoff - 1) : children.length,
-    );
+    setVisibleCount(cutoff < children.length ? Math.max(0, cutoff - 1) : children.length);
   }, [topicsKey, topics.length]);
 
   const overflow = topics.length - visibleCount;
@@ -66,11 +60,7 @@ export const TopicsLine: FC<TopicsLineProps> = ({
       ))}
       {overflow > 0 && (
         <DialTooltip tooltip={topics.slice(visibleCount).join(', ')}>
-          <span
-            aria-label={
-              overflowAriaLabel?.(overflow) ?? `and ${overflow} more topics`
-            }
-          >
+          <span aria-label={overflowAriaLabel?.(overflow) ?? `and ${overflow} more topics`}>
             <TopicTag label={`+${overflow}`} />
           </span>
         </DialTooltip>

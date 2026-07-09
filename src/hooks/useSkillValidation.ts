@@ -1,11 +1,8 @@
-"use client";
-import { useEffect, useState } from "react";
+'use client';
+import { useEffect, useState } from 'react';
 
-import { useAppContext } from "@/context/AppContext";
-import {
-  SkillValidationStatus,
-  type SkillValidationState,
-} from "@/types/skill-validation";
+import { useAppContext } from '@/context/AppContext';
+import { SkillValidationStatus, type SkillValidationState } from '@/types/skill-validation';
 
 interface SkillValidateResponse {
   valid?: boolean;
@@ -38,17 +35,15 @@ export function useSkillValidation(
     const validate = async () => {
       setState({ status: SkillValidationStatus.Validating });
       try {
-        const res = await fetch("/api/skill-validate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const res = await fetch('/api/skill-validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ deploymentId, url: promptId }),
         });
         const data = (await res.json()) as SkillValidateResponse;
         if (isCancelled) return;
         setState({
-          status: data.valid
-            ? SkillValidationStatus.Valid
-            : SkillValidationStatus.Invalid,
+          status: data.valid ? SkillValidationStatus.Valid : SkillValidationStatus.Invalid,
           message: data.message,
         });
       } catch {

@@ -1,6 +1,6 @@
-"use client";
-import { FC } from "react";
-import AgentSkillsSelector from "@/components/common/AgentSkillsSelector/AgentSkillsSelector";
+'use client';
+import { FC } from 'react';
+import AgentSkillsSelector from '@/components/common/AgentSkillsSelector/AgentSkillsSelector';
 
 interface AgentSkillsFieldProps {
   value: string[];
@@ -16,11 +16,6 @@ export const AgentSkillsField: FC<AgentSkillsFieldProps> = ({
   tooltip,
 }) => {
   return (
-    <AgentSkillsSelector
-      value={value}
-      onChange={onChange}
-      readonly={readonly}
-      tooltip={tooltip}
-    />
+    <AgentSkillsSelector value={value} onChange={onChange} readonly={readonly} tooltip={tooltip} />
   );
 };

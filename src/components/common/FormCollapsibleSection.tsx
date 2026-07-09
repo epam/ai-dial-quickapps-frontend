@@ -1,9 +1,9 @@
-import { IconChevronDown } from "@tabler/icons-react";
-import { ReactNode, useCallback, useState } from "react";
+import { IconChevronDown } from '@tabler/icons-react';
+import { ReactNode, useCallback, useState } from 'react';
 
-import classNames from "classnames";
+import classNames from 'classnames';
 
-import { DialButton } from "@epam/ai-dial-ui-kit";
+import { DialButton } from '@epam/ai-dial-ui-kit';
 
 interface FormSectionProps {
   name: string;
@@ -33,17 +33,13 @@ export const FormCollapsibleSection = ({
         label={name}
         iconBefore={
           <IconChevronDown
-            className={classNames("duration-200", !isOpen && "-rotate-90")}
+            className={classNames('duration-200', !isOpen && '-rotate-90')}
             size={20}
           />
         }
       />
-      {description && (
-        <p className="ml-7 mt-2 dial-tiny-text text-secondary">{description}</p>
-      )}
-      {isOpen && (
-        <div className="ml-7 mt-3 flex flex-col gap-3">{children}</div>
-      )}
+      {description && <p className="ml-7 mt-2 dial-tiny-text text-secondary">{description}</p>}
+      {isOpen && <div className="ml-7 mt-3 flex flex-col gap-3">{children}</div>}
     </div>
   );
 };

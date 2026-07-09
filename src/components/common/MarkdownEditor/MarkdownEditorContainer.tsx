@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { type OnValidate } from "@monaco-editor/react";
-import { type PreviewType } from "@uiw/react-md-editor";
-import { type FC, type ReactNode, useCallback, useState } from "react";
+import { type OnValidate } from '@monaco-editor/react';
+import { type PreviewType } from '@uiw/react-md-editor';
+import { type FC, type ReactNode, useCallback, useState } from 'react';
 
-import dynamic from "next/dynamic";
+import dynamic from 'next/dynamic';
 
-import { Label } from "@/components/common/Forms/Label";
-import { ToggleSwitch } from "@/components/common/ToggleSwitch/ToggleSwitch";
-import { useThemeContext } from "@/context/ThemeContext";
-import { ThemeId } from "@/types/theme";
+import { Label } from '@/components/common/Forms/Label';
+import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
+import { useThemeContext } from '@/context/ThemeContext';
+import { ThemeId } from '@/types/theme';
 
-import { LazyDialJsonEditor, LazyDialMarkdownEditor } from "@epam/ai-dial-ui-kit";
+import { LazyDialJsonEditor, LazyDialMarkdownEditor } from '@epam/ai-dial-ui-kit';
 
 export enum EditorThemes {
-  dark = "dark",
-  light = "light",
+  dark = 'dark',
+  light = 'light',
 }
 
 export type EditorTheme = `${EditorThemes}`;
@@ -25,10 +25,9 @@ const DialMarkdownEditor = dynamic(
   { ssr: false },
 );
 
-const DialJsonEditor = dynamic(
-  async () => (await LazyDialJsonEditor()).DialJsonEditor,
-  { ssr: false },
-);
+const DialJsonEditor = dynamic(async () => (await LazyDialJsonEditor()).DialJsonEditor, {
+  ssr: false,
+});
 
 export interface DialMarkdownEditorContainerProps {
   value?: string;
@@ -43,10 +42,7 @@ export interface DialMarkdownEditorContainerProps {
   placeholder?: string;
 }
 
-
-export const DialMarkdownEditorContainer: FC<
-  DialMarkdownEditorContainerProps
-> = ({
+export const DialMarkdownEditorContainer: FC<DialMarkdownEditorContainerProps> = ({
   value,
   onChangeValue,
   label,
@@ -55,7 +51,7 @@ export const DialMarkdownEditorContainer: FC<
   height = 300,
   theme,
   onValidateJSON,
-  preview = "edit",
+  preview = 'edit',
   placeholder,
 }) => {
   const { currentTheme } = useThemeContext();
@@ -67,7 +63,7 @@ export const DialMarkdownEditorContainer: FC<
 
   const handleChange = useCallback(
     (val: string | undefined) => {
-      onChangeValue?.(val ?? "");
+      onChangeValue?.(val ?? '');
     },
     [onChangeValue],
   );
@@ -98,17 +94,18 @@ export const DialMarkdownEditorContainer: FC<
       )}
 
       {showSwitcher && isJSONContentMode ? (
-        <div
-          className="rounded border border-primary"
-          style={{ height: `${height}px` }}
-        >
+        <div className="rounded border border-primary" style={{ height: `${height}px` }}>
           {isEditorMounted && (
             <DialJsonEditor
               value={value}
               onChange={handleChange}
               onValidateJSON={onValidateJSON}
-              currentTheme={resolvedTheme === EditorThemes.dark ? "vs-dark" : "light"}
-              options={{ minimap: { enabled: false }, scrollBeyondLastLine: false, automaticLayout: true }}
+              currentTheme={resolvedTheme === EditorThemes.dark ? 'vs-dark' : 'light'}
+              options={{
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+              }}
             />
           )}
         </div>
