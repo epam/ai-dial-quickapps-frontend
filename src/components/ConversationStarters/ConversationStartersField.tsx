@@ -32,11 +32,7 @@ export const ConversationStartersList: FC<ConversationStartersListProps> = ({
 }) => {
   const { t } = useTranslation(Translation.Marketplace);
 
-  const handleChange = (
-    index: number,
-    field: keyof ConversationStarter,
-    val: string,
-  ) => {
+  const handleChange = (index: number, field: keyof ConversationStarter, val: string) => {
     const updated = value.map((s, i) =>
       i === index ? { ...s, [field]: val.length === 1 ? val.trim() : val } : s,
     );

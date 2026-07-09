@@ -1,18 +1,13 @@
-"use client";
-import { FC, useState } from "react";
+'use client';
+import { FC, useState } from 'react';
 
-import { ModelIcon } from "@/components/common/ModelIcon/ModelIcon";
-import { MarketplaceI18nKeys } from "@/constants/i18n";
-import { useDataContext } from "@/context/DataContext";
-import { useTranslation } from "@/hooks/useTranslation";
-import { DialAppTransportType } from "@/types/quick-apps";
-import { Translation } from "@/types/translation";
-import {
-  DialPopup,
-  DialPrimaryButton,
-  DialRadioButton,
-  PopupSize,
-} from "@epam/ai-dial-ui-kit";
+import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
+import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { useDataContext } from '@/context/DataContext';
+import { useTranslation } from '@/hooks/useTranslation';
+import { DialAppTransportType } from '@/types/quick-apps';
+import { Translation } from '@/types/translation';
+import { DialPopup, DialPrimaryButton, DialRadioButton, PopupSize } from '@epam/ai-dial-ui-kit';
 
 interface DialAppConfigurationModalProps {
   agentId: string;
@@ -31,15 +26,12 @@ export const DialAppConfigurationModal: FC<DialAppConfigurationModalProps> = ({
   const { modelsMap } = useDataContext();
   const agent = modelsMap[agentId];
 
-  const doesSupportChatCompletion = agent?.type === "model";
+  const doesSupportChatCompletion = agent?.type === 'model';
 
-  const [selectedTransport, setSelectedTransport] =
-    useState<DialAppTransportType>(
-      transport ??
-        (doesSupportChatCompletion
-          ? DialAppTransportType.ChatCompletion
-          : DialAppTransportType.MCP),
-    );
+  const [selectedTransport, setSelectedTransport] = useState<DialAppTransportType>(
+    transport ??
+      (doesSupportChatCompletion ? DialAppTransportType.ChatCompletion : DialAppTransportType.MCP),
+  );
 
   const handleApply = () => {
     onSave(selectedTransport);
@@ -54,10 +46,7 @@ export const DialAppConfigurationModal: FC<DialAppConfigurationModalProps> = ({
       onClose={onClose}
       footer={
         <div className="flex justify-end px-6 py-4">
-          <DialPrimaryButton
-            label={t(MarketplaceI18nKeys.ApplyChanges)}
-            onClick={handleApply}
-          />
+          <DialPrimaryButton label={t(MarketplaceI18nKeys.ApplyChanges)} onClick={handleApply} />
         </div>
       }
     >
@@ -66,22 +55,16 @@ export const DialAppConfigurationModal: FC<DialAppConfigurationModalProps> = ({
           <div className="flex items-center gap-3 px-6 py-4">
             <ModelIcon name={agent.name} iconUrl={agent.iconUrl} size={40} radius={10} />
             <div className="flex min-w-0 flex-col gap-0.5">
-              <span className="dial-small-semi-text truncate text-primary">
-                {agent.name}
-              </span>
+              <span className="dial-small-semi-text truncate text-primary">{agent.name}</span>
               {agent.version && (
-                <span className="dial-tiny-text truncate text-secondary">
-                  {agent.version}
-                </span>
+                <span className="dial-tiny-text truncate text-secondary">{agent.version}</span>
               )}
             </div>
           </div>
         )}
 
         <div className="flex flex-col gap-3 px-6 py-4">
-          <span className="dial-tiny-text text-secondary">
-            {t(MarketplaceI18nKeys.ConnectVia)}
-          </span>
+          <span className="dial-tiny-text text-secondary">{t(MarketplaceI18nKeys.ConnectVia)}</span>
           <DialRadioButton
             name="transport"
             value={DialAppTransportType.MCP}

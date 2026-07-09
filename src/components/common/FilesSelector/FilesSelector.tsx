@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { IconFile, IconPlus, IconTrashX } from "@tabler/icons-react";
-import React, { type MouseEvent, useCallback, useState } from "react";
+import { IconFile, IconPlus, IconTrashX } from '@tabler/icons-react';
+import React, { type MouseEvent, useCallback, useState } from 'react';
 
 import {
   ButtonAppearance,
   DialIconButton,
   DialLinkButton,
   DialNoDataContent,
-} from "@epam/ai-dial-ui-kit";
+} from '@epam/ai-dial-ui-kit';
 
-import { CommonI18nKeys } from "@/constants/i18n";
-import { useTranslation } from "@/hooks/useTranslation";
-import { Translation } from "@/types/translation";
-import { decodeApiUrl } from "@/utils/api";
+import { CommonI18nKeys } from '@/constants/i18n';
+import { useTranslation } from '@/hooks/useTranslation';
+import { Translation } from '@/types/translation';
+import { decodeApiUrl } from '@/utils/api';
 
-import FileManagerModal from "./FileManagerModal";
+import FileManagerModal from './FileManagerModal';
 
 interface SelectedFileProps {
   document: string;
@@ -23,13 +23,9 @@ interface SelectedFileProps {
   onRemove?: (document: string) => void;
 }
 
-const SelectedFile: React.FC<SelectedFileProps> = ({
-  document,
-  readonly,
-  onRemove,
-}) => {
+const SelectedFile: React.FC<SelectedFileProps> = ({ document, readonly, onRemove }) => {
   const { t } = useTranslation(Translation.Common);
-  const displayName = decodeApiUrl(document).split("/").pop() ?? document;
+  const displayName = decodeApiUrl(document).split('/').pop() ?? document;
   const removeFileLabel = t(CommonI18nKeys.RemoveFile);
 
   return (
@@ -117,11 +113,7 @@ export const FilesSelector: React.FC<Props> = ({
           </div>
         )}
       </div>
-      <FileManagerModal
-        isOpen={isModalOpen}
-        initialFileIds={files}
-        onClose={handleModalClose}
-      />
+      <FileManagerModal isOpen={isModalOpen} initialFileIds={files} onClose={handleModalClose} />
     </div>
   );
 };

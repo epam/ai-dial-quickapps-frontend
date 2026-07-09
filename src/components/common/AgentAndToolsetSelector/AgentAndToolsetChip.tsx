@@ -3,23 +3,15 @@ import React, { useMemo } from 'react';
 
 import classNames from 'classnames';
 
-import type {
-  ApplicationStatus,
-  ToolsetAuthSettings,
-} from '@/types/dial-entities';
+import type { ApplicationStatus, ToolsetAuthSettings } from '@/types/dial-entities';
 import { ToolsetAuthType } from '@/types/dial-entities';
-import { isApplicationId, isToolsetId, getEntityNameFromId, getVersionFromId } from '@/utils/api';
+import { getEntityNameFromId, getVersionFromId, isApplicationId, isToolsetId } from '@/utils/api';
 import { doesAgentSupportMcp } from '@/utils/application';
 import { getEntityStatus } from '@/utils/get-entity-status';
 
 import { ChipTooltipContent } from './ChipTooltipContent';
 
-import {
-  DialGhostIconButton,
-  DialTag,
-  DialTooltip,
-  ElementSize,
-} from '@epam/ai-dial-ui-kit';
+import { DialGhostIconButton, DialTag, DialTooltip, ElementSize } from '@epam/ai-dial-ui-kit';
 
 export interface ChipEntity {
   id: string;
@@ -34,10 +26,7 @@ export interface ChipEntity {
   [key: string]: unknown;
 }
 
-const EntityIcon: React.FC<{ id: string; size?: number }> = ({
-  id,
-  size = 18,
-}) => {
+const EntityIcon: React.FC<{ id: string; size?: number }> = ({ id, size = 18 }) => {
   if (isApplicationId(id)) return <IconApps size={size} stroke={1.5} />;
   if (isToolsetId(id)) return <IconTool size={size} stroke={1.5} />;
   return <IconApps size={size} stroke={1.5} />;
@@ -47,9 +36,7 @@ interface ChipConfigureButtonProps {
   onClick: () => void;
 }
 
-const ChipConfigureButton: React.FC<ChipConfigureButtonProps> = ({
-  onClick,
-}) => (
+const ChipConfigureButton: React.FC<ChipConfigureButtonProps> = ({ onClick }) => (
   <DialGhostIconButton
     name="Configure"
     icon={<IconSettings size={16} stroke={1.5} />}
@@ -88,11 +75,7 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
 
   const isCustomTool = !isApplicationId(id) && !isToolsetId(id) && !item;
 
-  const version = isCustomTool
-    ? ''
-    : !item
-      ? getVersionFromId(id)
-      : item.version;
+  const version = isCustomTool ? '' : !item ? getVersionFromId(id) : item.version;
 
   const tooltipContent = useMemo(
     () => (
@@ -111,15 +94,11 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
   );
 
   const hasAuthSettings =
-    !!item?.authSettings &&
-    item.authSettings.authenticationType !== ToolsetAuthType.None;
+    !!item?.authSettings && item.authSettings.authenticationType !== ToolsetAuthType.None;
   const canOpenLoginModal = hasAuthSettings && !!onLoginToolset && !!item;
 
   const isConfigurableApp =
-    !!item &&
-    isApplicationId(item.id) &&
-    doesAgentSupportMcp(item) &&
-    !!onConfigure;
+    !!item && isApplicationId(item.id) && doesAgentSupportMcp(item) && !!onConfigure;
   const isConfigurable = isConfigurableApp || canOpenLoginModal;
 
   const handleRemove = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -127,7 +106,7 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
     onRemove?.(id);
   };
 
-  const handleClick = (_e: React.MouseEvent<HTMLDivElement>) => {
+  const handleClick = () => {
     if (readonly) return;
     if (canOpenLoginModal) {
       onLoginToolset?.(item as ChipEntity);
@@ -162,9 +141,7 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
           )}
         />
       </DialTooltip>
-      {!readonly && isConfigurable && (
-        <ChipConfigureButton onClick={handleConfigureClick} />
-      )}
+      {!readonly && isConfigurable && <ChipConfigureButton onClick={handleConfigureClick} />}
     </div>
   );
 };

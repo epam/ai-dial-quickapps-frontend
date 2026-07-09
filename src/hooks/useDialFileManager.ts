@@ -2,7 +2,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation as useI18nTranslation } from 'react-i18next';
 
-import type { DialCopiedItem, DialDeletedItem, DialFile, DialUploadFileItem } from '@epam/ai-dial-ui-kit';
+import type {
+  DialCopiedItem,
+  DialDeletedItem,
+  DialFile,
+  DialUploadFileItem,
+} from '@epam/ai-dial-ui-kit';
 import {
   DialFileManagerActions,
   DialFileManagerTabs,
@@ -28,7 +33,6 @@ import {
   uploadFile,
 } from '@/utils/dial-files-api';
 import { resolveDialFileApiPath, virtualPathToApiPath } from '@/utils/dial-file-path';
-import { isHiddenPath } from '@/utils/dial-file-path';
 import {
   DownloadDestinationType,
   prepareDownloadDestination,
@@ -70,11 +74,7 @@ export interface UseDialFileManagerResult {
   onDeleteFiles: (items: DialDeletedItem[], sourceFolder: string) => void;
   isDeleting: boolean;
   onRenameValidate: (value: string, item: DialFile) => string | null;
-  onMoveToFiles: (
-    items: DialCopiedItem[],
-    sourceFolder: string,
-    destinationFolder: string,
-  ) => void;
+  onMoveToFiles: (items: DialCopiedItem[], sourceFolder: string, destinationFolder: string) => void;
   isRenaming: boolean;
   uploadEnabled: boolean;
   isNewButtonDisabled: boolean;
@@ -127,9 +127,7 @@ const CORE_PERMISSION_MAP: Record<string, DialFilePermission> = {
   SHARE: DialFilePermission.SHARE,
 };
 
-const mapCorePermissions = (
-  permissions?: string[],
-): DialFile['permissions'] | undefined => {
+const mapCorePermissions = (permissions?: string[]): DialFile['permissions'] | undefined => {
   if (!permissions?.length) return undefined;
   const mapped = permissions
     .map((p) => CORE_PERMISSION_MAP[p.toUpperCase()])
@@ -142,10 +140,7 @@ const normalizeVirtualPath = (value: string): string => {
   return trimmed || '/';
 };
 
-const findFolderByVirtualPath = (
-  nodes: DialFile[],
-  virtualPath: string,
-): DialFile | undefined => {
+const findFolderByVirtualPath = (nodes: DialFile[], virtualPath: string): DialFile | undefined => {
   const target = normalizeVirtualPath(virtualPath);
   for (const node of nodes) {
     if (node.nodeType !== DialFileNodeType.FOLDER) continue;
@@ -190,9 +185,7 @@ const buildFromCache = (
   return flat.map((item): DialFile => {
     const isFolder = item.nodeType === 'FOLDER';
     const name = safeDecodeURI(item.name);
-    const virtualPath = isFolder
-      ? `${virtualBasePath}/${name}/`
-      : `${virtualBasePath}/${name}`;
+    const virtualPath = isFolder ? `${virtualBasePath}/${name}/` : `${virtualBasePath}/${name}`;
 
     const base: DialFile = {
       id: item.path,
@@ -207,9 +200,7 @@ const buildFromCache = (
       resourceType: item.resourceType as DialFile['resourceType'],
       contentLength: item.contentLength,
       contentType: item.contentType,
-      updatedAt: item.updatedAt
-        ? new Date(item.updatedAt).toISOString()
-        : undefined,
+      updatedAt: item.updatedAt ? new Date(item.updatedAt).toISOString() : undefined,
     };
 
     if (isFolder) {
@@ -275,9 +266,7 @@ interface SharedRootMeta {
 
 const dialCorePathToRelative = (dialCorePath: string, bucket: string): string => {
   const prefix = `files/${bucket}/`;
-  return dialCorePath.startsWith(prefix)
-    ? dialCorePath.slice(prefix.length)
-    : dialCorePath;
+  return dialCorePath.startsWith(prefix) ? dialCorePath.slice(prefix.length) : dialCorePath;
 };
 
 const resolveOwnerCoords = (
@@ -303,7 +292,7 @@ const fetchByTab = (
 ): Promise<{ items: ListFilesItem[]; permissions?: string[] }> => {
   if (tab === DialFileManagerTabs.Shared) {
     if (folderPath === '') {
-      return listSharedFiles({ path: undefined }).then((res) => ({ items: res.items }));
+      return listSharedFiles().then((res) => ({ items: res.items }));
     }
     const firstSlash = folderPath.indexOf('/');
     const sharedRootName = firstSlash === -1 ? folderPath : folderPath.slice(0, firstSlash);
@@ -459,9 +448,7 @@ export const useDialFileManager = ({
           : withoutLeadingSlash;
       }
 
-      setFolderPath(
-        stripped && !stripped.endsWith('/') ? `${stripped}/` : stripped,
-      );
+      setFolderPath(stripped && !stripped.endsWith('/') ? `${stripped}/` : stripped);
     },
     [rootLabel],
   );
@@ -598,10 +585,7 @@ export const useDialFileManager = ({
   const onCreateFolder = useCallback(
     async (_file: DialUploadFileItem, folderVirtualPath: string): Promise<void> => {
       setIsCreatingFolder(true);
-      const { parentVirtualPath, name } = parseNewFolderVirtualPath(
-        folderVirtualPath,
-        rootLabel,
-      );
+      const { parentVirtualPath, name } = parseNewFolderVirtualPath(folderVirtualPath, rootLabel);
       const parentApiPath = virtualPathToApiPath(parentVirtualPath, rootLabel);
       const { bucket: targetBucket, path: targetParentPath } =
         activeTab === DialFileManagerTabs.Shared
@@ -680,10 +664,7 @@ export const useDialFileManager = ({
           );
           if (destination.type === DownloadDestinationType.Cancelled) return;
 
-          if (
-            dialFiles.length === 1 &&
-            dialFiles[0].nodeType === DialFileNodeType.ITEM
-          ) {
+          if (dialFiles.length === 1 && dialFiles[0].nodeType === DialFileNodeType.ITEM) {
             const file = dialFiles[0];
             if (!file.bucket) throw new Error('File is missing bucket');
             const filePath = resolveDialFileApiPath(file, file.bucket, rootLabel);
@@ -694,7 +675,8 @@ export const useDialFileManager = ({
               bucket: f.bucket ?? bucket,
               path: resolveDialFileApiPath(f, f.bucket ?? bucket, rootLabel),
               name: f.name,
-              nodeType: f.nodeType === DialFileNodeType.FOLDER ? 'FOLDER' as const : 'ITEM' as const,
+              nodeType:
+                f.nodeType === DialFileNodeType.FOLDER ? ('FOLDER' as const) : ('ITEM' as const),
             }));
             const response = await downloadArchive(archiveItems);
             await triggerBrowserDownload(response, filename, destination);
@@ -868,11 +850,7 @@ export const useDialFileManager = ({
       }
       const siblings = currentFolder?.items ?? [];
       const lowerValue = value.toLowerCase();
-      if (
-        siblings.some(
-          (s) => s.path !== item.path && s.name.toLowerCase() === lowerValue,
-        )
-      ) {
+      if (siblings.some((s) => s.path !== item.path && s.name.toLowerCase() === lowerValue)) {
         return t(DialFileManagerI18nKeys.RenameDuplicateName);
       }
       return null;
@@ -931,9 +909,7 @@ export const useDialFileManager = ({
           const renamedFolderDto = dtos.find(
             (dto) =>
               dto.nodeType === 'FOLDER' &&
-              results.some(
-                (result) => result.success && result.sourcePath === dto.sourcePath,
-              ),
+              results.some((result) => result.success && result.sourcePath === dto.sourcePath),
           );
           if (renamedFolderDto != null) {
             const srcPrefix = renamedFolderDto.sourcePath.endsWith('/')

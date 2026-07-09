@@ -6,10 +6,7 @@ const HIDDEN_FILE = '.dial_folder';
 
 export const isHiddenPath = (path: string): boolean => path.includes(HIDDEN_FILE);
 
-export const resolveRelativeDialFilePath = (
-  pathOrFileId: string,
-  bucket: string,
-): string => {
+export const resolveRelativeDialFilePath = (pathOrFileId: string, bucket: string): string => {
   const resourcePrefix = `files/${bucket}/`;
   if (pathOrFileId.startsWith(resourcePrefix)) {
     return safeDecodeURI(pathOrFileId.slice(resourcePrefix.length));
@@ -30,10 +27,7 @@ export const resolveRelativeDialFilePath = (
   return pathOrFileId;
 };
 
-export const virtualPathToApiPath = (
-  virtualPath: string,
-  rootLabel: string,
-): string => {
+export const virtualPathToApiPath = (virtualPath: string, rootLabel: string): string => {
   const rootExact = `/${rootLabel}`;
   const rootWithSlash = `/${rootLabel}/`;
   const labelWithSlash = `${rootLabel}/`;
@@ -63,9 +57,7 @@ export const virtualPathToApiPath = (
 };
 
 const looksLikeVirtualDialPath = (path: string, rootLabel: string): boolean =>
-  path.startsWith('/') ||
-  path === rootLabel ||
-  path.startsWith(`${rootLabel}/`);
+  path.startsWith('/') || path === rootLabel || path.startsWith(`${rootLabel}/`);
 
 export const resolveDialFileApiPath = (
   file: DialFile,
@@ -73,16 +65,11 @@ export const resolveDialFileApiPath = (
   rootLabel: string,
 ): string => {
   const isFolder = file.nodeType === DialFileNodeType.FOLDER;
-  const fromResourceId = file.id
-    ? resolveRelativeDialFilePath(file.id, bucket)
-    : null;
+  const fromResourceId = file.id ? resolveRelativeDialFilePath(file.id, bucket) : null;
   const isResourceIdValid =
-    fromResourceId != null &&
-    !looksLikeVirtualDialPath(fromResourceId, rootLabel);
+    fromResourceId != null && !looksLikeVirtualDialPath(fromResourceId, rootLabel);
 
-  const apiPath = isResourceIdValid
-    ? fromResourceId
-    : virtualPathToApiPath(file.path, rootLabel);
+  const apiPath = isResourceIdValid ? fromResourceId : virtualPathToApiPath(file.path, rootLabel);
 
   if (isFolder) {
     return apiPath.endsWith('/') ? apiPath : `${apiPath}/`;

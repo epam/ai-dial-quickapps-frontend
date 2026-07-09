@@ -1,12 +1,12 @@
-"use client";
-import classNames from "classnames";
-import { FC, useCallback, useMemo, useState } from "react";
+'use client';
+import classNames from 'classnames';
+import { FC, useCallback, useMemo, useState } from 'react';
 
-import { MarketplaceI18nKeys } from "@/constants/i18n";
-import { useDataContext } from "@/context/DataContext";
-import { useTranslation } from "@/hooks/useTranslation";
-import { DialModel } from "@/types/dial-entities";
-import { Translation } from "@/types/translation";
+import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { useDataContext } from '@/context/DataContext';
+import { useTranslation } from '@/hooks/useTranslation';
+import { DialModel } from '@/types/dial-entities';
+import { Translation } from '@/types/translation';
 import {
   DialLinkButton,
   DialNoDataContent,
@@ -16,11 +16,11 @@ import {
   DialTabs,
   PopupSize,
   SelectSize,
-} from "@epam/ai-dial-ui-kit";
+} from '@epam/ai-dial-ui-kit';
 
-import { ModelIcon } from "@/components/common/ModelIcon/ModelIcon";
-import { TopicsLine } from "@/components/common/TopicsLine/TopicsLine";
-import { IconBulb } from "@tabler/icons-react";
+import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
+import { TopicsLine } from '@/components/common/TopicsLine/TopicsLine';
+import { IconBulb } from '@tabler/icons-react';
 
 interface ModelGroup {
   name: string;
@@ -49,7 +49,7 @@ function groupModelsByName(models: DialModel[]): ModelGroup[] {
 }
 
 const VERSION_SELECT_CLASS =
-  "!w-fit !border-none !bg-transparent !shadow-none !outline-none !ring-0 !p-0";
+  '!w-fit !border-none !bg-transparent !shadow-none !outline-none !ring-0 !p-0';
 
 interface ModelCardProps {
   group: ModelGroup;
@@ -77,30 +77,23 @@ const ModelCard: FC<ModelCardProps> = ({
   return (
     <article
       className={classNames(
-        "relative box-border flex cursor-pointer flex-col gap-[14px] rounded-[16px] border p-[11px] md:p-[15px] xl:p-[19px]",
-        "bg-layer-0 shadow-[0_1px_3px_rgba(0,0,0,0.04)]",
-        "transition-shadow duration-[180ms] ease-out",
-        "hover:shadow-[0_6px_16px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.04)]",
-        isSelected ? "border-accent-primary" : "border-[rgba(0,0,0,0.07)]",
+        'relative box-border flex cursor-pointer flex-col gap-[14px] rounded-[16px] border p-[11px] md:p-[15px] xl:p-[19px]',
+        'bg-layer-0 shadow-[0_1px_3px_rgba(0,0,0,0.04)]',
+        'transition-shadow duration-[180ms] ease-out',
+        'hover:shadow-[0_6px_16px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.04)]',
+        isSelected ? 'border-accent-primary' : 'border-[rgba(0,0,0,0.07)]',
       )}
       onClick={() => onSelect(representativeId)}
     >
       {/* AppIdentity block */}
       <div className="flex min-w-0 items-start gap-3">
-        <ModelIcon
-          name={group.name}
-          iconUrl={group.iconUrl}
-          size={44}
-          radius={12}
-        />
+        <ModelIcon name={group.name} iconUrl={group.iconUrl} size={44} radius={12} />
 
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="dial-caption-text mb-2 font-semibold uppercase tracking-[0.06em] text-accent-primary">
             {group.type}
           </span>
-          <span className="dial-body-semi-text min-w-0 truncate text-primary">
-            {group.name}
-          </span>
+          <span className="dial-body-semi-text min-w-0 truncate text-primary">{group.name}</span>
 
           {/* Version row — always occupies space */}
           <div className="dial-tiny-text flex min-h-[20px] items-center overflow-hidden gap-1">
@@ -108,26 +101,19 @@ const ModelCard: FC<ModelCardProps> = ({
               <span className="shrink-0 text-secondary">{versionPrefix}</span>
             )}
             {hasVersions ? (
-              <div
-                className="max-w-full overflow-hidden"
-                onClick={(e) => e.stopPropagation()}
-              >
+              <div className="max-w-full overflow-hidden" onClick={(e) => e.stopPropagation()}>
                 <DialSelect
                   size={SelectSize.Sm}
                   options={versionOptions}
                   value={representativeId}
-                  customSelectedValue={
-                    representative.version ?? representativeId
-                  }
+                  customSelectedValue={representative.version ?? representativeId}
                   className={VERSION_SELECT_CLASS}
                   listClassName="!w-fit"
                   onChange={(v) => onSelect(v as string)}
                 />
               </div>
             ) : representative.version ? (
-              <span className="truncate text-primary">
-                {representative.version}
-              </span>
+              <span className="truncate text-primary">{representative.version}</span>
             ) : null}
           </div>
         </div>
@@ -148,7 +134,7 @@ const ModelCard: FC<ModelCardProps> = ({
   );
 };
 
-const TAB_IDS = { favorites: "favorites", catalog: "catalog" } as const;
+const TAB_IDS = { favorites: 'favorites', catalog: 'catalog' } as const;
 type ModelFieldTab = (typeof TAB_IDS)[keyof typeof TAB_IDS];
 
 interface ModelFieldProps {
@@ -159,17 +145,11 @@ interface ModelFieldProps {
   error?: string;
 }
 
-export const ModelField: FC<ModelFieldProps> = ({
-  value,
-  onChange,
-  disabled,
-  tooltip,
-  error,
-}) => {
+export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, tooltip, error }) => {
   const { t } = useTranslation(Translation.Marketplace);
   const { models } = useDataContext();
   const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<ModelFieldTab>(TAB_IDS.catalog);
 
   const tabs = useMemo(
@@ -181,22 +161,16 @@ export const ModelField: FC<ModelFieldProps> = ({
   );
 
   const availableModels = useMemo(
-    () => models.filter((m) => m.type === "model" || m.type === "application"),
+    () => models.filter((m) => m.type === 'model' || m.type === 'application'),
     [models],
   );
 
-  const allGroups = useMemo(
-    () => groupModelsByName(availableModels),
-    [availableModels],
-  );
+  const allGroups = useMemo(() => groupModelsByName(availableModels), [availableModels]);
 
   const selectedModel = availableModels.find((m) => m.id === value);
-  const displayName =
-    selectedModel?.name ?? value ?? t(MarketplaceI18nKeys.SelectModel);
+  const displayName = selectedModel?.name ?? value ?? t(MarketplaceI18nKeys.SelectModel);
 
-  const selectedGroup = allGroups.find((g) =>
-    g.models.some((m) => m.id === value),
-  );
+  const selectedGroup = allGroups.find((g) => g.models.some((m) => m.id === value));
   const hasVersions = (selectedGroup?.models.length ?? 0) > 1;
   const cardVersionOptions = hasVersions
     ? (selectedGroup?.models ?? []).map((m) => ({
@@ -215,7 +189,7 @@ export const ModelField: FC<ModelFieldProps> = ({
     (modelId: string) => {
       onChange(modelId);
       setIsOpen(false);
-      setSearch("");
+      setSearch('');
     },
     [onChange],
   );
@@ -230,7 +204,7 @@ export const ModelField: FC<ModelFieldProps> = ({
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
-    setSearch("");
+    setSearch('');
     setActiveTab(TAB_IDS.catalog);
   }, []);
 
@@ -239,23 +213,18 @@ export const ModelField: FC<ModelFieldProps> = ({
       {/* Collapsed card */}
       <div
         className={classNames(
-          "flex items-center gap-3 rounded border bg-layer-3 px-4 py-3",
-          error ? "border-error" : "border-tertiary",
-          disabled && "opacity-50",
+          'flex items-center gap-3 rounded border bg-layer-3 px-4 py-3',
+          error ? 'border-error' : 'border-tertiary',
+          disabled && 'opacity-50',
         )}
       >
-        <ModelIcon
-          name={displayName}
-          iconUrl={selectedModel?.iconUrl}
-          size={32}
-          radius={8}
-        />
+        <ModelIcon name={displayName} iconUrl={selectedModel?.iconUrl} size={32} radius={8} />
 
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <span
             className={classNames(
-              "dial-small-semi-text truncate",
-              selectedModel ? "text-primary" : "text-secondary",
+              'dial-small-semi-text truncate',
+              selectedModel ? 'text-primary' : 'text-secondary',
             )}
           >
             {displayName}
@@ -338,9 +307,7 @@ export const ModelField: FC<ModelFieldProps> = ({
                   group={group}
                   isSelected={group.models.some((m) => m.id === value)}
                   currentModelId={value}
-                  versionPrefix={t(
-                    MarketplaceI18nKeys.VersionPrefixMarketplace,
-                  )}
+                  versionPrefix={t(MarketplaceI18nKeys.VersionPrefixMarketplace)}
                   onSelect={handleSelect}
                 />
               ))}

@@ -1,8 +1,8 @@
 export enum SkillValidationStatus {
-  Unknown = "unknown",
-  Validating = "validating",
-  Valid = "valid",
-  Invalid = "invalid",
+  Unknown = 'unknown',
+  Validating = 'validating',
+  Valid = 'valid',
+  Invalid = 'invalid',
 }
 
 export interface SkillValidationState {
@@ -11,14 +11,14 @@ export interface SkillValidationState {
 }
 
 export enum AgentSkillsModalView {
-  List = "list",
-  Create = "create",
-  Edit = "edit",
+  List = 'list',
+  Create = 'create',
+  Edit = 'edit',
 }
 
 export enum PromptFolderRoot {
-  Organization = "organization",
-  Personal = "personal",
+  Organization = 'organization',
+  Personal = 'personal',
 }
 
 export interface FriendlyFolderPath {

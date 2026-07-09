@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { IconHelp } from "@tabler/icons-react";
-import { DialSlider, DialTooltip } from "@epam/ai-dial-ui-kit";
-import { FC } from "react";
+import { IconHelp } from '@tabler/icons-react';
+import { DialSlider, DialTooltip } from '@epam/ai-dial-ui-kit';
+import { FC } from 'react';
 
-import { DEFAULT_TEMPERATURE } from "@/form/quickApp2Form";
+import { DEFAULT_TEMPERATURE } from '@/form/quickApp2Form';
 
 interface TemperatureSliderProps {
   temperature: number | undefined;
@@ -28,7 +28,7 @@ export const TemperatureSlider: FC<TemperatureSliderProps> = ({
         max={1}
         step={0.1}
         disabled={disabled}
-        labels={["Precise", "Neutral", "Creative"]}
+        labels={['Precise', 'Neutral', 'Creative']}
         labelProps={
           label
             ? {

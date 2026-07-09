@@ -1,17 +1,17 @@
-"use client";
-import React, { useCallback, useMemo, useState } from "react";
-import classNames from "classnames";
-import sortBy from "lodash-es/sortBy";
-import { IconLayoutGrid } from "@tabler/icons-react";
+'use client';
+import React, { useCallback, useMemo, useState } from 'react';
+import classNames from 'classnames';
+import sortBy from 'lodash-es/sortBy';
+import { IconLayoutGrid } from '@tabler/icons-react';
 
-import { ModelIcon } from "@/components/common/ModelIcon/ModelIcon";
-import { TopicsLine } from "@/components/common/TopicsLine/TopicsLine";
-import { CommonI18nKeys, MarketplaceI18nKeys } from "@/constants/i18n";
-import { useDataContext } from "@/context/DataContext";
-import { useTranslation } from "@/hooks/useTranslation";
-import { Translation } from "@/types/translation";
-import { isApplicationId } from "@/utils/api";
-import { getEntityStatus } from "@/utils/get-entity-status";
+import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
+import { TopicsLine } from '@/components/common/TopicsLine/TopicsLine';
+import { CommonI18nKeys, MarketplaceI18nKeys } from '@/constants/i18n';
+import { useDataContext } from '@/context/DataContext';
+import { useTranslation } from '@/hooks/useTranslation';
+import { Translation } from '@/types/translation';
+import { isApplicationId } from '@/utils/api';
+import { getEntityStatus } from '@/utils/get-entity-status';
 import {
   DialNeutralButton,
   DialNoDataContent,
@@ -19,9 +19,9 @@ import {
   DialPrimaryButton,
   DialSearch,
   PopupSize,
-} from "@epam/ai-dial-ui-kit";
+} from '@epam/ai-dial-ui-kit';
 
-import { AgentAndToolsetChip, type ChipEntity } from "./AgentAndToolsetChip";
+import { AgentAndToolsetChip, type ChipEntity } from './AgentAndToolsetChip';
 
 interface AgentAndToolsetModalProps {
   initialSelectedIds: string[];
@@ -43,32 +43,27 @@ const AgentAndToolsetCard: React.FC<AgentAndToolsetCardProps> = ({
 }) => {
   const { t } = useTranslation(Translation.Common);
   const name = item.name ?? item.id;
-  const iconUrl =
-    typeof item.iconUrl === "string" ? (item.iconUrl as string) : undefined;
+  const iconUrl = typeof item.iconUrl === 'string' ? (item.iconUrl as string) : undefined;
   const description =
-    typeof item.description === "string"
-      ? (item.description as string)
-      : undefined;
+    typeof item.description === 'string' ? (item.description as string) : undefined;
   const { isError } = getEntityStatus(item);
   const entityTypeLabel = t(
-    isApplicationId(item.id)
-      ? CommonI18nKeys.AgentEntityType
-      : CommonI18nKeys.ToolsetEntityType,
+    isApplicationId(item.id) ? CommonI18nKeys.AgentEntityType : CommonI18nKeys.ToolsetEntityType,
   );
 
   return (
     <article
       onClick={() => onToggle(item.id)}
       className={classNames(
-        "relative box-border flex cursor-pointer flex-col gap-[14px] rounded-[16px] border p-[11px] md:p-[15px]",
-        "bg-layer-0 shadow-[0_1px_3px_rgba(0,0,0,0.04)]",
-        "transition-[transform,box-shadow] duration-[180ms] ease-out",
-        "hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.04)]",
+        'relative box-border flex cursor-pointer flex-col gap-[14px] rounded-[16px] border p-[11px] md:p-[15px]',
+        'bg-layer-0 shadow-[0_1px_3px_rgba(0,0,0,0.04)]',
+        'transition-[transform,box-shadow] duration-[180ms] ease-out',
+        'hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.04)]',
         isError
-          ? "border-error"
+          ? 'border-error'
           : isSelected
-            ? "border-accent-primary"
-            : "border-[rgba(0,0,0,0.07)]",
+            ? 'border-accent-primary'
+            : 'border-[rgba(0,0,0,0.07)]',
       )}
     >
       <div className="flex min-w-0 items-start gap-3">
@@ -77,22 +72,14 @@ const AgentAndToolsetCard: React.FC<AgentAndToolsetCardProps> = ({
           <span className="dial-caption-text mb-2 font-semibold uppercase tracking-[0.06em] text-accent-primary">
             {entityTypeLabel}
           </span>
-          <span className="dial-body-semi-text min-w-0 truncate text-primary">
-            {name}
-          </span>
+          <span className="dial-body-semi-text min-w-0 truncate text-primary">{name}</span>
           {item.version && (
-            <span className="dial-tiny-text truncate text-secondary">
-              {item.version}
-            </span>
+            <span className="dial-tiny-text truncate text-secondary">{item.version}</span>
           )}
         </div>
       </div>
 
-      {description && (
-        <p className="dial-small-text line-clamp-2 text-secondary">
-          {description}
-        </p>
-      )}
+      {description && <p className="dial-small-text line-clamp-2 text-secondary">{description}</p>}
 
       <div className="min-h-[22px]">
         <TopicsLine topics={(item.topics as string[] | undefined) ?? []} />
@@ -109,13 +96,13 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
 }) => {
   const { t } = useTranslation(Translation.Marketplace);
   const { models, toolsets, status } = useDataContext();
-  const isLoading = status === "loading" || status === "idle";
+  const isLoading = status === 'loading' || status === 'idle';
 
   const [selectedIds, setSelectedIds] = useState<string[]>(initialSelectedIds);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
 
   const allItems = useMemo<ChipEntity[]>(
-    () => [...models.filter((m) => m.type === "application"), ...toolsets],
+    () => [...models.filter((m) => m.type === 'application'), ...toolsets],
     [models, toolsets],
   );
 
@@ -129,17 +116,14 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
     if (!query) return sortedItems;
     return sortedItems.filter(
       (item) =>
-        (item.name ?? "").toLowerCase().includes(query) ||
-        item.id.toLowerCase().includes(query),
+        (item.name ?? '').toLowerCase().includes(query) || item.id.toLowerCase().includes(query),
     );
   }, [sortedItems, search]);
 
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
 
   const toggle = useCallback((id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }, []);
 
   const handleRemoveSelected = useCallback((id: string) => {
@@ -147,9 +131,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
   }, []);
 
   const handleConfirm = useCallback(() => {
-    const existing = initialSelectedIds.filter((id) =>
-      selectedIds.includes(id),
-    );
+    const existing = initialSelectedIds.filter((id) => selectedIds.includes(id));
     const added = selectedIds.filter((id) => !initialSelectedIds.includes(id));
     onConfirm([...existing, ...added]);
   }, [initialSelectedIds, onConfirm, selectedIds]);
@@ -162,14 +144,8 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
       onClose={onClose}
       footer={
         <div className="flex w-full justify-end gap-2 px-6 py-4">
-          <DialNeutralButton
-            label={t(CommonI18nKeys.Cancel)}
-            onClick={onClose}
-          />
-          <DialPrimaryButton
-            label={t(MarketplaceI18nKeys.ApplyChanges)}
-            onClick={handleConfirm}
-          />
+          <DialNeutralButton label={t(CommonI18nKeys.Cancel)} onClick={onClose} />
+          <DialPrimaryButton label={t(MarketplaceI18nKeys.ApplyChanges)} onClick={handleConfirm} />
         </div>
       }
     >

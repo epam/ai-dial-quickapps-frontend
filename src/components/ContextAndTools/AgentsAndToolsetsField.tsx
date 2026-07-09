@@ -1,17 +1,17 @@
-"use client";
-import type { ChipEntity } from "@/components/common/AgentAndToolsetSelector/AgentAndToolsetChip";
-import { AgentAndToolsetSelector } from "@/components/common/AgentAndToolsetSelector/AgentAndToolsetSelector";
-import { ToggleSwitch } from "@/components/common/ToggleSwitch/ToggleSwitch";
-import { CommonI18nKeys, MarketplaceI18nKeys } from "@/constants/i18n";
-import { useDataContext } from "@/context/DataContext";
-import { useThemeContext } from "@/context/ThemeContext";
-import type { QuickApp2Form } from "@/form/quickApp2Form";
-import { AgentOrToolsetSchemaKeys } from "@/form/quickApp2Form";
-import { useTranslation } from "@/hooks/useTranslation";
-import { AnyToolset, DialAppTransportType } from "@/types/quick-apps";
-import { ThemeId } from "@/types/theme";
-import { Translation } from "@/types/translation";
-import { isApplicationId } from "@/utils/api";
+'use client';
+import type { ChipEntity } from '@/components/common/AgentAndToolsetSelector/AgentAndToolsetChip';
+import { AgentAndToolsetSelector } from '@/components/common/AgentAndToolsetSelector/AgentAndToolsetSelector';
+import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
+import { CommonI18nKeys, MarketplaceI18nKeys } from '@/constants/i18n';
+import { useDataContext } from '@/context/DataContext';
+import { useThemeContext } from '@/context/ThemeContext';
+import type { QuickApp2Form } from '@/form/quickApp2Form';
+import { AgentOrToolsetSchemaKeys } from '@/form/quickApp2Form';
+import { useTranslation } from '@/hooks/useTranslation';
+import { AnyToolset, DialAppTransportType } from '@/types/quick-apps';
+import { ThemeId } from '@/types/theme';
+import { Translation } from '@/types/translation';
+import { isApplicationId } from '@/utils/api';
 import {
   ButtonVariant,
   ConfirmationPopupVariant,
@@ -21,19 +21,18 @@ import {
   DialNeutralIconButton,
   ElementSize,
   LazyDialJsonEditor,
-} from "@epam/ai-dial-ui-kit";
-import { IconArrowsMaximize, IconArrowsMinimize } from "@tabler/icons-react";
-import sortBy from "lodash-es/sortBy";
-import dynamic from "next/dynamic";
-import { FC, useCallback, useMemo, useState } from "react";
-import { DialAppConfigurationModal } from "./DialAppConfigurationModal";
+} from '@epam/ai-dial-ui-kit';
+import { IconArrowsMaximize, IconArrowsMinimize } from '@tabler/icons-react';
+import sortBy from 'lodash-es/sortBy';
+import dynamic from 'next/dynamic';
+import { FC, useCallback, useMemo, useState } from 'react';
+import { DialAppConfigurationModal } from './DialAppConfigurationModal';
 
-const DialJsonEditor = dynamic(
-  async () => (await LazyDialJsonEditor()).DialJsonEditor,
-  { ssr: false },
-);
+const DialJsonEditor = dynamic(async () => (await LazyDialJsonEditor()).DialJsonEditor, {
+  ssr: false,
+});
 interface AgentsAndToolsetsFieldProps {
-  agentsAndToolsets: QuickApp2Form["agentsAndToolsets"];
+  agentsAndToolsets: QuickApp2Form['agentsAndToolsets'];
   agentsAndToolsetsJson: string;
   isJsonView: boolean;
   onAgentsChange: (ids: string[]) => void;
@@ -63,8 +62,7 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
 }) => {
   const { t } = useTranslation(Translation.Marketplace);
   const { currentTheme } = useThemeContext();
-  const editorMonacoTheme =
-    currentTheme?.id === ThemeId.Light ? "light" : "vs-dark";
+  const editorMonacoTheme = currentTheme?.id === ThemeId.Light ? 'light' : 'vs-dark';
   const { modelsMap, toolsetsMap } = useDataContext();
 
   const [editorError, setEditorError] = useState<string | undefined>(undefined);
@@ -75,10 +73,13 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
     transport?: DialAppTransportType;
   } | null>(null);
 
-  const allItemsMap: Record<string, ChipEntity | undefined> = {
-    ...modelsMap,
-    ...toolsetsMap,
-  };
+  const allItemsMap: Record<string, ChipEntity | undefined> = useMemo(
+    () => ({
+      ...modelsMap,
+      ...toolsetsMap,
+    }),
+    [modelsMap, toolsetsMap],
+  );
 
   const selectedIds = useMemo(
     () =>
@@ -113,13 +114,7 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
     } else {
       onSwitchToJsonView();
     }
-  }, [
-    isJsonView,
-    agentsAndToolsetsJson,
-    onSwitchToSimpleView,
-    onSwitchToJsonView,
-    t,
-  ]);
+  }, [isJsonView, agentsAndToolsetsJson, onSwitchToSimpleView, onSwitchToJsonView, t]);
 
   const handleDiscardConfirm = useCallback(() => {
     setEditorError(undefined);
@@ -131,12 +126,9 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
   const handleConfigureClick = useCallback(
     (item: ChipEntity) => {
       if (!isApplicationId(item.id)) return;
-      const existing = agentsAndToolsets.find(
-        (a) => a[AgentOrToolsetSchemaKeys.id] === item.id,
-      );
+      const existing = agentsAndToolsets.find((a) => a[AgentOrToolsetSchemaKeys.id] === item.id);
       const tool = existing?.[AgentOrToolsetSchemaKeys.tool] as
-        | { transport?: DialAppTransportType }
-        | undefined;
+        { transport?: DialAppTransportType } | undefined;
       setConfiguringChip({ id: item.id, transport: tool?.transport });
     },
     [agentsAndToolsets],
@@ -162,20 +154,12 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
               disabled={readonly}
               additionalText={t(MarketplaceI18nKeys.JSONLabel)}
               className="flex w-fit items-center gap-2"
-              tooltip={
-                readonly
-                  ? tooltip
-                  : t(MarketplaceI18nKeys.SwitchToMarketplaceView)
-              }
+              tooltip={readonly ? tooltip : t(MarketplaceI18nKeys.SwitchToMarketplaceView)}
             />
             <DialNeutralIconButton
               size={ElementSize.Small}
               icon={
-                isFullscreen ? (
-                  <IconArrowsMinimize size={16} />
-                ) : (
-                  <IconArrowsMaximize size={16} />
-                )
+                isFullscreen ? <IconArrowsMinimize size={16} /> : <IconArrowsMaximize size={16} />
               }
               onClick={() => setIsFullscreen((prev) => !prev)}
             />
@@ -183,8 +167,8 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
           <div
             className={
               isFullscreen
-                ? "fixed inset-0 z-50 flex flex-col gap-2 bg-layer-2 p-4"
-                : "flex flex-col gap-2"
+                ? 'fixed inset-0 z-50 flex flex-col gap-2 bg-layer-2 p-4'
+                : 'flex flex-col gap-2'
             }
           >
             {isFullscreen && (
@@ -196,12 +180,10 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
                 />
               </div>
             )}
-            <div
-              style={{ height: isFullscreen ? "calc(100% - 80px)" : "300px" }}
-            >
+            <div style={{ height: isFullscreen ? 'calc(100% - 80px)' : '300px' }}>
               <DialJsonEditor
                 value={agentsAndToolsetsJson}
-                onChange={(val) => onJsonChange(val ?? "")}
+                onChange={(val) => onJsonChange(val ?? '')}
                 currentTheme={editorMonacoTheme}
                 options={{ readOnly: readonly, automaticLayout: true }}
               />

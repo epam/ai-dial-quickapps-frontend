@@ -1,10 +1,4 @@
-import {
-  ChangeEvent,
-  ComponentType,
-  ReactElement,
-  useCallback,
-  useMemo,
-} from 'react';
+import { ChangeEvent, ComponentType, ReactElement, useCallback, useMemo } from 'react';
 import {
   Control,
   Controller,
@@ -29,10 +23,7 @@ interface ControlledFormFieldProps<T extends FieldValues, K extends Path<T>> {
   control: Control<T>;
   name: K;
   children: (p: TRenderFuncProps<T, K>) => ReactElement;
-  rules?: Omit<
-    RegisterOptions<T, K>,
-    'disabled' | 'valueAsNumber' | 'valueAsDate'
-  >;
+  rules?: Omit<RegisterOptions<T, K>, 'disabled' | 'valueAsNumber' | 'valueAsDate'>;
   defaultValue?: PathValue<T, K>;
 }
 

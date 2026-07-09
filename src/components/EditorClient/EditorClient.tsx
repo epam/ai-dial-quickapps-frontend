@@ -1,48 +1,28 @@
-"use client";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+'use client';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
-import { AppContextProvider, type AppState } from "@/context/AppContext";
-import { DataContextProvider } from "@/context/DataContext";
-import { buildQuickApp2Config } from "@/form/quickApp2Form";
-import type { QuickApp2Form as QuickApp2FormType } from "@/form/quickApp2Form";
-import { QuickApp2Config } from "@/types/quick-apps";
-import {
-  decodeDialPath,
-  fetchAppSettings,
-  fetchDialApp,
-  saveDialApp,
-} from "@/utils/dialClient";
-import {
-  QuickApp2Form,
-  type QuickApp2AllEntitiesMap,
-} from "@/components/QuickApp2Form";
-import {
-  AUTO_SAVE_INTERVAL_MS,
-  DIAL_EDITOR_TRIGGER_SAVE_EVENT,
-} from "@/constants/editor";
-import { DEFAULT_QUICK_APPS_SCHEMA_2_ID } from "@/constants/quick-apps";
-import {
-  InboundMessage,
-  InboundMessageType,
-  OutboundMessageType,
-} from "@/types/editor-messages";
+import { AppContextProvider, type AppState } from '@/context/AppContext';
+import { DataContextProvider } from '@/context/DataContext';
+import { buildQuickApp2Config } from '@/form/quickApp2Form';
+import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
+import { QuickApp2Config } from '@/types/quick-apps';
+import { decodeDialPath, fetchAppSettings, fetchDialApp, saveDialApp } from '@/utils/dialClient';
+import { QuickApp2Form, type QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form';
+import { AUTO_SAVE_INTERVAL_MS, DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
+import { DEFAULT_QUICK_APPS_SCHEMA_2_ID } from '@/constants/quick-apps';
+import { InboundMessage, InboundMessageType, OutboundMessageType } from '@/types/editor-messages';
 
-const ALLOWED_ORIGIN = process.env.NEXT_PUBLIC_ALLOWED_ORIGIN ?? "*";
+const ALLOWED_ORIGIN = process.env.NEXT_PUBLIC_ALLOWED_ORIGIN ?? '*';
 
 const postToParent = (msg: object) => {
-  window.parent.postMessage(msg, ALLOWED_ORIGIN === "*" ? "*" : ALLOWED_ORIGIN);
+  window.parent.postMessage(msg, ALLOWED_ORIGIN === '*' ? '*' : ALLOWED_ORIGIN);
 };
 
 const isAllowedOrigin = (origin: string): boolean =>
-  ALLOWED_ORIGIN === "*" || origin === ALLOWED_ORIGIN;
+  ALLOWED_ORIGIN === '*' || origin === ALLOWED_ORIGIN;
 
-const dispatchTriggerSave = (detail: {
-  isAutoSave: boolean;
-  ignoreDirty?: boolean;
-}) => {
-  window.dispatchEvent(
-    new CustomEvent(DIAL_EDITOR_TRIGGER_SAVE_EVENT, { detail }),
-  );
+const dispatchTriggerSave = (detail: { isAutoSave: boolean; ignoreDirty?: boolean }) => {
+  window.dispatchEvent(new CustomEvent(DIAL_EDITOR_TRIGGER_SAVE_EVENT, { detail }));
 };
 
 interface EditorInnerProps {
@@ -56,12 +36,7 @@ interface EditorInnerProps {
   resetKey: number;
 }
 
-const EditorInner = ({
-  appState,
-  onSave,
-  onDirtyChange,
-  resetKey,
-}: EditorInnerProps) => {
+const EditorInner = ({ appState, onSave, onDirtyChange, resetKey }: EditorInnerProps) => {
   const handleSave = useCallback(
     async (
       data: QuickApp2FormType,
@@ -76,11 +51,7 @@ const EditorInner = ({
   return (
     <div className="bg-layer-2">
       <AppContextProvider value={appState}>
-        <QuickApp2Form
-          key={resetKey}
-          onSave={handleSave}
-          onDirtyChange={onDirtyChange}
-        />
+        <QuickApp2Form key={resetKey} onSave={handleSave} onDirtyChange={onDirtyChange} />
       </AppContextProvider>
     </div>
   );
@@ -103,7 +74,7 @@ export default function EditorClient() {
     postToParent({ type: OutboundMessageType.Ready });
 
     let cancelled = false;
-    const rawAppId = new URLSearchParams(window.location.search).get("id");
+    const rawAppId = new URLSearchParams(window.location.search).get('id');
     const appId = rawAppId ? decodeDialPath(rawAppId) : null;
     if (appId && !isInitializedRef.current) {
       isInitializedRef.current = true;
@@ -113,7 +84,7 @@ export default function EditorClient() {
           setAppState({
             app: app ?? {
               id: appId,
-              name: "",
+              name: '',
               applicationTypeSchemaId: DEFAULT_QUICK_APPS_SCHEMA_2_ID,
             },
             settings,
@@ -123,10 +94,7 @@ export default function EditorClient() {
         })
         .catch((err: unknown) => {
           isInitializedRef.current = false;
-          if (!cancelled)
-            setError(
-              err instanceof Error ? err.message : "Initialization failed",
-            );
+          if (!cancelled) setError(err instanceof Error ? err.message : 'Initialization failed');
         });
     }
 
@@ -153,10 +121,10 @@ export default function EditorClient() {
       }
     };
 
-    window.addEventListener("message", handleMessage);
+    window.addEventListener('message', handleMessage);
     return () => {
       cancelled = true;
-      window.removeEventListener("message", handleMessage);
+      window.removeEventListener('message', handleMessage);
     };
   }, []);
 
@@ -191,9 +159,7 @@ export default function EditorClient() {
       isAutoSave = false,
     ) => {
       if (!appState) return;
-      const existingConfig = appState.app.applicationProperties as
-        | QuickApp2Config
-        | undefined;
+      const existingConfig = appState.app.applicationProperties as QuickApp2Config | undefined;
       try {
         const newConfig = buildQuickApp2Config({
           data,
@@ -216,7 +182,7 @@ export default function EditorClient() {
           });
         }
       } catch (err) {
-        const error = err instanceof Error ? err.message : "Save failed";
+        const error = err instanceof Error ? err.message : 'Save failed';
         postToParent({
           type: OutboundMessageType.SaveError,
           payload: { error },
@@ -237,11 +203,7 @@ export default function EditorClient() {
   }, []);
 
   if (error) {
-    return (
-      <div className="flex h-screen items-center justify-center text-red-500">
-        {error}
-      </div>
-    );
+    return <div className="flex h-screen items-center justify-center text-red-500">{error}</div>;
   }
 
   if (!appState) {

@@ -131,7 +131,10 @@ const authProviders: (Provider | false)[] = [
       clientSecret: process.env.AUTH_GOOGLE_CLIENT_SECRET!,
       name: process.env.AUTH_GOOGLE_NAME ?? DEFAULT_PROVIDER_NAME,
       authorization: {
-        params: { scope: 'openid email profile https://www.googleapis.com/auth/userinfo.email offline_access' },
+        params: {
+          scope:
+            'openid email profile https://www.googleapis.com/auth/userinfo.email offline_access',
+        },
       },
     }),
 
@@ -183,10 +186,7 @@ export const authOptions: AuthOptions = {
         };
       }
 
-      if (
-        typeof token.accessTokenExpires === 'number' &&
-        Date.now() < token.accessTokenExpires
-      ) {
+      if (typeof token.accessTokenExpires === 'number' && Date.now() < token.accessTokenExpires) {
         return token;
       }
 

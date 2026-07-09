@@ -1,7 +1,4 @@
-import {
-  DialDeploymentToolsetToolTypes,
-  ToolsetTypes,
-} from '@/constants/quick-apps';
+import { DialDeploymentToolsetToolTypes, ToolsetTypes } from '@/constants/quick-apps';
 
 export enum ToolsetTransportType {
   HTTP = 'HTTP',
@@ -69,11 +66,7 @@ export interface UnknownToolset extends Record<string, unknown> {
 }
 
 export type AnyToolset =
-  | DialDeploymentToolset
-  | MCPToolset
-  | CodeInterpreterToolset
-  | DialAppToolset
-  | UnknownToolset;
+  DialDeploymentToolset | MCPToolset | CodeInterpreterToolset | DialAppToolset | UnknownToolset;
 
 export interface ConversationStarter {
   title: string;
@@ -119,9 +112,7 @@ export interface QuickApp2Config {
   };
 }
 
-export function isDialDeploymentToolset(
-  toolset: AnyToolset,
-): toolset is DialDeploymentToolset {
+export function isDialDeploymentToolset(toolset: AnyToolset): toolset is DialDeploymentToolset {
   return toolset.type === ToolsetTypes.DialDeployment;
 }
 
@@ -135,24 +126,18 @@ export function isMcpToolset(toolset: AnyToolset): toolset is MCPToolset {
   return toolset.type === ToolsetTypes.DialMcp;
 }
 
-export function isCodeInterpreterToolset(
-  toolset: AnyToolset,
-): toolset is CodeInterpreterToolset {
+export function isCodeInterpreterToolset(toolset: AnyToolset): toolset is CodeInterpreterToolset {
   return (
     toolset.type === ToolsetTypes.CodeInterpreter &&
     (toolset as CodeInterpreterToolset).template_name === 'py_interpreter'
   );
 }
 
-export function isDialAppToolset(
-  toolset: AnyToolset,
-): toolset is DialAppToolset {
+export function isDialAppToolset(toolset: AnyToolset): toolset is DialAppToolset {
   return toolset.type === ToolsetTypes.DialApp;
 }
 
-export function isUnknownToolset(
-  toolset: AnyToolset,
-): toolset is UnknownToolset {
+export function isUnknownToolset(toolset: AnyToolset): toolset is UnknownToolset {
   return (
     !isDialDeploymentToolset(toolset) &&
     !isMcpToolset(toolset) &&

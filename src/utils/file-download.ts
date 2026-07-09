@@ -1,8 +1,6 @@
 const extractFilename = (contentDisposition: string | null): string | null => {
   if (!contentDisposition) return null;
-  const match = /filename[^;=\n]*=(?:(\\?['"])(.*?)\1|([^;\n]*))/i.exec(
-    contentDisposition,
-  );
+  const match = /filename[^;=\n]*=(?:(\\?['"])(.*?)\1|([^;\n]*))/i.exec(contentDisposition);
   const raw = match?.[2] ?? match?.[3];
   if (!raw) return null;
   return raw.replace(/[/\\]/g, '').trim() || null;
@@ -47,9 +45,8 @@ export const prepareDownloadDestination = async (
   filename: string,
   mimeType = 'application/octet-stream',
 ): Promise<DownloadDestination> => {
-  const showSaveFilePicker = (
-    window as Window & { showSaveFilePicker?: ShowSaveFilePicker }
-  ).showSaveFilePicker;
+  const showSaveFilePicker = (window as Window & { showSaveFilePicker?: ShowSaveFilePicker })
+    .showSaveFilePicker;
 
   if (showSaveFilePicker == null) {
     return { type: DownloadDestinationType.Blob };
@@ -57,8 +54,7 @@ export const prepareDownloadDestination = async (
 
   try {
     const extensionIndex = filename.lastIndexOf('.');
-    const extension =
-      extensionIndex >= 0 ? filename.slice(extensionIndex) : undefined;
+    const extension = extensionIndex >= 0 ? filename.slice(extensionIndex) : undefined;
     const handle = await showSaveFilePicker.call(window, {
       suggestedName: filename,
       types: [
@@ -100,9 +96,7 @@ export const triggerBrowserDownload = async (
     return;
   }
 
-  const filename =
-    extractFilename(response.headers.get('Content-Disposition')) ??
-    fallbackName;
+  const filename = extractFilename(response.headers.get('Content-Disposition')) ?? fallbackName;
   const blob = await response.blob();
   triggerBlobDownload(blob, filename);
 };

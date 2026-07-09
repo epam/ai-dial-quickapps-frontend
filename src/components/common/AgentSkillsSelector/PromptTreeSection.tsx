@@ -1,16 +1,16 @@
-import { IconBulb, IconChevronRight, IconFolder } from "@tabler/icons-react";
-import classNames from "classnames";
-import { FC, memo, useState } from "react";
+import { IconBulb, IconChevronRight, IconFolder } from '@tabler/icons-react';
+import classNames from 'classnames';
+import { FC, memo, useState } from 'react';
 
-import { DialPrompt } from "@/types/dial-entities";
+import { DialPrompt } from '@/types/dial-entities';
 import {
   getAllPromptIds,
   getDisplayName,
   matchesSearch,
   nodeHasMatch,
   PromptTreeNode,
-} from "@/utils/prompt-tree";
-import { DialCheckbox } from "@epam/ai-dial-ui-kit";
+} from '@/utils/prompt-tree';
+import { DialCheckbox } from '@epam/ai-dial-ui-kit';
 
 interface CollapsibleSectionHeaderProps {
   title: string;
@@ -30,14 +30,9 @@ const CollapsibleSectionHeader: FC<CollapsibleSectionHeaderProps> = ({
   >
     <IconChevronRight
       size={14}
-      className={classNames(
-        "shrink-0 text-secondary transition-transform",
-        isOpen && "rotate-90",
-      )}
+      className={classNames('shrink-0 text-secondary transition-transform', isOpen && 'rotate-90')}
     />
-    <span className="dial-tiny-semi-text uppercase tracking-wide text-secondary">
-      {title}
-    </span>
+    <span className="dial-tiny-semi-text uppercase tracking-wide text-secondary">{title}</span>
   </button>
 );
 
@@ -48,16 +43,11 @@ interface PromptItemProps {
   onToggle: (id: string) => void;
 }
 
-const PromptItem: FC<PromptItemProps> = ({
-  prompt,
-  isSelected,
-  level,
-  onToggle,
-}) => (
+const PromptItem: FC<PromptItemProps> = ({ prompt, isSelected, level, onToggle }) => (
   <div
     className={classNames(
-      "group relative flex h-[32px] w-full shrink-0 cursor-pointer select-none items-center rounded border-s-2 border-s-transparent pe-3 hover:bg-accent-primary-alpha",
-      isSelected && "bg-accent-primary-alpha",
+      'group relative flex h-[32px] w-full shrink-0 cursor-pointer select-none items-center rounded border-s-2 border-s-transparent pe-3 hover:bg-accent-primary-alpha',
+      isSelected && 'bg-accent-primary-alpha',
     )}
     style={{ paddingInlineStart: `${level * 24 + 16}px` }}
     onClick={() => onToggle(prompt.id)}
@@ -68,22 +58,18 @@ const PromptItem: FC<PromptItemProps> = ({
           size={18}
           strokeWidth={1.5}
           className={classNames(
-            "shrink-0 text-secondary",
-            isSelected ? "opacity-0" : "group-hover:opacity-0",
+            'shrink-0 text-secondary',
+            isSelected ? 'opacity-0' : 'group-hover:opacity-0',
           )}
         />
         <div
           className={classNames(
-            "absolute inset-0 flex items-center justify-center",
-            !isSelected && "opacity-0 group-hover:opacity-100",
+            'absolute inset-0 flex items-center justify-center',
+            !isSelected && 'opacity-0 group-hover:opacity-100',
           )}
           onClick={(e) => e.stopPropagation()}
         >
-          <DialCheckbox
-            id={prompt.id}
-            checked={isSelected}
-            onChange={() => onToggle(prompt.id)}
-          />
+          <DialCheckbox id={prompt.id} checked={isSelected} onChange={() => onToggle(prompt.id)} />
         </div>
       </div>
       <span className="dial-small-text relative truncate text-start text-primary">
@@ -128,19 +114,14 @@ const FolderNodeView: FC<FolderNodeProps> = ({
   const isIndeterminate = selectedCount > 0 && selectedCount < allIds.length;
   const hasAnySelection = isAllSelected || isIndeterminate;
 
-  if (
-    searchLower &&
-    visiblePrompts.length === 0 &&
-    visibleChildren.length === 0
-  )
-    return null;
+  if (searchLower && visiblePrompts.length === 0 && visibleChildren.length === 0) return null;
 
   return (
     <div>
       <div
         className={classNames(
-          "group relative flex h-[32px] w-full shrink-0 cursor-pointer select-none items-center rounded border-s-2 border-s-transparent pe-3 hover:bg-accent-primary-alpha",
-          hasAnySelection && "bg-accent-primary-alpha",
+          'group relative flex h-[32px] w-full shrink-0 cursor-pointer select-none items-center rounded border-s-2 border-s-transparent pe-3 hover:bg-accent-primary-alpha',
+          hasAnySelection && 'bg-accent-primary-alpha',
         )}
         style={{ paddingInlineStart: `${level * 24 + 8}px` }}
         onClick={() => {
@@ -159,8 +140,8 @@ const FolderNodeView: FC<FolderNodeProps> = ({
           <IconChevronRight
             size={14}
             className={classNames(
-              "shrink-0 text-secondary transition-transform",
-              isOpen && "rotate-90",
+              'shrink-0 text-secondary transition-transform',
+              isOpen && 'rotate-90',
             )}
           />
         </button>
@@ -171,14 +152,14 @@ const FolderNodeView: FC<FolderNodeProps> = ({
               size={18}
               strokeWidth={1.5}
               className={classNames(
-                "shrink-0 text-secondary",
-                hasAnySelection ? "opacity-0" : "group-hover:opacity-0",
+                'shrink-0 text-secondary',
+                hasAnySelection ? 'opacity-0' : 'group-hover:opacity-0',
               )}
             />
             <div
               className={classNames(
-                "absolute inset-0 flex items-center justify-center",
-                !hasAnySelection && "opacity-0 group-hover:opacity-100",
+                'absolute inset-0 flex items-center justify-center',
+                !hasAnySelection && 'opacity-0 group-hover:opacity-100',
               )}
               onClick={(e) => e.stopPropagation()}
             >
@@ -258,8 +239,7 @@ const PromptTreeSection: FC<PromptTreeSectionProps> = ({
     ? root.children.filter((c) => nodeHasMatch(c, searchLower))
     : root.children;
 
-  if (visibleRootPrompts.length === 0 && visibleRootFolders.length === 0)
-    return null;
+  if (visibleRootPrompts.length === 0 && visibleRootFolders.length === 0) return null;
 
   const showContent = isOpen || !!searchLower;
 

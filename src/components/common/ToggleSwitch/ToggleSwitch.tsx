@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { IconAlertTriangleFilled } from "@tabler/icons-react";
-import { DialSwitch, DialTooltip } from "@epam/ai-dial-ui-kit";
-import { FC, useId } from "react";
+import { IconAlertTriangleFilled } from '@tabler/icons-react';
+import { DialSwitch, DialTooltip } from '@epam/ai-dial-ui-kit';
+import { FC, useId } from 'react';
 
-import classNames from "classnames";
+import classNames from 'classnames';
 
 interface ToggleSwitchProps {
   isOn: boolean;
@@ -28,9 +28,7 @@ export const ToggleSwitch: FC<ToggleSwitchProps> = ({
   const switchId = useId();
 
   const inner = (
-    <div
-      className={classNames("flex items-center gap-2", className)}
-    >
+    <div className={classNames('flex items-center gap-2', className)}>
       <DialSwitch
         switchId={switchId}
         isOn={isOn}

@@ -1,7 +1,7 @@
-import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useSession } from 'next-auth/react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { AUTH_WINDOW_CLOSE_KEY } from "@/constants/auth";
+import { AUTH_WINDOW_CLOSE_KEY } from '@/constants/auth';
 
 export const useAuth = (provider: string) => {
   const { data: session, status: sessionStatus } = useSession();
@@ -13,8 +13,8 @@ export const useAuth = (provider: string) => {
     setIsWindowOpen(true);
     authWindowRef.current = window.open(
       `/signin?provider=${encodeURIComponent(provider)}`,
-      "_blank",
-      "width=600,height=600",
+      '_blank',
+      'width=600,height=600',
     );
   }, [isWindowOpen, provider]);
 
@@ -27,8 +27,8 @@ export const useAuth = (provider: string) => {
       }
     };
 
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
   }, []);
 
   return { session, sessionStatus, openLoginWindow, isWindowOpen };

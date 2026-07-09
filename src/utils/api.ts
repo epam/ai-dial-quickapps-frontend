@@ -1,10 +1,7 @@
 const PATH_KEY_SEPARATOR = '__';
 
 const safeEncodeURIComponent = (s: string) =>
-  // eslint-disable-next-line no-misleading-character-class
-  s.replace(/[^\uD800-􏰀-\uDFFF]+/gm, (match) =>
-    encodeURIComponent(match),
-  );
+  s.replace(/[^\uD800-􏰀-\uDFFF]+/gm, (match) => encodeURIComponent(match));
 
 const constructPath = (...parts: string[]) => parts.join('/');
 
@@ -14,11 +11,9 @@ export const encodeApiUrl = (path: string): string =>
 export const decodeApiUrl = (path?: string): string =>
   constructPath(...(path?.split('/').map((p) => decodeURIComponent(p)) ?? []));
 
-export const isApplicationId = (id?: string) =>
-  id?.startsWith('applications/') ?? false;
+export const isApplicationId = (id?: string) => id?.startsWith('applications/') ?? false;
 
-export const isToolsetId = (id?: string) =>
-  id?.startsWith('toolsets/') ?? false;
+export const isToolsetId = (id?: string) => id?.startsWith('toolsets/') ?? false;
 
 export const splitEntityId = (id: string) => {
   const parts = id.split('/');
@@ -26,10 +21,7 @@ export const splitEntityId = (id: string) => {
   return { name };
 };
 
-export const getEntityNameFromId = (
-  id: string,
-  options?: { removeVersion?: boolean },
-): string => {
+export const getEntityNameFromId = (id: string, options?: { removeVersion?: boolean }): string => {
   const { name } = splitEntityId(id);
   if (options?.removeVersion) {
     return parseEntityApiKey(name, { parseVersion: true }).name;

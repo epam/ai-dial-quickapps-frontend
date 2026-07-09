@@ -1,13 +1,13 @@
-"use client";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
-import { Resolver, useForm } from "react-hook-form";
+'use client';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import { Resolver, useForm } from 'react-hook-form';
 
-import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from "@/constants/editor";
-import { MarketplaceI18nKeys } from "@/constants/i18n";
-import { ToolsetTypes } from "@/constants/quick-apps";
-import { useAppContext } from "@/context/AppContext";
-import { useDataContext } from "@/context/DataContext";
+import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
+import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { ToolsetTypes } from '@/constants/quick-apps';
+import { useAppContext } from '@/context/AppContext';
+import { useDataContext } from '@/context/DataContext';
 import {
   AgentOrToolsetSchemaKeys,
   getAgentsAndToolsetsFormValue,
@@ -16,18 +16,18 @@ import {
   MIME_TYPE_REGEX,
   QuickApp2Schema,
   type QuickApp2Form as QuickApp2FormType,
-} from "@/form/quickApp2Form";
-import { useTranslation } from "@/hooks/useTranslation";
-import { DialAIEntityModel } from "@/utils/application";
-import { AnyToolset, DialAppTransportType } from "@/types/quick-apps";
-import { Translation } from "@/types/translation";
+} from '@/form/quickApp2Form';
+import { useTranslation } from '@/hooks/useTranslation';
+import { AnyToolset, DialAppTransportType } from '@/types/quick-apps';
+import { Translation } from '@/types/translation';
+import { DialAIEntityModel } from '@/utils/application';
 
-import AdvancedSettingsSection from "./AdvancedSettings/AdvancedSettingsSection";
-import AgentSkillsFormSection from "./AgentSkills/AgentSkillsFormSection";
-import ContextAndToolsSection from "./ContextAndTools/ContextAndToolsSection";
-import ConversationStartersSection from "./ConversationStarters/ConversationStartersSection";
-import OrchestratorSection from "./Orchestrator/OrchestratorSection";
-import UserAttachmentsSection from "./UserAttachments/UserAttachmentsSection";
+import AdvancedSettingsSection from './AdvancedSettings/AdvancedSettingsSection';
+import AgentSkillsFormSection from './AgentSkills/AgentSkillsFormSection';
+import ContextAndToolsSection from './ContextAndTools/ContextAndToolsSection';
+import ConversationStartersSection from './ConversationStarters/ConversationStartersSection';
+import OrchestratorSection from './Orchestrator/OrchestratorSection';
+import UserAttachmentsSection from './UserAttachments/UserAttachmentsSection';
 
 export type QuickApp2AllEntitiesMap = Record<
   string,
@@ -40,20 +40,14 @@ interface QuickApp2FormProps {
     allEntitiesMap: QuickApp2AllEntitiesMap,
     isAutoSave?: boolean,
   ) => void;
-  onDiscard?: () => void;
   onDirtyChange?: (isDirty: boolean) => void;
   readonly?: boolean;
 }
 
-export const QuickApp2Form: FC<QuickApp2FormProps> = ({
-  onSave,
-  onDiscard,
-  onDirtyChange,
-  readonly,
-}) => {
+export const QuickApp2Form: FC<QuickApp2FormProps> = ({ onSave, onDirtyChange, readonly }) => {
   const { t } = useTranslation(Translation.Marketplace);
   const { app, settings } = useAppContext();
-  const { models, toolsets, modelsMap, toolsetsMap, files } = useDataContext();
+  const { models, modelsMap, toolsetsMap } = useDataContext();
 
   const toolSupportingModelIds = useMemo(
     () => models.filter((m) => m.features?.tools).map((m) => m.id),
@@ -62,16 +56,12 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   const availableModelIds = useMemo(() => models.map((m) => m.id), [models]);
 
   const sharedTooltip = app.isShared
-    ? t(MarketplaceI18nKeys.CannotChangeSharedApp, { context: "field" })
+    ? t(MarketplaceI18nKeys.CannotChangeSharedApp, { context: 'field' })
     : undefined;
 
   const isReadonly = readonly || !!app.isShared;
 
-  const defaultValues = getQuickApp2FormData(
-    app,
-    toolSupportingModelIds,
-    availableModelIds,
-  );
+  const defaultValues = getQuickApp2FormData(app, toolSupportingModelIds, availableModelIds);
 
   const {
     control,
@@ -85,17 +75,17 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   } = useForm<QuickApp2FormType>({
     defaultValues,
     resolver: zodResolver(QuickApp2Schema) as Resolver<QuickApp2FormType>,
-    mode: "onChange",
+    mode: 'onChange',
   });
 
   useEffect(() => {
-    setValue("toolSupportingModelIds", toolSupportingModelIds);
-    setValue("availableModelIds", availableModelIds, { shouldValidate: true });
+    setValue('toolSupportingModelIds', toolSupportingModelIds);
+    setValue('availableModelIds', availableModelIds, { shouldValidate: true });
   }, [toolSupportingModelIds, availableModelIds, setValue]);
 
   useEffect(() => {
     if (!settings.isCodeInterpreterEnabled) {
-      setValue("codeInterpreter", false);
+      setValue('codeInterpreter', false);
     }
   }, [settings.isCodeInterpreterEnabled, setValue]);
 
@@ -111,53 +101,37 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   useEffect(() => {
     const handleTriggerSave = (event: Event) => {
       const { isAutoSave, ignoreDirty } =
-        (event as CustomEvent<{ isAutoSave?: boolean; ignoreDirty?: boolean }>)
-          .detail ?? {};
+        (event as CustomEvent<{ isAutoSave?: boolean; ignoreDirty?: boolean }>).detail ?? {};
       if (isReadonly) return;
       if (isAutoSave && !ignoreDirty && !isDirty) return;
       void handleSubmit((data) => onSave(data, allEntitiesMap, isAutoSave))();
     };
 
     window.addEventListener(DIAL_EDITOR_TRIGGER_SAVE_EVENT, handleTriggerSave);
-    return () =>
-      window.removeEventListener(
-        DIAL_EDITOR_TRIGGER_SAVE_EVENT,
-        handleTriggerSave,
-      );
+    return () => window.removeEventListener(DIAL_EDITOR_TRIGGER_SAVE_EVENT, handleTriggerSave);
   }, [handleSubmit, isDirty, isReadonly, onSave, allEntitiesMap]);
 
-  const isJsonView = watch("isJsonView");
-  const starters = watch("starters");
-  const agentsAndToolsets = watch("agentsAndToolsets");
-  const agentsAndToolsetsJson = watch("agentsAndToolsetsJson");
-  const codeInterpreter = watch("codeInterpreter");
-  const agentSkills = watch("agentSkills");
-  const chatMessageInputDisabled = watch("chatMessageInputDisabled");
-  const autoSubmit = watch("autoSubmit");
+  const isJsonView = watch('isJsonView');
+  const starters = watch('starters');
+  const agentsAndToolsets = watch('agentsAndToolsets');
+  const agentsAndToolsetsJson = watch('agentsAndToolsetsJson');
+  const chatMessageInputDisabled = watch('chatMessageInputDisabled');
+  const autoSubmit = watch('autoSubmit');
 
   const hasStarters = starters.some((s) => s.title.trim() && s.text.trim());
   const startersSettingsTooltip =
     sharedTooltip ??
-    (!hasStarters
-      ? t(MarketplaceI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings)
-      : undefined);
+    (!hasStarters ? t(MarketplaceI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings) : undefined);
 
   const handleAgentsChange = useCallback(
     (ids: string[]) => {
-      const currentMap: Record<
-        string,
-        QuickApp2FormType["agentsAndToolsets"][number]
-      > = Object.fromEntries(
-        agentsAndToolsets.map((a) => [a[AgentOrToolsetSchemaKeys.id], a]),
-      );
+      const currentMap: Record<string, QuickApp2FormType['agentsAndToolsets'][number]> =
+        Object.fromEntries(agentsAndToolsets.map((a) => [a[AgentOrToolsetSchemaKeys.id], a]));
       const next = ids.map((id) => {
         if (currentMap[id]) return currentMap[id];
         return { [AgentOrToolsetSchemaKeys.id]: id };
       });
-      setValue(
-        "agentsAndToolsets",
-        next as QuickApp2FormType["agentsAndToolsets"],
-      );
+      setValue('agentsAndToolsets', next as QuickApp2FormType['agentsAndToolsets']);
     },
     [agentsAndToolsets, setValue],
   );
@@ -174,10 +148,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
           },
         };
       });
-      setValue(
-        "agentsAndToolsets",
-        next as QuickApp2FormType["agentsAndToolsets"],
-      );
+      setValue('agentsAndToolsets', next as QuickApp2FormType['agentsAndToolsets']);
     },
     [agentsAndToolsets, setValue],
   );
@@ -187,25 +158,21 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
       data: getValues(),
       allEntitiesMap,
     });
-    setValue("agentsAndToolsetsJson", JSON.stringify(toolsets, null, 2));
-    setValue("isJsonView", true);
+    setValue('agentsAndToolsetsJson', JSON.stringify(toolsets, null, 2));
+    setValue('isJsonView', true);
   }, [allEntitiesMap, getValues, setValue]);
 
   const handleSwitchToSimpleView = useCallback(
     (toolsets: AnyToolset[]) => {
       setValue(
-        "agentsAndToolsets",
-        getAgentsAndToolsetsFormValue(
-          toolsets,
-        ) as QuickApp2FormType["agentsAndToolsets"],
+        'agentsAndToolsets',
+        getAgentsAndToolsetsFormValue(toolsets) as QuickApp2FormType['agentsAndToolsets'],
       );
       setValue(
-        "codeInterpreter",
-        toolsets.some(
-          (toolset) => toolset.type === ToolsetTypes.CodeInterpreter,
-        ),
+        'codeInterpreter',
+        toolsets.some((toolset) => toolset.type === ToolsetTypes.CodeInterpreter),
       );
-      setValue("isJsonView", false);
+      setValue('isJsonView', false);
     },
     [setValue],
   );
@@ -217,8 +184,8 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
       const addedTags = tags.filter((tag) => !prevTags.includes(tag));
       const hasInvalidTag = addedTags.some((tag) => !MIME_TYPE_REGEX.test(tag));
       if (hasInvalidTag) {
-        setError("inputAttachmentTypes", {
-          type: "manual",
+        setError('inputAttachmentTypes', {
+          type: 'manual',
           message: t(MarketplaceI18nKeys.PleaseMatchTheMimeFormat),
         });
         // DialTagInput adds tags optimistically to its own state, so force
@@ -226,8 +193,8 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         setAttachmentTypesResetKey((key) => key + 1);
         return;
       }
-      clearErrors("inputAttachmentTypes");
-      setValue("inputAttachmentTypes", tags, { shouldValidate: true });
+      clearErrors('inputAttachmentTypes');
+      setValue('inputAttachmentTypes', tags, { shouldValidate: true });
     },
     [setError, clearErrors, setValue, t],
   );
@@ -237,8 +204,8 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
       data: getValues(),
       allEntitiesMap,
     });
-    setValue("agentsAndToolsetsJson", JSON.stringify(toolsets, null, 2));
-    setValue("isJsonView", false);
+    setValue('agentsAndToolsetsJson', JSON.stringify(toolsets, null, 2));
+    setValue('isJsonView', false);
   }, [allEntitiesMap, getValues, setValue]);
 
   return (
@@ -265,7 +232,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         agentsAndToolsetsJson={agentsAndToolsetsJson}
         isJsonView={isJsonView}
         onAgentsChange={handleAgentsChange}
-        onJsonChange={(json: string) => setValue("agentsAndToolsetsJson", json)}
+        onJsonChange={(json: string) => setValue('agentsAndToolsetsJson', json)}
         onSwitchToJsonView={handleSwitchToJsonView}
         onSwitchToSimpleView={handleSwitchToSimpleView}
         onDiscardJson={handleDiscardJson}
@@ -274,11 +241,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
 
       <hr className="border-secondary" />
 
-      <AgentSkillsFormSection
-        control={control}
-        isReadonly={isReadonly}
-        tooltip={sharedTooltip}
-      />
+      <AgentSkillsFormSection control={control} isReadonly={isReadonly} tooltip={sharedTooltip} />
 
       <hr className="border-secondary" />
 
@@ -304,11 +267,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
 
       <hr className="border-secondary" />
 
-      <AdvancedSettingsSection
-        control={control}
-        isReadonly={isReadonly}
-        tooltip={sharedTooltip}
-      />
+      <AdvancedSettingsSection control={control} isReadonly={isReadonly} tooltip={sharedTooltip} />
     </form>
   );
 };

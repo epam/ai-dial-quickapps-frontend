@@ -1,14 +1,14 @@
-import { IconAlertCircleFilled, IconCircleCheckFilled, IconHelpCircle } from "@tabler/icons-react";
-import { FC, memo, useCallback, useEffect, useState } from "react";
+import { IconAlertCircleFilled, IconCircleCheckFilled, IconHelpCircle } from '@tabler/icons-react';
+import { FC, memo, useCallback, useEffect, useState } from 'react';
 
-import { MarketplaceI18nKeys } from "@/constants/i18n";
-import { useAppContext } from "@/context/AppContext";
-import { useDataContext } from "@/context/DataContext";
-import { useSkillValidation } from "@/hooks/useSkillValidation";
-import { useTranslation } from "@/hooks/useTranslation";
-import { SkillValidationStatus } from "@/types/skill-validation";
-import { Translation } from "@/types/translation";
-import { promptPathUrl } from "@/utils/prompt-tree";
+import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { useAppContext } from '@/context/AppContext';
+import { useDataContext } from '@/context/DataContext';
+import { useSkillValidation } from '@/hooks/useSkillValidation';
+import { useTranslation } from '@/hooks/useTranslation';
+import { SkillValidationStatus } from '@/types/skill-validation';
+import { Translation } from '@/types/translation';
+import { promptPathUrl } from '@/utils/prompt-tree';
 import {
   DialFormItem,
   DialInput,
@@ -16,7 +16,7 @@ import {
   DialPrimaryButton,
   DialTextarea,
   DialTooltip,
-} from "@epam/ai-dial-ui-kit";
+} from '@epam/ai-dial-ui-kit';
 
 export interface CreatePromptFormProps {
   onBack: () => void;
@@ -34,19 +34,14 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
   const { t } = useTranslation(Translation.Marketplace);
   const { refreshPrompts } = useDataContext();
 
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [content, setContent] = useState("");
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [validatedPromptId, setValidatedPromptId] = useState<string | null>(
-    editPromptId ?? null,
-  );
+  const [validatedPromptId, setValidatedPromptId] = useState<string | null>(editPromptId ?? null);
   const [revalidateToken, setRevalidateToken] = useState(0);
-  const skillValidation = useSkillValidation(
-    validatedPromptId ?? "",
-    revalidateToken,
-  );
+  const skillValidation = useSkillValidation(validatedPromptId ?? '', revalidateToken);
   const { app } = useAppContext();
   const canValidateSkill = !!app?.id && !!validatedPromptId;
 
@@ -71,16 +66,16 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
             description?: string;
             content?: string;
           };
-          setName(data.name ?? "");
-          setDescription(data.description ?? "");
-          setContent(data.content ?? "");
+          setName(data.name ?? '');
+          setDescription(data.description ?? '');
+          setContent(data.content ?? '');
         } catch {
           // Raw text prompt (e.g. markdown skill)
           setContent(text);
         }
       })
       .catch(() => {
-        if (!cancelled) setError("Failed to load prompt.");
+        if (!cancelled) setError('Failed to load prompt.');
       })
       .finally(() => {
         if (!cancelled) setIsSaving(false);
@@ -101,11 +96,11 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
     try {
       if (editPromptId) {
         const res = await fetch(promptPathUrl(editPromptId), {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             id: editPromptId,
-            folderId: editPromptId.slice(0, editPromptId.lastIndexOf("/")),
+            folderId: editPromptId.slice(0, editPromptId.lastIndexOf('/')),
             name: trimmedName,
             description: description.trim(),
             content: trimmedContent,
@@ -117,15 +112,15 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
         setRevalidateToken((prev) => prev + 1);
         onEdited?.();
       } else {
-        const bucketRes = await fetch("/api/dial/v1/bucket");
-        if (!bucketRes.ok) throw new Error("Failed to fetch bucket");
+        const bucketRes = await fetch('/api/dial/v1/bucket');
+        if (!bucketRes.ok) throw new Error('Failed to fetch bucket');
         const { bucket } = (await bucketRes.json()) as { bucket: string };
 
         const newId = `prompts/${bucket}/${trimmedName}`;
         const fileName = encodeURIComponent(trimmedName);
         const res = await fetch(`/api/dial/v1/prompts/${bucket}/${fileName}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             id: newId,
             folderId: `prompts/${bucket}`,
@@ -141,19 +136,11 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
         onCreated(newId);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save prompt");
+      setError(err instanceof Error ? err.message : 'Failed to save prompt');
     } finally {
       setIsSaving(false);
     }
-  }, [
-    name,
-    description,
-    content,
-    editPromptId,
-    refreshPrompts,
-    onCreated,
-    onEdited,
-  ]);
+  }, [name, description, content, editPromptId, refreshPrompts, onCreated, onEdited]);
 
   const isSaveDisabled = !name.trim() || !content.trim() || isSaving;
 
@@ -162,7 +149,7 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
       <DialFormItem label={t(MarketplaceI18nKeys.PromptName)}>
         <DialInput
           value={name}
-          onChange={(val) => setName(val ?? "")}
+          onChange={(val) => setName(val ?? '')}
           placeholder={t(MarketplaceI18nKeys.EnterPromptName)}
           containerClassName="w-full"
           autoFocus
@@ -188,11 +175,7 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
             </span>
             <span className="flex items-center">
               {!canValidateSkill && (
-                <DialTooltip
-                  tooltip={t(
-                    MarketplaceI18nKeys.AgentSkillValidationPendingHint,
-                  )}
-                >
+                <DialTooltip tooltip={t(MarketplaceI18nKeys.AgentSkillValidationPendingHint)}>
                   <span className="me-2 flex cursor-help items-center gap-1.5 text-secondary">
                     <IconCircleCheckFilled size={16} className="opacity-50" />
                     <span className="dial-tiny-text">
@@ -201,39 +184,33 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
                   </span>
                 </DialTooltip>
               )}
-              {canValidateSkill &&
-                skillValidation.status === SkillValidationStatus.Validating && (
-                  <span className="me-2 flex items-center gap-1.5 text-secondary">
+              {canValidateSkill && skillValidation.status === SkillValidationStatus.Validating && (
+                <span className="me-2 flex items-center gap-1.5 text-secondary">
+                  <span className="dial-tiny-text">
+                    {t(MarketplaceI18nKeys.AgentSkillValidationPending)}
+                  </span>
+                </span>
+              )}
+              {canValidateSkill && skillValidation.status === SkillValidationStatus.Valid && (
+                <span className="me-2 flex items-center gap-1.5 text-accent-secondary">
+                  <IconCircleCheckFilled size={16} />
+                  <span className="dial-tiny-text">{t(MarketplaceI18nKeys.ValidAgentSkill)}</span>
+                </span>
+              )}
+              {canValidateSkill && skillValidation.status === SkillValidationStatus.Invalid && (
+                <DialTooltip
+                  tooltip={
+                    skillValidation.message || t(MarketplaceI18nKeys.AgentSkillsInvalidError)
+                  }
+                >
+                  <span className="me-2 flex cursor-help items-center gap-1.5 text-error">
+                    <IconAlertCircleFilled size={16} />
                     <span className="dial-tiny-text">
-                      {t(MarketplaceI18nKeys.AgentSkillValidationPending)}
+                      {t(MarketplaceI18nKeys.AgentSkillsInvalidError)}
                     </span>
                   </span>
-                )}
-              {canValidateSkill &&
-                skillValidation.status === SkillValidationStatus.Valid && (
-                  <span className="me-2 flex items-center gap-1.5 text-accent-secondary">
-                    <IconCircleCheckFilled size={16} />
-                    <span className="dial-tiny-text">
-                      {t(MarketplaceI18nKeys.ValidAgentSkill)}
-                    </span>
-                  </span>
-                )}
-              {canValidateSkill &&
-                skillValidation.status === SkillValidationStatus.Invalid && (
-                  <DialTooltip
-                    tooltip={
-                      skillValidation.message ||
-                      t(MarketplaceI18nKeys.AgentSkillsInvalidError)
-                    }
-                  >
-                    <span className="me-2 flex cursor-help items-center gap-1.5 text-error">
-                      <IconAlertCircleFilled size={16} />
-                      <span className="dial-tiny-text">
-                        {t(MarketplaceI18nKeys.AgentSkillsInvalidError)}
-                      </span>
-                    </span>
-                  </DialTooltip>
-                )}
+                </DialTooltip>
+              )}
               <DialTooltip
                 tooltip={
                   <span>
@@ -244,9 +221,9 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
                       className="underline"
                     >
                       {t(MarketplaceI18nKeys.AgentSkills)}
-                    </a>{" "}
-                    {t(MarketplaceI18nKeys.AgentSkillHintBody)}{" "}
-                    {t(MarketplaceI18nKeys.AgentSkillHintSeeExamples)}{" "}
+                    </a>{' '}
+                    {t(MarketplaceI18nKeys.AgentSkillHintBody)}{' '}
+                    {t(MarketplaceI18nKeys.AgentSkillHintSeeExamples)}{' '}
                     <a
                       href="https://agentskills.io/specification#skill-md-format"
                       target="_blank"
@@ -259,10 +236,7 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
                   </span>
                 }
               >
-                <IconHelpCircle
-                  size={16}
-                  className="cursor-help text-secondary"
-                />
+                <IconHelpCircle size={16} className="cursor-help text-secondary" />
               </DialTooltip>
             </span>
           </div>
@@ -271,9 +245,7 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
         <DialTextarea
           value={content}
           onChange={(val) => setContent(val)}
-          onBlur={(e) =>
-            setContent((e.target as HTMLTextAreaElement).value.trim())
-          }
+          onBlur={(e) => setContent((e.target as HTMLTextAreaElement).value.trim())}
           placeholder={t(MarketplaceI18nKeys.EnterPromptContent)}
           rows={10}
           containerClassName="w-full"

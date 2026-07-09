@@ -1,22 +1,22 @@
-"use client";
-import { FC, useCallback, useState } from "react";
+'use client';
+import { FC, useCallback, useState } from 'react';
 
-import { ModelIcon } from "@/components/common/ModelIcon/ModelIcon";
-import { CommonI18nKeys, MarketplaceI18nKeys } from "@/constants/i18n";
-import { useDataContext } from "@/context/DataContext";
-import { useTranslation } from "@/hooks/useTranslation";
-import { ToolsetAuthStatus, ToolsetAuthType } from "@/types/dial-entities";
-import { Translation } from "@/types/translation";
-import { encodeApiUrl } from "@/utils/api";
+import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
+import { CommonI18nKeys, MarketplaceI18nKeys } from '@/constants/i18n';
+import { useDataContext } from '@/context/DataContext';
+import { useTranslation } from '@/hooks/useTranslation';
+import { ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
+import { Translation } from '@/types/translation';
+import { encodeApiUrl } from '@/utils/api';
 import {
   DialInput,
   DialNeutralButton,
   DialPopup,
   DialPrimaryButton,
   PopupSize,
-} from "@epam/ai-dial-ui-kit";
+} from '@epam/ai-dial-ui-kit';
 
-import type { ChipEntity } from "./AgentAndToolsetChip";
+import type { ChipEntity } from './AgentAndToolsetChip';
 
 interface ToolsetLoginModalProps {
   toolset: ChipEntity;
@@ -28,13 +28,9 @@ interface ToolsetLoginModalProps {
 // for this app; this mirrors the shape used by the reference chat app
 // (PUT/DELETE credentials) through the generic /api/dial proxy so it starts
 // working once such an endpoint is available server-side.
-const getToolsetAuthUrl = (id: string) =>
-  `/api/dial/v1/toolset/${encodeApiUrl(id)}/auth`;
+const getToolsetAuthUrl = (id: string) => `/api/dial/v1/toolset/${encodeApiUrl(id)}/auth`;
 
-export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({
-  toolset,
-  onClose,
-}) => {
+export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose }) => {
   const { t } = useTranslation(Translation.Marketplace);
   const { refreshToolsets } = useDataContext();
 
@@ -42,7 +38,7 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({
   const isSignedIn = authSettings?.authStatus === ToolsetAuthStatus.SignedIn;
   const isOAuth = authSettings?.authenticationType === ToolsetAuthType.OAuth;
 
-  const [apiKey, setApiKey] = useState("");
+  const [apiKey, setApiKey] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
 
@@ -51,7 +47,7 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({
     setError(undefined);
     try {
       const res = await fetch(getToolsetAuthUrl(toolset.id), {
-        method: "DELETE",
+        method: 'DELETE',
       });
       if (!res.ok) throw new Error(`${res.status}`);
       await refreshToolsets();
@@ -68,8 +64,8 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({
     setError(undefined);
     try {
       const res = await fetch(getToolsetAuthUrl(toolset.id), {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ apiKey }),
       });
       if (!res.ok) throw new Error(`${res.status}`);
@@ -85,12 +81,12 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({
   const handleOAuthLogin = useCallback(() => {
     if (!authSettings?.authorizationEndpoint || !authSettings.clientId) return;
     const url = new URL(authSettings.authorizationEndpoint);
-    url.searchParams.set("response_type", "code");
-    url.searchParams.set("client_id", authSettings.clientId);
+    url.searchParams.set('response_type', 'code');
+    url.searchParams.set('client_id', authSettings.clientId);
     if (authSettings.scopesSupported?.length) {
-      url.searchParams.set("scope", authSettings.scopesSupported.join(" "));
+      url.searchParams.set('scope', authSettings.scopesSupported.join(' '));
     }
-    window.open(url.href, "_blank", "noopener,noreferrer");
+    window.open(url.href, '_blank', 'noopener,noreferrer');
   }, [authSettings]);
 
   return (
@@ -103,24 +99,17 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({
       <div className="flex flex-col gap-4 px-6 py-4">
         <div className="flex items-center gap-3">
           <ModelIcon name={toolset.name ?? toolset.id} size={40} radius={10} />
-          <span className="dial-small-semi-text text-primary">
-            {toolset.name ?? toolset.id}
-          </span>
+          <span className="dial-small-semi-text text-primary">{toolset.name ?? toolset.id}</span>
         </div>
 
         {isOAuth ? (
           <div className="flex flex-col gap-3">
             <p className="dial-small-text text-secondary">
-              {isSignedIn
-                ? t(CommonI18nKeys.LoggedInToolset)
-                : t(CommonI18nKeys.LoggedOutToolset)}
+              {isSignedIn ? t(CommonI18nKeys.LoggedInToolset) : t(CommonI18nKeys.LoggedOutToolset)}
             </p>
             {error && <p className="dial-tiny-text text-error">{error}</p>}
             <div className="flex justify-end gap-2">
-              <DialNeutralButton
-                label={t(CommonI18nKeys.Cancel)}
-                onClick={onClose}
-              />
+              <DialNeutralButton label={t(CommonI18nKeys.Cancel)} onClick={onClose} />
               {isSignedIn ? (
                 <DialPrimaryButton
                   label={t(MarketplaceI18nKeys.LogoutToolsetAction)}
@@ -139,20 +128,15 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({
           <div className="flex flex-col gap-3">
             <DialInput
               value={apiKey}
-              onChange={(v) => setApiKey(v ?? "")}
-              placeholder={
-                authSettings?.apiKeyHeader ?? t(MarketplaceI18nKeys.ApiKeyLabel)
-              }
+              onChange={(v) => setApiKey(v ?? '')}
+              placeholder={authSettings?.apiKeyHeader ?? t(MarketplaceI18nKeys.ApiKeyLabel)}
               containerClassName="w-full"
               type="password"
               disabled={isSignedIn}
             />
             {error && <p className="dial-tiny-text text-error">{error}</p>}
             <div className="flex justify-end gap-2">
-              <DialNeutralButton
-                label={t(CommonI18nKeys.Cancel)}
-                onClick={onClose}
-              />
+              <DialNeutralButton label={t(CommonI18nKeys.Cancel)} onClick={onClose} />
               {isSignedIn ? (
                 <DialPrimaryButton
                   label={t(MarketplaceI18nKeys.LogoutToolsetAction)}
