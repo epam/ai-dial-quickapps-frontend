@@ -1,3 +1,5 @@
+import { handleUnauthorizedResponse } from '@/utils/handle-unauthorized-response';
+
 export interface ListFilesItem {
   name: string;
   path: string;
@@ -82,7 +84,12 @@ const PROXY = '/api/dial';
 
 async function dialGet<T>(path: string): Promise<T> {
   const res = await fetch(`${PROXY}${path}`);
-  if (!res.ok) throw new Error(`DIAL ${res.status} ${path}`);
+  if (!res.ok) {
+    if (handleUnauthorizedResponse(res)) {
+      throw new Error(`DIAL ${res.status} ${path}: session expired`);
+    }
+    throw new Error(`DIAL ${res.status} ${path}`);
+  }
   return res.json() as Promise<T>;
 }
 
@@ -92,7 +99,12 @@ async function dialPost<T>(path: string, body: unknown): Promise<T> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`DIAL ${res.status} ${path}`);
+  if (!res.ok) {
+    if (handleUnauthorizedResponse(res)) {
+      throw new Error(`DIAL ${res.status} ${path}: session expired`);
+    }
+    throw new Error(`DIAL ${res.status} ${path}`);
+  }
   return res.json() as Promise<T>;
 }
 
@@ -145,7 +157,12 @@ export async function listFiles(params: {
   if (recursive) qs.set('recursive', 'true');
 
   const res = await fetch(`/api/dial-files/list?${qs}`);
-  if (!res.ok) throw new Error(`DIAL ${res.status}`);
+  if (!res.ok) {
+    if (handleUnauthorizedResponse(res)) {
+      throw new Error(`DIAL ${res.status}: session expired`);
+    }
+    throw new Error(`DIAL ${res.status}`);
+  }
   const data = (await res.json()) as { items?: CoreMetadataItem[]; permissions?: string[] };
 
   return {
@@ -197,7 +214,12 @@ export async function createFolder(params: {
     body: new Blob([], { type: 'application/octet-stream' }),
     headers: { 'Content-Type': 'application/octet-stream' },
   });
-  if (!res.ok) throw new Error(`createFolder failed: ${res.status}`);
+  if (!res.ok) {
+    if (handleUnauthorizedResponse(res)) {
+      throw new Error(`createFolder failed: ${res.status}: session expired`);
+    }
+    throw new Error(`createFolder failed: ${res.status}`);
+  }
 
   const resourcePath = `files/${bucket}/${folderPath}`;
   return {
@@ -299,7 +321,12 @@ export async function downloadFile(
     .map((s) => encodeURIComponent(s))
     .join('/');
   const res = await fetch(`${PROXY}/v1/files/${bucket}/${encoded}`);
-  if (!res.ok) throw new Error(`Download failed: ${res.status}`);
+  if (!res.ok) {
+    if (handleUnauthorizedResponse(res)) {
+      throw new Error(`Download failed: ${res.status}: session expired`);
+    }
+    throw new Error(`Download failed: ${res.status}`);
+  }
   return res;
 }
 
@@ -352,6 +379,7 @@ export async function uploadFile(
           const name = path.split('/').pop() ?? file.name;
           resolve({ name, path: `files/${bucket}/${path}`, bucket });
         } else {
+          if (xhr.status === 401) window.location.reload();
           reject(new Error(`Upload failed: ${xhr.status}`));
         }
       });
@@ -372,7 +400,12 @@ export async function uploadFile(
     signal,
   });
 
-  if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
+  if (!res.ok) {
+    if (handleUnauthorizedResponse(res)) {
+      throw new Error(`Upload failed: ${res.status}: session expired`);
+    }
+    throw new Error(`Upload failed: ${res.status}`);
+  }
 
   const name = path.split('/').pop() ?? file.name;
   return { name, path: `files/${bucket}/${path}`, bucket };

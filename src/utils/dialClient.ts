@@ -12,6 +12,7 @@ import {
   ToolsetAuthStatus,
   ToolsetAuthType,
 } from "@/types/dial-entities";
+import { handleUnauthorizedResponse } from "@/utils/handle-unauthorized-response";
 
 const DIAL_API_VERSION = "2025-01-01-preview";
 
@@ -108,6 +109,9 @@ function mapAuthSettings(
 async function dialFetch<T>(path: string): Promise<T> {
   const res = await fetch(`/api/dial${path}`);
   if (!res.ok) {
+    if (handleUnauthorizedResponse(res)) {
+      throw new Error(`DIAL API ${res.status} for ${path}: session expired`);
+    }
     const body = await res.text().catch(() => "");
     const err = new Error(`DIAL API ${res.status} for ${path}: ${body}`);
     console.error(err.message);
@@ -262,6 +266,9 @@ export async function fetchDialApp(appId: string): Promise<DialApp | null> {
   const res = await fetch(`/api/dial/v1/${encodeDialPath(appId)}`);
   if (res.status === 404) return null;
   if (!res.ok) {
+    if (handleUnauthorizedResponse(res)) {
+      throw new Error(`DIAL API ${res.status} for /${appId}: session expired`);
+    }
     const body = await res.text().catch(() => "");
     const err = new Error(`DIAL API ${res.status} for /${appId}: ${body}`);
     console.error(err.message);
@@ -323,6 +330,9 @@ export async function saveDialApp(
     body: JSON.stringify(body),
   });
   if (!res.ok) {
+    if (handleUnauthorizedResponse(res)) {
+      throw new Error(`DIAL API ${res.status}: session expired`);
+    }
     const text = await res.text().catch(() => "");
     console.error("[saveDialApp] PUT body:", JSON.stringify(body, null, 2));
     console.error(
