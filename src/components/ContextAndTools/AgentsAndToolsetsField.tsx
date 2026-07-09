@@ -75,10 +75,13 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
     transport?: DialAppTransportType;
   } | null>(null);
 
-  const allItemsMap: Record<string, ChipEntity | undefined> = {
-    ...modelsMap,
-    ...toolsetsMap,
-  };
+  const allItemsMap: Record<string, ChipEntity | undefined> = useMemo(
+    () => ({
+      ...modelsMap,
+      ...toolsetsMap,
+    }),
+    [modelsMap, toolsetsMap],
+  );
 
   const selectedIds = useMemo(
     () =>

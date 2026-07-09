@@ -1,10 +1,10 @@
-import { handleUnauthorizedResponse } from '@/utils/handle-unauthorized-response';
+import { handleUnauthorizedResponse } from "@/utils/handle-unauthorized-response";
 
 export interface ListFilesItem {
   name: string;
   path: string;
   url?: string;
-  nodeType: 'ITEM' | 'FOLDER';
+  nodeType: "ITEM" | "FOLDER";
   bucket?: string;
   folderId?: string;
   parentPath?: string;
@@ -33,7 +33,7 @@ export interface DeleteItemDto {
   bucket: string;
   path: string;
   name: string;
-  nodeType: 'ITEM' | 'FOLDER';
+  nodeType: "ITEM" | "FOLDER";
 }
 
 export interface DeleteFilesResponse {
@@ -44,7 +44,7 @@ export interface RenameItemDto {
   bucket: string;
   sourcePath: string;
   destinationPath: string;
-  nodeType: 'ITEM' | 'FOLDER';
+  nodeType: "ITEM" | "FOLDER";
   name: string;
 }
 
@@ -56,7 +56,7 @@ export interface ArchiveItemDto {
   bucket: string;
   path: string;
   name: string;
-  nodeType: 'ITEM' | 'FOLDER';
+  nodeType: "ITEM" | "FOLDER";
 }
 
 export interface FileUploadResponse {
@@ -80,7 +80,7 @@ interface CoreMetadataItem {
   bucket?: string;
 }
 
-const PROXY = '/api/dial';
+const PROXY = "/api/dial";
 
 async function dialGet<T>(path: string): Promise<T> {
   const res = await fetch(`${PROXY}${path}`);
@@ -95,8 +95,8 @@ async function dialGet<T>(path: string): Promise<T> {
 
 async function dialPost<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${PROXY}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -113,21 +113,21 @@ function normalizeCoreItem(
   bucket: string,
   apiFolder: string,
 ): ListFilesItem {
-  const name = item.name ?? '';
-  const isFolder = (item.nodeType ?? '').toLowerCase() === 'folder';
+  const name = item.name ?? "";
+  const isFolder = (item.nodeType ?? "").toLowerCase() === "folder";
 
-  const folderPrefix = apiFolder ? apiFolder.replace(/\/$/, '') + '/' : '';
-  const rawPath =
-    item.url ?? `files/${bucket}/${folderPrefix}${name}`;
-  const path = isFolder && !rawPath.endsWith('/') ? `${rawPath}/` : rawPath;
+  const folderPrefix = apiFolder ? apiFolder.replace(/\/$/, "") + "/" : "";
+  const rawPath = item.url ?? `files/${bucket}/${folderPrefix}${name}`;
+  const path = isFolder && !rawPath.endsWith("/") ? `${rawPath}/` : rawPath;
 
   return {
     name,
     path,
     url: item.url,
-    nodeType: isFolder ? 'FOLDER' : 'ITEM',
+    nodeType: isFolder ? "FOLDER" : "ITEM",
     bucket,
-    parentPath: item.parentPath ?? (apiFolder ? apiFolder.replace(/\/$/, '') : undefined),
+    parentPath:
+      item.parentPath ?? (apiFolder ? apiFolder.replace(/\/$/, "") : undefined),
     contentType: isFolder ? undefined : item.contentType,
     contentLength: isFolder ? undefined : item.contentLength,
     updatedAt:
@@ -148,13 +148,13 @@ export async function listFiles(params: {
   permissions?: boolean;
   recursive?: boolean;
 }): Promise<ListFilesResponse> {
-  const { bucket, path = '', permissions, recursive } = params;
+  const { bucket, path = "", permissions, recursive } = params;
   if (!bucket) return { items: [] };
 
-  const qs = new URLSearchParams({ bucket, limit: '1000' });
-  if (path) qs.set('path', path);
-  if (permissions) qs.set('permissions', 'true');
-  if (recursive) qs.set('recursive', 'true');
+  const qs = new URLSearchParams({ bucket, limit: "1000" });
+  if (path) qs.set("path", path);
+  if (permissions) qs.set("permissions", "true");
+  if (recursive) qs.set("recursive", "true");
 
   const res = await fetch(`/api/dial-files/list?${qs}`);
   if (!res.ok) {
@@ -163,10 +163,15 @@ export async function listFiles(params: {
     }
     throw new Error(`DIAL ${res.status}`);
   }
-  const data = (await res.json()) as { items?: CoreMetadataItem[]; permissions?: string[] };
+  const data = (await res.json()) as {
+    items?: CoreMetadataItem[];
+    permissions?: string[];
+  };
 
   return {
-    items: (data.items ?? []).map((item) => normalizeCoreItem(item, bucket, path)),
+    items: (data.items ?? []).map((item) =>
+      normalizeCoreItem(item, bucket, path),
+    ),
     permissions: data.permissions,
   };
 }
@@ -174,21 +179,23 @@ export async function listFiles(params: {
 export async function listPublicFiles(params?: {
   path?: string;
 }): Promise<ListFilesResponse> {
-  return listFiles({ bucket: 'public', path: params?.path, permissions: false });
+  return listFiles({
+    bucket: "public",
+    path: params?.path,
+    permissions: false,
+  });
 }
 
-export async function listSharedFiles(_params?: {
-  path?: string;
-}): Promise<ListFilesResponse> {
+export async function listSharedFiles(): Promise<ListFilesResponse> {
   const data = await dialPost<{ resources?: CoreMetadataItem[] }>(
-    '/v1/ops/resource/share/list',
-    { resourceTypes: ['FILE'], with: 'me', includeUserInfo: true },
+    "/v1/ops/resource/share/list",
+    { resourceTypes: ["FILE"], with: "me", includeUserInfo: true },
   );
 
   const resources = data.resources ?? [];
   const items = resources.map((item) => {
-    const bucket = item.bucket ?? '';
-    return normalizeCoreItem(item, bucket, '');
+    const bucket = item.bucket ?? "";
+    return normalizeCoreItem(item, bucket, "");
   });
 
   return { items };
@@ -200,19 +207,21 @@ export async function createFolder(params: {
   name: string;
 }): Promise<CreateFolderResponse> {
   const { bucket, parentPath, name } = params;
-  const normalizedParent = parentPath ? parentPath.replace(/\/$/, '') + '/' : '';
+  const normalizedParent = parentPath
+    ? parentPath.replace(/\/$/, "") + "/"
+    : "";
   const folderPath = `${normalizedParent}${name}/`;
   const markerPath = `${folderPath}.dial_folder`;
 
   const encodedMarker = markerPath
-    .split('/')
+    .split("/")
     .map((s) => encodeURIComponent(s))
-    .join('/');
+    .join("/");
 
   const res = await fetch(`${PROXY}/v1/files/${bucket}/${encodedMarker}`, {
-    method: 'PUT',
-    body: new Blob([], { type: 'application/octet-stream' }),
-    headers: { 'Content-Type': 'application/octet-stream' },
+    method: "PUT",
+    body: new Blob([], { type: "application/octet-stream" }),
+    headers: { "Content-Type": "application/octet-stream" },
   });
   if (!res.ok) {
     if (handleUnauthorizedResponse(res)) {
@@ -226,7 +235,7 @@ export async function createFolder(params: {
     name,
     path: resourcePath,
     bucket,
-    parentPath: normalizedParent.replace(/\/$/, '') || undefined,
+    parentPath: normalizedParent.replace(/\/$/, "") || undefined,
     folderId: `${bucket}:${resourcePath}`,
   };
 }
@@ -236,24 +245,26 @@ export async function deleteFiles(
 ): Promise<DeleteFilesResponse> {
   const results = await Promise.all(
     items.map(async (item) => {
-      const relPath = item.nodeType === 'FOLDER'
-        ? (item.path.endsWith('/') ? item.path : `${item.path}/`)
-        : item.path.replace(/\/$/, '');
+      const relPath =
+        item.nodeType === "FOLDER"
+          ? item.path.endsWith("/")
+            ? item.path
+            : `${item.path}/`
+          : item.path.replace(/\/$/, "");
 
       const encoded = relPath
-        .split('/')
+        .split("/")
         .filter(Boolean)
         .map((s) => encodeURIComponent(s))
-        .join('/');
+        .join("/");
 
       try {
-        if (item.nodeType === 'FOLDER') {
+        if (item.nodeType === "FOLDER") {
           await deleteFolderContents(item.bucket, relPath);
         }
-        const res = await fetch(
-          `${PROXY}/v1/files/${item.bucket}/${encoded}`,
-          { method: 'DELETE' },
-        );
+        const res = await fetch(`${PROXY}/v1/files/${item.bucket}/${encoded}`, {
+          method: "DELETE",
+        });
         return { path: item.path, success: res.ok };
       } catch {
         return { path: item.path, success: false };
@@ -263,26 +274,33 @@ export async function deleteFiles(
   return { results };
 }
 
-async function deleteFolderContents(bucket: string, folderPath: string): Promise<void> {
+async function deleteFolderContents(
+  bucket: string,
+  folderPath: string,
+): Promise<void> {
   try {
     const data = await dialGet<{ items?: CoreMetadataItem[] }>(
-      `/v1/metadata/files/${bucket}/${folderPath.replace(/\/$/, '')}/?limit=1000`,
+      `/v1/metadata/files/${bucket}/${folderPath.replace(/\/$/, "")}/?limit=1000`,
     );
     const children = data.items ?? [];
     await Promise.all(
       children.map(async (child) => {
-        const isFolder = (child.nodeType ?? '').toLowerCase() === 'folder';
-        const childName = child.name ?? '';
-        const childPath = isFolder ? `${folderPath}${childName}/` : `${folderPath}${childName}`;
+        const isFolder = (child.nodeType ?? "").toLowerCase() === "folder";
+        const childName = child.name ?? "";
+        const childPath = isFolder
+          ? `${folderPath}${childName}/`
+          : `${folderPath}${childName}`;
         if (isFolder) {
           await deleteFolderContents(bucket, childPath);
         }
         const encoded = childPath
-          .split('/')
+          .split("/")
           .filter(Boolean)
           .map((s) => encodeURIComponent(s))
-          .join('/');
-        await fetch(`${PROXY}/v1/files/${bucket}/${encoded}`, { method: 'DELETE' });
+          .join("/");
+        await fetch(`${PROXY}/v1/files/${bucket}/${encoded}`, {
+          method: "DELETE",
+        });
       }),
     );
   } catch {
@@ -298,7 +316,7 @@ export async function renameFiles(
       const sourceUrl = `files/${item.bucket}/${item.sourcePath}`;
       const destinationUrl = `files/${item.bucket}/${item.destinationPath}`;
       try {
-        await dialPost('/v1/ops/resource/move', {
+        await dialPost("/v1/ops/resource/move", {
           sourceUrl,
           destinationUrl,
           overwrite: false,
@@ -317,9 +335,9 @@ export async function downloadFile(
   path: string,
 ): Promise<Response> {
   const encoded = path
-    .split('/')
+    .split("/")
     .map((s) => encodeURIComponent(s))
-    .join('/');
+    .join("/");
   const res = await fetch(`${PROXY}/v1/files/${bucket}/${encoded}`);
   if (!res.ok) {
     if (handleUnauthorizedResponse(res)) {
@@ -333,10 +351,10 @@ export async function downloadFile(
 export async function downloadArchive(
   items: ArchiveItemDto[],
 ): Promise<Response> {
-  if (items.length === 1 && items[0].nodeType === 'ITEM') {
+  if (items.length === 1 && items[0].nodeType === "ITEM") {
     return downloadFile(items[0].bucket, items[0].path);
   }
-  throw new Error('Multi-file archive download is not supported');
+  throw new Error("Multi-file archive download is not supported");
 }
 
 export async function uploadFile(
@@ -345,38 +363,39 @@ export async function uploadFile(
   file: File,
   options?: {
     signal?: AbortSignal;
-    uploadMode?: 'overwrite' | 'create-only';
+    uploadMode?: "overwrite" | "create-only";
     onProgress?: (percent: number) => void;
   },
 ): Promise<FileUploadResponse> {
   const { signal, uploadMode, onProgress } = options ?? {};
 
   const encodedPath = path
-    .split('/')
+    .split("/")
     .map((s) => encodeURIComponent(s))
-    .join('/');
+    .join("/");
   const url = `${PROXY}/v1/files/${bucket}/${encodedPath}`;
 
   const conditionalHeader: Record<string, string> =
-    uploadMode === 'create-only' ? { 'If-None-Match': '*' } : {};
+    uploadMode === "create-only" ? { "If-None-Match": "*" } : {};
 
   if (onProgress != null) {
     return new Promise<FileUploadResponse>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.open('PUT', url);
+      xhr.open("PUT", url);
       Object.entries(conditionalHeader).forEach(([k, v]) =>
         xhr.setRequestHeader(k, v),
       );
 
-      if (signal) signal.addEventListener('abort', () => xhr.abort());
+      if (signal) signal.addEventListener("abort", () => xhr.abort());
 
-      xhr.upload.addEventListener('progress', (e) => {
-        if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+      xhr.upload.addEventListener("progress", (e) => {
+        if (e.lengthComputable)
+          onProgress(Math.round((e.loaded / e.total) * 100));
       });
 
-      xhr.addEventListener('load', () => {
+      xhr.addEventListener("load", () => {
         if (xhr.status >= 200 && xhr.status < 300) {
-          const name = path.split('/').pop() ?? file.name;
+          const name = path.split("/").pop() ?? file.name;
           resolve({ name, path: `files/${bucket}/${path}`, bucket });
         } else {
           if (xhr.status === 401) window.location.reload();
@@ -384,9 +403,11 @@ export async function uploadFile(
         }
       });
 
-      xhr.addEventListener('error', () => reject(new Error('Upload network error')));
-      xhr.addEventListener('abort', () =>
-        reject(new DOMException('Upload aborted', 'AbortError')),
+      xhr.addEventListener("error", () =>
+        reject(new Error("Upload network error")),
+      );
+      xhr.addEventListener("abort", () =>
+        reject(new DOMException("Upload aborted", "AbortError")),
       );
 
       xhr.send(file);
@@ -394,8 +415,11 @@ export async function uploadFile(
   }
 
   const res = await fetch(url, {
-    method: 'PUT',
-    headers: { 'Content-Type': file.type || 'application/octet-stream', ...conditionalHeader },
+    method: "PUT",
+    headers: {
+      "Content-Type": file.type || "application/octet-stream",
+      ...conditionalHeader,
+    },
     body: file,
     signal,
   });
@@ -407,6 +431,6 @@ export async function uploadFile(
     throw new Error(`Upload failed: ${res.status}`);
   }
 
-  const name = path.split('/').pop() ?? file.name;
+  const name = path.split("/").pop() ?? file.name;
   return { name, path: `files/${bucket}/${path}`, bucket };
 }

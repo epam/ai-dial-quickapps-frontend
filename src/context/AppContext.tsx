@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext } from 'react';
+import { createContext, useContext } from "react";
 
-import type { AppSettings, DialApp } from '@/types/dial-entities';
+import type { AppSettings, DialApp } from "@/types/dial-entities";
 
 export interface AppState {
   app: DialApp;
@@ -16,6 +16,7 @@ export const AppContextProvider = AppContext.Provider;
 
 export function useAppContext(): AppState {
   const ctx = useContext(AppContext);
-  if (!ctx) throw new Error('useAppContext must be used inside AppContextProvider');
+  if (!ctx)
+    throw new Error("useAppContext must be used inside AppContextProvider");
   return ctx;
 }

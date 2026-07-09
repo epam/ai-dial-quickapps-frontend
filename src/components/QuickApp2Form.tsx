@@ -18,9 +18,9 @@ import {
   type QuickApp2Form as QuickApp2FormType,
 } from "@/form/quickApp2Form";
 import { useTranslation } from "@/hooks/useTranslation";
-import { DialAIEntityModel } from "@/utils/application";
 import { AnyToolset, DialAppTransportType } from "@/types/quick-apps";
 import { Translation } from "@/types/translation";
+import { DialAIEntityModel } from "@/utils/application";
 
 import AdvancedSettingsSection from "./AdvancedSettings/AdvancedSettingsSection";
 import AgentSkillsFormSection from "./AgentSkills/AgentSkillsFormSection";
@@ -40,20 +40,18 @@ interface QuickApp2FormProps {
     allEntitiesMap: QuickApp2AllEntitiesMap,
     isAutoSave?: boolean,
   ) => void;
-  onDiscard?: () => void;
   onDirtyChange?: (isDirty: boolean) => void;
   readonly?: boolean;
 }
 
 export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   onSave,
-  onDiscard,
   onDirtyChange,
   readonly,
 }) => {
   const { t } = useTranslation(Translation.Marketplace);
   const { app, settings } = useAppContext();
-  const { models, toolsets, modelsMap, toolsetsMap, files } = useDataContext();
+  const { models, modelsMap, toolsetsMap } = useDataContext();
 
   const toolSupportingModelIds = useMemo(
     () => models.filter((m) => m.features?.tools).map((m) => m.id),
@@ -130,8 +128,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   const starters = watch("starters");
   const agentsAndToolsets = watch("agentsAndToolsets");
   const agentsAndToolsetsJson = watch("agentsAndToolsetsJson");
-  const codeInterpreter = watch("codeInterpreter");
-  const agentSkills = watch("agentSkills");
   const chatMessageInputDisabled = watch("chatMessageInputDisabled");
   const autoSubmit = watch("autoSubmit");
 

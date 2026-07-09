@@ -1,25 +1,30 @@
-import { IconApps, IconSettings, IconTool } from '@tabler/icons-react';
-import React, { useMemo } from 'react';
+import { IconApps, IconSettings, IconTool } from "@tabler/icons-react";
+import React, { useMemo } from "react";
 
-import classNames from 'classnames';
+import classNames from "classnames";
 
 import type {
   ApplicationStatus,
   ToolsetAuthSettings,
-} from '@/types/dial-entities';
-import { ToolsetAuthType } from '@/types/dial-entities';
-import { isApplicationId, isToolsetId, getEntityNameFromId, getVersionFromId } from '@/utils/api';
-import { doesAgentSupportMcp } from '@/utils/application';
-import { getEntityStatus } from '@/utils/get-entity-status';
+} from "@/types/dial-entities";
+import { ToolsetAuthType } from "@/types/dial-entities";
+import {
+  getEntityNameFromId,
+  getVersionFromId,
+  isApplicationId,
+  isToolsetId,
+} from "@/utils/api";
+import { doesAgentSupportMcp } from "@/utils/application";
+import { getEntityStatus } from "@/utils/get-entity-status";
 
-import { ChipTooltipContent } from './ChipTooltipContent';
+import { ChipTooltipContent } from "./ChipTooltipContent";
 
 import {
   DialGhostIconButton,
   DialTag,
   DialTooltip,
   ElementSize,
-} from '@epam/ai-dial-ui-kit';
+} from "@epam/ai-dial-ui-kit";
 
 export interface ChipEntity {
   id: string;
@@ -89,7 +94,7 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
   const isCustomTool = !isApplicationId(id) && !isToolsetId(id) && !item;
 
   const version = isCustomTool
-    ? ''
+    ? ""
     : !item
       ? getVersionFromId(id)
       : item.version;
@@ -107,7 +112,16 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
         readonly={readonly}
       />
     ),
-    [id, item, name, version, status, isInSelectionList, readonly, isCustomTool],
+    [
+      id,
+      item,
+      name,
+      version,
+      status,
+      isInSelectionList,
+      readonly,
+      isCustomTool,
+    ],
   );
 
   const hasAuthSettings =
@@ -127,7 +141,7 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
     onRemove?.(id);
   };
 
-  const handleClick = (_e: React.MouseEvent<HTMLDivElement>) => {
+  const handleClick = () => {
     if (readonly) return;
     if (canOpenLoginModal) {
       onLoginToolset?.(item as ChipEntity);
@@ -156,9 +170,9 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
           onRemove={handleRemove}
           onClick={onItemClick || canOpenLoginModal ? handleClick : undefined}
           className={classNames(
-            isCustomTool && 'bg-layer-4',
-            status.isError && 'bg-error',
-            !readonly && isConfigurable && 'group-hover:pe-8',
+            isCustomTool && "bg-layer-4",
+            status.isError && "bg-error",
+            !readonly && isConfigurable && "group-hover:pe-8",
           )}
         />
       </DialTooltip>

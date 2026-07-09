@@ -28,7 +28,6 @@ import {
   uploadFile,
 } from '@/utils/dial-files-api';
 import { resolveDialFileApiPath, virtualPathToApiPath } from '@/utils/dial-file-path';
-import { isHiddenPath } from '@/utils/dial-file-path';
 import {
   DownloadDestinationType,
   prepareDownloadDestination,
@@ -303,7 +302,7 @@ const fetchByTab = (
 ): Promise<{ items: ListFilesItem[]; permissions?: string[] }> => {
   if (tab === DialFileManagerTabs.Shared) {
     if (folderPath === '') {
-      return listSharedFiles({ path: undefined }).then((res) => ({ items: res.items }));
+      return listSharedFiles().then((res) => ({ items: res.items }));
     }
     const firstSlash = folderPath.indexOf('/');
     const sharedRootName = firstSlash === -1 ? folderPath : folderPath.slice(0, firstSlash);

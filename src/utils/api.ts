@@ -1,7 +1,6 @@
 const PATH_KEY_SEPARATOR = '__';
 
 const safeEncodeURIComponent = (s: string) =>
-  // eslint-disable-next-line no-misleading-character-class
   s.replace(/[^\uD800-􏰀-\uDFFF]+/gm, (match) =>
     encodeURIComponent(match),
   );
