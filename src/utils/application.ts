@@ -1,4 +1,3 @@
-import { DEFAULT_QUICK_APPS_SCHEMA_2_ID } from '@/constants/quick-apps';
 import { decodeApiUrl, isApplicationId, parseEntityApiKey, splitEntityId } from '@/utils/api';
 import {
   DialAppToolset,
@@ -9,20 +8,12 @@ import {
 
 import omit from 'lodash-es/omit';
 
-const getQuickAppsSchemaId2 = () =>
-  process.env.NEXT_PUBLIC_QUICK_APPS_SCHEMA_2_ID ?? DEFAULT_QUICK_APPS_SCHEMA_2_ID;
-
 export interface DialAIEntityModel {
   applicationTypeSchemaId?: string;
   mcp?: boolean;
   features?: { mcp?: boolean };
   [key: string]: unknown;
 }
-
-export const isQuickApp2 = (entity: DialAIEntityModel) =>
-  entity.applicationTypeSchemaId === getQuickAppsSchemaId2();
-
-export const isQuickApp2Editor = (type: string): boolean => getQuickAppsSchemaId2().endsWith(type);
 
 export const getQuickApp2Config = (entity: { applicationProperties?: unknown }): QuickApp2Config =>
   entity.applicationProperties as QuickApp2Config;

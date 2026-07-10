@@ -91,6 +91,8 @@ export interface AppSettings {
   dialCoreExternalUrl?: string;
   isCodeInterpreterEnabled?: boolean;
   theme?: string;
+  allowedOrigin?: string;
+  defaultModelId?: string;
 }
 
 export interface DialPrompt {

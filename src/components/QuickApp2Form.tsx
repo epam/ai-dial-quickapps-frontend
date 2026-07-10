@@ -61,7 +61,12 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({ onSave, onDirtyChange, r
 
   const isReadonly = readonly || !!app.isShared;
 
-  const defaultValues = getQuickApp2FormData(app, toolSupportingModelIds, availableModelIds);
+  const defaultValues = getQuickApp2FormData(
+    app,
+    toolSupportingModelIds,
+    availableModelIds,
+    settings.defaultModelId,
+  );
 
   const {
     control,
