@@ -140,14 +140,8 @@ At least one OAuth provider below must be fully configured (all of its non-`_NAM
 | Variable                  | Required | Default  | Description                                                                                                                                                                    |
 | ------------------------- | :------: | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `ALLOWED_FRAME_ANCESTORS` |    No    | `'self'` | Space-separated list of origins allowed to embed this app in an `<iframe>`, sent as the CSP `frame-ancestors` directive. Set to the exact `ai-dial-chat` URL(s) in production. |
-
-### Client-side
-
-| Variable                               | Required | Default                                                         | Description                                                                                                                                                                                                                                      |
-| -------------------------------------- | :------: | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `NEXT_PUBLIC_ALLOWED_ORIGIN`           |    No    | `*`                                                             | Origin allowed to send `postMessage` events to the editor iframe. Set to the exact ai-dial-chat URL in production (e.g. `https://chat.example.com`). Using `*` accepts messages from any origin — fine for local dev, **unsafe for production**. |
-| `NEXT_PUBLIC_QUICK_APPS_DEFAULT_MODEL` |    No    | `gpt-4o`                                                        | Model ID pre-selected in the form when no model is stored in the app config.                                                                                                                                                                     |
-| `NEXT_PUBLIC_QUICK_APPS_SCHEMA_2_ID`   |    No    | `https://mydial.epam.com/custom_application_schemas/quickapps2` | `applicationTypeSchemaId` used to identify QuickApp2 applications. Override only if your DIAL instance uses a non-standard schema registry URL.                                                                                                  |
+| `ALLOWED_ORIGIN`          |    No    | `*`      | Origin allowed to send `postMessage` events to the editor iframe. Set to the exact ai-dial-chat URL in production (e.g. `https://chat.example.com`). Using `*` accepts messages from any origin — fine for local dev, **unsafe for production**. Served to the client via `/api/settings`. |
+| `QUICK_APPS_DEFAULT_MODEL` |    No    | `gpt-4o` | Model ID pre-selected in the form when no model is stored in the app config. Served to the client via `/api/settings`. |
 
 ## Content Security Policy
 
@@ -155,7 +149,7 @@ This app sends a `Content-Security-Policy: frame-ancestors ...` header (configur
 
 ## postMessage protocol
 
-The editor page (at `/`) communicates with its host via `postMessage`. Both sides validate `event.origin` against `NEXT_PUBLIC_ALLOWED_ORIGIN`.
+The editor page (at `/`) communicates with its host via `postMessage`. Both sides validate `event.origin` against `ALLOWED_ORIGIN`.
 
 In Dev mode the messages can be sent via console, e.g.
 

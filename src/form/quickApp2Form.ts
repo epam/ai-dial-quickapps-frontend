@@ -174,12 +174,11 @@ export const getQuickApp2FormData = (
   },
   toolSupportingModelIds?: string[],
   availableModelIds?: string[],
+  defaultModelId: string = DEFAULT_QUICK_APPS_MODEL,
 ): QuickApp2Form => {
   const appProperties = app?.applicationProperties as QuickApp2Config | undefined;
   let model = appProperties?.orchestrator?.deployment?.deployment_id;
   if (!model) {
-    const defaultModelId =
-      process.env.NEXT_PUBLIC_QUICK_APPS_DEFAULT_MODEL ?? DEFAULT_QUICK_APPS_MODEL;
     model = toolSupportingModelIds?.includes(defaultModelId)
       ? defaultModelId
       : (toolSupportingModelIds?.[0] ?? '');
