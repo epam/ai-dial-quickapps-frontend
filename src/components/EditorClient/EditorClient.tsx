@@ -12,14 +12,12 @@ import { AUTO_SAVE_INTERVAL_MS, DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constan
 import { DEFAULT_QUICK_APPS_SCHEMA_2_ID } from '@/constants/quick-apps';
 import { InboundMessage, InboundMessageType, OutboundMessageType } from '@/types/editor-messages';
 
-const ALLOWED_ORIGIN = process.env.NEXT_PUBLIC_ALLOWED_ORIGIN ?? '*';
-
-const postToParent = (msg: object) => {
-  window.parent.postMessage(msg, ALLOWED_ORIGIN === '*' ? '*' : ALLOWED_ORIGIN);
+const postToParent = (msg: object, allowedOrigin: string) => {
+  window.parent.postMessage(msg, allowedOrigin === '*' ? '*' : allowedOrigin);
 };
 
-const isAllowedOrigin = (origin: string): boolean =>
-  ALLOWED_ORIGIN === '*' || origin === ALLOWED_ORIGIN;
+const isAllowedOrigin = (origin: string, allowedOrigin: string): boolean =>
+  allowedOrigin === '*' || origin === allowedOrigin;
 
 const dispatchTriggerSave = (detail: { isAutoSave: boolean; ignoreDirty?: boolean }) => {
   window.dispatchEvent(new CustomEvent(DIAL_EDITOR_TRIGGER_SAVE_EVENT, { detail }));
@@ -65,13 +63,14 @@ export default function EditorClient() {
   const isDirtyRef = useRef(false);
   const isInitializedRef = useRef(false);
   const hasSavedOnceRef = useRef(false);
+  const allowedOriginRef = useRef('*');
 
   useEffect(() => {
     hasSavedOnceRef.current = hasSavedOnce;
   }, [hasSavedOnce]);
 
   useEffect(() => {
-    postToParent({ type: OutboundMessageType.Ready });
+    postToParent({ type: OutboundMessageType.Ready }, allowedOriginRef.current);
 
     let cancelled = false;
     const rawAppId = new URLSearchParams(window.location.search).get('id');
@@ -81,6 +80,7 @@ export default function EditorClient() {
       Promise.all([fetchDialApp(appId), fetchAppSettings()])
         .then(([app, settings]) => {
           if (cancelled) return;
+          allowedOriginRef.current = settings.allowedOrigin ?? '*';
           setAppState({
             app: app ?? {
               id: appId,
@@ -99,7 +99,7 @@ export default function EditorClient() {
     }
 
     const handleMessage = (event: MessageEvent) => {
-      if (!isAllowedOrigin(event.origin)) return;
+      if (!isAllowedOrigin(event.origin, allowedOriginRef.current)) return;
       const msg = event.data as InboundMessage;
       if (!msg?.type) return;
 
@@ -143,10 +143,13 @@ export default function EditorClient() {
     const el = formRef.current;
     if (!el) return;
     const ro = new ResizeObserver(() => {
-      postToParent({
-        type: OutboundMessageType.HeightChange,
-        payload: { height: el.scrollHeight },
-      });
+      postToParent(
+        {
+          type: OutboundMessageType.HeightChange,
+          payload: { height: el.scrollHeight },
+        },
+        allowedOriginRef.current,
+      );
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -174,19 +177,25 @@ export default function EditorClient() {
         const updatedApp = await saveDialApp(appWithFormValues, newConfig);
         setHasSavedOnce(true);
         if (isAutoSave) {
-          postToParent({ type: OutboundMessageType.AutoSaveComplete });
+          postToParent({ type: OutboundMessageType.AutoSaveComplete }, allowedOriginRef.current);
         } else {
-          postToParent({
-            type: OutboundMessageType.SaveSuccess,
-            payload: { updatedApp },
-          });
+          postToParent(
+            {
+              type: OutboundMessageType.SaveSuccess,
+              payload: { updatedApp },
+            },
+            allowedOriginRef.current,
+          );
         }
       } catch (err) {
         const error = err instanceof Error ? err.message : 'Save failed';
-        postToParent({
-          type: OutboundMessageType.SaveError,
-          payload: { error },
-        });
+        postToParent(
+          {
+            type: OutboundMessageType.SaveError,
+            payload: { error },
+          },
+          allowedOriginRef.current,
+        );
       }
     },
     [appState],
@@ -195,10 +204,13 @@ export default function EditorClient() {
   const handleDirtyChange = useCallback((isDirty: boolean) => {
     if (isDirtyRef.current !== isDirty) {
       isDirtyRef.current = isDirty;
-      postToParent({
-        type: OutboundMessageType.DirtyState,
-        payload: { isDirty },
-      });
+      postToParent(
+        {
+          type: OutboundMessageType.DirtyState,
+          payload: { isDirty },
+        },
+        allowedOriginRef.current,
+      );
     }
   }, []);
 

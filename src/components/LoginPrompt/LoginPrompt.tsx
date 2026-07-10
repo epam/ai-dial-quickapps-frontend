@@ -19,6 +19,7 @@ const LoginPrompt: FC<LoginPromptProps> = ({ provider }) => {
         disabled={isWindowOpen}
         onClick={openLoginWindow}
         label={isWindowOpen ? 'Sign-in window is open…' : 'Sign in'}
+        className="text-secondary"
       />
     </div>
   );
