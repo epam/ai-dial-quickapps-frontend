@@ -1,7 +1,16 @@
+import type { ToolsetCredentialsLevel } from '@/types/dial-entities';
+
 export enum InboundMessageType {
   TriggerSave = 'TRIGGER_SAVE',
   TriggerAutoSave = 'TRIGGER_AUTO_SAVE',
   Reset = 'RESET',
+  ToolsetLoginComplete = 'quickapps/TOOLSET_LOGIN_COMPLETE',
+}
+
+export interface ToolsetLoginCompletePayload {
+  toolsetId: string;
+  credentialsLevel: ToolsetCredentialsLevel;
+  success: boolean;
 }
 
 export enum OutboundMessageType {
@@ -19,4 +28,5 @@ export type InboundMessage =
       type: InboundMessageType.TriggerAutoSave;
       payload?: { ignoreDirty?: boolean };
     }
-  | { type: InboundMessageType.Reset };
+  | { type: InboundMessageType.Reset }
+  | { type: InboundMessageType.ToolsetLoginComplete; payload: ToolsetLoginCompletePayload };

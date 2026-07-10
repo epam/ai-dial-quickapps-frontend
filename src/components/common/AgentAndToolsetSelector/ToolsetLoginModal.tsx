@@ -1,13 +1,17 @@
 'use client';
-import { FC, useCallback, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
+import { QUICKAPPS_TOOLSET_AUTH_POPUP_NAME } from '@/constants/editor';
 import { CommonI18nKeys, MarketplaceI18nKeys } from '@/constants/i18n';
+import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/useTranslation';
-import { ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
+import { ToolsetAuthStatus, ToolsetAuthType, ToolsetCredentialsLevel } from '@/types/dial-entities';
+import { InboundMessageType, type ToolsetLoginCompletePayload } from '@/types/editor-messages';
 import { Translation } from '@/types/translation';
 import { encodeApiUrl } from '@/utils/api';
+import { encodeToolsetPopupState } from '@/utils/encode-toolset-popup-state';
 import {
   DialInput,
   DialNeutralButton,
@@ -32,6 +36,7 @@ const getToolsetAuthUrl = (id: string) => `/api/dial/v1/toolset/${encodeApiUrl(i
 
 export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose }) => {
   const { t } = useTranslation(Translation.Marketplace);
+  const { settings } = useAppContext();
   const { refreshToolsets } = useDataContext();
 
   const authSettings = toolset.authSettings;
@@ -79,15 +84,54 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
   }, [apiKey, onClose, refreshToolsets, t, toolset.id]);
 
   const handleOAuthLogin = useCallback(() => {
-    if (!authSettings?.authorizationEndpoint || !authSettings.clientId) return;
+    if (
+      !authSettings?.authorizationEndpoint ||
+      !authSettings.clientId ||
+      !authSettings.redirectUri
+    ) {
+      return;
+    }
     const url = new URL(authSettings.authorizationEndpoint);
     url.searchParams.set('response_type', 'code');
     url.searchParams.set('client_id', authSettings.clientId);
+    url.searchParams.set('redirect_uri', authSettings.redirectUri);
+    url.searchParams.set(
+      'state',
+      encodeToolsetPopupState({
+        toolsetId: toolset.id,
+        credentialsLevel: ToolsetCredentialsLevel.User,
+        originatingOrigin: window.location.origin,
+        nonce: crypto.randomUUID(),
+      }),
+    );
     if (authSettings.scopesSupported?.length) {
       url.searchParams.set('scope', authSettings.scopesSupported.join(' '));
     }
-    window.open(url.href, '_blank', 'noopener,noreferrer');
-  }, [authSettings]);
+    window.open(url.href, QUICKAPPS_TOOLSET_AUTH_POPUP_NAME, 'width=500,height=700');
+  }, [authSettings, toolset.id]);
+
+  useEffect(() => {
+    if (!isOAuth) return;
+
+    const allowedOrigin = settings.allowedOrigin;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (allowedOrigin && allowedOrigin !== '*' && event.origin !== allowedOrigin) return;
+
+      const msg = event.data as { type?: string; payload?: ToolsetLoginCompletePayload };
+      if (msg?.type !== InboundMessageType.ToolsetLoginComplete) return;
+      if (msg.payload?.toolsetId !== toolset.id) return;
+
+      if (msg.payload.success) {
+        void refreshToolsets().then(onClose);
+      } else {
+        setError(t(CommonI18nKeys.ToolsetSignInFailed));
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [isOAuth, settings.allowedOrigin, toolset.id, refreshToolsets, onClose, t]);
 
   return (
     <DialPopup
