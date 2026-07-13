@@ -15,6 +15,11 @@ export const isApplicationId = (id?: string) => id?.startsWith('applications/') 
 
 export const isToolsetId = (id?: string) => id?.startsWith('toolsets/') ?? false;
 
+export const isHiddenDialFolderId = (id?: string) => {
+  const lastSegment = id?.split('/').pop();
+  return parseEntityApiKey(lastSegment ?? '', { parseVersion: true }).name === '.dial_folder';
+};
+
 export const splitEntityId = (id: string) => {
   const parts = id.split('/');
   const name = parts[parts.length - 1];
