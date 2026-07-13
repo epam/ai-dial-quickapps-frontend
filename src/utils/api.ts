@@ -1,3 +1,5 @@
+import { DIAL_HIDDEN_FOLDER_MARKER } from '@/constants/dial-files';
+
 const PATH_KEY_SEPARATOR = '__';
 
 const safeEncodeURIComponent = (s: string) =>
@@ -16,8 +18,9 @@ export const isApplicationId = (id?: string) => id?.startsWith('applications/') 
 export const isToolsetId = (id?: string) => id?.startsWith('toolsets/') ?? false;
 
 export const isHiddenDialFolderId = (id?: string) => {
-  const lastSegment = id?.split('/').pop();
-  return parseEntityApiKey(lastSegment ?? '', { parseVersion: true }).name === '.dial_folder';
+  const lastSegment = id?.split('/').pop() ?? '';
+  const { name } = parseEntityApiKey(lastSegment, { parseVersion: true });
+  return name === DIAL_HIDDEN_FOLDER_MARKER;
 };
 
 export const splitEntityId = (id: string) => {
