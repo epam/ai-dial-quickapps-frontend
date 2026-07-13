@@ -17,6 +17,7 @@ import {
   NotificationVariant,
 } from '@epam/ai-dial-ui-kit';
 
+import { DIAL_HIDDEN_FOLDER_MARKER } from '@/constants/dial-files';
 import { DialFileManagerI18nKeys } from '@/constants/i18n';
 import type { FileUploadBatchState, FileUploadEntry } from '@/types/file-manager';
 import { FileUploadStatus } from '@/types/file-manager';
@@ -98,7 +99,6 @@ interface FileManagerNotification {
 }
 
 const UPLOAD_CONCURRENCY = 3;
-const HIDDEN_FILE = '.dial_folder';
 
 const DATE_OPTIONS: Intl.DateTimeFormatOptions = {
   year: 'numeric',
@@ -629,7 +629,7 @@ export const useDialFileManager = ({
       if (name.startsWith('.')) {
         return t('dialFileManager.folderNameHidden');
       }
-      if (name === HIDDEN_FILE) {
+      if (name === DIAL_HIDDEN_FOLDER_MARKER) {
         return t('dialFileManager.folderNameReserved');
       }
       if (name.length > 255) {
@@ -836,7 +836,7 @@ export const useDialFileManager = ({
       if (!value || value.trim() === '') {
         return t(DialFileManagerI18nKeys.RenameNameEmpty);
       }
-      if (value === HIDDEN_FILE) {
+      if (value === DIAL_HIDDEN_FOLDER_MARKER) {
         return t(DialFileManagerI18nKeys.RenameReservedName);
       }
       if (/[/\\]/.test(value)) {

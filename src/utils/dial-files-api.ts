@@ -1,3 +1,4 @@
+import { DIAL_HIDDEN_FOLDER_MARKER } from '@/constants/dial-files';
 import { handleUnauthorizedResponse } from '@/utils/handle-unauthorized-response';
 
 export interface ListFilesItem {
@@ -200,7 +201,7 @@ export async function createFolder(params: {
   const { bucket, parentPath, name } = params;
   const normalizedParent = parentPath ? parentPath.replace(/\/$/, '') + '/' : '';
   const folderPath = `${normalizedParent}${name}/`;
-  const markerPath = `${folderPath}.dial_folder`;
+  const markerPath = `${folderPath}${DIAL_HIDDEN_FOLDER_MARKER}`;
 
   const encodedMarker = markerPath
     .split('/')

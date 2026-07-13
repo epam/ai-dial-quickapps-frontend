@@ -1,10 +1,9 @@
 import type { DialFile } from '@epam/ai-dial-ui-kit';
 import { DialFileNodeType } from '@epam/ai-dial-ui-kit';
+import { DIAL_HIDDEN_FOLDER_MARKER } from '@/constants/dial-files';
 import { safeDecodeURI } from '@/utils/safe-decode-uri';
 
-const HIDDEN_FILE = '.dial_folder';
-
-export const isHiddenPath = (path: string): boolean => path.includes(HIDDEN_FILE);
+export const isHiddenPath = (path: string): boolean => path.includes(DIAL_HIDDEN_FOLDER_MARKER);
 
 export const resolveRelativeDialFilePath = (pathOrFileId: string, bucket: string): string => {
   const resourcePrefix = `files/${bucket}/`;

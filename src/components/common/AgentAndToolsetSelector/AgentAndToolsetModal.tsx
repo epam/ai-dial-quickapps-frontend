@@ -10,7 +10,7 @@ import { CommonI18nKeys, MarketplaceI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
-import { isApplicationId } from '@/utils/api';
+import { isApplicationId, isHiddenDialFolderId } from '@/utils/api';
 import { getEntityStatus } from '@/utils/get-entity-status';
 import {
   DialNeutralButton,
@@ -102,7 +102,10 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
   const [search, setSearch] = useState('');
 
   const allItems = useMemo<ChipEntity[]>(
-    () => [...models.filter((m) => m.type === 'application'), ...toolsets],
+    () => [
+      ...models.filter((m) => m.type === 'application'),
+      ...toolsets.filter((toolset) => !isHiddenDialFolderId(toolset.id)),
+    ],
     [models, toolsets],
   );
 
