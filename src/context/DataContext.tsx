@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useReducer } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useReducer } from 'react';
 
 import type {
   DialModel,
@@ -76,20 +76,21 @@ function reducer(state: DataState, action: DataAction): DataState {
 interface DataContextValue extends DataState {
   refreshPrompts: () => Promise<void>;
   refreshToolsets: () => Promise<void>;
+  refreshAll: () => void;
 }
 
 const DataContext = createContext<DataContextValue>({
   ...initialState,
   refreshPrompts: async () => undefined,
   refreshToolsets: async () => undefined,
+  refreshAll: () => undefined,
 });
 
 export function DataContextProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { isReady } = useAppContext();
 
-  useEffect(() => {
-    if (!isReady) return;
+  const loadAll = useCallback(() => {
     dispatch({ type: 'LOADING' });
     Promise.all([fetchDialModels(), fetchDialToolsets(), fetchDialPrompts()])
       .then(([models, toolsets, prompts]) => {
@@ -104,7 +105,12 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
           payload: err instanceof Error ? err.message : 'Failed to load data',
         });
       });
-  }, [isReady]);
+  }, []);
+
+  useEffect(() => {
+    if (!isReady) return;
+    loadAll();
+  }, [isReady, loadAll]);
 
   const refreshPrompts = async () => {
     const prompts = await fetchDialPrompts();
@@ -117,7 +123,7 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
   };
 
   return (
-    <DataContext.Provider value={{ ...state, refreshPrompts, refreshToolsets }}>
+    <DataContext.Provider value={{ ...state, refreshPrompts, refreshToolsets, refreshAll: loadAll }}>
       {children}
     </DataContext.Provider>
   );

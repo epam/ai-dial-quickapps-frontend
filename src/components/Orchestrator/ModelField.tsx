@@ -9,6 +9,7 @@ import { DialModel } from '@/types/dial-entities';
 import { Translation } from '@/types/translation';
 import {
   DialLinkButton,
+  DialLoader,
   DialNoDataContent,
   DialPopup,
   DialSearch,
@@ -20,7 +21,7 @@ import {
 
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
 import { TopicsLine } from '@/components/common/TopicsLine/TopicsLine';
-import { IconBulb } from '@tabler/icons-react';
+import { IconAlertCircleFilled, IconBulb } from '@tabler/icons-react';
 
 interface ModelGroup {
   name: string;
@@ -147,7 +148,7 @@ interface ModelFieldProps {
 
 export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, tooltip, error }) => {
   const { t } = useTranslation(Translation.Marketplace);
-  const { models } = useDataContext();
+  const { models, status, error: dataError, refreshAll } = useDataContext();
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<ModelFieldTab>(TAB_IDS.catalog);
@@ -285,7 +286,20 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
 
         {/* Scrollable grid: 1 column on small screens, 3×3 on large */}
         <div className="max-h-[70vh] overflow-y-auto bg-layer-2 px-6 py-4">
-          {activeTab === TAB_IDS.favorites ? (
+          {status === 'loading' || status === 'idle' ? (
+            <div className="flex items-center justify-center py-16">
+              <DialLoader size={32} fullWidth={false} ariaLabel={t(MarketplaceI18nKeys.LoadingModels)} />
+            </div>
+          ) : status === 'error' ? (
+            <div className="flex flex-col items-center justify-center gap-3 py-8">
+              <DialNoDataContent
+                title={t(MarketplaceI18nKeys.FailedToLoadModels)}
+                description={dataError}
+                icon={<IconAlertCircleFilled size={48} stroke={0.5} className="text-error" />}
+              />
+              <DialLinkButton label={t(MarketplaceI18nKeys.Retry)} onClick={refreshAll} />
+            </div>
+          ) : activeTab === TAB_IDS.favorites ? (
             <div className="flex items-center justify-center py-8">
               <DialNoDataContent
                 title={t(MarketplaceI18nKeys.NoFavoritesYet)}
