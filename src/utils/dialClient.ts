@@ -160,33 +160,17 @@ export async function fetchDialBucket(): Promise<string> {
 }
 
 /**
- * Models and applications are fetched independently: a failure on one
- * endpoint (e.g. applications returning 500) must not hide models that
- * loaded successfully.
+ * /openai/deployments returns models, applications and toolsets in one call,
+ * so we fetch it once instead of separately hitting /openai/models and
+ * /openai/applications.
  */
 export async function fetchDialModels(): Promise<DialModel[]> {
-  const [modelsRes, appsRes] = await Promise.allSettled([
-    dialFetch<{ data: CoreApiEntity[] }>(`/openai/models?api-version=${DIAL_API_VERSION}`),
-    dialFetch<{ data: CoreApiEntity[] }>(`/openai/applications?api-version=${DIAL_API_VERSION}`),
-  ]);
-
-  const entities: CoreApiEntity[] = [];
-  if (modelsRes.status === 'fulfilled') {
-    entities.push(...modelsRes.value.data);
-  } else {
-    console.error('[fetchDialModels] Failed to load /openai/models:', modelsRes.reason);
-  }
-  if (appsRes.status === 'fulfilled') {
-    entities.push(...appsRes.value.data);
-  } else {
-    console.error('[fetchDialModels] Failed to load /openai/applications:', appsRes.reason);
-  }
-
-  if (modelsRes.status === 'rejected' && appsRes.status === 'rejected') {
-    throw modelsRes.reason;
-  }
-
-  return entities.map(mapCoreToDialModel);
+  const res = await dialFetch<{ data: CoreApiEntity[] }>(
+    `/openai/deployments?api-version=${DIAL_API_VERSION}`,
+  );
+  return res.data
+    .filter((entity) => entity.object === 'model' || entity.object === 'application')
+    .map(mapCoreToDialModel);
 }
 
 interface CoreApplicationResponse {

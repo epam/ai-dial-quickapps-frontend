@@ -153,6 +153,9 @@ export enum MarketplaceI18nKeys {
   LoginToolsetAction = 'Log in',
   LogoutToolsetAction = 'Log out',
   ApiKeyLabel = 'API key',
+  LoadingModels = 'Loading models…',
+  FailedToLoadModels = 'Failed to load models',
+  Retry = 'Retry',
 }
 
 // common.json — dialFileManager namespace
