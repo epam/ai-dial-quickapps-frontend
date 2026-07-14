@@ -53,10 +53,19 @@ const proxyDial = async (req: NextRequest, { params }: RouteContext): Promise<Ne
 
   if (isJsonOrText) {
     const responseBody = await backendRes.text();
+    if (!backendRes.ok) {
+      console.error(
+        `[dial-proxy] ${req.method} ${backendUrl} -> ${backendRes.status}: ${responseBody}`,
+      );
+    }
     return new NextResponse(responseBody, {
       status: backendRes.status,
       headers: responseHeaders,
     });
+  }
+
+  if (!backendRes.ok) {
+    console.error(`[dial-proxy] ${req.method} ${backendUrl} -> ${backendRes.status}`);
   }
 
   return new NextResponse(backendRes.body, {
