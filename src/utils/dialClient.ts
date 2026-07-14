@@ -10,8 +10,6 @@ import type { QuickApp2Config } from '@/types/quick-apps';
 import { ApplicationStatus, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
 import { handleUnauthorizedResponse } from '@/utils/handle-unauthorized-response';
 
-const DIAL_API_VERSION = '2025-01-01-preview';
-
 /** Encode each path segment individually, preserving '/' as a separator. */
 const encodeDialPath = (id: string): string => id.split('/').map(encodeURIComponent).join('/');
 
@@ -160,15 +158,13 @@ export async function fetchDialBucket(): Promise<string> {
 }
 
 /**
- * /openai/deployments returns models, applications and toolsets in one call,
- * so we fetch it once instead of separately hitting /openai/models and
- * /openai/applications.
+ * /v1/deployments returns models, applications and toolsets in one call.
+ * Unlike /openai/deployments, it reliably includes applications, so we fetch
+ * it once instead of separately hitting /openai/models and /openai/applications.
  */
 export async function fetchDialModels(): Promise<DialModel[]> {
-  const res = await dialFetch<{ data: CoreApiEntity[] }>(
-    `/openai/deployments?api-version=${DIAL_API_VERSION}`,
-  );
-  return res.data
+  const res = await dialFetch<CoreApiEntity[]>('/v1/deployments');
+  return res
     .filter((entity) => entity.object === 'model' || entity.object === 'application')
     .map(mapCoreToDialModel);
 }

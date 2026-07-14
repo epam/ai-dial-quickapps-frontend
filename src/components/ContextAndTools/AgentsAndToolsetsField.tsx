@@ -11,7 +11,6 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { AnyToolset, DialAppTransportType } from '@/types/quick-apps';
 import { ThemeId } from '@/types/theme';
 import { Translation } from '@/types/translation';
-import { isApplicationId } from '@/utils/api';
 import {
   ButtonVariant,
   ConfirmationPopupVariant,
@@ -125,7 +124,7 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
 
   const handleConfigureClick = useCallback(
     (item: ChipEntity) => {
-      if (!isApplicationId(item.id)) return;
+      if (item.type !== 'application') return;
       const existing = agentsAndToolsets.find((a) => a[AgentOrToolsetSchemaKeys.id] === item.id);
       const tool = existing?.[AgentOrToolsetSchemaKeys.tool] as
         { transport?: DialAppTransportType } | undefined;

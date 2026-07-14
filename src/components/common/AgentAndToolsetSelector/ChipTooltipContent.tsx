@@ -33,9 +33,8 @@ export const ChipTooltipContent: React.FC<ChipTooltipContentProps> = ({
 
   const showUnavailable = !item && !isCustomTool;
   const showReadonlyHint = readonly && !isInSelectionList;
-  const entityTypeKey = isToolsetId(id)
-    ? CommonI18nKeys.ToolsetEntityType
-    : CommonI18nKeys.AgentEntityType;
+  const isToolset = item ? item.type === 'toolset' : isToolsetId(id);
+  const entityTypeKey = isToolset ? CommonI18nKeys.ToolsetEntityType : CommonI18nKeys.AgentEntityType;
 
   const statusMessage = useMemo(
     () => getEntityStatusMessage(status, readonly, t),
