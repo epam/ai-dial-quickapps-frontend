@@ -12,7 +12,7 @@ export const useAuth = (provider: string) => {
     if (isWindowOpen) return;
     setIsWindowOpen(true);
     authWindowRef.current = window.open(
-      `/signin?provider=${encodeURIComponent(provider)}`,
+      `/signin?authProvider=${encodeURIComponent(provider)}`,
       '_blank',
       'width=600,height=600',
     );
