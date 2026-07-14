@@ -166,6 +166,17 @@ export const getAgentsAndToolsetsFormValue = (tools?: AnyToolset[]): AgentOrTool
   });
 };
 
+export const resolveDefaultModelId = (
+  existingModelId?: string,
+  toolSupportingModelIds?: string[],
+  availableModelIds?: string[],
+  defaultModelId: string = DEFAULT_QUICK_APPS_MODEL,
+): string => {
+  if (existingModelId) return existingModelId;
+  if (availableModelIds?.includes(defaultModelId)) return defaultModelId;
+  return toolSupportingModelIds?.[0] ?? '';
+};
+
 export const getQuickApp2FormData = (
   app?: {
     applicationProperties?: unknown;
@@ -177,12 +188,12 @@ export const getQuickApp2FormData = (
   defaultModelId: string = DEFAULT_QUICK_APPS_MODEL,
 ): QuickApp2Form => {
   const appProperties = app?.applicationProperties as QuickApp2Config | undefined;
-  let model = appProperties?.orchestrator?.deployment?.deployment_id;
-  if (!model) {
-    model = toolSupportingModelIds?.includes(defaultModelId)
-      ? defaultModelId
-      : (toolSupportingModelIds?.[0] ?? '');
-  }
+  const model = resolveDefaultModelId(
+    appProperties?.orchestrator?.deployment?.deployment_id,
+    toolSupportingModelIds,
+    availableModelIds,
+    defaultModelId,
+  );
   const timestamp =
     'timestamp' in (appProperties?.features ?? {}) ? !!appProperties?.features?.timestamp : true;
 

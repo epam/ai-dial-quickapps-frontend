@@ -15,10 +15,12 @@ import {
   getQuickApp2Toolsets,
   MIME_TYPE_REGEX,
   QuickApp2Schema,
+  resolveDefaultModelId,
   type QuickApp2Form as QuickApp2FormType,
 } from '@/form/quickApp2Form';
 import { useTranslation } from '@/hooks/useTranslation';
 import { AnyToolset, DialAppTransportType } from '@/types/quick-apps';
+import type { QuickApp2Config } from '@/types/quick-apps';
 import { Translation } from '@/types/translation';
 import { DialAIEntityModel } from '@/utils/application';
 
@@ -87,6 +89,22 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({ onSave, onDirtyChange, r
     setValue('toolSupportingModelIds', toolSupportingModelIds);
     setValue('availableModelIds', availableModelIds, { shouldValidate: true });
   }, [toolSupportingModelIds, availableModelIds, setValue]);
+
+  const existingModelId = (app.applicationProperties as QuickApp2Config | undefined)?.orchestrator
+    ?.deployment?.deployment_id;
+
+  // The model list loads asynchronously, after the form's initial defaultValues are
+  // resolved, so re-resolve the default model once it becomes available.
+  useEffect(() => {
+    if (getValues('model')) return;
+    const resolved = resolveDefaultModelId(
+      existingModelId,
+      toolSupportingModelIds,
+      availableModelIds,
+      settings.defaultModelId,
+    );
+    if (resolved) setValue('model', resolved, { shouldValidate: true });
+  }, [existingModelId, toolSupportingModelIds, availableModelIds, settings.defaultModelId, getValues, setValue]);
 
   useEffect(() => {
     if (!settings.isCodeInterpreterEnabled) {

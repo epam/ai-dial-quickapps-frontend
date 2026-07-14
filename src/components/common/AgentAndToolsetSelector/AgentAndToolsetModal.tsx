@@ -10,7 +10,7 @@ import { CommonI18nKeys, MarketplaceI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
-import { isApplicationId, isHiddenDialFolderId } from '@/utils/api';
+import { isHiddenDialFolderId } from '@/utils/api';
 import { getEntityStatus } from '@/utils/get-entity-status';
 import {
   DialNeutralButton,
@@ -47,8 +47,9 @@ const AgentAndToolsetCard: React.FC<AgentAndToolsetCardProps> = ({
   const description =
     typeof item.description === 'string' ? (item.description as string) : undefined;
   const { isError } = getEntityStatus(item);
+  const isApplication = item.type === 'application';
   const entityTypeLabel = t(
-    isApplicationId(item.id) ? CommonI18nKeys.AgentEntityType : CommonI18nKeys.ToolsetEntityType,
+    isApplication ? CommonI18nKeys.AgentEntityType : CommonI18nKeys.ToolsetEntityType,
   );
 
   return (
@@ -69,7 +70,12 @@ const AgentAndToolsetCard: React.FC<AgentAndToolsetCardProps> = ({
       <div className="flex min-w-0 items-start gap-3">
         <ModelIcon name={name} iconUrl={iconUrl} size={44} radius={12} />
         <div className="flex min-w-0 flex-1 flex-col">
-          <span className="dial-caption-text mb-2 font-semibold uppercase tracking-[0.06em] text-accent-primary">
+          <span
+            className={classNames(
+              'dial-caption-text mb-2 font-semibold uppercase tracking-[0.06em]',
+              isApplication ? 'text-success' : 'text-accent-primary',
+            )}
+          >
             {entityTypeLabel}
           </span>
           <span className="dial-body-semi-text min-w-0 truncate text-primary">{name}</span>

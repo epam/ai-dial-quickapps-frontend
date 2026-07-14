@@ -5,7 +5,7 @@ import classNames from 'classnames';
 
 import type { ApplicationStatus, ToolsetAuthSettings } from '@/types/dial-entities';
 import { ToolsetAuthType } from '@/types/dial-entities';
-import { getEntityNameFromId, getVersionFromId, isApplicationId, isToolsetId } from '@/utils/api';
+import { getEntityNameFromId, getVersionFromId, isToolsetId } from '@/utils/api';
 import { doesAgentSupportMcp } from '@/utils/application';
 import { getEntityStatus } from '@/utils/get-entity-status';
 
@@ -26,9 +26,12 @@ export interface ChipEntity {
   [key: string]: unknown;
 }
 
-const EntityIcon: React.FC<{ id: string; size?: number }> = ({ id, size = 18 }) => {
-  if (isApplicationId(id)) return <IconApps size={size} stroke={1.5} />;
-  if (isToolsetId(id)) return <IconTool size={size} stroke={1.5} />;
+const EntityIcon: React.FC<{ id: string; type?: string; size?: number }> = ({
+  id,
+  type,
+  size = 18,
+}) => {
+  if (type === 'toolset' || (!type && isToolsetId(id))) return <IconTool size={size} stroke={1.5} />;
   return <IconApps size={size} stroke={1.5} />;
 };
 
@@ -73,7 +76,9 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
     ? getEntityNameFromId(id, { removeVersion: true })
     : (item.name ?? getEntityNameFromId(id, { removeVersion: true }));
 
-  const isCustomTool = !isApplicationId(id) && !isToolsetId(id) && !item;
+  // No matching entity in the maps and the id isn't a recognizable toolset id — treat as a
+  // free-form/custom tool. (Application ids are no longer distinguishable by prefix alone.)
+  const isCustomTool = !item && !isToolsetId(id);
 
   const version = isCustomTool ? '' : !item ? getVersionFromId(id) : item.version;
 
@@ -98,7 +103,7 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
   const canOpenLoginModal = hasAuthSettings && !!onLoginToolset && !!item;
 
   const isConfigurableApp =
-    !!item && isApplicationId(item.id) && doesAgentSupportMcp(item) && !!onConfigure;
+    !!item && item.type === 'application' && doesAgentSupportMcp(item) && !!onConfigure;
   const isConfigurable = isConfigurableApp || canOpenLoginModal;
 
   const handleRemove = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -130,7 +135,7 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
       <DialTooltip tooltip={tooltipContent}>
         <DialTag
           label={name}
-          icon={<EntityIcon id={id} />}
+          icon={<EntityIcon id={id} type={item?.type} />}
           closable={!readonly}
           onRemove={handleRemove}
           onClick={onItemClick || canOpenLoginModal ? handleClick : undefined}

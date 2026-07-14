@@ -4,16 +4,16 @@ import { IconCopy, IconCheck } from '@tabler/icons-react';
 import React, { FC, useCallback, useState } from 'react';
 
 import { encodeApiUrl } from '@/utils/api';
-import { isApplicationId } from '@/utils/api';
 
 interface ToolsetLinkButtonProps {
   entityId?: string;
+  entityType?: string;
   dialCoreExternalUrl?: string;
 }
 
-const getMcpUrl = (entityId: string, dialCoreExternalUrl: string): string => {
+const getMcpUrl = (entityId: string, entityType: string | undefined, dialCoreExternalUrl: string): string => {
   const encodedId = encodeApiUrl(entityId);
-  if (isApplicationId(entityId)) {
+  if (entityType === 'application') {
     return `${dialCoreExternalUrl}/v1/deployments/${encodedId}/mcp`;
   }
   return `${dialCoreExternalUrl}/v1/toolset/${encodedId}/mcp`;
@@ -21,17 +21,18 @@ const getMcpUrl = (entityId: string, dialCoreExternalUrl: string): string => {
 
 export const ToolsetLinkButton: FC<ToolsetLinkButtonProps> = ({
   entityId,
+  entityType,
   dialCoreExternalUrl,
 }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(async () => {
     if (!entityId || !dialCoreExternalUrl) return;
-    const url = getMcpUrl(entityId, dialCoreExternalUrl);
+    const url = getMcpUrl(entityId, entityType, dialCoreExternalUrl);
     await navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }, [entityId, dialCoreExternalUrl]);
+  }, [entityId, entityType, dialCoreExternalUrl]);
 
   if (!dialCoreExternalUrl || !entityId) return null;
 
