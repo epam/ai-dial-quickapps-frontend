@@ -21,7 +21,7 @@ import {
 
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
 import { TopicsLine } from '@/components/common/TopicsLine/TopicsLine';
-import { IconAlertCircleFilled, IconBulb } from '@tabler/icons-react';
+import { IconAlertCircleFilled, IconBulb, IconStarFilled } from '@tabler/icons-react';
 
 interface ModelGroup {
   name: string;
@@ -55,6 +55,7 @@ const VERSION_SELECT_CLASS =
 interface ModelCardProps {
   group: ModelGroup;
   isSelected: boolean;
+  isFavorite: boolean;
   currentModelId: string;
   versionPrefix: string;
   onSelect: (id: string) => void;
@@ -63,6 +64,7 @@ interface ModelCardProps {
 const ModelCard: FC<ModelCardProps> = ({
   group,
   isSelected,
+  isFavorite,
   currentModelId,
   versionPrefix,
   onSelect,
@@ -86,6 +88,14 @@ const ModelCard: FC<ModelCardProps> = ({
       )}
       onClick={() => onSelect(representativeId)}
     >
+      {isFavorite && (
+        <IconStarFilled
+          size={16}
+          className="absolute end-3 top-3 text-warning-icon"
+          aria-hidden="true"
+        />
+      )}
+
       {/* AppIdentity block */}
       <div className="flex min-w-0 items-start gap-3">
         <ModelIcon name={group.name} iconUrl={group.iconUrl} size={44} radius={12} />
@@ -148,7 +158,7 @@ interface ModelFieldProps {
 
 export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, tooltip, error }) => {
   const { t } = useTranslation(Translation.Marketplace);
-  const { models, status, error: dataError, refreshAll } = useDataContext();
+  const { models, favoriteIds, status, error: dataError, refreshAll } = useDataContext();
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<ModelFieldTab>(TAB_IDS.catalog);
@@ -180,11 +190,17 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
       }))
     : [];
 
+  const favoriteGroups = useMemo(
+    () => allGroups.filter((g) => g.models.some((m) => favoriteIds.has(m.id))),
+    [allGroups, favoriteIds],
+  );
+
   const filteredGroups = useMemo(() => {
-    if (!search || activeTab === TAB_IDS.favorites) return allGroups;
+    const base = activeTab === TAB_IDS.favorites ? favoriteGroups : allGroups;
+    if (!search) return base;
     const q = search.toLowerCase();
-    return allGroups.filter((g) => g.name.toLowerCase().includes(q));
-  }, [allGroups, search, activeTab]);
+    return base.filter((g) => g.name.toLowerCase().includes(q));
+  }, [allGroups, favoriteGroups, search, activeTab]);
 
   const handleSelect = useCallback(
     (modelId: string) => {
@@ -299,17 +315,14 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
               />
               <DialLinkButton label={t(MarketplaceI18nKeys.Retry)} onClick={refreshAll} />
             </div>
-          ) : activeTab === TAB_IDS.favorites ? (
-            <div className="flex items-center justify-center py-8">
-              <DialNoDataContent
-                title={t(MarketplaceI18nKeys.NoFavoritesYet)}
-                icon={<IconBulb size={48} stroke={0.5} />}
-              />
-            </div>
           ) : filteredGroups.length === 0 ? (
             <div className="flex items-center justify-center py-8">
               <DialNoDataContent
-                title={t(MarketplaceI18nKeys.NA)}
+                title={t(
+                  activeTab === TAB_IDS.favorites
+                    ? MarketplaceI18nKeys.NoFavoritesYet
+                    : MarketplaceI18nKeys.NA,
+                )}
                 icon={<IconBulb size={48} stroke={0.5} />}
               />
             </div>
@@ -320,6 +333,7 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
                   key={group.name}
                   group={group}
                   isSelected={group.models.some((m) => m.id === value)}
+                  isFavorite={group.models.some((m) => favoriteIds.has(m.id))}
                   currentModelId={value}
                   versionPrefix={t(MarketplaceI18nKeys.VersionPrefixMarketplace)}
                   onSelect={handleSelect}

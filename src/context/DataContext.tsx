@@ -10,7 +10,12 @@ import type {
   PromptsMap,
   ToolsetsMap,
 } from '@/types/dial-entities';
-import { fetchDialModels, fetchDialPrompts, fetchDialToolsets } from '@/utils/dialClient';
+import {
+  fetchDialModels,
+  fetchDialPrompts,
+  fetchDialToolsets,
+  fetchFavoriteIds,
+} from '@/utils/dialClient';
 
 import { useAppContext } from './AppContext';
 
@@ -22,6 +27,7 @@ interface DataState {
   prompts: DialPrompt[];
   promptsMap: PromptsMap;
   files: string[];
+  favoriteIds: Set<string>;
   status: 'idle' | 'loading' | 'ready' | 'error';
   error?: string;
 }
@@ -32,6 +38,7 @@ type DataAction =
   | { type: 'TOOLSETS_LOADED'; payload: DialToolset[] }
   | { type: 'PROMPTS_LOADED'; payload: DialPrompt[] }
   | { type: 'FILES_LOADED'; payload: string[] }
+  | { type: 'FAVORITES_LOADED'; payload: Set<string> }
   | { type: 'READY' }
   | { type: 'ERROR'; payload: string };
 
@@ -43,6 +50,7 @@ const initialState: DataState = {
   prompts: [],
   promptsMap: {},
   files: [],
+  favoriteIds: new Set(),
   status: 'idle',
 };
 
@@ -64,6 +72,8 @@ function reducer(state: DataState, action: DataAction): DataState {
     }
     case 'FILES_LOADED':
       return { ...state, files: action.payload };
+    case 'FAVORITES_LOADED':
+      return { ...state, favoriteIds: action.payload };
     case 'READY':
       return { ...state, status: 'ready' };
     case 'ERROR':
@@ -92,11 +102,17 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
 
   const loadAll = useCallback(() => {
     dispatch({ type: 'LOADING' });
-    Promise.all([fetchDialModels(), fetchDialToolsets(), fetchDialPrompts()])
-      .then(([models, toolsets, prompts]) => {
+    Promise.all([
+      fetchDialModels(),
+      fetchDialToolsets(),
+      fetchDialPrompts(),
+      fetchFavoriteIds().catch(() => new Set<string>()),
+    ])
+      .then(([models, toolsets, prompts, favoriteIds]) => {
         dispatch({ type: 'MODELS_LOADED', payload: models });
         dispatch({ type: 'TOOLSETS_LOADED', payload: toolsets });
         dispatch({ type: 'PROMPTS_LOADED', payload: prompts });
+        dispatch({ type: 'FAVORITES_LOADED', payload: favoriteIds });
         dispatch({ type: 'READY' });
       })
       .catch((err: unknown) => {

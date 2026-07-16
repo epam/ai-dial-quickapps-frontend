@@ -332,6 +332,28 @@ export async function fetchDialToolsets(): Promise<DialToolset[]> {
   return res.data.map(mapApiToDialToolset);
 }
 
+interface UserConfigDto {
+  deployments?: { installed?: string[] };
+  toolsets?: { installed?: string[] };
+}
+
+/** Per-user config file stored in the user's DIAL Core bucket. */
+const USER_CONFIG_PATH = '.client_data/.user-config.json';
+
+/** Favorite ids: "installed" on the backend is "favorite" in the UI. */
+export async function fetchFavoriteIds(): Promise<Set<string>> {
+  const bucket = await fetchDialBucket();
+  const res = await fetch(`/api/dial/v1/files/${encodeURIComponent(bucket)}/${USER_CONFIG_PATH}`);
+  if (res.status === 404) return new Set();
+  if (!res.ok) {
+    handleUnauthorizedResponse(res);
+    const body = await res.text().catch(() => '');
+    throw new Error(`DIAL API ${res.status} for /v1/files/.../${USER_CONFIG_PATH}: ${body}`);
+  }
+  const config = (await res.json()) as UserConfigDto;
+  return new Set([...(config.deployments?.installed ?? []), ...(config.toolsets?.installed ?? [])]);
+}
+
 export interface DialFileMetadataItem {
   name: string;
   bucket?: string;
