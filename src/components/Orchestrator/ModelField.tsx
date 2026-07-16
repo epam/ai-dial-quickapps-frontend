@@ -14,6 +14,8 @@ import {
   DialPopup,
   DialSearch,
   DialSelect,
+  DialSkeleton,
+  DialSkeletonVariant,
   DialTabs,
   PopupSize,
   SelectSize,
@@ -22,6 +24,7 @@ import {
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
 import { TopicsLine } from '@/components/common/TopicsLine/TopicsLine';
 import { IconAlertCircleFilled, IconBulb, IconStarFilled } from '@tabler/icons-react';
+import { SKELETON_COLOR } from '@/constants/quick-apps';
 
 interface ModelGroup {
   name: string;
@@ -180,6 +183,7 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
 
   const selectedModel = availableModels.find((m) => m.id === value);
   const displayName = selectedModel?.name ?? value ?? t(MarketplaceI18nKeys.SelectModel);
+  const isModelInfoLoading = (status === 'loading' || status === 'idle') && !selectedModel;
 
   const selectedGroup = allGroups.find((g) => g.models.some((m) => m.id === value));
   const hasVersions = (selectedGroup?.models.length ?? 0) > 1;
@@ -235,17 +239,35 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
           disabled && 'opacity-50',
         )}
       >
-        <ModelIcon name={displayName} iconUrl={selectedModel?.iconUrl} size={32} radius={8} />
+        {isModelInfoLoading ? (
+          <DialSkeleton
+            variant={DialSkeletonVariant.Circular}
+            width={32}
+            height={32}
+            color={SKELETON_COLOR}
+          />
+        ) : (
+          <ModelIcon name={displayName} iconUrl={selectedModel?.iconUrl} size={32} radius={8} />
+        )}
 
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <span
-            className={classNames(
-              'dial-small-semi-text truncate',
-              selectedModel ? 'text-primary' : 'text-secondary',
-            )}
-          >
-            {displayName}
-          </span>
+          {isModelInfoLoading ? (
+            <DialSkeleton
+              variant={DialSkeletonVariant.Text}
+              width="60%"
+              height={16}
+              color={SKELETON_COLOR}
+            />
+          ) : (
+            <span
+              className={classNames(
+                'dial-small-semi-text truncate',
+                selectedModel ? 'text-primary' : 'text-secondary',
+              )}
+            >
+              {displayName}
+            </span>
+          )}
 
           {(hasVersions || selectedModel?.version) && (
             <div className="dial-tiny-text flex items-center gap-1">
@@ -276,7 +298,7 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
           className="shrink-0"
           label={t(MarketplaceI18nKeys.Change)}
           onClick={handleOpen}
-          disabled={disabled}
+          disabled={disabled || isModelInfoLoading}
         />
       </div>
 
@@ -304,7 +326,11 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
         <div className="max-h-[70vh] overflow-y-auto bg-layer-2 px-6 py-4">
           {status === 'loading' || status === 'idle' ? (
             <div className="flex items-center justify-center py-16">
-              <DialLoader size={32} fullWidth={false} ariaLabel={t(MarketplaceI18nKeys.LoadingModels)} />
+              <DialLoader
+                size={32}
+                fullWidth={false}
+                ariaLabel={t(MarketplaceI18nKeys.LoadingModels)}
+              />
             </div>
           ) : status === 'error' ? (
             <div className="flex flex-col items-center justify-center gap-3 py-8">

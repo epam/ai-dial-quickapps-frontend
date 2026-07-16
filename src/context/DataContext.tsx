@@ -26,6 +26,7 @@ interface DataState {
   toolsetsMap: ToolsetsMap;
   prompts: DialPrompt[];
   promptsMap: PromptsMap;
+  promptsVersion: number;
   files: string[];
   favoriteIds: Set<string>;
   status: 'idle' | 'loading' | 'ready' | 'error';
@@ -49,6 +50,7 @@ const initialState: DataState = {
   toolsetsMap: {},
   prompts: [],
   promptsMap: {},
+  promptsVersion: 0,
   files: [],
   favoriteIds: new Set(),
   status: 'idle',
@@ -68,7 +70,12 @@ function reducer(state: DataState, action: DataAction): DataState {
     }
     case 'PROMPTS_LOADED': {
       const promptsMap = Object.fromEntries(action.payload.map((p) => [p.id, p]));
-      return { ...state, prompts: action.payload, promptsMap };
+      return {
+        ...state,
+        prompts: action.payload,
+        promptsMap,
+        promptsVersion: state.promptsVersion + 1,
+      };
     }
     case 'FILES_LOADED':
       return { ...state, files: action.payload };

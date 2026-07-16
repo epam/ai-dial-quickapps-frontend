@@ -90,9 +90,8 @@ const AgentSkillsModal: FC<AgentSkillsModalProps> = ({
     onConfirm(selectedIds);
   }, [selectedIds, onConfirm]);
 
-  const handleCreated = useCallback((newId: string) => {
+  const handlePromptSaved = useCallback((newId: string) => {
     setSelectedIds((prev) => (prev.includes(newId) ? prev : [...prev, newId]));
-    setView(AgentSkillsModalView.List);
   }, []);
 
   const isEmpty = prompts.length === 0 && view === AgentSkillsModalView.List;
@@ -131,9 +130,8 @@ const AgentSkillsModal: FC<AgentSkillsModalProps> = ({
           onBack={
             view === AgentSkillsModalView.Edit ? onClose : () => setView(AgentSkillsModalView.List)
           }
-          onCreated={handleCreated}
+          onCreated={handlePromptSaved}
           editPromptId={view === AgentSkillsModalView.Edit ? editPromptId : undefined}
-          onEdited={view === AgentSkillsModalView.Edit ? onClose : undefined}
         />
       ) : (
         <div className="flex flex-col">
