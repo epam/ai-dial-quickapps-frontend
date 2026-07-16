@@ -93,6 +93,9 @@ export interface AppSettings {
   theme?: string;
   allowedOrigin?: string;
   defaultModelId?: string;
+  dialAdminHost?: string;
+  dialChatHost?: string;
+  applicationName?: string;
 }
 
 export interface DialPrompt {
