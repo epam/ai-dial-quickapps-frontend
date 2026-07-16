@@ -124,6 +124,7 @@ export default function EditorClient() {
     window.addEventListener('message', handleMessage);
     return () => {
       cancelled = true;
+      isInitializedRef.current = false;
       window.removeEventListener('message', handleMessage);
     };
   }, []);

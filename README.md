@@ -123,6 +123,14 @@ At least one OAuth provider below must be fully configured (all of its non-`_NAM
 | --------------- | :------: | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `DIAL_CORE_URL` |   Yes    | Base URL of the DIAL core API, e.g. `https://core.example.com`. Used as the proxy target in standalone mode and as the default host in the dev harness. |
 
+### Chat visualizer connector
+
+| Variable                      | Required | Description                                                                                                    |
+| ------------------------------ | :------: | ---------------------------------------------------------------------------------------------------------------- |
+| `DIAL_ADMIN_URL`               |    No    | Origin of the admin host this app is embedded in. Used as the default target for `@epam/ai-dial-chat-visualizer-connector`. |
+| `DIAL_CHAT_URL`                |    No    | Origin of the `ai-dial-chat` host. Used instead of `DIAL_ADMIN_URL` when the app detects it's embedded directly inside chat (`document.location.ancestorOrigins[0]` matches this value). |
+| `QUICK_APPS_APPLICATION_NAME`  |    No    | Visualizer name, must match the `title` configured for this app in `ai-dial-chat`'s visualizer settings. Required (together with at least one of the hosts above) for the visualizer connector to activate. |
+
 ### Themes
 
 | Variable     | Required | Default | Description                                                                         |
