@@ -6,6 +6,7 @@ import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { useTranslation } from '@/hooks/useTranslation';
 import { AnyToolset, DialAppTransportType } from '@/types/quick-apps';
 import { Translation } from '@/types/translation';
+import { decodeFileUrl } from '@/utils/decode-file-url';
 
 import { FilesSelector } from '@/components/common/FilesSelector/FilesSelector';
 import { FormCollapsibleSection } from '@/components/common/FormCollapsibleSection';
@@ -86,7 +87,7 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
               readonly={isReadonly}
               tooltip={tooltip}
               onRemoveFile={(doc) => field.onChange(field.value.filter((f) => f !== doc))}
-              onAddFiles={(docs) => field.onChange(docs)}
+              onAddFiles={(docs) => field.onChange(docs.map(decodeFileUrl))}
             />
           )}
         />
