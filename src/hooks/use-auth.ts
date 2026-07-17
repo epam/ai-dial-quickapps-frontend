@@ -61,5 +61,23 @@ export const useAuth = (provider: string) => {
     return () => window.clearInterval(intervalId);
   }, [isWindowOpen, handleAuthWindowClose]);
 
+  // Extra fallback on top of the two above: the browser reliably fires
+  // `focus` on the opener when the user returns from the popup, even in
+  // cases where postMessage doesn't reach us and the `.closed` poll is
+  // missed (e.g. this app itself is iframe-embedded). Re-check on focus so
+  // a completed sign-in always triggers the reload without a manual refresh.
+  useEffect(() => {
+    if (!isWindowOpen) return;
+
+    const handleFocus = () => {
+      if (!authWindowRef.current || authWindowRef.current.closed) {
+        handleAuthWindowClose();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [isWindowOpen, handleAuthWindowClose]);
+
   return { session, sessionStatus, openLoginWindow, isWindowOpen };
 };
