@@ -2,10 +2,11 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import classNames from 'classnames';
 import sortBy from 'lodash-es/sortBy';
-import { IconLayoutGrid } from '@tabler/icons-react';
+import { IconLayoutGrid, IconStarFilled } from '@tabler/icons-react';
 
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
 import { TopicsLine } from '@/components/common/TopicsLine/TopicsLine';
+import { VirtualCardGrid } from '@/components/common/VirtualCardGrid/VirtualCardGrid';
 import { CommonI18nKeys, MarketplaceI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -18,6 +19,7 @@ import {
   DialPopup,
   DialPrimaryButton,
   DialSearch,
+  DialTabs,
   PopupSize,
 } from '@epam/ai-dial-ui-kit';
 
@@ -33,12 +35,14 @@ interface AgentAndToolsetModalProps {
 interface AgentAndToolsetCardProps {
   item: ChipEntity;
   isSelected: boolean;
+  isFavorite: boolean;
   onToggle: (id: string) => void;
 }
 
 const AgentAndToolsetCard: React.FC<AgentAndToolsetCardProps> = ({
   item,
   isSelected,
+  isFavorite,
   onToggle,
 }) => {
   const { t } = useTranslation(Translation.Common);
@@ -48,8 +52,13 @@ const AgentAndToolsetCard: React.FC<AgentAndToolsetCardProps> = ({
     typeof item.description === 'string' ? (item.description as string) : undefined;
   const { isError } = getEntityStatus(item);
   const isApplication = item.type === 'application';
+  const isModel = item.type === 'model';
   const entityTypeLabel = t(
-    isApplication ? CommonI18nKeys.AgentEntityType : CommonI18nKeys.ToolsetEntityType,
+    isModel
+      ? CommonI18nKeys.ModelEntityType
+      : isApplication
+        ? CommonI18nKeys.AgentEntityType
+        : CommonI18nKeys.ToolsetEntityType,
   );
 
   return (
@@ -67,13 +76,21 @@ const AgentAndToolsetCard: React.FC<AgentAndToolsetCardProps> = ({
             : 'border-[rgba(0,0,0,0.07)]',
       )}
     >
+      {isFavorite && (
+        <IconStarFilled
+          size={16}
+          className="absolute end-3 top-3 text-warning-icon"
+          aria-hidden="true"
+        />
+      )}
+
       <div className="flex min-w-0 items-start gap-3">
         <ModelIcon name={name} iconUrl={iconUrl} size={44} radius={12} />
         <div className="flex min-w-0 flex-1 flex-col">
           <span
             className={classNames(
               'dial-caption-text mb-2 font-semibold uppercase tracking-[0.06em]',
-              isApplication ? 'text-success' : 'text-accent-primary',
+              isModel ? 'text-warning' : isApplication ? 'text-success' : 'text-accent-primary',
             )}
           >
             {entityTypeLabel}
@@ -94,6 +111,9 @@ const AgentAndToolsetCard: React.FC<AgentAndToolsetCardProps> = ({
   );
 };
 
+const TAB_IDS = { favorites: 'favorites', catalog: 'catalog' } as const;
+type AgentAndToolsetModalTab = (typeof TAB_IDS)[keyof typeof TAB_IDS];
+
 export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
   initialSelectedIds,
   allItemsMap,
@@ -101,15 +121,24 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
   onConfirm,
 }) => {
   const { t } = useTranslation(Translation.Marketplace);
-  const { models, toolsets, status } = useDataContext();
+  const { models, toolsets, favoriteIds, status } = useDataContext();
   const isLoading = status === 'loading' || status === 'idle';
 
   const [selectedIds, setSelectedIds] = useState<string[]>(initialSelectedIds);
   const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState<AgentAndToolsetModalTab>(TAB_IDS.catalog);
+
+  const tabs = useMemo(
+    () => [
+      { id: TAB_IDS.favorites, label: t(MarketplaceI18nKeys.MyFavorites) },
+      { id: TAB_IDS.catalog, label: t(MarketplaceI18nKeys.CatalogTab) },
+    ],
+    [t],
+  );
 
   const allItems = useMemo<ChipEntity[]>(
     () => [
-      ...models.filter((m) => m.type === 'application'),
+      ...models.filter((m) => !isHiddenDialFolderId(m.id)),
       ...toolsets.filter((toolset) => !isHiddenDialFolderId(toolset.id)),
     ],
     [models, toolsets],
@@ -120,14 +149,24 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
     [allItems],
   );
 
+  const favoriteItems = useMemo(
+    () => sortedItems.filter((item) => favoriteIds.has(item.id)),
+    [sortedItems, favoriteIds],
+  );
+
   const filteredItems = useMemo(() => {
+    const base = activeTab === TAB_IDS.favorites ? favoriteItems : sortedItems;
     const query = search.trim().toLowerCase();
-    if (!query) return sortedItems;
-    return sortedItems.filter(
+    if (!query) return base;
+    return base.filter(
       (item) =>
         (item.name ?? '').toLowerCase().includes(query) || item.id.toLowerCase().includes(query),
     );
-  }, [sortedItems, search]);
+  }, [sortedItems, favoriteItems, search, activeTab]);
+
+  const handleTabChange = useCallback((tabId: string) => {
+    setActiveTab(tabId as AgentAndToolsetModalTab);
+  }, []);
 
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
 
@@ -154,19 +193,24 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
       footer={
         <div className="flex w-full justify-end gap-2 px-6 py-4">
           <DialNeutralButton label={t(CommonI18nKeys.Cancel)} onClick={onClose} />
-          <DialPrimaryButton label={t(MarketplaceI18nKeys.ApplyChanges)} onClick={handleConfirm} />
+          <DialPrimaryButton label={t(CommonI18nKeys.Confirm)} onClick={handleConfirm} />
         </div>
       }
     >
-      <div className="flex max-h-[60vh] flex-col gap-3 px-6 py-4">
-        <DialSearch
-          placeholder={t(MarketplaceI18nKeys.SearchPlaceholder)}
-          value={search}
-          onChange={setSearch}
-          autoFocus
-        />
+      <div className="flex h-[60vh] flex-col gap-3 px-6 py-4">
+        <div className="flex shrink-0 justify-between gap-3">
+          <div className="flex-1">
+            <DialSearch
+              placeholder={t(MarketplaceI18nKeys.SearchPlaceholder)}
+              value={search}
+              onChange={setSearch}
+              autoFocus
+            />
+          </div>
+          <DialTabs tabs={tabs} activeTab={activeTab} onClick={handleTabChange} />
+        </div>
 
-        <div>
+        <div className="shrink-0">
           {selectedIds.length ? (
             <>
               <p className="dial-tiny-text mb-2 text-secondary">
@@ -191,27 +235,36 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
           )}
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="min-h-0 flex-1">
           {isLoading ? (
             <div className="flex h-40 items-center justify-center">
               <div className="size-6 animate-spin rounded-full border-2 border-tertiary border-t-accent-primary" />
             </div>
           ) : filteredItems.length === 0 ? (
             <DialNoDataContent
-              title={t(CommonI18nKeys.NoAgentsAndToolsetsAdded)}
+              title={t(
+                activeTab === TAB_IDS.favorites
+                  ? MarketplaceI18nKeys.NoFavoritesYet
+                  : CommonI18nKeys.NoAgentsAndToolsetsAdded,
+              )}
               icon={<IconLayoutGrid size={60} stroke={0.5} />}
             />
           ) : (
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {filteredItems.map((item) => (
+            <VirtualCardGrid
+              items={filteredItems}
+              getKey={(item) => item.id}
+              columns={{ base: 2, sm: 3 }}
+              rowClassName="grid grid-cols-2 gap-2 sm:grid-cols-3"
+              className="h-full"
+              renderItem={(item) => (
                 <AgentAndToolsetCard
-                  key={item.id}
                   item={item}
                   isSelected={selectedSet.has(item.id)}
+                  isFavorite={favoriteIds.has(item.id)}
                   onToggle={toggle}
                 />
-              ))}
-            </div>
+              )}
+            />
           )}
         </div>
       </div>

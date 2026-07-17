@@ -23,6 +23,7 @@ import {
 
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
 import { TopicsLine } from '@/components/common/TopicsLine/TopicsLine';
+import { VirtualCardGrid } from '@/components/common/VirtualCardGrid/VirtualCardGrid';
 import { IconAlertCircleFilled, IconBulb, IconStarFilled } from '@tabler/icons-react';
 import { SKELETON_COLOR } from '@/constants/quick-apps';
 
@@ -310,63 +311,71 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
         size={PopupSize.Lg}
         onClose={handleClose}
       >
-        {/* Sticky header: search + tabs */}
-        <div className="flex justify-between gap-3 border-b border-tertiary px-6 pb-3 pt-4  bg-layer-2">
-          <div className="flex-1 bg-layer-0">
-            <DialSearch
-              value={search}
-              placeholder={t(MarketplaceI18nKeys.SearchPlaceholder)}
-              onChange={setSearch}
-            />
+        <div className="flex h-[70vh] flex-col">
+          {/* Sticky header: search + tabs */}
+          <div className="flex shrink-0 justify-between gap-3 border-b border-tertiary px-6 pb-3 pt-4 bg-layer-2">
+            <div className="flex-1 bg-layer-0">
+              <DialSearch
+                value={search}
+                placeholder={t(MarketplaceI18nKeys.SearchPlaceholder)}
+                onChange={setSearch}
+              />
+            </div>
+            <DialTabs tabs={tabs} activeTab={activeTab} onClick={handleTabChange} />
           </div>
-          <DialTabs tabs={tabs} activeTab={activeTab} onClick={handleTabChange} />
-        </div>
 
-        {/* Scrollable grid: 1 column on small screens, 3×3 on large */}
-        <div className="max-h-[70vh] overflow-y-auto bg-layer-2 px-6 py-4">
-          {status === 'loading' || status === 'idle' ? (
-            <div className="flex items-center justify-center py-16">
-              <DialLoader
-                size={32}
-                fullWidth={false}
-                ariaLabel={t(MarketplaceI18nKeys.LoadingModels)}
-              />
-            </div>
-          ) : status === 'error' ? (
-            <div className="flex flex-col items-center justify-center gap-3 py-8">
-              <DialNoDataContent
-                title={t(MarketplaceI18nKeys.FailedToLoadModels)}
-                description={dataError}
-                icon={<IconAlertCircleFilled size={48} stroke={0.5} className="text-error" />}
-              />
-              <DialLinkButton label={t(MarketplaceI18nKeys.Retry)} onClick={refreshAll} />
-            </div>
-          ) : filteredGroups.length === 0 ? (
-            <div className="flex items-center justify-center py-8">
-              <DialNoDataContent
-                title={t(
-                  activeTab === TAB_IDS.favorites
-                    ? MarketplaceI18nKeys.NoFavoritesYet
-                    : MarketplaceI18nKeys.NA,
-                )}
-                icon={<IconBulb size={48} stroke={0.5} />}
-              />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-              {filteredGroups.map((group) => (
-                <ModelCard
-                  key={group.name}
-                  group={group}
-                  isSelected={group.models.some((m) => m.id === value)}
-                  isFavorite={group.models.some((m) => favoriteIds.has(m.id))}
-                  currentModelId={value}
-                  versionPrefix={t(MarketplaceI18nKeys.VersionPrefixMarketplace)}
-                  onSelect={handleSelect}
+          {/* Scrollable grid: 1 column on small screens, 3×3 on large */}
+          <div className="flex min-h-0 flex-1 flex-col bg-layer-2 px-6 py-4">
+            {status === 'loading' || status === 'idle' ? (
+              <div className="flex items-center justify-center py-16">
+                <DialLoader
+                  size={32}
+                  fullWidth={false}
+                  ariaLabel={t(MarketplaceI18nKeys.LoadingModels)}
                 />
-              ))}
-            </div>
-          )}
+              </div>
+            ) : status === 'error' ? (
+              <div className="flex flex-col items-center justify-center gap-3 py-8">
+                <DialNoDataContent
+                  title={t(MarketplaceI18nKeys.FailedToLoadModels)}
+                  description={dataError}
+                  icon={<IconAlertCircleFilled size={48} stroke={0.5} className="text-error" />}
+                />
+                <DialLinkButton label={t(MarketplaceI18nKeys.Retry)} onClick={refreshAll} />
+              </div>
+            ) : filteredGroups.length === 0 ? (
+              <div className="flex items-center justify-center py-8">
+                <DialNoDataContent
+                  title={t(
+                    activeTab === TAB_IDS.favorites
+                      ? MarketplaceI18nKeys.NoFavoritesYet
+                      : MarketplaceI18nKeys.NA,
+                  )}
+                  icon={<IconBulb size={48} stroke={0.5} />}
+                />
+              </div>
+            ) : (
+              <div className="min-h-0 flex-1">
+                <VirtualCardGrid
+                  items={filteredGroups}
+                  getKey={(group) => group.name}
+                  columns={{ base: 1, lg: 3 }}
+                  rowClassName="grid grid-cols-1 gap-4 lg:grid-cols-3"
+                  className="h-full"
+                  renderItem={(group) => (
+                    <ModelCard
+                      group={group}
+                      isSelected={group.models.some((m) => m.id === value)}
+                      isFavorite={group.models.some((m) => favoriteIds.has(m.id))}
+                      currentModelId={value}
+                      versionPrefix={t(MarketplaceI18nKeys.VersionPrefixMarketplace)}
+                      onSelect={handleSelect}
+                    />
+                  )}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </DialPopup>
     </div>
