@@ -43,13 +43,6 @@ interface CoreApiEntity {
 interface ToolsetApiAuthSettings {
   authentication_type?: ToolsetAuthType;
   api_key_header?: string;
-  authorization_endpoint?: string;
-  token_endpoint?: string;
-  client_id?: string;
-  scopes_supported?: string[];
-  code_challenge?: string;
-  code_challenge_method?: string;
-  redirect_uri?: string;
   global_auth_status?: ToolsetAuthStatus;
   user_level_auth_status?: ToolsetAuthStatus;
 }
@@ -86,13 +79,6 @@ function mapAuthSettings(authSettings?: ToolsetApiAuthSettings): ToolsetAuthSett
     // sign-in takes precedence over an org-wide one.
     authStatus: authSettings.user_level_auth_status ?? authSettings.global_auth_status,
     apiKeyHeader: authSettings.api_key_header,
-    authorizationEndpoint: authSettings.authorization_endpoint,
-    tokenEndpoint: authSettings.token_endpoint,
-    clientId: authSettings.client_id,
-    scopesSupported: authSettings.scopes_supported,
-    codeChallenge: authSettings.code_challenge,
-    codeChallengeMethod: authSettings.code_challenge_method,
-    redirectUri: authSettings.redirect_uri,
   };
 }
 

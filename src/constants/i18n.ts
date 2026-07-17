@@ -153,6 +153,7 @@ export enum MarketplaceI18nKeys {
   SelectedLabel = 'Selected',
   NoResourcesSelected = 'No resources selected',
   LoginToolsetAction = 'Log in',
+  LoggingInToolsetAction = 'Logging in…',
   LogoutToolsetAction = 'Log out',
   ApiKeyLabel = 'API key',
   LoadingModels = 'Loading models…',

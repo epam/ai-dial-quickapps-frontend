@@ -4,13 +4,14 @@ export enum InboundMessageType {
   TriggerSave = 'TRIGGER_SAVE',
   TriggerAutoSave = 'TRIGGER_AUTO_SAVE',
   Reset = 'RESET',
-  ToolsetLoginComplete = 'quickapps/TOOLSET_LOGIN_COMPLETE',
+  ToolsetLoginResult = 'TOOLSET_LOGIN_RESULT',
 }
 
-export interface ToolsetLoginCompletePayload {
+export interface ToolsetLoginResultPayload {
   toolsetId: string;
-  credentialsLevel: ToolsetCredentialsLevel;
   success: boolean;
+  credentialsLevel?: ToolsetCredentialsLevel;
+  reason?: string;
 }
 
 export enum OutboundMessageType {
@@ -20,6 +21,7 @@ export enum OutboundMessageType {
   SaveError = 'SAVE_ERROR',
   AutoSaveComplete = 'AUTO_SAVE_COMPLETE',
   HeightChange = 'HEIGHT_CHANGE',
+  RequestToolsetLogin = 'REQUEST_TOOLSET_LOGIN',
 }
 
 export type InboundMessage =
@@ -29,4 +31,4 @@ export type InboundMessage =
       payload?: { ignoreDirty?: boolean };
     }
   | { type: InboundMessageType.Reset }
-  | { type: InboundMessageType.ToolsetLoginComplete; payload: ToolsetLoginCompletePayload };
+  | ({ type: InboundMessageType.ToolsetLoginResult } & ToolsetLoginResultPayload);

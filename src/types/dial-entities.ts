@@ -24,30 +24,11 @@ export interface ToolsetAuthSettings {
   authenticationType: ToolsetAuthType;
   authStatus?: ToolsetAuthStatus;
   apiKeyHeader?: string;
-  authorizationEndpoint?: string;
-  tokenEndpoint?: string;
-  clientId?: string;
-  scopesSupported?: string[];
-  codeChallenge?: string;
-  codeChallengeMethod?: string;
-  redirectUri?: string;
 }
 
 export enum ToolsetCredentialsLevel {
   Global = 'GLOBAL',
   User = 'USER',
-}
-
-/**
- * Payload carried in the OAuth `state` query parameter for a toolset login
- * started from this app's popup. Chat's `/toolset-editor/callback` decodes
- * it to complete the login and to know which origin to postMessage back to.
- */
-export interface ToolsetPopupState {
-  toolsetId: string;
-  credentialsLevel: ToolsetCredentialsLevel;
-  originatingOrigin: string;
-  nonce: string;
 }
 
 export interface DialModel {

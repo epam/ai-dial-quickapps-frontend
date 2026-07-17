@@ -2,16 +2,14 @@
 import { FC, useCallback, useEffect, useState } from 'react';
 
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
-import { QUICKAPPS_TOOLSET_AUTH_POPUP_NAME } from '@/constants/editor';
 import { CommonI18nKeys, MarketplaceI18nKeys } from '@/constants/i18n';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/useTranslation';
-import { ToolsetAuthStatus, ToolsetAuthType, ToolsetCredentialsLevel } from '@/types/dial-entities';
-import { InboundMessageType, type ToolsetLoginCompletePayload } from '@/types/editor-messages';
+import { ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
+import { InboundMessageType, OutboundMessageType } from '@/types/editor-messages';
 import { Translation } from '@/types/translation';
 import { encodeApiUrl } from '@/utils/api';
-import { encodeToolsetPopupState } from '@/utils/encode-toolset-popup-state';
 import {
   DialInput,
   DialNeutralButton,
@@ -45,6 +43,7 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
 
   const [apiKey, setApiKey] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
 
   const handleSignOut = useCallback(async () => {
@@ -84,31 +83,14 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
   }, [apiKey, onClose, refreshToolsets, t, toolset.id]);
 
   const handleOAuthLogin = useCallback(() => {
-    if (
-      !authSettings?.authorizationEndpoint ||
-      !authSettings.clientId ||
-      !authSettings.redirectUri
-    ) {
-      return;
-    }
-    const url = new URL(authSettings.authorizationEndpoint);
-    url.searchParams.set('response_type', 'code');
-    url.searchParams.set('client_id', authSettings.clientId);
-    url.searchParams.set('redirect_uri', authSettings.redirectUri);
-    url.searchParams.set(
-      'state',
-      encodeToolsetPopupState({
-        toolsetId: toolset.id,
-        credentialsLevel: ToolsetCredentialsLevel.User,
-        originatingOrigin: window.location.origin,
-        nonce: crypto.randomUUID(),
-      }),
+    setError(undefined);
+    setIsLoggingIn(true);
+    const allowedOrigin = settings.allowedOrigin || '*';
+    window.parent.postMessage(
+      { type: OutboundMessageType.RequestToolsetLogin, toolsetId: toolset.id },
+      allowedOrigin,
     );
-    if (authSettings.scopesSupported?.length) {
-      url.searchParams.set('scope', authSettings.scopesSupported.join(' '));
-    }
-    window.open(url.href, QUICKAPPS_TOOLSET_AUTH_POPUP_NAME, 'width=500,height=700');
-  }, [authSettings, toolset.id]);
+  }, [settings.allowedOrigin, toolset.id]);
 
   useEffect(() => {
     if (!isOAuth) return;
@@ -118,11 +100,12 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
     const handleMessage = (event: MessageEvent) => {
       if (allowedOrigin && allowedOrigin !== '*' && event.origin !== allowedOrigin) return;
 
-      const msg = event.data as { type?: string; payload?: ToolsetLoginCompletePayload };
-      if (msg?.type !== InboundMessageType.ToolsetLoginComplete) return;
-      if (msg.payload?.toolsetId !== toolset.id) return;
+      const msg = event.data as { type?: string; toolsetId?: string; success?: boolean };
+      if (msg?.type !== InboundMessageType.ToolsetLoginResult) return;
+      if (msg.toolsetId !== toolset.id) return;
 
-      if (msg.payload.success) {
+      setIsLoggingIn(false);
+      if (msg.success) {
         void refreshToolsets().then(onClose);
       } else {
         setError(t(CommonI18nKeys.ToolsetSignInFailed));
@@ -162,8 +145,13 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
                 />
               ) : (
                 <DialPrimaryButton
-                  label={t(MarketplaceI18nKeys.LoginToolsetAction)}
+                  label={t(
+                    isLoggingIn
+                      ? MarketplaceI18nKeys.LoggingInToolsetAction
+                      : MarketplaceI18nKeys.LoginToolsetAction,
+                  )}
                   onClick={handleOAuthLogin}
+                  disabled={isLoggingIn}
                 />
               )}
             </div>
