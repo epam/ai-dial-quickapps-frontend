@@ -1,7 +1,8 @@
 import { IconAlertCircleFilled, IconCircleCheckFilled, IconHelpCircle } from '@tabler/icons-react';
 import { FC, memo, useCallback, useEffect, useState } from 'react';
 
-import { MarketplaceI18nKeys } from '@/constants/i18n';
+import HoverableTooltip from '@/components/common/HoverableTooltip/HoverableTooltip';
+import { CommonI18nKeys, MarketplaceI18nKeys } from '@/constants/i18n';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { useSkillValidation } from '@/hooks/useSkillValidation';
@@ -22,17 +23,12 @@ export interface CreatePromptFormProps {
   onBack: () => void;
   onCreated: (newPromptId: string) => void;
   editPromptId?: string;
-  onEdited?: () => void;
 }
 
-const CreatePromptForm: FC<CreatePromptFormProps> = ({
-  onBack,
-  onCreated,
-  editPromptId,
-  onEdited,
-}) => {
+const CreatePromptForm: FC<CreatePromptFormProps> = ({ onBack, onCreated, editPromptId }) => {
   const { t } = useTranslation(Translation.Marketplace);
-  const { refreshPrompts } = useDataContext();
+  const { t: tCommon } = useTranslation(Translation.Common);
+  const { refreshPrompts, promptsVersion } = useDataContext();
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -40,8 +36,7 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validatedPromptId, setValidatedPromptId] = useState<string | null>(editPromptId ?? null);
-  const [revalidateToken, setRevalidateToken] = useState(0);
-  const skillValidation = useSkillValidation(validatedPromptId ?? '', revalidateToken);
+  const skillValidation = useSkillValidation(validatedPromptId ?? '', promptsVersion);
   const { app } = useAppContext();
   const canValidateSkill = !!app?.id && !!validatedPromptId;
 
@@ -109,8 +104,7 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
         if (!res.ok) throw new Error(`Save failed: ${res.status}`);
         await refreshPrompts();
         setValidatedPromptId(editPromptId);
-        setRevalidateToken((prev) => prev + 1);
-        onEdited?.();
+        onBack();
       } else {
         const bucketRes = await fetch('/api/dial/v1/bucket');
         if (!bucketRes.ok) throw new Error('Failed to fetch bucket');
@@ -132,21 +126,21 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
         if (!res.ok) throw new Error(`Save failed: ${res.status}`);
         await refreshPrompts();
         setValidatedPromptId(newId);
-        setRevalidateToken((prev) => prev + 1);
         onCreated(newId);
+        onBack();
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save prompt');
     } finally {
       setIsSaving(false);
     }
-  }, [name, description, content, editPromptId, refreshPrompts, onCreated, onEdited]);
+  }, [name, description, content, editPromptId, refreshPrompts, onCreated, onBack]);
 
   const isSaveDisabled = !name.trim() || !content.trim() || isSaving;
 
   return (
     <div className="flex flex-col gap-4 overflow-y-auto px-6 py-4">
-      <DialFormItem label={t(MarketplaceI18nKeys.PromptName)}>
+      <DialFormItem label={t(MarketplaceI18nKeys.PromptName)} required>
         <DialInput
           value={name}
           onChange={(val) => setName(val ?? '')}
@@ -211,7 +205,7 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
                   </span>
                 </DialTooltip>
               )}
-              <DialTooltip
+              <HoverableTooltip
                 tooltip={
                   <span>
                     <a
@@ -237,7 +231,7 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
                 }
               >
                 <IconHelpCircle size={16} className="cursor-help text-secondary" />
-              </DialTooltip>
+              </HoverableTooltip>
             </span>
           </div>
         }
@@ -256,7 +250,7 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({
 
       <div className="flex justify-end gap-2">
         <DialNeutralButton
-          label={t(MarketplaceI18nKeys.BackToList)}
+          label={tCommon(editPromptId ? CommonI18nKeys.Cancel : CommonI18nKeys.Back)}
           onClick={onBack}
           disabled={isSaving}
         />

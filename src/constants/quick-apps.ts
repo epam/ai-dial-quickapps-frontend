@@ -23,3 +23,5 @@ export enum AgentsAndToolsetsModalQueryParams {
   SliderActiveSlide = 'agentsAndToolsetsSliderActiveSlide',
   SliderPrevActiveSlide = 'agentsAndToolsetsSliderPrevActiveSlide',
 }
+
+export const SKELETON_COLOR = '#D1DBEA';

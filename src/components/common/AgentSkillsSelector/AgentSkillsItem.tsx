@@ -33,7 +33,7 @@ interface PromptFileContent {
 
 const AgentSkillsItem: FC<AgentSkillsItemProps> = ({ promptId, onDelete, onEdit, readonly }) => {
   const { t } = useTranslation(Translation.Marketplace);
-  const { promptsMap } = useDataContext();
+  const { promptsMap, promptsVersion } = useDataContext();
   const prompt = promptsMap[promptId];
 
   const [isExpanded, setIsExpanded] = useState(false);
@@ -41,7 +41,7 @@ const AgentSkillsItem: FC<AgentSkillsItemProps> = ({ promptId, onDelete, onEdit,
   const [isContentLoading, setIsContentLoading] = useState(false);
   const [hasContentError, setHasContentError] = useState(false);
 
-  const skillValidation = useSkillValidation(promptId);
+  const skillValidation = useSkillValidation(promptId, promptsVersion);
   const isSkillInvalid = skillValidation.status === SkillValidationStatus.Invalid;
   const isSkillValidating = skillValidation.status === SkillValidationStatus.Validating;
   const isSkillValid = skillValidation.status === SkillValidationStatus.Valid;
