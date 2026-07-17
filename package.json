@@ -19,6 +19,7 @@
     "@hookform/resolvers": "^5.4.0",
     "@monaco-editor/react": "^4.7.0",
     "@tabler/icons-react": "^3.44.0",
+    "@tanstack/react-virtual": "^3.14.6",
     "@uiw/react-md-editor": "^4.1.1",
     "classnames": "^2.5.1",
     "downshift": "^8.5.0",
