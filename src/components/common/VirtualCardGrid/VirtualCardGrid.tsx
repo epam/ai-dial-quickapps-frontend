@@ -75,7 +75,9 @@ const VirtualCardGridComponent = <T,>({
   });
 
   return (
-    <div ref={scrollRef} className={classNames('overflow-y-auto', className)}>
+    // p-1 keeps room around the edge rows so a hovered card's elevated shadow
+    // isn't clipped by the scroll container's own overflow boundary.
+    <div ref={scrollRef} className={classNames('overflow-y-auto p-1', className)}>
       <div className="relative w-full" style={{ height: rowVirtualizer.getTotalSize() }}>
         {rowVirtualizer.getVirtualItems().map((virtualRow) => {
           const rowItems = items.slice(
