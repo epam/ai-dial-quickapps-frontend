@@ -155,6 +155,7 @@ export enum MarketplaceI18nKeys {
   LoginToolsetAction = 'Log in',
   LoggingInToolsetAction = 'Logging in…',
   LogoutToolsetAction = 'Log out',
+  LoggingOutToolsetAction = 'Logging out…',
   ApiKeyLabel = 'API key',
   LoadingModels = 'Loading models…',
   FailedToLoadModels = 'Failed to load models',

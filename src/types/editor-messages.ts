@@ -5,13 +5,24 @@ export enum InboundMessageType {
   TriggerAutoSave = 'TRIGGER_AUTO_SAVE',
   Reset = 'RESET',
   ToolsetLoginResult = 'TOOLSET_LOGIN_RESULT',
+  ToolsetLogoutResult = 'TOOLSET_LOGOUT_RESULT',
 }
 
-export interface ToolsetLoginResultPayload {
+export interface ToolsetCredentials {
+  authenticationType: 'NONE' | 'API_KEY' | 'OAUTH';
+  userStatus?: 'SIGNED_IN' | 'SIGNED_OUT' | 'FAILED';
+  globalStatus?: 'SIGNED_IN' | 'SIGNED_OUT' | 'FAILED';
+  isPublic?: boolean;
+  isManageableByAdmin?: boolean;
+  apiKeyHeader?: string;
+}
+
+export interface ToolsetAuthResultPayload {
   toolsetId: string;
   success: boolean;
   credentialsLevel?: ToolsetCredentialsLevel;
   reason?: string;
+  credentials?: ToolsetCredentials;
 }
 
 export enum OutboundMessageType {
@@ -22,6 +33,7 @@ export enum OutboundMessageType {
   AutoSaveComplete = 'AUTO_SAVE_COMPLETE',
   HeightChange = 'HEIGHT_CHANGE',
   RequestToolsetLogin = 'REQUEST_TOOLSET_LOGIN',
+  RequestToolsetLogout = 'REQUEST_TOOLSET_LOGOUT',
 }
 
 export type InboundMessage =
@@ -31,4 +43,5 @@ export type InboundMessage =
       payload?: { ignoreDirty?: boolean };
     }
   | { type: InboundMessageType.Reset }
-  | ({ type: InboundMessageType.ToolsetLoginResult } & ToolsetLoginResultPayload);
+  | ({ type: InboundMessageType.ToolsetLoginResult } & ToolsetAuthResultPayload)
+  | ({ type: InboundMessageType.ToolsetLogoutResult } & ToolsetAuthResultPayload);

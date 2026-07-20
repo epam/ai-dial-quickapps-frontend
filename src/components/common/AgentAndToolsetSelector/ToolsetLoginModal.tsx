@@ -7,7 +7,11 @@ import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
-import { InboundMessageType, OutboundMessageType } from '@/types/editor-messages';
+import {
+  InboundMessageType,
+  OutboundMessageType,
+  ToolsetAuthResultPayload,
+} from '@/types/editor-messages';
 import { Translation } from '@/types/translation';
 import { encodeApiUrl } from '@/utils/api';
 import {
@@ -44,9 +48,10 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
   const [apiKey, setApiKey] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
 
-  const handleSignOut = useCallback(async () => {
+  const handleApiKeySignOut = useCallback(async () => {
     setIsSubmitting(true);
     setError(undefined);
     try {
@@ -92,6 +97,16 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
     );
   }, [settings.allowedOrigin, toolset.id]);
 
+  const handleOAuthLogout = useCallback(() => {
+    setError(undefined);
+    setIsLoggingOut(true);
+    const allowedOrigin = settings.allowedOrigin || '*';
+    window.parent.postMessage(
+      { type: OutboundMessageType.RequestToolsetLogout, toolsetId: toolset.id },
+      allowedOrigin,
+    );
+  }, [settings.allowedOrigin, toolset.id]);
+
   useEffect(() => {
     if (!isOAuth) return;
 
@@ -100,11 +115,15 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
     const handleMessage = (event: MessageEvent) => {
       if (allowedOrigin && allowedOrigin !== '*' && event.origin !== allowedOrigin) return;
 
-      const msg = event.data as { type?: string; toolsetId?: string; success?: boolean };
-      if (msg?.type !== InboundMessageType.ToolsetLoginResult) return;
+      const msg = event.data as { type?: string } & Partial<ToolsetAuthResultPayload>;
+      const isLoginResult = msg?.type === InboundMessageType.ToolsetLoginResult;
+      const isLogoutResult = msg?.type === InboundMessageType.ToolsetLogoutResult;
+      if (!isLoginResult && !isLogoutResult) return;
       if (msg.toolsetId !== toolset.id) return;
 
-      setIsLoggingIn(false);
+      if (isLoginResult) setIsLoggingIn(false);
+      if (isLogoutResult) setIsLoggingOut(false);
+
       if (msg.success) {
         void refreshToolsets().then(onClose);
       } else {
@@ -139,9 +158,13 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
               <DialNeutralButton label={t(CommonI18nKeys.Cancel)} onClick={onClose} />
               {isSignedIn ? (
                 <DialPrimaryButton
-                  label={t(MarketplaceI18nKeys.LogoutToolsetAction)}
-                  onClick={handleSignOut}
-                  disabled={isSubmitting}
+                  label={t(
+                    isLoggingOut
+                      ? MarketplaceI18nKeys.LoggingOutToolsetAction
+                      : MarketplaceI18nKeys.LogoutToolsetAction,
+                  )}
+                  onClick={handleOAuthLogout}
+                  disabled={isLoggingOut}
                 />
               ) : (
                 <DialPrimaryButton
@@ -172,7 +195,7 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
               {isSignedIn ? (
                 <DialPrimaryButton
                   label={t(MarketplaceI18nKeys.LogoutToolsetAction)}
-                  onClick={handleSignOut}
+                  onClick={handleApiKeySignOut}
                   disabled={isSubmitting}
                 />
               ) : (
