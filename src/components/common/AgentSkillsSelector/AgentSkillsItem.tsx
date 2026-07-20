@@ -7,7 +7,7 @@ import {
   IconTrashX,
 } from '@tabler/icons-react';
 import classNames from 'classnames';
-import { FC, memo, useCallback, useState } from 'react';
+import { FC, memo, useCallback, useEffect, useRef, useState } from 'react';
 
 import { MarketplaceI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
@@ -61,30 +61,40 @@ const AgentSkillsItem: FC<AgentSkillsItemProps> = ({ promptId, onDelete, onEdit,
   const isOwn = !promptId.startsWith('prompts/public/');
   const canEdit = isOwn && !readonly && !!onEdit;
 
-  const handleToggleExpand = useCallback(async () => {
-    const nextExpanded = !isExpanded;
-    setIsExpanded(nextExpanded);
-    if (nextExpanded && promptContent == null && !isContentLoading) {
-      setIsContentLoading(true);
-      setHasContentError(false);
+  const fetchedVersionRef = useRef<number | null>(null);
+
+  const fetchContent = useCallback(async () => {
+    setIsContentLoading(true);
+    setHasContentError(false);
+    try {
+      const res = await fetch(promptPathUrl(promptId), { cache: 'no-store' });
+      if (!res.ok) throw new Error(`${res.status}`);
+      const text = await res.text();
+      fetchedVersionRef.current = promptsVersion;
       try {
-        const res = await fetch(promptPathUrl(promptId));
-        if (!res.ok) throw new Error(`${res.status}`);
-        const text = await res.text();
-        try {
-          const data = JSON.parse(text) as PromptFileContent;
-          setPromptContent(data);
-        } catch {
-          // Raw text response (e.g. markdown skill)
-          setPromptContent({ content: text });
-        }
+        const data = JSON.parse(text) as PromptFileContent;
+        setPromptContent(data);
       } catch {
-        setHasContentError(true);
-      } finally {
-        setIsContentLoading(false);
+        // Raw text response (e.g. markdown skill)
+        setPromptContent({ content: text });
       }
+    } catch {
+      setHasContentError(true);
+    } finally {
+      setIsContentLoading(false);
     }
-  }, [isExpanded, promptContent, isContentLoading, promptId]);
+  }, [promptId, promptsVersion]);
+
+  const handleToggleExpand = useCallback(() => {
+    setIsExpanded((prev) => !prev);
+  }, []);
+
+  useEffect(() => {
+    const isStale = fetchedVersionRef.current !== promptsVersion;
+    if (isExpanded && !isContentLoading && (promptContent == null || isStale)) {
+      void fetchContent();
+    }
+  }, [isExpanded, isContentLoading, promptContent, promptsVersion, fetchContent]);
 
   return (
     <div className="flex flex-col divide-y divide-tertiary bg-layer-3 py-2">

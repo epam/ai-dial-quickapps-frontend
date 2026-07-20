@@ -45,7 +45,7 @@ const CreatePromptForm: FC<CreatePromptFormProps> = ({ onBack, onCreated, editPr
     let cancelled = false;
     const load = () => {
       setIsSaving(true);
-      return fetch(promptPathUrl(editPromptId));
+      return fetch(promptPathUrl(editPromptId), { cache: 'no-store' });
     };
 
     load()
