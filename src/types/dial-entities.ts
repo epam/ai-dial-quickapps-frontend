@@ -24,13 +24,11 @@ export interface ToolsetAuthSettings {
   authenticationType: ToolsetAuthType;
   authStatus?: ToolsetAuthStatus;
   apiKeyHeader?: string;
-  authorizationEndpoint?: string;
-  tokenEndpoint?: string;
-  clientId?: string;
-  scopesSupported?: string[];
-  codeChallenge?: string;
-  codeChallengeMethod?: string;
-  redirectUri?: string;
+}
+
+export enum ToolsetCredentialsLevel {
+  Global = 'GLOBAL',
+  User = 'USER',
 }
 
 export interface DialModel {
