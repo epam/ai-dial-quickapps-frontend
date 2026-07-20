@@ -96,13 +96,15 @@ const AgentAndToolsetCard: React.FC<AgentAndToolsetCardProps> = ({
             {entityTypeLabel}
           </span>
           <span className="dial-body-semi-text min-w-0 truncate text-primary">{name}</span>
-          {item.version && (
-            <span className="dial-tiny-text truncate text-secondary">{item.version}</span>
-          )}
+          <div className="min-h-[20px]">
+            {item.version && (
+              <span className="dial-tiny-text truncate text-secondary">{item.version}</span>
+            )}
+          </div>
         </div>
       </div>
 
-      {description && <p className="dial-small-text line-clamp-2 text-secondary">{description}</p>}
+      <p className="dial-small-text line-clamp-2 min-h-[2.8em] text-secondary">{description}</p>
 
       <div className="min-h-[22px]">
         <TopicsLine topics={(item.topics as string[] | undefined) ?? []} />
@@ -197,7 +199,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
         </div>
       }
     >
-      <div className="flex h-[60vh] flex-col gap-3 px-6 py-4">
+      <div className="flex h-[calc(100vh-12rem)] flex-col gap-3 px-6 py-4">
         <div className="flex shrink-0 justify-between gap-3">
           <div className="flex-1">
             <DialSearch

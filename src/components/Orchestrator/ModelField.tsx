@@ -26,8 +26,10 @@ import { TopicsLine } from '@/components/common/TopicsLine/TopicsLine';
 import { VirtualCardGrid } from '@/components/common/VirtualCardGrid/VirtualCardGrid';
 import { IconAlertCircleFilled, IconBulb, IconStarFilled } from '@tabler/icons-react';
 import { SKELETON_COLOR } from '@/constants/quick-apps';
+import { getEntityNameFromId, isHiddenDialFolderId } from '@/utils/api';
 
 interface ModelGroup {
+  key: string;
   name: string;
   type: string;
   models: DialModel[];
@@ -36,15 +38,21 @@ interface ModelGroup {
   iconUrl?: string;
 }
 
-function groupModelsByName(models: DialModel[]): ModelGroup[] {
+// Group by the version-stripped entity id, not the display name: two unrelated
+// entities can share a display name, and grouping by name merged them into one
+// card/favorite — e.g. a non-favorited app could ride along with a favorited
+// model of the same name and get shown (and starred) in the Favorites tab.
+function groupModelsByEntity(models: DialModel[]): ModelGroup[] {
   const map = new Map<string, DialModel[]>();
   for (const m of models) {
-    const bucket = map.get(m.name) ?? [];
+    const key = getEntityNameFromId(m.id, { removeVersion: true });
+    const bucket = map.get(key) ?? [];
     bucket.push(m);
-    map.set(m.name, bucket);
+    map.set(key, bucket);
   }
-  return Array.from(map.entries()).map(([name, models]) => ({
-    name,
+  return Array.from(map.entries()).map(([key, models]) => ({
+    key,
+    name: models[0].name,
     type: models[0].type,
     models,
     description: (models[0] as { description?: string }).description,
@@ -176,11 +184,14 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
   );
 
   const availableModels = useMemo(
-    () => models.filter((m) => m.type === 'model' || m.type === 'application'),
+    () =>
+      models.filter(
+        (m) => (m.type === 'model' || m.type === 'application') && !isHiddenDialFolderId(m.id),
+      ),
     [models],
   );
 
-  const allGroups = useMemo(() => groupModelsByName(availableModels), [availableModels]);
+  const allGroups = useMemo(() => groupModelsByEntity(availableModels), [availableModels]);
 
   const selectedModel = availableModels.find((m) => m.id === value);
   const displayName = selectedModel?.name ?? value ?? t(MarketplaceI18nKeys.SelectModel);
@@ -358,7 +369,7 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
               <div className="min-h-0 flex-1">
                 <VirtualCardGrid
                   items={filteredGroups}
-                  getKey={(group) => group.name}
+                  getKey={(group) => group.key}
                   columns={{ base: 1, lg: 3 }}
                   rowClassName="grid grid-cols-1 gap-4 lg:grid-cols-3"
                   className="h-full"
