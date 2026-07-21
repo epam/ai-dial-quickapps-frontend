@@ -277,6 +277,9 @@ export async function saveDialApp(
 }> {
   const rawForSave = (app._rawForSave as Record<string, unknown>) ?? {};
   const body: Record<string, unknown> = {
+    // Preserve every field DIAL Core returned (e.g. `intro`) that this editor
+    // doesn't manage itself, so saving here never silently drops it.
+    ...rawForSave,
     display_name: rawForSave.display_name ?? app.name,
     display_version: rawForSave.display_version,
     icon_url: rawForSave.icon_url,
