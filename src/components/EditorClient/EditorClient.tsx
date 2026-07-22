@@ -31,10 +31,11 @@ interface EditorInnerProps {
     isAutoSave?: boolean,
   ) => Promise<void>;
   onDirtyChange: (isDirty: boolean) => void;
+  onModelReady?: () => void;
   resetKey: number;
 }
 
-const EditorInner = ({ appState, onSave, onDirtyChange, resetKey }: EditorInnerProps) => {
+const EditorInner = ({ appState, onSave, onDirtyChange, onModelReady, resetKey }: EditorInnerProps) => {
   const handleSave = useCallback(
     async (
       data: QuickApp2FormType,
@@ -49,13 +50,27 @@ const EditorInner = ({ appState, onSave, onDirtyChange, resetKey }: EditorInnerP
   return (
     <div className="bg-layer-2">
       <AppContextProvider value={appState}>
-        <QuickApp2Form key={resetKey} onSave={handleSave} onDirtyChange={onDirtyChange} />
+        <QuickApp2Form
+          key={resetKey}
+          onSave={handleSave}
+          onDirtyChange={onDirtyChange}
+          onModelReady={onModelReady}
+        />
       </AppContextProvider>
     </div>
   );
 };
 
-export default function EditorClient() {
+interface EditorClientProps {
+  /**
+   * Called once a model has been resolved in the form (the saved model's
+   * details loaded, or the default assigned) — the point at which a
+   * TriggerSave would produce a correct save.
+   */
+  onReadyToSave?: () => void;
+}
+
+export default function EditorClient({ onReadyToSave }: EditorClientProps) {
   const [appState, setAppState] = useState<AppState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [resetKey, setResetKey] = useState(0);
@@ -236,6 +251,7 @@ export default function EditorClient() {
               appState={appState}
               onSave={handleSave}
               onDirtyChange={handleDirtyChange}
+              onModelReady={onReadyToSave}
               resetKey={resetKey}
             />
           </Suspense>

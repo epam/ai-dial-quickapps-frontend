@@ -1,7 +1,7 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FC, useCallback, useEffect, useMemo, useState } from 'react';
-import { Resolver, useForm } from 'react-hook-form';
+import { Resolver, useForm, useWatch } from 'react-hook-form';
 
 import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
 import { MarketplaceI18nKeys } from '@/constants/i18n';
@@ -43,13 +43,20 @@ interface QuickApp2FormProps {
     isAutoSave?: boolean,
   ) => void;
   onDirtyChange?: (isDirty: boolean) => void;
+  /** Called once a model is resolved for the form — either the app's saved model or the default. */
+  onModelReady?: () => void;
   readonly?: boolean;
 }
 
-export const QuickApp2Form: FC<QuickApp2FormProps> = ({ onSave, onDirtyChange, readonly }) => {
+export const QuickApp2Form: FC<QuickApp2FormProps> = ({
+  onSave,
+  onDirtyChange,
+  onModelReady,
+  readonly,
+}) => {
   const { t } = useTranslation(Translation.Marketplace);
   const { app, settings } = useAppContext();
-  const { models, modelsMap, toolsetsMap } = useDataContext();
+  const { models, modelsMap, toolsetsMap, status } = useDataContext();
 
   const toolSupportingModelIds = useMemo(
     () => models.filter((m) => m.features?.tools).map((m) => m.id),
@@ -105,6 +112,17 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({ onSave, onDirtyChange, r
     );
     if (resolved) setValue('model', resolved, { shouldValidate: true });
   }, [existingModelId, toolSupportingModelIds, availableModelIds, settings.defaultModelId, getValues, setValue]);
+
+  // A model id can be set on the form before its details have loaded (e.g. an
+  // existing app's saved model id is applied immediately). Only report ready
+  // once the model list has actually loaded and a model value is resolved —
+  // i.e. ModelField has either the default or the previously selected model.
+  const modelValue = useWatch({ control, name: 'model' });
+  useEffect(() => {
+    if (status === 'ready' && modelValue) {
+      onModelReady?.();
+    }
+  }, [status, modelValue, onModelReady]);
 
   useEffect(() => {
     if (!settings.isCodeInterpreterEnabled) {
