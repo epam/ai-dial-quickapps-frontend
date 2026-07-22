@@ -46,7 +46,7 @@ const HomePageContent: FC = () => {
       return;
     }
 
-    let host = dialAdminHost;
+    let host = dialAdminHost ?? dialChatHost;
     if (dialChatHost && dialChatHost === document.location.ancestorOrigins?.[0]) {
       host = dialChatHost;
     }
