@@ -1,16 +1,12 @@
-### Applicable issues
+**Description:**
 
-<!-- Please link the GitHub issues related to this PR (You can reference an issue using # then number, e.g. #123) -->
-- fixes #
+<SHORT_DESCRIPTION>
 
-### Description of changes
+Issues:
 
-<!-- Please explain the changes you made right below this line. -->
+- Issue #<TICKET_ID>
 
-### Checklist
+**Checklist:**
 
-<!-- [Place an '[X]' (no spaces) in all applicable fields. Please remove unrelated fields.] -->
-
-- [ ] custom check
-
-By submitting this pull request, I confirm that my contribution is made under the terms of the Apache 2.0 license.
+- [ ] the pull request name complies with [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+- [ ] the pull request name ends with `(Issue #<TICKET_ID>)` (comma-separated list of issues)
