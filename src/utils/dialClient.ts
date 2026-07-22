@@ -8,7 +8,17 @@ import type {
 } from '@/types/dial-entities';
 import type { QuickApp2Config } from '@/types/quick-apps';
 import { ApplicationStatus, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
+import { isHiddenDialFolderId } from '@/utils/api';
 import { handleUnauthorizedResponse } from '@/utils/handle-unauthorized-response';
+
+/**
+ * DIAL Core interface tag required for an entity to be usable from this app.
+ * Quick App orchestrators invoke deployments the same way chat does (chat
+ * completions), so this mirrors ai-dial-chat's own `interface_type=chat`
+ * scoping — matches its eligible deployment set (and therefore its favorites
+ * count) instead of showing every deployment regardless of interface.
+ */
+const REQUIRED_DEPLOYMENT_INTERFACE = 'chat';
 
 /** Encode each path segment individually, preserving '/' as a separator. */
 const encodeDialPath = (id: string): string => id.split('/').map(encodeURIComponent).join('/');
@@ -38,6 +48,7 @@ interface CoreApiEntity {
   function?: {
     status?: ApplicationStatus;
   };
+  updated_at?: string | number;
 }
 
 interface ToolsetApiAuthSettings {
@@ -60,6 +71,7 @@ interface ToolsetApiEntity {
   auth_settings?: ToolsetApiAuthSettings;
   description?: string;
   description_keywords?: string[];
+  updated_at?: string | number;
 }
 
 function normalizeIconUrl(iconUrl?: string): string | undefined {
@@ -117,6 +129,7 @@ function mapCoreToDialModel(entity: CoreApiEntity): DialModel {
         }
       : undefined,
     functionStatus: entity.function?.status,
+    updatedAt: entity.updated_at,
   };
 }
 
@@ -135,6 +148,7 @@ function mapApiToDialToolset(data: ToolsetApiEntity): DialToolset {
     authSettings: mapAuthSettings(data.auth_settings),
     description: data.description,
     topics: data.description_keywords,
+    updatedAt: data.updated_at,
   };
 }
 
@@ -147,11 +161,20 @@ export async function fetchDialBucket(): Promise<string> {
  * /v1/deployments returns models, applications and toolsets in one call.
  * Unlike /openai/deployments, it reliably includes applications, so we fetch
  * it once instead of separately hitting /openai/models and /openai/applications.
+ *
+ * DIAL Core itself filters server-side on `interface_type` (ai-dial-chat's
+ * BFF passes this same param when listing deployments) — without it, Core
+ * returns every deployment regardless of interface, which is why this app
+ * was seeing ~871 raw deployments vs. chat's ~495. Passing it here, not
+ * filtering client-side afterwards, is what actually narrows the set.
  */
 export async function fetchDialModels(): Promise<DialModel[]> {
-  const res = await dialFetch<CoreApiEntity[]>('/v1/deployments');
+  const res = await dialFetch<CoreApiEntity[]>(
+    `/v1/deployments?interface_type=${REQUIRED_DEPLOYMENT_INTERFACE}`,
+  );
   return res
     .filter((entity) => entity.object === 'model' || entity.object === 'application')
+    .filter((entity) => !isHiddenDialFolderId(entity.id))
     .map(mapCoreToDialModel);
 }
 
@@ -319,28 +342,6 @@ export async function saveDialApp(
 export async function fetchDialToolsets(): Promise<DialToolset[]> {
   const res = await dialFetch<{ data: ToolsetApiEntity[] }>('/openai/toolsets');
   return res.data.map(mapApiToDialToolset);
-}
-
-interface UserConfigDto {
-  deployments?: { installed?: string[] };
-  toolsets?: { installed?: string[] };
-}
-
-/** Per-user config file stored in the user's DIAL Core bucket. */
-const USER_CONFIG_PATH = '.client_data/.user-config.json';
-
-/** Favorite ids: "installed" on the backend is "favorite" in the UI. */
-export async function fetchFavoriteIds(): Promise<Set<string>> {
-  const bucket = await fetchDialBucket();
-  const res = await fetch(`/api/dial/v1/files/${encodeURIComponent(bucket)}/${USER_CONFIG_PATH}`);
-  if (res.status === 404) return new Set();
-  if (!res.ok) {
-    handleUnauthorizedResponse(res);
-    const body = await res.text().catch(() => '');
-    throw new Error(`DIAL API ${res.status} for /v1/files/.../${USER_CONFIG_PATH}: ${body}`);
-  }
-  const config = (await res.json()) as UserConfigDto;
-  return new Set([...(config.deployments?.installed ?? []), ...(config.toolsets?.installed ?? [])]);
 }
 
 export interface DialFileMetadataItem {

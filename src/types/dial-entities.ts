@@ -49,6 +49,9 @@ export interface DialModel {
   };
   functionStatus?: ApplicationStatus;
   description?: string;
+  updatedAt?: string | number;
+  isUserFavorite?: boolean;
+  isStarred?: boolean;
   [key: string]: unknown;
 }
 
@@ -66,6 +69,9 @@ export interface DialToolset {
   authSettings?: ToolsetAuthSettings;
   description?: string;
   topics?: string[];
+  updatedAt?: string | number;
+  isUserFavorite?: boolean;
+  isStarred?: boolean;
   [key: string]: unknown;
 }
 

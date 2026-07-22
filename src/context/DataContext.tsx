@@ -1,6 +1,13 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useEffect, useReducer } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+} from 'react';
 
 import type {
   DialModel,
@@ -10,12 +17,8 @@ import type {
   PromptsMap,
   ToolsetsMap,
 } from '@/types/dial-entities';
-import {
-  fetchDialModels,
-  fetchDialPrompts,
-  fetchDialToolsets,
-  fetchFavoriteIds,
-} from '@/utils/dialClient';
+import { fetchDialModels, fetchDialPrompts, fetchDialToolsets } from '@/utils/dialClient';
+import { fetchFavoriteIds } from '@/utils/user-config';
 
 import { useAppContext } from './AppContext';
 
@@ -29,6 +32,7 @@ interface DataState {
   promptsVersion: number;
   files: string[];
   favoriteIds: Set<string>;
+  favoritesError?: string;
   status: 'idle' | 'loading' | 'ready' | 'error';
   error?: string;
 }
@@ -39,7 +43,7 @@ type DataAction =
   | { type: 'TOOLSETS_LOADED'; payload: DialToolset[] }
   | { type: 'PROMPTS_LOADED'; payload: DialPrompt[] }
   | { type: 'FILES_LOADED'; payload: string[] }
-  | { type: 'FAVORITES_LOADED'; payload: Set<string> }
+  | { type: 'FAVORITES_LOADED'; payload: { ids: Set<string>; error?: string } }
   | { type: 'READY' }
   | { type: 'ERROR'; payload: string };
 
@@ -80,7 +84,7 @@ function reducer(state: DataState, action: DataAction): DataState {
     case 'FILES_LOADED':
       return { ...state, files: action.payload };
     case 'FAVORITES_LOADED':
-      return { ...state, favoriteIds: action.payload };
+      return { ...state, favoriteIds: action.payload.ids, favoritesError: action.payload.error };
     case 'READY':
       return { ...state, status: 'ready' };
     case 'ERROR':
@@ -91,6 +95,10 @@ function reducer(state: DataState, action: DataAction): DataState {
 }
 
 interface DataContextValue extends DataState {
+  /** `models`, stamped with `isUserFavorite`/`isStarred` from `favoriteIds`. */
+  modelsWithFavorites: DialModel[];
+  /** `toolsets`, stamped with `isUserFavorite`/`isStarred` from `favoriteIds`. */
+  toolsetsWithFavorites: DialToolset[];
   refreshPrompts: () => Promise<void>;
   refreshToolsets: () => Promise<void>;
   refreshAll: () => void;
@@ -98,6 +106,8 @@ interface DataContextValue extends DataState {
 
 const DataContext = createContext<DataContextValue>({
   ...initialState,
+  modelsWithFavorites: [],
+  toolsetsWithFavorites: [],
   refreshPrompts: async () => undefined,
   refreshToolsets: async () => undefined,
   refreshAll: () => undefined,
@@ -109,17 +119,23 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
 
   const loadAll = useCallback(() => {
     dispatch({ type: 'LOADING' });
-    Promise.all([
-      fetchDialModels(),
-      fetchDialToolsets(),
-      fetchDialPrompts(),
-      fetchFavoriteIds().catch(() => new Set<string>()),
-    ])
-      .then(([models, toolsets, prompts, favoriteIds]) => {
+    const favorites = fetchFavoriteIds()
+      .then((ids) => ({ ids }))
+      .catch((err: unknown) => {
+        // A genuinely-empty config is already resolved to an empty set inside
+        // fetchFavoriteIds (404 case). Anything that lands here is a real
+        // failure (network/auth/parse) — report it distinctly instead of
+        // silently collapsing it into "no favorites yet".
+        const message = err instanceof Error ? err.message : 'Failed to load favorites';
+        console.error('[DataContext] failed to load favorites:', message);
+        return { ids: new Set<string>(), error: message };
+      });
+    Promise.all([fetchDialModels(), fetchDialToolsets(), fetchDialPrompts(), favorites])
+      .then(([models, toolsets, prompts, favoritesPayload]) => {
         dispatch({ type: 'MODELS_LOADED', payload: models });
         dispatch({ type: 'TOOLSETS_LOADED', payload: toolsets });
         dispatch({ type: 'PROMPTS_LOADED', payload: prompts });
-        dispatch({ type: 'FAVORITES_LOADED', payload: favoriteIds });
+        dispatch({ type: 'FAVORITES_LOADED', payload: favoritesPayload });
         dispatch({ type: 'READY' });
       })
       .catch((err: unknown) => {
@@ -145,8 +161,37 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
     dispatch({ type: 'TOOLSETS_LOADED', payload: toolsets });
   };
 
+  const modelsWithFavorites = useMemo(
+    () =>
+      state.models.map((m) => ({
+        ...m,
+        isUserFavorite: state.favoriteIds.has(m.id),
+        isStarred: state.favoriteIds.has(m.id),
+      })),
+    [state.models, state.favoriteIds],
+  );
+
+  const toolsetsWithFavorites = useMemo(
+    () =>
+      state.toolsets.map((t) => ({
+        ...t,
+        isUserFavorite: state.favoriteIds.has(t.id),
+        isStarred: state.favoriteIds.has(t.id),
+      })),
+    [state.toolsets, state.favoriteIds],
+  );
+
   return (
-    <DataContext.Provider value={{ ...state, refreshPrompts, refreshToolsets, refreshAll: loadAll }}>
+    <DataContext.Provider
+      value={{
+        ...state,
+        modelsWithFavorites,
+        toolsetsWithFavorites,
+        refreshPrompts,
+        refreshToolsets,
+        refreshAll: loadAll,
+      }}
+    >
       {children}
     </DataContext.Provider>
   );

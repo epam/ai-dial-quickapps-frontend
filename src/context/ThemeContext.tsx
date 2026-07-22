@@ -76,7 +76,7 @@ const ThemeProvider: FC<ThemeProviderProps> = ({ children }) => {
       .then((r) => r.json() as Promise<ThemeConfiguration>)
       .then((data) => {
         if (process.env.NODE_ENV === 'development') {
-          console.debug('[ThemeContext] fetched config:', data);
+          console.log('[ThemeContext] fetched config:', data);
         }
         setConfig(data);
       })
