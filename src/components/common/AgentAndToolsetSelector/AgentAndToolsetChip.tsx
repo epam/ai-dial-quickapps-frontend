@@ -23,6 +23,9 @@ export interface ChipEntity {
   applicationTypeSchemaId?: string;
   functionStatus?: ApplicationStatus;
   authSettings?: ToolsetAuthSettings;
+  updatedAt?: string | number;
+  isUserFavorite?: boolean;
+  isStarred?: boolean;
   [key: string]: unknown;
 }
 

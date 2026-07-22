@@ -21,12 +21,14 @@ import {
   SelectSize,
 } from '@epam/ai-dial-ui-kit';
 
+import FavoriteStarButton from '@/components/common/FavoriteStarButton/FavoriteStarButton';
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
 import { TopicsLine } from '@/components/common/TopicsLine/TopicsLine';
 import { VirtualCardGrid } from '@/components/common/VirtualCardGrid/VirtualCardGrid';
-import { IconAlertCircleFilled, IconBulb, IconStarFilled } from '@tabler/icons-react';
+import { IconAlertCircleFilled, IconBulb } from '@tabler/icons-react';
 import { SKELETON_COLOR } from '@/constants/quick-apps';
 import { getEntityNameFromId, isHiddenDialFolderId } from '@/utils/api';
+import { getUpdatedAtTimestamp } from '@/utils/get-updated-at-timestamp';
 
 interface ModelGroup {
   key: string;
@@ -36,6 +38,7 @@ interface ModelGroup {
   description?: string;
   topics: string[];
   iconUrl?: string;
+  latestUpdatedAt?: string | number;
 }
 
 // Group by the version-stripped entity id, not the display name: two unrelated
@@ -58,6 +61,11 @@ function groupModelsByEntity(models: DialModel[]): ModelGroup[] {
     description: (models[0] as { description?: string }).description,
     topics: models[0].topics ?? [],
     iconUrl: models[0].iconUrl,
+    latestUpdatedAt: models.reduce<string | number | undefined>(
+      (latest, m) =>
+        getUpdatedAtTimestamp(m.updatedAt) > getUpdatedAtTimestamp(latest) ? m.updatedAt : latest,
+      undefined,
+    ),
   }));
 }
 
@@ -100,13 +108,7 @@ const ModelCard: FC<ModelCardProps> = ({
       )}
       onClick={() => onSelect(representativeId)}
     >
-      {isFavorite && (
-        <IconStarFilled
-          size={16}
-          className="absolute end-3 top-3 text-warning-icon"
-          aria-hidden="true"
-        />
-      )}
+      <FavoriteStarButton isFavorite={isFavorite} />
 
       {/* AppIdentity block */}
       <div className="flex min-w-0 items-start gap-3">
@@ -170,7 +172,13 @@ interface ModelFieldProps {
 
 export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, tooltip, error }) => {
   const { t } = useTranslation(Translation.Marketplace);
-  const { models, favoriteIds, status, error: dataError, refreshAll } = useDataContext();
+  const {
+    modelsWithFavorites: models,
+    favoriteIds,
+    status,
+    error: dataError,
+    refreshAll,
+  } = useDataContext();
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<ModelFieldTab>(TAB_IDS.catalog);
@@ -207,7 +215,12 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
     : [];
 
   const favoriteGroups = useMemo(
-    () => allGroups.filter((g) => g.models.some((m) => favoriteIds.has(m.id))),
+    () =>
+      allGroups
+        .filter((g) => g.models.some((m) => favoriteIds.has(m.id)))
+        .sort(
+          (a, b) => getUpdatedAtTimestamp(b.latestUpdatedAt) - getUpdatedAtTimestamp(a.latestUpdatedAt),
+        ),
     [allGroups, favoriteIds],
   );
 

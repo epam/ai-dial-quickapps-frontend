@@ -2,8 +2,9 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import classNames from 'classnames';
 import sortBy from 'lodash-es/sortBy';
-import { IconLayoutGrid, IconStarFilled } from '@tabler/icons-react';
+import { IconLayoutGrid } from '@tabler/icons-react';
 
+import FavoriteStarButton from '@/components/common/FavoriteStarButton/FavoriteStarButton';
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
 import { TopicsLine } from '@/components/common/TopicsLine/TopicsLine';
 import { VirtualCardGrid } from '@/components/common/VirtualCardGrid/VirtualCardGrid';
@@ -13,6 +14,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
 import { isHiddenDialFolderId } from '@/utils/api';
 import { getEntityStatus } from '@/utils/get-entity-status';
+import { getUpdatedAtTimestamp } from '@/utils/get-updated-at-timestamp';
 import {
   DialNeutralButton,
   DialNoDataContent,
@@ -76,13 +78,7 @@ const AgentAndToolsetCard: React.FC<AgentAndToolsetCardProps> = ({
             : 'border-[rgba(0,0,0,0.07)]',
       )}
     >
-      {isFavorite && (
-        <IconStarFilled
-          size={16}
-          className="absolute end-3 top-3 text-warning-icon"
-          aria-hidden="true"
-        />
-      )}
+      <FavoriteStarButton isFavorite={isFavorite} />
 
       <div className="flex min-w-0 items-start gap-3">
         <ModelIcon name={name} iconUrl={iconUrl} size={44} radius={12} />
@@ -123,7 +119,12 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
   onConfirm,
 }) => {
   const { t } = useTranslation(Translation.Marketplace);
-  const { models, toolsets, favoriteIds, status } = useDataContext();
+  const {
+    modelsWithFavorites: models,
+    toolsetsWithFavorites: toolsets,
+    favoriteIds,
+    status,
+  } = useDataContext();
   const isLoading = status === 'loading' || status === 'idle';
 
   const [selectedIds, setSelectedIds] = useState<string[]>(initialSelectedIds);
@@ -152,8 +153,11 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
   );
 
   const favoriteItems = useMemo(
-    () => sortedItems.filter((item) => favoriteIds.has(item.id)),
-    [sortedItems, favoriteIds],
+    () =>
+      allItems
+        .filter((item) => favoriteIds.has(item.id))
+        .sort((a, b) => getUpdatedAtTimestamp(b.updatedAt) - getUpdatedAtTimestamp(a.updatedAt)),
+    [allItems, favoriteIds],
   );
 
   const filteredItems = useMemo(() => {
