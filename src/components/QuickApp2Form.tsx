@@ -21,6 +21,7 @@ import {
 import { useTranslation } from '@/hooks/useTranslation';
 import { AnyToolset, DialAppTransportType } from '@/types/quick-apps';
 import type { QuickApp2Config } from '@/types/quick-apps';
+import type { TriggerSaveGeneralPayload } from '@/types/editor-messages';
 import { Translation } from '@/types/translation';
 import { DialAIEntityModel } from '@/utils/application';
 
@@ -41,6 +42,7 @@ interface QuickApp2FormProps {
     data: QuickApp2FormType,
     allEntitiesMap: QuickApp2AllEntitiesMap,
     isAutoSave?: boolean,
+    general?: TriggerSaveGeneralPayload,
   ) => void;
   onDirtyChange?: (isDirty: boolean) => void;
   /** Called once a model is resolved for the form — either the app's saved model or the default. */
@@ -141,11 +143,15 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
 
   useEffect(() => {
     const handleTriggerSave = (event: Event) => {
-      const { isAutoSave, ignoreDirty } =
-        (event as CustomEvent<{ isAutoSave?: boolean; ignoreDirty?: boolean }>).detail ?? {};
+      const { isAutoSave, ignoreDirty, general } =
+        (event as CustomEvent<{
+          isAutoSave?: boolean;
+          ignoreDirty?: boolean;
+          general?: TriggerSaveGeneralPayload;
+        }>).detail ?? {};
       if (isReadonly) return;
       if (isAutoSave && !ignoreDirty && !isDirty) return;
-      void handleSubmit((data) => onSave(data, allEntitiesMap, isAutoSave))();
+      void handleSubmit((data) => onSave(data, allEntitiesMap, isAutoSave, general))();
     };
 
     window.addEventListener(DIAL_EDITOR_TRIGGER_SAVE_EVENT, handleTriggerSave);

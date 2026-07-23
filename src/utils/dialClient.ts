@@ -8,6 +8,7 @@ import type {
 } from '@/types/dial-entities';
 import type { QuickApp2Config } from '@/types/quick-apps';
 import { ApplicationStatus, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
+import type { TriggerSaveGeneralPayload } from '@/types/editor-messages';
 import { isHiddenDialFolderId } from '@/utils/api';
 import { handleUnauthorizedResponse } from '@/utils/handle-unauthorized-response';
 
@@ -293,6 +294,7 @@ export async function fetchDialApp(appId: string): Promise<DialApp | null> {
 export async function saveDialApp(
   app: DialApp,
   applicationProperties: unknown,
+  general?: TriggerSaveGeneralPayload,
 ): Promise<{
   id: string;
   applicationProperties: unknown;
@@ -303,21 +305,28 @@ export async function saveDialApp(
     // Preserve every field DIAL Core returned (e.g. `intro`) that this editor
     // doesn't manage itself, so saving here never silently drops it.
     ...rawForSave,
-    display_name: rawForSave.display_name ?? app.name,
+    // When the host supplies fresh General-step values (existing app, Save &
+    // Exit), they take priority over this editor's possibly-stale cached
+    // copy — this is the single write that replaces the host's own second
+    // update-application call. `version` is deliberately never touched here.
+    display_name: general?.name ?? rawForSave.display_name ?? app.name,
     display_version: rawForSave.display_version,
-    icon_url: rawForSave.icon_url,
-    description: rawForSave.description,
+    icon_url: general ? general.iconUrl : rawForSave.icon_url,
+    description: general ? general.description : rawForSave.description,
     features: rawForSave.features,
     input_attachment_types:
       (app.inputAttachmentTypes as string[] | undefined) ?? rawForSave.input_attachment_types,
     max_input_attachments:
       (app.maxInputAttachments as number | undefined) ?? rawForSave.max_input_attachments,
     reference: rawForSave.reference,
-    description_keywords: rawForSave.description_keywords,
+    description_keywords: general ? general.topics : rawForSave.description_keywords,
     application_type_schema_id:
       rawForSave.application_type_schema_id ?? app.applicationTypeSchemaId,
     application_properties: encodeApplicationPropertiesForApi(applicationProperties),
   };
+  if (general) {
+    body.intro = general.intro;
+  }
   const res = await fetch(`/api/dial/v1/${encodeDialPath(app.id)}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },

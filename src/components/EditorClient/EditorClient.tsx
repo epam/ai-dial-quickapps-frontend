@@ -10,7 +10,12 @@ import { decodeDialPath, fetchAppSettings, fetchDialApp, saveDialApp } from '@/u
 import { QuickApp2Form, type QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form';
 import { AUTO_SAVE_INTERVAL_MS, DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
 import { DEFAULT_QUICK_APPS_SCHEMA_2_ID } from '@/constants/quick-apps';
-import { InboundMessage, InboundMessageType, OutboundMessageType } from '@/types/editor-messages';
+import {
+  InboundMessage,
+  InboundMessageType,
+  OutboundMessageType,
+  TriggerSaveGeneralPayload,
+} from '@/types/editor-messages';
 
 const postToParent = (msg: object, allowedOrigin: string) => {
   window.parent.postMessage(msg, allowedOrigin === '*' ? '*' : allowedOrigin);
@@ -19,7 +24,11 @@ const postToParent = (msg: object, allowedOrigin: string) => {
 const isAllowedOrigin = (origin: string, allowedOrigin: string): boolean =>
   allowedOrigin === '*' || origin === allowedOrigin;
 
-const dispatchTriggerSave = (detail: { isAutoSave: boolean; ignoreDirty?: boolean }) => {
+const dispatchTriggerSave = (detail: {
+  isAutoSave: boolean;
+  ignoreDirty?: boolean;
+  general?: TriggerSaveGeneralPayload;
+}) => {
   window.dispatchEvent(new CustomEvent(DIAL_EDITOR_TRIGGER_SAVE_EVENT, { detail }));
 };
 
@@ -29,6 +38,7 @@ interface EditorInnerProps {
     data: QuickApp2FormType,
     allEntitiesMap: QuickApp2AllEntitiesMap,
     isAutoSave?: boolean,
+    general?: TriggerSaveGeneralPayload,
   ) => Promise<void>;
   onDirtyChange: (isDirty: boolean) => void;
   onModelReady?: () => void;
@@ -41,8 +51,9 @@ const EditorInner = ({ appState, onSave, onDirtyChange, onModelReady, resetKey }
       data: QuickApp2FormType,
       allEntitiesMap: QuickApp2AllEntitiesMap,
       isAutoSave = false,
+      general?: TriggerSaveGeneralPayload,
     ) => {
-      await onSave(data, allEntitiesMap, isAutoSave);
+      await onSave(data, allEntitiesMap, isAutoSave, general);
     },
     [onSave],
   );
@@ -126,6 +137,7 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
           dispatchTriggerSave({
             isAutoSave,
             ignoreDirty: isAutoSave ? msg.payload?.ignoreDirty : undefined,
+            general: isAutoSave ? undefined : msg.general,
           });
           break;
         }
@@ -176,6 +188,7 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
       data: QuickApp2FormType,
       allEntitiesMap: QuickApp2AllEntitiesMap,
       isAutoSave = false,
+      general?: TriggerSaveGeneralPayload,
     ) => {
       if (!appState) return;
       const existingConfig = appState.app.applicationProperties as QuickApp2Config | undefined;
@@ -190,7 +203,7 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
           inputAttachmentTypes: data.inputAttachmentTypes,
           maxInputAttachments: data.maxInputAttachments,
         };
-        const updatedApp = await saveDialApp(appWithFormValues, newConfig);
+        const updatedApp = await saveDialApp(appWithFormValues, newConfig, general);
         setHasSavedOnce(true);
         if (isAutoSave) {
           postToParent({ type: OutboundMessageType.AutoSaveComplete }, allowedOriginRef.current);

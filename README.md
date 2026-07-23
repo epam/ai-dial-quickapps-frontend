@@ -167,11 +167,11 @@ document.querySelector('iframe').contentWindow.postMessage({ type: 'TRIGGER_SAVE
 
 **Host → iframe**
 
-| Message type        | Payload                     | Description                             |
-| ------------------- | --------------------------- | --------------------------------------- |
-| `TRIGGER_SAVE`      | —                           | Triggers a manual save                  |
-| `TRIGGER_AUTO_SAVE` | `{ ignoreDirty?: boolean }` | Triggers an auto-save                   |
-| `RESET`             | —                           | Resets the form to the last saved state |
+| Message type        | Payload                                                                                                      | Description                                                                                                                                                                                                    |
+| ------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TRIGGER_SAVE`      | `{ general?: { name: string; description?: string; iconUrl?: string; topics?: string[]; intro?: string } }` | Triggers a manual save. `general` carries the host's current General-step fields for an existing app so they're merged into this single save instead of a separate host-side write; omitted for Preview or for an app created in this session. Never includes `version`. |
+| `TRIGGER_AUTO_SAVE` | `{ ignoreDirty?: boolean }`                                                                                   | Triggers an auto-save                                                                                                                                                                                          |
+| `RESET`             | —                                                                                                             | Resets the form to the last saved state                                                                                                                                                                        |
 
 In addition to host-triggered `TRIGGER_AUTO_SAVE` messages, the editor auto-saves itself on a 30-second interval (only when the form is dirty) while mounted — no host action is required.
 

@@ -25,6 +25,22 @@ export interface ToolsetAuthResultPayload {
   credentials?: ToolsetCredentials;
 }
 
+/**
+ * General-step fields the host (ai-dial-chat) owns, sent with TRIGGER_SAVE so
+ * this editor's single save can persist the current values instead of racing
+ * a second host-side write. Never includes `version` — that stays untouched
+ * by this payload. Absent when the trigger is a Preview, or when the app was
+ * created in this same editor session (host already wrote initial values via
+ * create-application).
+ */
+export interface TriggerSaveGeneralPayload {
+  name: string;
+  description?: string;
+  iconUrl?: string;
+  topics?: string[];
+  intro?: string;
+}
+
 export enum OutboundMessageType {
   Ready = 'READY',
   DirtyState = 'DIRTY_STATE',
@@ -37,7 +53,7 @@ export enum OutboundMessageType {
 }
 
 export type InboundMessage =
-  | { type: InboundMessageType.TriggerSave }
+  | { type: InboundMessageType.TriggerSave; general?: TriggerSaveGeneralPayload }
   | {
       type: InboundMessageType.TriggerAutoSave;
       payload?: { ignoreDirty?: boolean };
