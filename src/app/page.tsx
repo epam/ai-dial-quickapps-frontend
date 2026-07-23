@@ -84,6 +84,20 @@ const HomePageContent: FC = () => {
     window.parent.postMessage({ type: `${target.applicationName}/readyToSave` }, target.host);
   }, [isModelReady, settings]);
 
+  // Sent when the user is signed out (session ended or errored) so the host
+  // knows to show its own logged-out handling instead of an idle iframe.
+  // Uses the same manual-postMessage approach as readyToSave above, for the
+  // same reason: it isn't part of the connector's typed event set.
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (session && !session.error) return;
+    const target = connectorTargetRef.current;
+    if (!target) {
+      return;
+    }
+    window.parent.postMessage({ type: `${target.applicationName}/loggedOut` }, target.host);
+  }, [status, session, settings]);
+
   const handleReadyToSave = () => {
     setIsModelReady(true);
   };
