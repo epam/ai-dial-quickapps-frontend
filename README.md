@@ -181,7 +181,7 @@ In addition to host-triggered `TRIGGER_AUTO_SAVE` messages, the editor auto-save
 | -------------------- | ---------------------- | ----------------------------------------- |
 | `READY`              | —                      | Editor mounted; host should send `INIT`   |
 | `DIRTY_STATE`        | `{ isDirty: boolean }` | Form dirty state changed                  |
-| `SAVE_SUCCESS`       | `{ updatedApp }`       | Save completed successfully               |
+| `SAVE_SUCCESS`       | `{ updatedApp }`, `hasChanges: boolean` | Save completed successfully; `hasChanges` is `true` if any user-editable field changed versus a no-op re-save |
 | `SAVE_ERROR`         | `{ error: string }`    | Save failed                               |
 | `AUTO_SAVE_COMPLETE` | —                      | Auto-save completed successfully          |
 | `HEIGHT_CHANGE`      | `{ height: number }`   | Editor height changed (for iframe resize) |
