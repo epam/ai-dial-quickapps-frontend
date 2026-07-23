@@ -7,6 +7,7 @@ import { buildQuickApp2Config } from '@/form/quickApp2Form';
 import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { QuickApp2Config } from '@/types/quick-apps';
 import { decodeDialPath, fetchAppSettings, fetchDialApp, saveDialApp } from '@/utils/dialClient';
+import { hasQuickAppChanges } from '@/utils/has-quick-app-changes';
 import { QuickApp2Form, type QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form';
 import { AUTO_SAVE_INTERVAL_MS, DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
 import { DEFAULT_QUICK_APPS_SCHEMA_2_ID } from '@/constants/quick-apps';
@@ -45,7 +46,13 @@ interface EditorInnerProps {
   resetKey: number;
 }
 
-const EditorInner = ({ appState, onSave, onDirtyChange, onModelReady, resetKey }: EditorInnerProps) => {
+const EditorInner = ({
+  appState,
+  onSave,
+  onDirtyChange,
+  onModelReady,
+  resetKey,
+}: EditorInnerProps) => {
   const handleSave = useCallback(
     async (
       data: QuickApp2FormType,
@@ -203,6 +210,14 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
           inputAttachmentTypes: data.inputAttachmentTypes,
           maxInputAttachments: data.maxInputAttachments,
         };
+        const rawForSave = (appState.app._rawForSave as Record<string, unknown>) ?? {};
+        const { hasChanges } = hasQuickAppChanges(existingConfig, newConfig, general, {
+          name: (rawForSave.display_name as string | undefined) ?? appState.app.name,
+          description: rawForSave.description as string | undefined,
+          iconUrl: rawForSave.icon_url as string | undefined,
+          topics: rawForSave.description_keywords as string[] | undefined,
+          intro: rawForSave.intro as string | undefined,
+        });
         const updatedApp = await saveDialApp(appWithFormValues, newConfig, general);
         setHasSavedOnce(true);
         if (isAutoSave) {
@@ -212,6 +227,7 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
             {
               type: OutboundMessageType.SaveSuccess,
               payload: { updatedApp },
+              hasChanges,
             },
             allowedOriginRef.current,
           );
