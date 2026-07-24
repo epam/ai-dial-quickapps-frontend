@@ -2,6 +2,7 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import { AppContextProvider, type AppState } from '@/context/AppContext';
+import LoadingScreen from '@/components/LoadingScreen/LoadingScreen';
 import { DataContextProvider } from '@/context/DataContext';
 import { buildQuickApp2Config } from '@/form/quickApp2Form';
 import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
@@ -264,11 +265,7 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
   }
 
   if (!appState) {
-    return (
-      <div className="flex h-screen items-center justify-center text-secondary">
-        Waiting for initialization…
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (

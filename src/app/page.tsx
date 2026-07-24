@@ -1,22 +1,16 @@
 'use client';
 
 import { ChatVisualizerConnector } from '@epam/ai-dial-chat-visualizer-connector';
-import { DialSpinner } from '@epam/ai-dial-ui-kit';
 import { ClientSafeProvider, getProviders, useSession } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import { FC, memo, Suspense, useEffect, useRef, useState } from 'react';
 
 import AuthError from '@/components/AuthError/AuthError';
 import EditorClient from '@/components/EditorClient/EditorClient';
+import LoadingScreen from '@/components/LoadingScreen/LoadingScreen';
 import LoginPrompt from '@/components/LoginPrompt/LoginPrompt';
 import { AppSettings } from '@/types/dial-entities';
 import { fetchAppSettings } from '@/utils/dialClient';
-
-const LoadingScreen: FC = () => (
-  <div className="flex h-screen items-center justify-center">
-    <DialSpinner size={50} />
-  </div>
-);
 
 const HomePageContent: FC = () => {
   const searchParams = useSearchParams();
