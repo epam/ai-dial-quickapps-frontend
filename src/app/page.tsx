@@ -1,7 +1,7 @@
 'use client';
 
 import { ChatVisualizerConnector } from '@epam/ai-dial-chat-visualizer-connector';
-import { DialLoader } from '@epam/ai-dial-ui-kit';
+import { DialSpinner } from '@epam/ai-dial-ui-kit';
 import { ClientSafeProvider, getProviders, useSession } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import { FC, memo, Suspense, useEffect, useRef, useState } from 'react';
@@ -14,7 +14,7 @@ import { fetchAppSettings } from '@/utils/dialClient';
 
 const LoadingScreen: FC = () => (
   <div className="flex h-screen items-center justify-center">
-    <DialLoader size={50} />
+    <DialSpinner size={50} />
   </div>
 );
 

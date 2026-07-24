@@ -9,7 +9,7 @@ import { DialModel } from '@/types/dial-entities';
 import { Translation } from '@/types/translation';
 import {
   DialLinkButton,
-  DialLoader,
+  DialSpinner,
   DialNoDataContent,
   DialPopup,
   DialSearch,
@@ -219,7 +219,8 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
       allGroups
         .filter((g) => g.models.some((m) => favoriteIds.has(m.id)))
         .sort(
-          (a, b) => getUpdatedAtTimestamp(b.latestUpdatedAt) - getUpdatedAtTimestamp(a.latestUpdatedAt),
+          (a, b) =>
+            getUpdatedAtTimestamp(b.latestUpdatedAt) - getUpdatedAtTimestamp(a.latestUpdatedAt),
         ),
     [allGroups, favoriteIds],
   );
@@ -352,7 +353,7 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
           <div className="flex min-h-0 flex-1 flex-col bg-layer-2 px-6 py-4">
             {status === 'loading' || status === 'idle' ? (
               <div className="flex items-center justify-center py-16">
-                <DialLoader
+                <DialSpinner
                   size={32}
                   fullWidth={false}
                   ariaLabel={t(MarketplaceI18nKeys.LoadingModels)}
