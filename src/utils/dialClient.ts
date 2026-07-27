@@ -10,6 +10,7 @@ import type { QuickApp2Config } from '@/types/quick-apps';
 import { ApplicationStatus, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
 import type { TriggerSaveGeneralPayload } from '@/types/editor-messages';
 import { isHiddenDialFolderId } from '@/utils/api';
+import { isHiddenPath } from '@/utils/dial-file-path';
 import { handleUnauthorizedResponse } from '@/utils/handle-unauthorized-response';
 
 /**
@@ -350,7 +351,7 @@ export async function saveDialApp(
 
 export async function fetchDialToolsets(): Promise<DialToolset[]> {
   const res = await dialFetch<{ data: ToolsetApiEntity[] }>('/openai/toolsets');
-  return res.data.map(mapApiToDialToolset);
+  return res.data.map(mapApiToDialToolset).filter((t) => !isHiddenPath(t.id));
 }
 
 export interface DialFileMetadataItem {
@@ -392,7 +393,8 @@ async function fetchPromptsFromBucket(bucket: string): Promise<DialPrompt[]> {
         name: item.name,
         folderId: id.slice(0, id.lastIndexOf('/')),
       };
-    });
+    })
+    .filter(({ id }) => !isHiddenPath(id));
 }
 
 export async function fetchDialPrompts(): Promise<DialPrompt[]> {
