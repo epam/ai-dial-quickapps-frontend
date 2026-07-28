@@ -39,6 +39,7 @@ export interface TriggerSaveGeneralPayload {
   iconUrl?: string;
   topics?: string[];
   intro?: string;
+  display_version?: string;
 }
 
 export enum OutboundMessageType {

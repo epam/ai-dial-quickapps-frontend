@@ -212,14 +212,22 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
           maxInputAttachments: data.maxInputAttachments,
         };
         const rawForSave = (appState.app._rawForSave as Record<string, unknown>) ?? {};
-        const { hasChanges } = hasQuickAppChanges(existingConfig, newConfig, general, {
+        const generalForSave = {
           name: (rawForSave.display_name as string | undefined) ?? appState.app.name,
           description: rawForSave.description as string | undefined,
           iconUrl: rawForSave.icon_url as string | undefined,
           topics: rawForSave.description_keywords as string[] | undefined,
           intro: rawForSave.intro as string | undefined,
-        });
-        const updatedApp = await saveDialApp(appWithFormValues, newConfig, general);
+          display_version: rawForSave.display_version as string | undefined,
+        };
+        const effectiveGeneral = general ? { ...generalForSave, ...general } : generalForSave;
+        const { hasChanges } = hasQuickAppChanges(
+          existingConfig,
+          newConfig,
+          general,
+          generalForSave,
+        );
+        const updatedApp = await saveDialApp(appWithFormValues, newConfig, effectiveGeneral);
         setHasSavedOnce(true);
         if (isAutoSave) {
           postToParent({ type: OutboundMessageType.AutoSaveComplete }, allowedOriginRef.current);
