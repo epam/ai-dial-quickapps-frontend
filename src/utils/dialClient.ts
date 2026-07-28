@@ -311,7 +311,7 @@ export async function saveDialApp(
     // copy — this is the single write that replaces the host's own second
     // update-application call. `version` is deliberately never touched here.
     display_name: general?.name ?? rawForSave.display_name ?? app.name,
-    display_version: rawForSave.display_version,
+    display_version: general?.display_version ?? rawForSave.display_version,
     icon_url: general ? general.iconUrl : rawForSave.icon_url,
     description: general ? general.description : rawForSave.description,
     features: rawForSave.features,
