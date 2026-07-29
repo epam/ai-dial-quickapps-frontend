@@ -1,8 +1,11 @@
 import type { AuthOptions } from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
+
+import { errorObjLog } from '@/server/logger';
 import Auth0Provider from 'next-auth/providers/auth0';
 import AzureADProvider from 'next-auth/providers/azure-ad';
 import CognitoProvider from 'next-auth/providers/cognito';
+import GitLabProvider from 'next-auth/providers/gitlab';
 import GoogleProvider from 'next-auth/providers/google';
 import type { Provider } from 'next-auth/providers/index';
 import KeycloakProvider from 'next-auth/providers/keycloak';
@@ -60,6 +63,12 @@ const getRefreshTokenConfig = (provider: string | undefined): RefreshTokenConfig
         clientId: process.env.AUTH_COGNITO_CLIENT_ID!,
         clientSecret: process.env.AUTH_COGNITO_CLIENT_SECRET!,
       };
+    case 'gitlab':
+      return {
+        tokenUrl: `https://${process.env.AUTH_GITLAB_HOST}/oauth/token`,
+        clientId: process.env.AUTH_GITLAB_CLIENT_ID!,
+        clientSecret: process.env.AUTH_GITLAB_SECRET!,
+      };
     default:
       return undefined;
   }
@@ -96,7 +105,8 @@ const refreshAccessToken = async (token: JWT): Promise<JWT> => {
       refreshToken: refreshed.refresh_token ?? token.refreshToken,
       error: undefined,
     };
-  } catch {
+  } catch (error) {
+    errorObjLog(error, `auth: failed to refresh token for provider ${String(token.provider)}`);
     return { ...token, error: 'RefreshAccessTokenError' };
   }
 };
@@ -132,8 +142,7 @@ const authProviders: (Provider | false)[] = [
       name: process.env.AUTH_GOOGLE_NAME ?? DEFAULT_PROVIDER_NAME,
       authorization: {
         params: {
-          scope:
-            'openid email profile https://www.googleapis.com/auth/userinfo.email offline_access',
+          scope: process.env.AUTH_GOOGLE_SCOPE ?? 'openid email profile offline_access',
         },
       },
     }),
@@ -167,6 +176,21 @@ const authProviders: (Provider | false)[] = [
       issuer: process.env.AUTH_COGNITO_ISSUER,
       name: process.env.AUTH_COGNITO_NAME ?? DEFAULT_PROVIDER_NAME,
     }),
+
+  !!process.env.AUTH_GITLAB_CLIENT_ID &&
+    !!process.env.AUTH_GITLAB_SECRET &&
+    !!process.env.AUTH_GITLAB_HOST &&
+    GitLabProvider({
+      clientId: process.env.AUTH_GITLAB_CLIENT_ID!,
+      clientSecret: process.env.AUTH_GITLAB_SECRET!,
+      issuer: `https://${process.env.AUTH_GITLAB_HOST}`,
+      name: process.env.AUTH_GITLAB_NAME ?? DEFAULT_PROVIDER_NAME,
+      authorization: {
+        params: {
+          scope: process.env.AUTH_GITLAB_SCOPE ?? 'read_user',
+        },
+      },
+    }),
 ];
 
 export const authOptions: AuthOptions = {
@@ -198,6 +222,9 @@ export const authOptions: AuthOptions = {
       }
       if (token.error) {
         session.error = token.error;
+      }
+      if (token.provider) {
+        session.provider = token.provider;
       }
       return session;
     },

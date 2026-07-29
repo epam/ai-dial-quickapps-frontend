@@ -1,7 +1,7 @@
 'use client';
 
 import { ChatVisualizerConnector } from '@epam/ai-dial-chat-visualizer-connector';
-import { ClientSafeProvider, getProviders, useSession } from 'next-auth/react';
+import { ClientSafeProvider, getProviders, signOut, useSession } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import { FC, memo, Suspense, useEffect, useRef, useState } from 'react';
 
@@ -25,6 +25,17 @@ const HomePageContent: FC = () => {
   useEffect(() => {
     void getProviders().then(setProviders);
   }, []);
+
+  useEffect(() => {
+    if (
+      session?.provider &&
+      provider &&
+      session.provider !== provider &&
+      !session.error
+    ) {
+      void signOut({ redirect: false });
+    }
+  }, [session, provider]);
 
   useEffect(() => {
     void fetchAppSettings().then((s) => {
@@ -96,7 +107,14 @@ const HomePageContent: FC = () => {
     setIsModelReady(true);
   };
 
-  if (status === 'loading') {
+  const hasProviderMismatch = Boolean(
+    session?.provider &&
+      provider &&
+      session.provider !== provider &&
+      !session.error,
+  );
+
+  if (status === 'loading' || hasProviderMismatch) {
     return <LoadingScreen />;
   }
 

@@ -2,6 +2,22 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  serverExternalPackages: [
+    'pino',
+    'pino-pretty',
+    'thread-stream',
+    'pino-std-serializers',
+    'pino-abstract-transport',
+    'sonic-boom',
+    'atomic-sleep',
+    'process-warning',
+  ],
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '50mb',
+    },
+    optimizePackageImports: ['lodash', '@tabler/icons-react'],
+  },
   async headers() {
     return [
       {

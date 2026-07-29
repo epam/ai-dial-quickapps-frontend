@@ -11,6 +11,7 @@ import { ApplicationStatus, ToolsetAuthStatus, ToolsetAuthType } from '@/types/d
 import type { TriggerSaveGeneralPayload } from '@/types/editor-messages';
 import { isHiddenDialFolderId } from '@/utils/api';
 import { isHiddenPath } from '@/utils/dial-file-path';
+import { ForbiddenError } from '@/utils/forbidden-error';
 import { handleUnauthorizedResponse } from '@/utils/handle-unauthorized-response';
 
 /**
@@ -265,6 +266,7 @@ export async function fetchAppSettings(): Promise<AppSettings> {
 export async function fetchDialApp(appId: string): Promise<DialApp | null> {
   const res = await fetch(`/api/dial/v1/${encodeDialPath(appId)}`);
   if (res.status === 404) return null;
+  if (res.status === 403) throw new ForbiddenError();
   if (!res.ok) {
     if (handleUnauthorizedResponse(res)) {
       throw new Error(`DIAL API ${res.status} for /${appId}: session expired`);

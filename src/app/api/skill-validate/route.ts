@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { warnLog } from '@/server/logger';
 import { encodeDialPath, getDialAuth, getDialAuthHeaders } from '@/utils/server/dial-server-auth';
 
 /**
@@ -13,6 +14,7 @@ import { encodeDialPath, getDialAuth, getDialAuthHeaders } from '@/utils/server/
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const { token, dialApiHost } = await getDialAuth(req);
   if (!token || !dialApiHost) {
+    warnLog('skill-validate: unauthenticated request');
     return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 });
   }
 
@@ -22,6 +24,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   };
 
   if (!deploymentId || !url) {
+    warnLog('skill-validate: missing deploymentId or url');
     return NextResponse.json({ error: 'Missing deploymentId or url' }, { status: 400 });
   }
 
@@ -39,6 +42,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   const rawBody = await dialRes.text().catch(() => '');
+  warnLog(`skill-validate: upstream returned ${dialRes.status} for deploymentId=${deploymentId}`);
   let message = rawBody;
   try {
     const parsed: unknown = JSON.parse(rawBody);
