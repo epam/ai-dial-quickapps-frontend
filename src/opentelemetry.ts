@@ -28,7 +28,7 @@ const logsExporter = new OTLPLogExporter();
 const sdk = new NodeSDK({
   resource,
   spanProcessor: new SimpleSpanProcessor(traceExporter),
-  logRecordProcessor: new SimpleLogRecordProcessor(logsExporter),
+  logRecordProcessor: new SimpleLogRecordProcessor({ exporter: logsExporter }),
   instrumentations: [
     new HttpInstrumentation({
       ignoreIncomingRequestHook: (req) => {
