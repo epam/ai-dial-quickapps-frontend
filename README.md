@@ -34,7 +34,7 @@ App will be available at http://localhost:5000.
 
 The editor supports two authentication modes that coexist:
 
-The editor uses [NextAuth.js](https://next-auth.js.org) and supports multiple OAuth/OIDC providers: Keycloak, Azure AD, Google, Auth0, Okta, and Cognito. Enable a provider by setting all of its required environment variables (see [Environment variables](#environment-variables) below); providers with missing configuration are skipped. Multiple providers can be enabled at the same time. After sign-in the access token is kept server-side and injected into the DIAL API proxy automatically. Token refresh is handled transparently per provider.
+The editor uses [NextAuth.js](https://next-auth.js.org) and supports multiple OAuth/OIDC providers: Keycloak, Azure AD, Google, Auth0, Okta, Cognito, and GitLab. Enable a provider by setting all of its required environment variables (see [Environment variables](#environment-variables) below); providers with missing configuration are skipped. Multiple providers can be enabled at the same time. After sign-in the access token is kept server-side and injected into the DIAL API proxy automatically. Token refresh is handled transparently per provider.
 
 The proxy at `/api/dial/[...path]` tries the `dial_session` cookie first; if absent it falls back to the NextAuth session token.
 
@@ -42,7 +42,7 @@ The proxy at `/api/dial/[...path]` tries the `dial_session` cookie first; if abs
 
 For each provider you enable, register a confidential OAuth client with:
 
-- **Valid redirect URI**: `{NEXTAUTH_URL}/api/auth/callback/{provider}` — where `{provider}` is `keycloak`, `azure-ad`, `google`, `auth0`, `okta`, or `cognito`.
+- **Valid redirect URI**: `{NEXTAUTH_URL}/api/auth/callback/{provider}` — where `{provider}` is `keycloak`, `azure-ad`, `google`, `auth0`, `okta`, `cognito`, or `gitlab`.
 - **Web origin**: `{NEXTAUTH_URL}`
 
 ## Environment variables
@@ -84,11 +84,12 @@ At least one OAuth provider below must be fully configured (all of its non-`_NAM
 
 #### Google
 
-| Variable                    | Required | Description                |
-| --------------------------- | :------: | -------------------------- |
-| `AUTH_GOOGLE_CLIENT_ID`     |   Yes    | Google OAuth client ID     |
-| `AUTH_GOOGLE_CLIENT_SECRET` |   Yes    | Google OAuth client secret |
-| `AUTH_GOOGLE_NAME`          |    No    | Sign-in button label       |
+| Variable                    | Required | Default                                   | Description                                        |
+| --------------------------- | :------: | ----------------------------------------- | -------------------------------------------------- |
+| `AUTH_GOOGLE_CLIENT_ID`     |   Yes    |                                           | Google OAuth client ID                             |
+| `AUTH_GOOGLE_CLIENT_SECRET` |   Yes    |                                           | Google OAuth client secret                         |
+| `AUTH_GOOGLE_NAME`          |    No    | `SSO`                                     | Sign-in button label                               |
+| `AUTH_GOOGLE_SCOPE`         |    No    | `openid email profile offline_access`     | Space-separated OAuth scopes                       |
 
 #### Auth0
 
@@ -116,6 +117,16 @@ At least one OAuth provider below must be fully configured (all of its non-`_NAM
 | `AUTH_COGNITO_CLIENT_SECRET` |   Yes    | Cognito app client secret                                                                        |
 | `AUTH_COGNITO_ISSUER`        |   Yes    | Cognito user pool issuer URL, e.g. `https://cognito-idp.us-east-1.amazonaws.com/us-east-1_xxxxx` |
 | `AUTH_COGNITO_NAME`          |    No    | Sign-in button label                                                                             |
+
+#### GitLab
+
+| Variable              | Required | Default      | Description                                                              |
+| --------------------- | :------: | ------------ | ------------------------------------------------------------------------ |
+| `AUTH_GITLAB_CLIENT_ID` |   Yes  |              | GitLab OAuth application ID                                              |
+| `AUTH_GITLAB_SECRET`    |   Yes  |              | GitLab OAuth application secret                                          |
+| `AUTH_GITLAB_HOST`      |   Yes  |              | GitLab hostname, e.g. `gitlab.example.com` (without `https://`)          |
+| `AUTH_GITLAB_NAME`      |    No  | `SSO`        | Sign-in button label                                                     |
+| `AUTH_GITLAB_SCOPE`     |    No  | `read_user`  | Space-separated OAuth scopes                                             |
 
 ### DIAL core
 

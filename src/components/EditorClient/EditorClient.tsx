@@ -2,11 +2,13 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import { AppContextProvider, type AppState } from '@/context/AppContext';
+import ForbiddenPage from '@/components/ForbiddenPage/ForbiddenPage';
 import LoadingScreen from '@/components/LoadingScreen/LoadingScreen';
 import { DataContextProvider } from '@/context/DataContext';
 import { buildQuickApp2Config } from '@/form/quickApp2Form';
 import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { QuickApp2Config } from '@/types/quick-apps';
+import { ForbiddenError } from '@/utils/forbidden-error';
 import { decodeDialPath, fetchAppSettings, fetchDialApp, saveDialApp } from '@/utils/dialClient';
 import { hasQuickAppChanges } from '@/utils/has-quick-app-changes';
 import { QuickApp2Form, type QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form';
@@ -92,6 +94,7 @@ interface EditorClientProps {
 export default function EditorClient({ onReadyToSave }: EditorClientProps) {
   const [appState, setAppState] = useState<AppState | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isForbidden, setIsForbidden] = useState(false);
   const [resetKey, setResetKey] = useState(0);
   const [hasSavedOnce, setHasSavedOnce] = useState(false);
   const isDirtyRef = useRef(false);
@@ -128,7 +131,12 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
         })
         .catch((err: unknown) => {
           isInitializedRef.current = false;
-          if (!cancelled) setError(err instanceof Error ? err.message : 'Initialization failed');
+          if (cancelled) return;
+          if (err instanceof ForbiddenError) {
+            setIsForbidden(true);
+            return;
+          }
+          setError(err instanceof Error ? err.message : 'Initialization failed');
         });
     }
 
@@ -267,6 +275,10 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
       );
     }
   }, []);
+
+  if (isForbidden) {
+    return <ForbiddenPage />;
+  }
 
   if (error) {
     return <div className="flex h-screen items-center justify-center text-red-500">{error}</div>;
