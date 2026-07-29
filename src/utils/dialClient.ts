@@ -10,6 +10,8 @@ import type { QuickApp2Config } from '@/types/quick-apps';
 import { ApplicationStatus, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
 import type { TriggerSaveGeneralPayload } from '@/types/editor-messages';
 import { isHiddenDialFolderId } from '@/utils/api';
+import { isHiddenPath } from '@/utils/dial-file-path';
+import { ForbiddenError } from '@/utils/forbidden-error';
 import { handleUnauthorizedResponse } from '@/utils/handle-unauthorized-response';
 
 /**
@@ -264,6 +266,7 @@ export async function fetchAppSettings(): Promise<AppSettings> {
 export async function fetchDialApp(appId: string): Promise<DialApp | null> {
   const res = await fetch(`/api/dial/v1/${encodeDialPath(appId)}`);
   if (res.status === 404) return null;
+  if (res.status === 403) throw new ForbiddenError();
   if (!res.ok) {
     if (handleUnauthorizedResponse(res)) {
       throw new Error(`DIAL API ${res.status} for /${appId}: session expired`);
@@ -310,7 +313,7 @@ export async function saveDialApp(
     // copy — this is the single write that replaces the host's own second
     // update-application call. `version` is deliberately never touched here.
     display_name: general?.name ?? rawForSave.display_name ?? app.name,
-    display_version: rawForSave.display_version,
+    display_version: general?.display_version ?? rawForSave.display_version,
     icon_url: general ? general.iconUrl : rawForSave.icon_url,
     description: general ? general.description : rawForSave.description,
     features: rawForSave.features,
@@ -350,7 +353,7 @@ export async function saveDialApp(
 
 export async function fetchDialToolsets(): Promise<DialToolset[]> {
   const res = await dialFetch<{ data: ToolsetApiEntity[] }>('/openai/toolsets');
-  return res.data.map(mapApiToDialToolset);
+  return res.data.map(mapApiToDialToolset).filter((t) => !isHiddenPath(t.id));
 }
 
 export interface DialFileMetadataItem {
@@ -392,7 +395,8 @@ async function fetchPromptsFromBucket(bucket: string): Promise<DialPrompt[]> {
         name: item.name,
         folderId: id.slice(0, id.lastIndexOf('/')),
       };
-    });
+    })
+    .filter(({ id }) => !isHiddenPath(id));
 }
 
 export async function fetchDialPrompts(): Promise<DialPrompt[]> {

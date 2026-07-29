@@ -2,6 +2,8 @@ import { getToken } from 'next-auth/jwt';
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
 
+import { warnLog } from '@/server/logger';
+
 const COOKIE_NAME = 'dial_session';
 
 interface DialSessionData {
@@ -16,6 +18,7 @@ export const getDialSession = async (): Promise<DialSessionData | null> => {
   try {
     return JSON.parse(cookie.value) as DialSessionData;
   } catch {
+    warnLog('dial-server-auth: failed to parse session cookie');
     return null;
   }
 };

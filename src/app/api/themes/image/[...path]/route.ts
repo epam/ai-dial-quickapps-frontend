@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { errorObjLog } from '@/server/logger';
+
 const rawThemesUrl = process.env.THEMES_URL;
 const THEME_BASE_URL = rawThemesUrl
   ? rawThemesUrl.replace(/\/config\.json$/, '').replace(/\/$/, '')
@@ -27,7 +29,8 @@ export async function GET(_req: NextRequest, { params }: RouteContext): Promise<
       status: 200,
       headers: { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=3600' },
     });
-  } catch {
+  } catch (error) {
+    errorObjLog(error, `themes/image: failed to fetch ${imageUrl}`);
     return new NextResponse(null, { status: 502 });
   }
 }

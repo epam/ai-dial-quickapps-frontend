@@ -9,6 +9,7 @@ export interface StoredGeneralFields {
   iconUrl?: string;
   topics?: string[];
   intro?: string;
+  display_version?: string;
 }
 
 type FieldDiff = Record<string, { before: unknown; after: unknown }>;
@@ -59,6 +60,12 @@ export const hasQuickAppChanges = (
   }
   if (!isEqual(general.topics, storedGeneral.topics)) {
     generalDiff.topics = { before: storedGeneral.topics, after: general.topics };
+  }
+  if (general.display_version !== storedGeneral.display_version) {
+    generalDiff.display_version = {
+      before: storedGeneral.display_version,
+      after: general.display_version,
+    };
   }
 
   return { hasChanges: Object.keys(generalDiff).length > 0 };

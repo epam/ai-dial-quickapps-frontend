@@ -1,22 +1,16 @@
 'use client';
 
 import { ChatVisualizerConnector } from '@epam/ai-dial-chat-visualizer-connector';
-import { DialLoader } from '@epam/ai-dial-ui-kit';
-import { ClientSafeProvider, getProviders, useSession } from 'next-auth/react';
+import { ClientSafeProvider, getProviders, signOut, useSession } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import { FC, memo, Suspense, useEffect, useRef, useState } from 'react';
 
 import AuthError from '@/components/AuthError/AuthError';
 import EditorClient from '@/components/EditorClient/EditorClient';
+import LoadingScreen from '@/components/LoadingScreen/LoadingScreen';
 import LoginPrompt from '@/components/LoginPrompt/LoginPrompt';
 import { AppSettings } from '@/types/dial-entities';
 import { fetchAppSettings } from '@/utils/dialClient';
-
-const LoadingScreen: FC = () => (
-  <div className="flex h-screen items-center justify-center">
-    <DialLoader size={50} />
-  </div>
-);
 
 const HomePageContent: FC = () => {
   const searchParams = useSearchParams();
@@ -31,6 +25,17 @@ const HomePageContent: FC = () => {
   useEffect(() => {
     void getProviders().then(setProviders);
   }, []);
+
+  useEffect(() => {
+    if (
+      session?.provider &&
+      provider &&
+      session.provider !== provider &&
+      !session.error
+    ) {
+      void signOut({ redirect: false });
+    }
+  }, [session, provider]);
 
   useEffect(() => {
     void fetchAppSettings().then((s) => {
@@ -102,7 +107,14 @@ const HomePageContent: FC = () => {
     setIsModelReady(true);
   };
 
-  if (status === 'loading') {
+  const hasProviderMismatch = Boolean(
+    session?.provider &&
+      provider &&
+      session.provider !== provider &&
+      !session.error,
+  );
+
+  if (status === 'loading' || hasProviderMismatch) {
     return <LoadingScreen />;
   }
 
