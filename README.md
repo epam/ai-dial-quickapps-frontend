@@ -24,11 +24,11 @@ From the project root, run:
 
 `docker build -t ai-dial-quickapps-frontend .`
 
-Then to run it, mapping the container's port 3003 to a local port:
+Then to run it, mapping the container's port 5000 to a local port:
 
-`docker run -p 3003:3003 ai-dial-quickapps-frontend`
+`docker run -p 5000:5000 ai-dial-quickapps-frontend`
 
-App will be available at http://localhost:3003.
+App will be available at http://localhost:5000.
 
 ## Authentication
 
