@@ -1,6 +1,7 @@
 import { getToken } from 'next-auth/jwt';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { errorLog, errorObjLog, warnLog } from '@/server/logger';
 import { getDialAuthHeaders } from '@/utils/server/dial-server-auth';
 
 type RouteContext = { params: Promise<{ path: string[] }> };
@@ -8,6 +9,7 @@ type RouteContext = { params: Promise<{ path: string[] }> };
 const proxyDial = async (req: NextRequest, { params }: RouteContext): Promise<NextResponse> => {
   const jwtToken = await getToken({ req });
   if (!jwtToken?.accessToken || jwtToken.error) {
+    warnLog('dial-proxy: unauthenticated request');
     return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 });
   }
 
@@ -15,6 +17,7 @@ const proxyDial = async (req: NextRequest, { params }: RouteContext): Promise<Ne
   const dialApiHost = process.env.DIAL_CORE_URL;
 
   if (!dialApiHost) {
+    errorLog('dial-proxy: DIAL_CORE_URL is not configured');
     return NextResponse.json({ error: 'DIAL_CORE_URL is not configured.' }, { status: 500 });
   }
 
@@ -54,8 +57,9 @@ const proxyDial = async (req: NextRequest, { params }: RouteContext): Promise<Ne
   if (isJsonOrText) {
     const responseBody = await backendRes.text();
     if (!backendRes.ok) {
-      console.error(
-        `[dial-proxy] ${req.method} ${backendUrl} -> ${backendRes.status}: ${responseBody}`,
+      errorObjLog(
+        { message: responseBody, statusCode: backendRes.status },
+        `dial-proxy: ${req.method} ${backendUrl} -> ${backendRes.status}`,
       );
     }
     return new NextResponse(responseBody, {
@@ -65,7 +69,7 @@ const proxyDial = async (req: NextRequest, { params }: RouteContext): Promise<Ne
   }
 
   if (!backendRes.ok) {
-    console.error(`[dial-proxy] ${req.method} ${backendUrl} -> ${backendRes.status}`);
+    errorLog(`dial-proxy: ${req.method} ${backendUrl} -> ${backendRes.status}`);
   }
 
   return new NextResponse(backendRes.body, {

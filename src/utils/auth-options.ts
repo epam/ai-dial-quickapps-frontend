@@ -1,5 +1,7 @@
 import type { AuthOptions } from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
+
+import { errorObjLog } from '@/server/logger';
 import Auth0Provider from 'next-auth/providers/auth0';
 import AzureADProvider from 'next-auth/providers/azure-ad';
 import CognitoProvider from 'next-auth/providers/cognito';
@@ -103,7 +105,8 @@ const refreshAccessToken = async (token: JWT): Promise<JWT> => {
       refreshToken: refreshed.refresh_token ?? token.refreshToken,
       error: undefined,
     };
-  } catch {
+  } catch (error) {
+    errorObjLog(error, `auth: failed to refresh token for provider ${String(token.provider)}`);
     return { ...token, error: 'RefreshAccessTokenError' };
   }
 };

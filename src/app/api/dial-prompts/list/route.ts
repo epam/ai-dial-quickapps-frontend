@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { errorLog, warnLog } from '@/server/logger';
 import {
   getDialAuth,
   getDialAuthHeaders,
@@ -22,6 +23,7 @@ import {
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const { token, dialApiHost } = await getDialAuth(req);
   if (!token || !dialApiHost) {
+    warnLog('dial-prompts/list: unauthenticated request');
     return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 });
   }
 
@@ -32,6 +34,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const limit = sp.get('limit') ?? '1000';
 
   if (!bucket) {
+    warnLog('dial-prompts/list: missing bucket parameter');
     return NextResponse.json({ error: 'Missing bucket' }, { status: 400 });
   }
 
@@ -47,6 +50,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   });
 
   const body = await dialRes.text();
+  if (!dialRes.ok) {
+    errorLog(`dial-prompts/list: upstream error ${dialRes.status} for bucket=${bucket}`);
+  }
   return new NextResponse(body, {
     status: dialRes.status,
     headers: JSON_CONTENT_TYPE_HEADERS,

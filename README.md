@@ -84,12 +84,12 @@ At least one OAuth provider below must be fully configured (all of its non-`_NAM
 
 #### Google
 
-| Variable                    | Required | Default                                   | Description                                        |
-| --------------------------- | :------: | ----------------------------------------- | -------------------------------------------------- |
-| `AUTH_GOOGLE_CLIENT_ID`     |   Yes    |                                           | Google OAuth client ID                             |
-| `AUTH_GOOGLE_CLIENT_SECRET` |   Yes    |                                           | Google OAuth client secret                         |
-| `AUTH_GOOGLE_NAME`          |    No    | `SSO`                                     | Sign-in button label                               |
-| `AUTH_GOOGLE_SCOPE`         |    No    | `openid email profile offline_access`     | Space-separated OAuth scopes                       |
+| Variable                    | Required | Default                               | Description                  |
+| --------------------------- | :------: | ------------------------------------- | ---------------------------- |
+| `AUTH_GOOGLE_CLIENT_ID`     |   Yes    |                                       | Google OAuth client ID       |
+| `AUTH_GOOGLE_CLIENT_SECRET` |   Yes    |                                       | Google OAuth client secret   |
+| `AUTH_GOOGLE_NAME`          |    No    | `SSO`                                 | Sign-in button label         |
+| `AUTH_GOOGLE_SCOPE`         |    No    | `openid email profile offline_access` | Space-separated OAuth scopes |
 
 #### Auth0
 
@@ -120,13 +120,13 @@ At least one OAuth provider below must be fully configured (all of its non-`_NAM
 
 #### GitLab
 
-| Variable              | Required | Default      | Description                                                              |
-| --------------------- | :------: | ------------ | ------------------------------------------------------------------------ |
-| `AUTH_GITLAB_CLIENT_ID` |   Yes  |              | GitLab OAuth application ID                                              |
-| `AUTH_GITLAB_SECRET`    |   Yes  |              | GitLab OAuth application secret                                          |
-| `AUTH_GITLAB_HOST`      |   Yes  |              | GitLab hostname, e.g. `gitlab.example.com` (without `https://`)          |
-| `AUTH_GITLAB_NAME`      |    No  | `SSO`        | Sign-in button label                                                     |
-| `AUTH_GITLAB_SCOPE`     |    No  | `read_user`  | Space-separated OAuth scopes                                             |
+| Variable                | Required | Default     | Description                                                     |
+| ----------------------- | :------: | ----------- | --------------------------------------------------------------- |
+| `AUTH_GITLAB_CLIENT_ID` |   Yes    |             | GitLab OAuth application ID                                     |
+| `AUTH_GITLAB_SECRET`    |   Yes    |             | GitLab OAuth application secret                                 |
+| `AUTH_GITLAB_HOST`      |   Yes    |             | GitLab hostname, e.g. `gitlab.example.com` (without `https://`) |
+| `AUTH_GITLAB_NAME`      |    No    | `SSO`       | Sign-in button label                                            |
+| `AUTH_GITLAB_SCOPE`     |    No    | `read_user` | Space-separated OAuth scopes                                    |
 
 ### DIAL core
 
@@ -136,11 +136,11 @@ At least one OAuth provider below must be fully configured (all of its non-`_NAM
 
 ### Chat visualizer connector
 
-| Variable                      | Required | Description                                                                                                    |
-| ------------------------------ | :------: | ---------------------------------------------------------------------------------------------------------------- |
-| `DIAL_ADMIN_URL`               |    No    | Origin of the admin host this app is embedded in. Used as the default target for `@epam/ai-dial-chat-visualizer-connector`. |
-| `DIAL_CHAT_URL`                |    No    | Origin of the `ai-dial-chat` host. Used instead of `DIAL_ADMIN_URL` when the app detects it's embedded directly inside chat (`document.location.ancestorOrigins[0]` matches this value). |
-| `QUICK_APPS_APPLICATION_NAME`  |    No    | Visualizer name, must match the `title` configured for this app in `ai-dial-chat`'s visualizer settings. Required (together with at least one of the hosts above) for the visualizer connector to activate. |
+| Variable                      | Required | Description                                                                                                                                                                                                 |
+| ----------------------------- | :------: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DIAL_ADMIN_URL`              |    No    | Origin of the admin host this app is embedded in. Used as the default target for `@epam/ai-dial-chat-visualizer-connector`.                                                                                 |
+| `DIAL_CHAT_URL`               |    No    | Origin of the `ai-dial-chat` host. Used instead of `DIAL_ADMIN_URL` when the app detects it's embedded directly inside chat (`document.location.ancestorOrigins[0]` matches this value).                    |
+| `QUICK_APPS_APPLICATION_NAME` |    No    | Visualizer name, must match the `title` configured for this app in `ai-dial-chat`'s visualizer settings. Required (together with at least one of the hosts above) for the visualizer connector to activate. |
 
 ### Themes
 
@@ -156,11 +156,11 @@ At least one OAuth provider below must be fully configured (all of its non-`_NAM
 
 ### Security
 
-| Variable                  | Required | Default  | Description                                                                                                                                                                    |
-| ------------------------- | :------: | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ALLOWED_FRAME_ANCESTORS` |    No    | `'self'` | Space-separated list of origins allowed to embed this app in an `<iframe>`, sent as the CSP `frame-ancestors` directive. Set to the exact `ai-dial-chat` URL(s) in production. |
-| `ALLOWED_ORIGIN`          |    No    | `*`      | Origin allowed to send `postMessage` events to the editor iframe. Set to the exact ai-dial-chat URL in production (e.g. `https://chat.example.com`). Using `*` accepts messages from any origin — fine for local dev, **unsafe for production**. Served to the client via `/api/settings`. |
-| `QUICK_APPS_DEFAULT_MODEL` |    No    | `gpt-4o` | Model ID pre-selected in the form when no model is stored in the app config. Served to the client via `/api/settings`. |
+| Variable                   | Required | Default  | Description                                                                                                                                                                                                                                                                                |
+| -------------------------- | :------: | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ALLOWED_FRAME_ANCESTORS`  |    No    | `'self'` | Space-separated list of origins allowed to embed this app in an `<iframe>`, sent as the CSP `frame-ancestors` directive. Set to the exact `ai-dial-chat` URL(s) in production.                                                                                                             |
+| `ALLOWED_ORIGIN`           |    No    | `*`      | Origin allowed to send `postMessage` events to the editor iframe. Set to the exact ai-dial-chat URL in production (e.g. `https://chat.example.com`). Using `*` accepts messages from any origin — fine for local dev, **unsafe for production**. Served to the client via `/api/settings`. |
+| `QUICK_APPS_DEFAULT_MODEL` |    No    | `gpt-4o` | Model ID pre-selected in the form when no model is stored in the app config. Served to the client via `/api/settings`.                                                                                                                                                                     |
 
 ## Content Security Policy
 
@@ -178,21 +178,41 @@ document.querySelector('iframe').contentWindow.postMessage({ type: 'TRIGGER_SAVE
 
 **Host → iframe**
 
-| Message type        | Payload                                                                                                      | Description                                                                                                                                                                                                    |
-| ------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Message type        | Payload                                                                                                     | Description                                                                                                                                                                                                                                                              |
+| ------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `TRIGGER_SAVE`      | `{ general?: { name: string; description?: string; iconUrl?: string; topics?: string[]; intro?: string } }` | Triggers a manual save. `general` carries the host's current General-step fields for an existing app so they're merged into this single save instead of a separate host-side write; omitted for Preview or for an app created in this session. Never includes `version`. |
-| `TRIGGER_AUTO_SAVE` | `{ ignoreDirty?: boolean }`                                                                                   | Triggers an auto-save                                                                                                                                                                                          |
-| `RESET`             | —                                                                                                             | Resets the form to the last saved state                                                                                                                                                                        |
+| `TRIGGER_AUTO_SAVE` | `{ ignoreDirty?: boolean }`                                                                                 | Triggers an auto-save                                                                                                                                                                                                                                                    |
+| `RESET`             | —                                                                                                           | Resets the form to the last saved state                                                                                                                                                                                                                                  |
 
 In addition to host-triggered `TRIGGER_AUTO_SAVE` messages, the editor auto-saves itself on a 30-second interval (only when the form is dirty) while mounted — no host action is required.
 
 **Iframe → host**
 
-| Message type         | Payload                | Description                               |
-| -------------------- | ---------------------- | ----------------------------------------- |
-| `READY`              | —                      | Editor mounted; host should send `INIT`   |
-| `DIRTY_STATE`        | `{ isDirty: boolean }` | Form dirty state changed                  |
+| Message type         | Payload                                 | Description                                                                                                   |
+| -------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `READY`              | —                                       | Editor mounted; host should send `INIT`                                                                       |
+| `DIRTY_STATE`        | `{ isDirty: boolean }`                  | Form dirty state changed                                                                                      |
 | `SAVE_SUCCESS`       | `{ updatedApp }`, `hasChanges: boolean` | Save completed successfully; `hasChanges` is `true` if any user-editable field changed versus a no-op re-save |
-| `SAVE_ERROR`         | `{ error: string }`    | Save failed                               |
-| `AUTO_SAVE_COMPLETE` | —                      | Auto-save completed successfully          |
-| `HEIGHT_CHANGE`      | `{ height: number }`   | Editor height changed (for iframe resize) |
+| `SAVE_ERROR`         | `{ error: string }`                     | Save failed                                                                                                   |
+| `AUTO_SAVE_COMPLETE` | —                                       | Auto-save completed successfully                                                                              |
+| `HEIGHT_CHANGE`      | `{ height: number }`                    | Editor height changed (for iframe resize)                                                                     |
+
+## Setup OpenTelemetry
+
+All standard env variables you could find in the official [opentelemetry documentation](https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/).
+If no value set for the **OTEL_METRICS_EXPORTER** then [OpenTelemetry Prometheus Metric Exporter](https://www.npmjs.com/package/@opentelemetry/exporter-prometheus) will be used. If value set to _"otlp"_ the [OpenTelemetry Collector Metrics Exporter for web and node](https://www.npmjs.com/package/@opentelemetry/exporter-metrics-otlp-http) will be used.
+
+### Using Telemetry locally
+
+Clone `https://github.com/vercel/opentelemetry-collector-dev-setup` locally and run `docker-compose up -d`
+
+### Environment Variables for the Configuration of Opentelemetry
+
+> **Note**: use can find full list of parameters here `https://opentelemetry.io/docs/languages/sdk-configuration/`
+
+| Variable                      | Required | Description                              | Available Values               | Default values                                        | Example value         |
+| ----------------------------- | :------: | ---------------------------------------- | ------------------------------ | ----------------------------------------------------- | --------------------- |
+| `OTEL_SERVICE_NAME`           |    No    | What name is assigned to service in logs | Any string                     | name from package.json (@dial/source) or 'dial-admin' |                       |
+| `OTEL_METRICS_EXPORTER`       |    No    | What to use as metrics exporter          | "otlp" or empty                | empty, it means that Prometheus will be used          |                       |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` |    No    | Collector endpoint address               | Any valid url                  |                                                       | http://localhost:4318 |
+| `OTEL_EXPORTER_OTLP_PROTOCOL` |    No    | Which protocol to use                    | grpc, http/protobuf, http/json |                                                       |                       |
