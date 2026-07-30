@@ -132,6 +132,13 @@ const authProviders: (Provider | false)[] = [
       clientSecret: process.env.AUTH_AZURE_AD_CLIENT_SECRET!,
       tenantId: process.env.AUTH_AZURE_AD_TENANT_ID,
       name: process.env.AUTH_AZURE_AD_NAME ?? DEFAULT_PROVIDER_NAME,
+      authorization: {
+        params: {
+          scope:
+            process.env.AUTH_AZURE_AD_SCOPE ??
+            'openid profile user.Read email offline_access',
+        },
+      },
     }),
 
   !!process.env.AUTH_GOOGLE_CLIENT_ID &&

@@ -1,11 +1,28 @@
+import { signOut } from 'next-auth/react';
+
+const RELOAD_TS_KEY = 'dial_auth_401_ts';
+const LOOP_WINDOW_MS = 30_000;
+
 /**
- * When the DIAL Core proxy returns 401 (access token expired and the
- * refresh attempt failed server-side), the client has no valid session to
- * recover with on its own. Reload so the root server component re-checks
- * the session and falls back to the sign-in prompt.
+ * Shared handler for any 401 path (fetch or XHR). On the first 401 after a
+ * successful session, reloads once — NextAuth may refresh an expired token
+ * server-side. If another 401 arrives within LOOP_WINDOW_MS (token is
+ * permanently invalid for DIAL Core, e.g. wrong audience), signs out instead
+ * of looping indefinitely.
  */
+export const handleUnauthorized401 = (): void => {
+  const lastReload = Number(sessionStorage.getItem(RELOAD_TS_KEY) ?? 0);
+  if (Date.now() - lastReload < LOOP_WINDOW_MS) {
+    sessionStorage.removeItem(RELOAD_TS_KEY);
+    void signOut({ callbackUrl: '/' });
+  } else {
+    sessionStorage.setItem(RELOAD_TS_KEY, String(Date.now()));
+    window.location.reload();
+  }
+};
+
 export const handleUnauthorizedResponse = (res: Response): boolean => {
   if (res.status !== 401) return false;
-  window.location.reload();
+  handleUnauthorized401();
   return true;
 };

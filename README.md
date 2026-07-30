@@ -81,6 +81,7 @@ At least one OAuth provider below must be fully configured (all of its non-`_NAM
 | `AUTH_AZURE_AD_CLIENT_SECRET` |   Yes    | Azure AD client secret           |
 | `AUTH_AZURE_AD_TENANT_ID`     |   Yes    | Azure AD tenant ID               |
 | `AUTH_AZURE_AD_NAME`          |    No    | Sign-in button label             |
+| `AUTH_AZURE_AD_SCOPE`         |    No    | Space-separated OAuth scopes     |
 
 #### Google
 
