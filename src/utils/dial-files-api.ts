@@ -1,5 +1,8 @@
 import { DIAL_HIDDEN_FOLDER_MARKER } from '@/constants/dial-files';
-import { handleUnauthorizedResponse } from '@/utils/handle-unauthorized-response';
+import {
+  handleUnauthorized401,
+  handleUnauthorizedResponse,
+} from '@/utils/handle-unauthorized-response';
 
 export interface ListFilesItem {
   name: string;
@@ -371,7 +374,7 @@ export async function uploadFile(
           const name = path.split('/').pop() ?? file.name;
           resolve({ name, path: `files/${bucket}/${path}`, bucket });
         } else {
-          if (xhr.status === 401) window.location.reload();
+          if (xhr.status === 401) handleUnauthorized401();
           reject(new Error(`Upload failed: ${xhr.status}`));
         }
       });
