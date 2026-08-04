@@ -126,6 +126,8 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     }
   }, [status, modelValue, onModelReady]);
 
+  const isProcessLargeFilesAvailable = !!modelsMap[modelValue]?.inputAttachmentTypes?.length;
+
   useEffect(() => {
     if (!settings.isCodeInterpreterEnabled) {
       setValue('codeInterpreter', false);
@@ -265,6 +267,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         errors={errors}
         isReadonly={isReadonly}
         tooltip={sharedTooltip}
+        isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
       />
 
       <hr className="border-secondary" />
