@@ -52,6 +52,7 @@ interface CoreApiEntity {
     status?: ApplicationStatus;
   };
   updated_at?: string | number;
+  input_attachment_types?: string[];
 }
 
 interface ToolsetApiAuthSettings {
@@ -133,6 +134,7 @@ function mapCoreToDialModel(entity: CoreApiEntity): DialModel {
       : undefined,
     functionStatus: entity.function?.status,
     updatedAt: entity.updated_at,
+    inputAttachmentTypes: entity.input_attachment_types,
   };
 }
 

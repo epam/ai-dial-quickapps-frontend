@@ -1,4 +1,10 @@
-import { DialDeploymentToolsetToolTypes, ToolsetTypes } from '@/constants/quick-apps';
+import {
+  DialDeploymentToolsetToolTypes,
+  ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE,
+  REPRESENTATION_TOOLING_FEATURE_VALUE,
+  ToolsetTypes,
+  WEB_FETCH_FEATURE_VALUE,
+} from '@/constants/quick-apps';
 
 export enum ToolsetTransportType {
   HTTP = 'HTTP',
@@ -98,6 +104,7 @@ export interface QuickApp2Config {
       variables: object;
       content: string;
     };
+    attachment_strategy?: typeof ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE;
   };
   contexts: FileContext[];
   tool_sets: AnyToolset[];
@@ -109,6 +116,9 @@ export interface QuickApp2Config {
     timestamp?: {
       injection_strategy: 'tool_call';
     } | null;
+    dial_files?: object | null;
+    representation_tooling?: typeof REPRESENTATION_TOOLING_FEATURE_VALUE;
+    web_fetch?: typeof WEB_FETCH_FEATURE_VALUE;
   };
 }
 

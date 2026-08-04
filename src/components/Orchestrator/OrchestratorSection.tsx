@@ -9,6 +9,7 @@ import { Translation } from '@/types/translation';
 import { FormCollapsibleSection } from '@/components/common/FormCollapsibleSection';
 import { DialMarkdownEditorContainer } from '@/components/common/MarkdownEditor/MarkdownEditorContainer';
 import { TemperatureSlider } from '@/components/common/Temperature';
+import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
 
 import { ModelField } from './ModelField';
 
@@ -19,6 +20,7 @@ export interface OrchestratorSectionProps {
   errors: FieldErrors<QuickApp2FormType>;
   isReadonly: boolean;
   tooltip?: string;
+  isProcessLargeFilesAvailable: boolean;
 }
 
 const OrchestratorSection: FC<OrchestratorSectionProps> = ({
@@ -26,6 +28,7 @@ const OrchestratorSection: FC<OrchestratorSectionProps> = ({
   errors,
   isReadonly,
   tooltip,
+  isProcessLargeFilesAvailable,
 }) => {
   const { t } = useTranslation(Translation.Marketplace);
 
@@ -79,6 +82,29 @@ const OrchestratorSection: FC<OrchestratorSectionProps> = ({
           )}
         />
       </DialFormItem>
+
+      {isProcessLargeFilesAvailable && (
+        <DialFormItem
+          label={t(MarketplaceI18nKeys.ProcessFiles)}
+          description={t(MarketplaceI18nKeys.ProcessFilesDescription)}
+          className="!py-0"
+        >
+          <Controller
+            control={control}
+            name="processLargeFiles"
+            render={({ field }) => (
+              <ToggleSwitch
+                isOn={field.value}
+                handleSwitch={() => field.onChange(!field.value)}
+                disabled={isReadonly}
+                additionalText={t(MarketplaceI18nKeys.AllowOrchestratorToProcessFiles)}
+                className="flex items-center gap-2"
+                tooltip={tooltip}
+              />
+            )}
+          />
+        </DialFormItem>
+      )}
     </FormCollapsibleSection>
   );
 };

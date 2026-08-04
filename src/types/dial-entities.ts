@@ -52,6 +52,7 @@ export interface DialModel {
   updatedAt?: string | number;
   isUserFavorite?: boolean;
   isStarred?: boolean;
+  inputAttachmentTypes?: string[];
   [key: string]: unknown;
 }
 

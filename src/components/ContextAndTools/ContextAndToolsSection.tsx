@@ -10,6 +10,7 @@ import { decodeFileUrl } from '@/utils/decode-file-url';
 
 import { FilesSelector } from '@/components/common/FilesSelector/FilesSelector';
 import { FormCollapsibleSection } from '@/components/common/FormCollapsibleSection';
+import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
 
 import { AgentsAndToolsetsField } from './AgentsAndToolsetsField';
 import { CodeInterpreterField } from './CodeInterpreterField';
@@ -97,7 +98,7 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
         <DialFormItem
           label={t(MarketplaceI18nKeys.CodeInterpreter)}
           description={t(MarketplaceI18nKeys.CodeInterpreterInfo)}
-          className="mb-4"
+          className="!py-0"
         >
           <Controller
             control={control}
@@ -113,6 +114,69 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
           />
         </DialFormItem>
       )}
+
+      <DialFormItem
+        label={t(MarketplaceI18nKeys.FileTools)}
+        description={t(MarketplaceI18nKeys.FileToolsDescription)}
+        className="!py-0"
+      >
+        <Controller
+          control={control}
+          name="fileTools"
+          render={({ field }) => (
+            <ToggleSwitch
+              isOn={field.value}
+              handleSwitch={() => field.onChange(!field.value)}
+              disabled={isReadonly}
+              additionalText={t(MarketplaceI18nKeys.AllowTheAgentToAccessAppFiles)}
+              className="flex items-center gap-2"
+              tooltip={tooltip}
+            />
+          )}
+        />
+      </DialFormItem>
+
+      <DialFormItem
+        label={t(MarketplaceI18nKeys.AddAttachment)}
+        description={t(MarketplaceI18nKeys.AddAttachmentDescription)}
+        className="!py-0"
+      >
+        <Controller
+          control={control}
+          name="addAttachment"
+          render={({ field }) => (
+            <ToggleSwitch
+              isOn={field.value}
+              handleSwitch={() => field.onChange(!field.value)}
+              disabled={isReadonly}
+              additionalText={t(MarketplaceI18nKeys.AllowTheAgentToAttachFilesToTheResponse)}
+              className="flex items-center gap-2"
+              tooltip={tooltip}
+            />
+          )}
+        />
+      </DialFormItem>
+
+      <DialFormItem
+        label={t(MarketplaceI18nKeys.WebFetch)}
+        description={t(MarketplaceI18nKeys.WebFetchDescription)}
+        className="!py-0"
+      >
+        <Controller
+          control={control}
+          name="webFetch"
+          render={({ field }) => (
+            <ToggleSwitch
+              isOn={field.value}
+              handleSwitch={() => field.onChange(!field.value)}
+              disabled={isReadonly}
+              additionalText={t(MarketplaceI18nKeys.AllowTheAgentToFetchWebResources)}
+              className="flex items-center gap-2"
+              tooltip={tooltip}
+            />
+          )}
+        />
+      </DialFormItem>
     </FormCollapsibleSection>
   );
 };
