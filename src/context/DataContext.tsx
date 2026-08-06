@@ -17,6 +17,8 @@ import type {
   PromptsMap,
   ToolsetsMap,
 } from '@/types/dial-entities';
+import { InboundMessageType, ToolsetAuthResultPayload } from '@/types/editor-messages';
+import { applyToolsetLoginResult } from '@/utils/apply-toolset-login-result';
 import { fetchDialModels, fetchDialPrompts, fetchDialToolsets } from '@/utils/dialClient';
 import { fetchFavoriteIds } from '@/utils/user-config';
 
@@ -41,6 +43,7 @@ type DataAction =
   | { type: 'LOADING' }
   | { type: 'MODELS_LOADED'; payload: DialModel[] }
   | { type: 'TOOLSETS_LOADED'; payload: DialToolset[] }
+  | { type: 'TOOLSET_LOGIN_RESULT_APPLIED'; payload: ToolsetAuthResultPayload }
   | { type: 'PROMPTS_LOADED'; payload: DialPrompt[] }
   | { type: 'FILES_LOADED'; payload: string[] }
   | { type: 'FAVORITES_LOADED'; payload: { ids: Set<string>; error?: string } }
@@ -71,6 +74,20 @@ function reducer(state: DataState, action: DataAction): DataState {
     case 'TOOLSETS_LOADED': {
       const toolsetsMap = Object.fromEntries(action.payload.map((t) => [t.id, t]));
       return { ...state, toolsets: action.payload, toolsetsMap };
+    }
+    case 'TOOLSET_LOGIN_RESULT_APPLIED': {
+      const existing = state.toolsetsMap[action.payload.toolsetId];
+      // Unrelated logins elsewhere in the host app are expected to arrive
+      // here too — silently ignore anything not in the current config.
+      if (!existing) return state;
+
+      const updated = applyToolsetLoginResult(existing, action.payload);
+      const toolsets = state.toolsets.map((t) => (t.id === updated.id ? updated : t));
+      return {
+        ...state,
+        toolsets,
+        toolsetsMap: { ...state.toolsetsMap, [updated.id]: updated },
+      };
     }
     case 'PROMPTS_LOADED': {
       const promptsMap = Object.fromEntries(action.payload.map((p) => [p.id, p]));
@@ -115,7 +132,7 @@ const DataContext = createContext<DataContextValue>({
 
 export function DataContextProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { isReady } = useAppContext();
+  const { isReady, settings } = useAppContext();
 
   const loadAll = useCallback(() => {
     dispatch({ type: 'LOADING' });
@@ -150,6 +167,29 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
     if (!isReady) return;
     loadAll();
   }, [isReady, loadAll]);
+
+  // The host can push TOOLSET_LOGIN_RESULT proactively — e.g. a user signs
+  // into a toolset via the host's own chat-level sign-in dialog — with no
+  // preceding REQUEST_TOOLSET_LOGIN from this editor. Apply it as a
+  // targeted, incremental status update keyed off toolsetId alone; a
+  // toolsetId outside the current config belongs to an unrelated login
+  // elsewhere in the host and is ignored by the reducer.
+  useEffect(() => {
+    const allowedOrigin = settings.allowedOrigin;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (allowedOrigin && allowedOrigin !== '*' && event.origin !== allowedOrigin) return;
+
+      const msg = event.data as { type?: string } & Partial<ToolsetAuthResultPayload>;
+      if (msg?.type !== InboundMessageType.ToolsetLoginResult) return;
+      if (!msg.success || !msg.toolsetId) return;
+
+      dispatch({ type: 'TOOLSET_LOGIN_RESULT_APPLIED', payload: msg as ToolsetAuthResultPayload });
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [settings.allowedOrigin]);
 
   const refreshPrompts = async () => {
     const prompts = await fetchDialPrompts();
