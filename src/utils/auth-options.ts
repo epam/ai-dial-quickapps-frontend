@@ -122,6 +122,11 @@ const authProviders: (Provider | false)[] = [
       clientSecret: process.env.AUTH_KEYCLOAK_CLIENT_SECRET!,
       issuer: process.env.AUTH_KEYCLOAK_ISSUER,
       name: process.env.AUTH_KEYCLOAK_NAME ?? DEFAULT_PROVIDER_NAME,
+      authorization: {
+        params: {
+          scope: process.env.AUTH_KEYCLOAK_SCOPE ?? 'openid profile email offline_access',
+        },
+      },
     }),
 
   !!process.env.AUTH_AZURE_AD_CLIENT_ID &&
@@ -162,6 +167,11 @@ const authProviders: (Provider | false)[] = [
       clientSecret: process.env.AUTH_AUTH0_CLIENT_SECRET!,
       issuer: process.env.AUTH_AUTH0_ISSUER,
       name: process.env.AUTH_AUTH0_NAME ?? DEFAULT_PROVIDER_NAME,
+      authorization: {
+        params: {
+          scope: process.env.AUTH_AUTH0_SCOPE ?? 'openid profile email offline_access',
+        },
+      },
     }),
 
   !!process.env.AUTH_OKTA_CLIENT_ID &&
@@ -172,6 +182,11 @@ const authProviders: (Provider | false)[] = [
       clientSecret: process.env.AUTH_OKTA_CLIENT_SECRET!,
       issuer: process.env.AUTH_OKTA_ISSUER,
       name: process.env.AUTH_OKTA_NAME ?? DEFAULT_PROVIDER_NAME,
+      authorization: {
+        params: {
+          scope: process.env.AUTH_OKTA_SCOPE ?? 'openid profile email offline_access',
+        },
+      },
     }),
 
   !!process.env.AUTH_COGNITO_CLIENT_ID &&
@@ -182,6 +197,11 @@ const authProviders: (Provider | false)[] = [
       clientSecret: process.env.AUTH_COGNITO_CLIENT_SECRET!,
       issuer: process.env.AUTH_COGNITO_ISSUER,
       name: process.env.AUTH_COGNITO_NAME ?? DEFAULT_PROVIDER_NAME,
+      authorization: {
+        params: {
+          scope: process.env.AUTH_COGNITO_SCOPE ?? 'openid profile email',
+        },
+      },
     }),
 
   !!process.env.AUTH_GITLAB_CLIENT_ID &&

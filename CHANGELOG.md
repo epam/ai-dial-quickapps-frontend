@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added env variable for Azure Ad scopes configuration: `AUTH_AZURE_AD_SCOPE`
+- Added configurable OAuth scope env variables for providers that previously
+  used provider defaults: `AUTH_KEYCLOAK_SCOPE`, `AUTH_AUTH0_SCOPE`,
+  `AUTH_OKTA_SCOPE`, `AUTH_COGNITO_SCOPE`
 
 ## [0.1.1] - 2026-07-29
 
