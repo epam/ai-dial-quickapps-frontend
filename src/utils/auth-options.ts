@@ -170,6 +170,7 @@ const authProviders: (Provider | false)[] = [
       authorization: {
         params: {
           scope: process.env.AUTH_AUTH0_SCOPE ?? 'openid profile email offline_access',
+          ...(process.env.AUTH_AUTH0_AUDIENCE && { audience: process.env.AUTH_AUTH0_AUDIENCE }),
         },
       },
     }),

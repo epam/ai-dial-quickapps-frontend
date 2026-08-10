@@ -102,6 +102,7 @@ At least one OAuth provider below must be fully configured (all of its non-`_NAM
 | `AUTH_AUTH0_ISSUER`        |   Yes    |                                         | Auth0 tenant domain URL, e.g. `https://dial.us.auth0.com` |
 | `AUTH_AUTH0_NAME`          |    No    |                                         | Sign-in button label                                      |
 | `AUTH_AUTH0_SCOPE`         |    No    | `openid profile email offline_access`  | Space-separated OAuth scopes                               |
+| `AUTH_AUTH0_AUDIENCE`      |    No    |                                         | API identifier requested as the token audience, so Auth0 issues a JWT access token instead of an opaque one |
 
 #### Okta
 
