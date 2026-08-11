@@ -122,6 +122,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
   const {
     modelsWithFavorites: models,
     toolsetsWithFavorites: toolsets,
+    mcpAgentsWithFavorites: mcpAgents,
     favoriteIds,
     status,
   } = useDataContext();
@@ -143,8 +144,9 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
     () => [
       ...models.filter((m) => !isHiddenDialFolderId(m.id)),
       ...toolsets.filter((toolset) => !isHiddenDialFolderId(toolset.id)),
+      ...mcpAgents.filter((agent) => !isHiddenDialFolderId(agent.id)),
     ],
-    [models, toolsets],
+    [models, toolsets, mcpAgents],
   );
 
   const sortedItems = useMemo(
