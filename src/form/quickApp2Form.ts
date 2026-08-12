@@ -5,7 +5,10 @@ z.config({ jitless: true });
 import {
   DEFAULT_QUICK_APPS_MODEL,
   DialDeploymentToolsetToolTypes,
+  ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE,
+  REPRESENTATION_TOOLING_FEATURE_VALUE,
   ToolsetTypes,
+  WEB_FETCH_FEATURE_VALUE,
 } from '@/constants/quick-apps';
 import {
   doesAgentSupportMcp,
@@ -85,6 +88,10 @@ export const QuickApp2Schema = z
     availableModelIds: z.array(z.string()).optional(),
     agentSkills: z.array(z.string()),
     timestamp: z.boolean(),
+    processLargeFiles: z.boolean(),
+    fileTools: z.boolean(),
+    addAttachment: z.boolean(),
+    webFetch: z.boolean(),
   })
   .superRefine((data, ctx) => {
     if (data.isJsonView) {
@@ -196,6 +203,20 @@ export const getQuickApp2FormData = (
   );
   const timestamp =
     'timestamp' in (appProperties?.features ?? {}) ? !!appProperties?.features?.timestamp : true;
+  const processLargeFiles =
+    'attachment_strategy' in (appProperties?.orchestrator ?? {})
+      ? !!appProperties?.orchestrator?.attachment_strategy
+      : false;
+  const fileTools =
+    'dial_files' in (appProperties?.features ?? {}) ? !!appProperties?.features?.dial_files : false;
+  const addAttachment =
+    'representation_tooling' in (appProperties?.features ?? {})
+      ? !!appProperties?.features?.representation_tooling?.add_attachment
+      : false;
+  const webFetch =
+    'web_fetch' in (appProperties?.features ?? {})
+      ? !!appProperties?.features?.web_fetch?.enabled
+      : false;
 
   return {
     documentRelativeUrl: getQuick2AppDocumentUrl(app) ?? [],
@@ -228,6 +249,10 @@ export const getQuickApp2FormData = (
       .filter((s): s is DialPromptSkill => s.type === 'dial-prompt')
       .map((s) => decodeApiUrl(s.url)),
     timestamp,
+    processLargeFiles,
+    fileTools,
+    addAttachment,
+    webFetch,
   };
 };
 
@@ -273,6 +298,8 @@ export const buildQuickApp2Config = ({
   }));
 
   const timestampFeature = data.timestamp ? { injection_strategy: 'tool_call' as const } : null;
+  const model = allEntitiesMap[data.model];
+  const supportsAttachments = !!(model?.inputAttachmentTypes as string[] | undefined)?.length;
 
   return {
     orchestrator: {
@@ -286,6 +313,11 @@ export const buildQuickApp2Config = ({
         variables: existingConfig?.orchestrator?.system_prompt?.variables ?? {},
         content: data.instructions,
       },
+      ...(supportsAttachments && {
+        attachment_strategy: data.processLargeFiles
+          ? ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE
+          : null,
+      }),
     },
     contexts: data.documentRelativeUrl.map((url) => ({
       url,
@@ -304,6 +336,9 @@ export const buildQuickApp2Config = ({
     features: {
       ...existingConfig?.features,
       timestamp: timestampFeature,
+      dial_files: data.fileTools ? {} : null,
+      representation_tooling: data.addAttachment ? REPRESENTATION_TOOLING_FEATURE_VALUE : null,
+      web_fetch: data.webFetch ? WEB_FETCH_FEATURE_VALUE : null,
     },
   };
 };

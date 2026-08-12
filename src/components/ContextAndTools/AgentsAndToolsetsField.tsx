@@ -1,6 +1,7 @@
 'use client';
 import type { ChipEntity } from '@/components/common/AgentAndToolsetSelector/AgentAndToolsetChip';
 import { AgentAndToolsetSelector } from '@/components/common/AgentAndToolsetSelector/AgentAndToolsetSelector';
+import { EntityInfoModal } from '@/components/common/AgentAndToolsetSelector/EntityInfoModal';
 import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
 import { CommonI18nKeys, MarketplaceI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
@@ -11,6 +12,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { AnyToolset, DialAppTransportType } from '@/types/quick-apps';
 import { ThemeId } from '@/types/theme';
 import { Translation } from '@/types/translation';
+import { isDialAiEntityModel } from '@/utils/application';
 import {
   ButtonVariant,
   ConfirmationPopupVariant,
@@ -62,7 +64,7 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
   const { t } = useTranslation(Translation.Marketplace);
   const { currentTheme } = useThemeContext();
   const editorMonacoTheme = currentTheme?.id === ThemeId.Light ? 'light' : 'vs-dark';
-  const { modelsMap, toolsetsMap } = useDataContext();
+  const { modelsMap, toolsetsMap, mcpAgentsMap } = useDataContext();
 
   const [editorError, setEditorError] = useState<string | undefined>(undefined);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -71,13 +73,15 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
     id: string;
     transport?: DialAppTransportType;
   } | null>(null);
+  const [viewingItem, setViewingItem] = useState<ChipEntity | null>(null);
 
   const allItemsMap: Record<string, ChipEntity | undefined> = useMemo(
     () => ({
       ...modelsMap,
       ...toolsetsMap,
+      ...mcpAgentsMap,
     }),
-    [modelsMap, toolsetsMap],
+    [modelsMap, toolsetsMap, mcpAgentsMap],
   );
 
   const selectedIds = useMemo(
@@ -122,9 +126,17 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
     onDiscardJson();
   }, [onDiscardJson]);
 
+  const handleItemClick = useCallback(
+    (id: string) => {
+      const item = allItemsMap[id];
+      if (item) setViewingItem(item);
+    },
+    [allItemsMap],
+  );
+
   const handleConfigureClick = useCallback(
     (item: ChipEntity) => {
-      if (item.type !== 'application') return;
+      if (!isDialAiEntityModel(item)) return;
       const existing = agentsAndToolsets.find((a) => a[AgentOrToolsetSchemaKeys.id] === item.id);
       const tool = existing?.[AgentOrToolsetSchemaKeys.tool] as
         { transport?: DialAppTransportType } | undefined;
@@ -214,6 +226,7 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
           readonly={readonly}
           allItemsMap={allItemsMap}
           tooltip={tooltip}
+          onItemClick={handleItemClick}
           onJsonSwitchClick={handleJsonSwitchClick}
           onConfigureClick={handleConfigureClick}
         />
@@ -227,6 +240,10 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
           onClose={() => setConfiguringChip(null)}
           onSave={handleConfigureSave}
         />
+      )}
+
+      {viewingItem && (
+        <EntityInfoModal item={viewingItem} onClose={() => setViewingItem(null)} />
       )}
 
       <DialConfirmationPopup

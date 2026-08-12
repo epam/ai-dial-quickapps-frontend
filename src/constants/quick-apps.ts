@@ -25,3 +25,15 @@ export enum AgentsAndToolsetsModalQueryParams {
 }
 
 export const SKELETON_COLOR = '#D1DBEA';
+
+export const ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE: { type: 'lazy_on_demand' } | null = {
+  type: 'lazy_on_demand',
+};
+
+export const REPRESENTATION_TOOLING_FEATURE_VALUE: { add_attachment: true } | null = {
+  add_attachment: true,
+};
+
+export const WEB_FETCH_FEATURE_VALUE: { enabled: boolean } | null = {
+  enabled: true,
+};

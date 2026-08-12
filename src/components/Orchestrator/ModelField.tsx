@@ -199,7 +199,14 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
     [models],
   );
 
-  const allGroups = useMemo(() => groupModelsByEntity(availableModels), [availableModels]);
+  // Only tool-supporting models/agents can be selected in the modal — others
+  // are hidden entirely rather than shown with an error after selection.
+  const selectableModels = useMemo(
+    () => availableModels.filter((m) => !!m.features?.tools),
+    [availableModels],
+  );
+
+  const allGroups = useMemo(() => groupModelsByEntity(selectableModels), [selectableModels]);
 
   const selectedModel = availableModels.find((m) => m.id === value);
   const displayName = selectedModel?.name ?? value ?? t(MarketplaceI18nKeys.SelectModel);

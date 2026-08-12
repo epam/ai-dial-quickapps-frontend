@@ -66,12 +66,13 @@ At least one OAuth provider below must be fully configured (all of its non-`_NAM
 
 #### Keycloak
 
-| Variable                      | Required | Description                                                         |
-| ----------------------------- | :------: | ------------------------------------------------------------------- |
-| `AUTH_KEYCLOAK_ISSUER`        |   Yes    | Keycloak realm URL, e.g. `https://keycloak.example.com/realms/dial` |
-| `AUTH_KEYCLOAK_CLIENT_ID`     |   Yes    | Keycloak client ID                                                  |
-| `AUTH_KEYCLOAK_CLIENT_SECRET` |   Yes    | Keycloak client secret                                              |
-| `AUTH_KEYCLOAK_NAME`          |    No    | Sign-in button label                                                |
+| Variable                      | Required | Default                                | Description                                                         |
+| ----------------------------- | :------: | --------------------------------------- | --------------------------------------------------------------------- |
+| `AUTH_KEYCLOAK_ISSUER`        |   Yes    |                                         | Keycloak realm URL, e.g. `https://keycloak.example.com/realms/dial` |
+| `AUTH_KEYCLOAK_CLIENT_ID`     |   Yes    |                                         | Keycloak client ID                                                  |
+| `AUTH_KEYCLOAK_CLIENT_SECRET` |   Yes    |                                         | Keycloak client secret                                              |
+| `AUTH_KEYCLOAK_NAME`          |    No    |                                         | Sign-in button label                                                |
+| `AUTH_KEYCLOAK_SCOPE`         |    No    | `openid profile email offline_access`  | Space-separated OAuth scopes                                        |
 
 #### Azure AD
 
@@ -94,30 +95,34 @@ At least one OAuth provider below must be fully configured (all of its non-`_NAM
 
 #### Auth0
 
-| Variable                   | Required | Description                                               |
-| -------------------------- | :------: | --------------------------------------------------------- |
-| `AUTH_AUTH0_CLIENT_ID`     |   Yes    | Auth0 application client ID                               |
-| `AUTH_AUTH0_CLIENT_SECRET` |   Yes    | Auth0 application client secret                           |
-| `AUTH_AUTH0_ISSUER`        |   Yes    | Auth0 tenant domain URL, e.g. `https://dial.us.auth0.com` |
-| `AUTH_AUTH0_NAME`          |    No    | Sign-in button label                                      |
+| Variable                   | Required | Default                                | Description                                               |
+| -------------------------- | :------: | --------------------------------------- | --------------------------------------------------------- |
+| `AUTH_AUTH0_CLIENT_ID`     |   Yes    |                                         | Auth0 application client ID                               |
+| `AUTH_AUTH0_CLIENT_SECRET` |   Yes    |                                         | Auth0 application client secret                           |
+| `AUTH_AUTH0_ISSUER`        |   Yes    |                                         | Auth0 tenant domain URL, e.g. `https://dial.us.auth0.com` |
+| `AUTH_AUTH0_NAME`          |    No    |                                         | Sign-in button label                                      |
+| `AUTH_AUTH0_SCOPE`         |    No    | `openid profile email offline_access`  | Space-separated OAuth scopes                               |
+| `AUTH_AUTH0_AUDIENCE`      |    No    |                                         | API identifier requested as the token audience, so Auth0 issues a JWT access token instead of an opaque one |
 
 #### Okta
 
-| Variable                  | Required | Description                                                                |
-| ------------------------- | :------: | -------------------------------------------------------------------------- |
-| `AUTH_OKTA_CLIENT_ID`     |   Yes    | Okta application client ID                                                 |
-| `AUTH_OKTA_CLIENT_SECRET` |   Yes    | Okta application client secret                                             |
-| `AUTH_OKTA_ISSUER`        |   Yes    | Okta authorization server URL, e.g. `https://dial.okta.com/oauth2/default` |
-| `AUTH_OKTA_NAME`          |    No    | Sign-in button label                                                       |
+| Variable                  | Required | Default                                | Description                                                                |
+| ------------------------- | :------: | --------------------------------------- | -------------------------------------------------------------------------- |
+| `AUTH_OKTA_CLIENT_ID`     |   Yes    |                                         | Okta application client ID                                                 |
+| `AUTH_OKTA_CLIENT_SECRET` |   Yes    |                                         | Okta application client secret                                             |
+| `AUTH_OKTA_ISSUER`        |   Yes    |                                         | Okta authorization server URL, e.g. `https://dial.okta.com/oauth2/default` |
+| `AUTH_OKTA_NAME`          |    No    |                                         | Sign-in button label                                                       |
+| `AUTH_OKTA_SCOPE`         |    No    | `openid profile email offline_access`  | Space-separated OAuth scopes                                               |
 
 #### Cognito
 
-| Variable                     | Required | Description                                                                                      |
-| ---------------------------- | :------: | ------------------------------------------------------------------------------------------------ |
-| `AUTH_COGNITO_CLIENT_ID`     |   Yes    | Cognito app client ID                                                                            |
-| `AUTH_COGNITO_CLIENT_SECRET` |   Yes    | Cognito app client secret                                                                        |
-| `AUTH_COGNITO_ISSUER`        |   Yes    | Cognito user pool issuer URL, e.g. `https://cognito-idp.us-east-1.amazonaws.com/us-east-1_xxxxx` |
-| `AUTH_COGNITO_NAME`          |    No    | Sign-in button label                                                                             |
+| Variable                     | Required | Default                     | Description                                                                                      |
+| ---------------------------- | :------: | ----------------------------- | ------------------------------------------------------------------------------------------------ |
+| `AUTH_COGNITO_CLIENT_ID`     |   Yes    |                               | Cognito app client ID                                                                            |
+| `AUTH_COGNITO_CLIENT_SECRET` |   Yes    |                               | Cognito app client secret                                                                        |
+| `AUTH_COGNITO_ISSUER`        |   Yes    |                               | Cognito user pool issuer URL, e.g. `https://cognito-idp.us-east-1.amazonaws.com/us-east-1_xxxxx` |
+| `AUTH_COGNITO_NAME`          |    No    |                               | Sign-in button label                                                                             |
+| `AUTH_COGNITO_SCOPE`         |    No    | `openid profile email`       | Space-separated OAuth scopes                                                                      |
 
 #### GitLab
 

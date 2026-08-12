@@ -6,7 +6,7 @@ import classNames from 'classnames';
 import type { ApplicationStatus, ToolsetAuthSettings } from '@/types/dial-entities';
 import { ToolsetAuthType } from '@/types/dial-entities';
 import { getEntityNameFromId, getVersionFromId, isToolsetId } from '@/utils/api';
-import { doesAgentSupportMcp } from '@/utils/application';
+import { doesAgentSupportMcp, isDialAiEntityModel } from '@/utils/application';
 import { getEntityStatus } from '@/utils/get-entity-status';
 
 import { ChipTooltipContent } from './ChipTooltipContent';
@@ -106,7 +106,7 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
   const canOpenLoginModal = hasAuthSettings && !!onLoginToolset && !!item;
 
   const isConfigurableApp =
-    !!item && item.type === 'application' && doesAgentSupportMcp(item) && !!onConfigure;
+    !readonly && !!item && isDialAiEntityModel(item) && doesAgentSupportMcp(item) && !!onConfigure;
   const isConfigurable = isConfigurableApp || canOpenLoginModal;
 
   const handleRemove = (e: React.MouseEvent<HTMLButtonElement>) => {

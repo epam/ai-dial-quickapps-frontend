@@ -5,11 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2026-08-12
+
+### Fixed
+
+- Auth0 sign-in now supports `AUTH_AUTH0_AUDIENCE`, so Auth0 issues a JWT
+  access token (instead of an opaque one) when an API audience is configured
+- Agnents&Toolset popup now shows items that support MCP. The chip has now Configure button.
+
 ## [0.1.2] - 2026-07-30
 
 ### Added
 
 - Added env variable for Azure Ad scopes configuration: `AUTH_AZURE_AD_SCOPE`
+- Added configurable OAuth scope env variables for providers that previously
+  used provider defaults: `AUTH_KEYCLOAK_SCOPE`, `AUTH_AUTH0_SCOPE`,
+  `AUTH_OKTA_SCOPE`, `AUTH_COGNITO_SCOPE`
 
 ## [0.1.1] - 2026-07-29
 

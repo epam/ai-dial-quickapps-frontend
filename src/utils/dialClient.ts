@@ -23,6 +23,13 @@ import { handleUnauthorizedResponse } from '@/utils/handle-unauthorized-response
  */
 const REQUIRED_DEPLOYMENT_INTERFACE = 'chat';
 
+/**
+ * DIAL Core interface tag for deployments that expose an MCP interface.
+ * Used to surface MCP-capable agents in the Agents & Toolsets picker
+ * alongside the chat-interface deployments fetched via `fetchDialModels`.
+ */
+const MCP_DEPLOYMENT_INTERFACE = 'mcp';
+
 /** Encode each path segment individually, preserving '/' as a separator. */
 const encodeDialPath = (id: string): string => id.split('/').map(encodeURIComponent).join('/');
 
@@ -52,6 +59,7 @@ interface CoreApiEntity {
     status?: ApplicationStatus;
   };
   updated_at?: string | number;
+  input_attachment_types?: string[];
 }
 
 interface ToolsetApiAuthSettings {
@@ -133,6 +141,7 @@ function mapCoreToDialModel(entity: CoreApiEntity): DialModel {
       : undefined,
     functionStatus: entity.function?.status,
     updatedAt: entity.updated_at,
+    inputAttachmentTypes: entity.input_attachment_types,
   };
 }
 
@@ -179,6 +188,26 @@ export async function fetchDialModels(): Promise<DialModel[]> {
     .filter((entity) => entity.object === 'model' || entity.object === 'application')
     .filter((entity) => !isHiddenDialFolderId(entity.id))
     .map(mapCoreToDialModel);
+}
+
+/**
+ * Fetches deployments exposing an MCP interface and returns only the
+ * application-typed ones (MCP-capable agents). The same endpoint also
+ * surfaces toolsets under this interface tag — those are filtered out by
+ * the caller, which already has the toolset list to dedupe against.
+ */
+export async function fetchDialMcpAgents(): Promise<DialModel[]> {
+  const res = await dialFetch<CoreApiEntity[]>(
+    `/v1/deployments?interface_type=${MCP_DEPLOYMENT_INTERFACE}`,
+  );
+  return res
+    .filter((entity) => entity.object === 'application')
+    .filter((entity) => !isHiddenDialFolderId(entity.id))
+    .map(mapCoreToDialModel)
+    // Being returned by the mcp-interface query is itself the proof of MCP
+    // support — Core doesn't reliably echo an `mcp`/`features.mcp` flag on
+    // these entries, so stamp it explicitly rather than trusting the payload.
+    .map((model) => ({ ...model, mcp: true, features: { ...model.features, mcp: true } }));
 }
 
 interface CoreApplicationResponse {

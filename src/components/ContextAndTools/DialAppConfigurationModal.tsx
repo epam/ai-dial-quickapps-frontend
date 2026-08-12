@@ -23,10 +23,14 @@ export const DialAppConfigurationModal: FC<DialAppConfigurationModalProps> = ({
   onSave,
 }) => {
   const { t } = useTranslation(Translation.Marketplace);
-  const { modelsMap } = useDataContext();
-  const agent = modelsMap[agentId];
+  const { modelsMap, mcpAgentsMap } = useDataContext();
+  const agent = modelsMap[agentId] ?? mcpAgentsMap[agentId];
 
-  const doesSupportChatCompletion = agent?.type === 'model';
+  // `modelsMap` holds only the chat-interface deployments (see
+  // fetchDialModels), so presence there is what actually determines whether
+  // this entity can be invoked via chat completion — mcp-only agents (only
+  // in `mcpAgentsMap`) can't.
+  const doesSupportChatCompletion = !!modelsMap[agentId];
 
   const [selectedTransport, setSelectedTransport] = useState<DialAppTransportType>(
     transport ??
