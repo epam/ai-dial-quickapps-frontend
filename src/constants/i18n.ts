@@ -37,6 +37,7 @@ export enum CommonI18nKeys {
   AgentEntityType = 'agent',
   ToolsetEntityType = 'toolset',
   ModelEntityType = 'model',
+  Details = 'Details',
   ConnectApplication = 'Connect application',
   CopyApplicationEndpointURL = 'Copy endpoint URL to easily integrate application into your workflows',
   ShouldBeAnArray = 'Should be an array',
