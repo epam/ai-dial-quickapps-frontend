@@ -4,6 +4,7 @@ import type {
   DialModel,
   DialPrompt,
   DialToolset,
+  LocalizedText,
   ToolsetAuthSettings,
 } from '@/types/dial-entities';
 import type { QuickApp2Config } from '@/types/quick-apps';
@@ -50,7 +51,7 @@ const toDisplayName = (value: unknown, fallback: string): string =>
 interface CoreApiEntity {
   id: string;
   reference: string;
-  display_name?: string;
+  display_name?: LocalizedText;
   display_version?: string;
   icon_url?: string;
   object: string;
@@ -84,7 +85,7 @@ interface ToolsetApiEntity {
   toolset?: string;
   name?: string;
   reference?: string;
-  display_name?: string;
+  display_name?: LocalizedText;
   display_version?: string;
   icon_url?: string;
   mcp?: boolean;

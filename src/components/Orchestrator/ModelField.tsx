@@ -28,6 +28,7 @@ import { VirtualCardGrid } from '@/components/common/VirtualCardGrid/VirtualCard
 import { IconAlertCircleFilled, IconBulb } from '@tabler/icons-react';
 import { SKELETON_COLOR } from '@/constants/quick-apps';
 import { getEntityNameFromId, isHiddenDialFolderId } from '@/utils/api';
+import { getLocalizedText } from '@/utils/get-localized-text';
 import { getUpdatedAtTimestamp } from '@/utils/get-updated-at-timestamp';
 
 interface ModelGroup {
@@ -45,7 +46,7 @@ interface ModelGroup {
 // entities can share a display name, and grouping by name merged them into one
 // card/favorite — e.g. a non-favorited app could ride along with a favorited
 // model of the same name and get shown (and starred) in the Favorites tab.
-function groupModelsByEntity(models: DialModel[]): ModelGroup[] {
+function groupModelsByEntity(models: DialModel[], language: string): ModelGroup[] {
   const map = new Map<string, DialModel[]>();
   for (const m of models) {
     const key = getEntityNameFromId(m.id, { removeVersion: true });
@@ -55,7 +56,7 @@ function groupModelsByEntity(models: DialModel[]): ModelGroup[] {
   }
   return Array.from(map.entries()).map(([key, models]) => ({
     key,
-    name: models[0].name,
+    name: getLocalizedText(models[0].name, language, models[0].id),
     type: models[0].type,
     models,
     description: (models[0] as { description?: string }).description,
@@ -171,7 +172,7 @@ interface ModelFieldProps {
 }
 
 export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, tooltip, error }) => {
-  const { t } = useTranslation(Translation.Marketplace);
+  const { t, language } = useTranslation(Translation.Marketplace);
   const {
     modelsWithFavorites: models,
     favoriteIds,
@@ -206,10 +207,15 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
     [availableModels],
   );
 
-  const allGroups = useMemo(() => groupModelsByEntity(selectableModels), [selectableModels]);
+  const allGroups = useMemo(
+    () => groupModelsByEntity(selectableModels, language),
+    [selectableModels, language],
+  );
 
   const selectedModel = availableModels.find((m) => m.id === value);
-  const displayName = selectedModel?.name ?? value ?? t(MarketplaceI18nKeys.SelectModel);
+  const displayName = selectedModel
+    ? getLocalizedText(selectedModel.name, language, selectedModel.id)
+    : (value ?? t(MarketplaceI18nKeys.SelectModel));
   const isModelInfoLoading = (status === 'loading' || status === 'idle') && !selectedModel;
 
   const selectedGroup = allGroups.find((g) => g.models.some((m) => m.id === value));

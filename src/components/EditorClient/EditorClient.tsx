@@ -2,6 +2,8 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import { AppContextProvider, type AppState } from '@/context/AppContext';
+import { useTranslation } from '@/hooks/useTranslation';
+import { Translation } from '@/types/translation';
 import ForbiddenPage from '@/components/ForbiddenPage/ForbiddenPage';
 import LoadingScreen from '@/components/LoadingScreen/LoadingScreen';
 import { DataContextProvider } from '@/context/DataContext';
@@ -92,6 +94,7 @@ interface EditorClientProps {
 }
 
 export default function EditorClient({ onReadyToSave }: EditorClientProps) {
+  const { language } = useTranslation(Translation.Common);
   const [appState, setAppState] = useState<AppState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isForbidden, setIsForbidden] = useState(false);
@@ -213,6 +216,7 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
           data,
           allEntitiesMap,
           existingConfig,
+          language,
         });
         const appWithFormValues = {
           ...appState.app,
@@ -260,7 +264,7 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
         );
       }
     },
-    [appState],
+    [appState, language],
   );
 
   const handleDirtyChange = useCallback((isDirty: boolean) => {
