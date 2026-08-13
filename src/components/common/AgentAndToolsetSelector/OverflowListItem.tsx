@@ -2,6 +2,9 @@
 import React, { useCallback } from 'react';
 import classNames from 'classnames';
 import { getEntityNameFromId, getVersionFromId } from '@/utils/api';
+import { getLocalizedText } from '@/utils/get-localized-text';
+import { useTranslation } from '@/hooks/useTranslation';
+import { Translation } from '@/types/translation';
 import { CloseButtonSmall } from '@/components/common/CloseButtons';
 import { DialTooltip } from '@epam/ai-dial-ui-kit';
 import { ChipTitle } from './ChipTitle';
@@ -21,10 +24,11 @@ export const OverflowListItem: React.FC<OverflowListItemProps> = ({
   onRemove,
   onItemClick,
 }) => {
+  const { language } = useTranslation(Translation.Common);
   const isError = !item;
   const name = !item
     ? getEntityNameFromId(id, { removeVersion: true })
-    : (item.name ?? getEntityNameFromId(id, { removeVersion: true }));
+    : getLocalizedText(item.name, language, getEntityNameFromId(id, { removeVersion: true }));
   const version = !item ? getVersionFromId(id) : item.version;
 
   const handleClick = useCallback(

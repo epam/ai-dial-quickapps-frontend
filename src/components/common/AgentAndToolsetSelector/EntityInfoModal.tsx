@@ -9,6 +9,7 @@ import { CommonI18nKeys } from '@/constants/i18n';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
 import { getEntityStatus, getEntityStatusMessage } from '@/utils/get-entity-status';
+import { getLocalizedText } from '@/utils/get-localized-text';
 import { DialPopup, PopupSize } from '@epam/ai-dial-ui-kit';
 
 import type { ChipEntity } from './AgentAndToolsetChip';
@@ -19,9 +20,9 @@ interface EntityInfoModalProps {
 }
 
 export const EntityInfoModal: FC<EntityInfoModalProps> = ({ item, onClose }) => {
-  const { t } = useTranslation(Translation.Common);
+  const { t, language } = useTranslation(Translation.Common);
 
-  const name = item.name ?? item.id;
+  const name = getLocalizedText(item.name, language, item.id);
   const iconUrl = typeof item.iconUrl === 'string' ? (item.iconUrl as string) : undefined;
   const description =
     typeof item.description === 'string' ? (item.description as string) : undefined;

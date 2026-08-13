@@ -4,6 +4,7 @@ import type {
   DialModel,
   DialPrompt,
   DialToolset,
+  LocalizedText,
   ToolsetAuthSettings,
 } from '@/types/dial-entities';
 import type { QuickApp2Config } from '@/types/quick-apps';
@@ -37,20 +38,10 @@ const encodeDialPath = (id: string): string => id.split('/').map(encodeURICompon
 export const decodeDialPath = (url: string): string =>
   url.split('/').map(decodeURIComponent).join('/');
 
-/**
- * DIAL Core responses are cast to typed interfaces without runtime
- * validation, so a field declared as `string` (e.g. `display_name`) can
- * still arrive as some other JSON type for a malformed entity. Consumers
- * (sorting/search/filter) call `.toLowerCase()` on `name` unconditionally,
- * so coerce it to a real string here rather than at every call site.
- */
-const toDisplayName = (value: unknown, fallback: string): string =>
-  typeof value === 'string' && value.trim() ? value : fallback;
-
 interface CoreApiEntity {
   id: string;
   reference: string;
-  display_name?: string;
+  display_name?: LocalizedText;
   display_version?: string;
   icon_url?: string;
   object: string;
@@ -84,7 +75,7 @@ interface ToolsetApiEntity {
   toolset?: string;
   name?: string;
   reference?: string;
-  display_name?: string;
+  display_name?: LocalizedText;
   display_version?: string;
   icon_url?: string;
   mcp?: boolean;
@@ -133,7 +124,7 @@ function mapCoreToDialModel(entity: CoreApiEntity): DialModel {
   return {
     id: decodeURIComponent(entity.id),
     reference: entity.reference,
-    name: toDisplayName(entity.display_name, entity.id),
+    name: entity.display_name ?? entity.id,
     type: entity.object as 'model' | 'application',
     version: entity.display_version,
     iconUrl: normalizeIconUrl(entity.icon_url),
@@ -161,7 +152,7 @@ function mapApiToDialToolset(data: ToolsetApiEntity): DialToolset {
   return {
     id,
     reference: data.reference ?? id,
-    name: toDisplayName(data.display_name, id),
+    name: data.display_name ?? id,
     type: 'toolset',
     version: data.display_version,
     iconUrl: normalizeIconUrl(data.icon_url),
@@ -323,7 +314,7 @@ export async function fetchDialApp(appId: string): Promise<DialApp | null> {
 
   return {
     id: appId,
-    name: toDisplayName(raw.display_name, appId),
+    name: raw.display_name ?? appId,
     applicationTypeSchemaId: raw.application_type_schema_id,
     applicationProperties: mapApplicationPropertiesFromApi(raw.application_properties),
     inputAttachmentTypes: (raw.input_attachment_types as string[] | undefined) ?? [],

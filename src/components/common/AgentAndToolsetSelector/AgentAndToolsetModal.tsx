@@ -14,6 +14,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
 import { isHiddenDialFolderId } from '@/utils/api';
 import { getEntityStatus } from '@/utils/get-entity-status';
+import { getLocalizedText } from '@/utils/get-localized-text';
 import { getUpdatedAtTimestamp } from '@/utils/get-updated-at-timestamp';
 import {
   DialNeutralButton,
@@ -47,8 +48,8 @@ const AgentAndToolsetCard: React.FC<AgentAndToolsetCardProps> = ({
   isFavorite,
   onToggle,
 }) => {
-  const { t } = useTranslation(Translation.Common);
-  const name = item.name ?? item.id;
+  const { t, language } = useTranslation(Translation.Common);
+  const name = getLocalizedText(item.name, language, item.id);
   const iconUrl = typeof item.iconUrl === 'string' ? (item.iconUrl as string) : undefined;
   const description =
     typeof item.description === 'string' ? (item.description as string) : undefined;
@@ -118,7 +119,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
   onClose,
   onConfirm,
 }) => {
-  const { t } = useTranslation(Translation.Marketplace);
+  const { t, language } = useTranslation(Translation.Marketplace);
   const {
     modelsWithFavorites: models,
     toolsetsWithFavorites: toolsets,
@@ -150,8 +151,9 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
   );
 
   const sortedItems = useMemo(
-    () => sortBy(allItems, [(item) => (item.name ?? item.id).toLowerCase()]),
-    [allItems],
+    () =>
+      sortBy(allItems, [(item) => getLocalizedText(item.name, language, item.id).toLowerCase()]),
+    [allItems, language],
   );
 
   const favoriteItems = useMemo(
@@ -168,9 +170,10 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
     if (!query) return base;
     return base.filter(
       (item) =>
-        (item.name ?? '').toLowerCase().includes(query) || item.id.toLowerCase().includes(query),
+        getLocalizedText(item.name, language, '').toLowerCase().includes(query) ||
+        item.id.toLowerCase().includes(query),
     );
-  }, [sortedItems, favoriteItems, search, activeTab]);
+  }, [sortedItems, favoriteItems, search, activeTab, language]);
 
   const handleTabChange = useCallback((tabId: string) => {
     setActiveTab(tabId as AgentAndToolsetModalTab);

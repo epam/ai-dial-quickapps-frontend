@@ -3,11 +3,14 @@ import React, { useMemo } from 'react';
 
 import classNames from 'classnames';
 
-import type { ApplicationStatus, ToolsetAuthSettings } from '@/types/dial-entities';
+import type { ApplicationStatus, LocalizedText, ToolsetAuthSettings } from '@/types/dial-entities';
 import { ToolsetAuthType } from '@/types/dial-entities';
+import { Translation } from '@/types/translation';
 import { getEntityNameFromId, getVersionFromId, isToolsetId } from '@/utils/api';
 import { doesAgentSupportMcp, isDialAiEntityModel } from '@/utils/application';
 import { getEntityStatus } from '@/utils/get-entity-status';
+import { getLocalizedText } from '@/utils/get-localized-text';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import { ChipTooltipContent } from './ChipTooltipContent';
 
@@ -15,7 +18,7 @@ import { DialGhostIconButton, DialTag, DialTooltip, ElementSize } from '@epam/ai
 
 export interface ChipEntity {
   id: string;
-  name?: string;
+  name?: LocalizedText;
   version?: string;
   type?: string;
   mcp?: boolean;
@@ -73,11 +76,12 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
   onLoginToolset,
   isInSelectionList,
 }) => {
+  const { language } = useTranslation(Translation.Common);
   const status = getEntityStatus(item);
 
   const name = !item
     ? getEntityNameFromId(id, { removeVersion: true })
-    : (item.name ?? getEntityNameFromId(id, { removeVersion: true }));
+    : getLocalizedText(item.name, language, getEntityNameFromId(id, { removeVersion: true }));
 
   // No matching entity in the maps and the id isn't a recognizable toolset id — treat as a
   // free-form/custom tool. (Application ids are no longer distinguishable by prefix alone.)

@@ -14,6 +14,7 @@ import {
 } from '@/types/editor-messages';
 import { Translation } from '@/types/translation';
 import { encodeApiUrl } from '@/utils/api';
+import { getLocalizedText } from '@/utils/get-localized-text';
 import {
   DialInput,
   DialNeutralButton,
@@ -37,10 +38,11 @@ interface ToolsetLoginModalProps {
 const getToolsetAuthUrl = (id: string) => `/api/dial/v1/toolset/${encodeApiUrl(id)}/auth`;
 
 export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose }) => {
-  const { t } = useTranslation(Translation.Marketplace);
+  const { t, language } = useTranslation(Translation.Marketplace);
   const { settings } = useAppContext();
   const { refreshToolsets } = useDataContext();
 
+  const toolsetName = getLocalizedText(toolset.name, language, toolset.id);
   const authSettings = toolset.authSettings;
   const isSignedIn = authSettings?.authStatus === ToolsetAuthStatus.SignedIn;
   const isOAuth = authSettings?.authenticationType === ToolsetAuthType.OAuth;
@@ -144,8 +146,8 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
     >
       <div className="flex flex-col gap-4 px-6 py-4">
         <div className="flex items-center gap-3">
-          <ModelIcon name={toolset.name ?? toolset.id} size={40} radius={10} />
-          <span className="dial-small-semi-text text-primary">{toolset.name ?? toolset.id}</span>
+          <ModelIcon name={toolsetName} size={40} radius={10} />
+          <span className="dial-small-semi-text text-primary">{toolsetName}</span>
         </div>
 
         {isOAuth ? (

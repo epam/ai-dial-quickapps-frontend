@@ -7,6 +7,7 @@ import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { DialAppTransportType } from '@/types/quick-apps';
 import { Translation } from '@/types/translation';
+import { getLocalizedText } from '@/utils/get-localized-text';
 import { DialPopup, DialPrimaryButton, DialRadioButton, PopupSize } from '@epam/ai-dial-ui-kit';
 
 interface DialAppConfigurationModalProps {
@@ -22,9 +23,10 @@ export const DialAppConfigurationModal: FC<DialAppConfigurationModalProps> = ({
   onClose,
   onSave,
 }) => {
-  const { t } = useTranslation(Translation.Marketplace);
+  const { t, language } = useTranslation(Translation.Marketplace);
   const { modelsMap, mcpAgentsMap } = useDataContext();
   const agent = modelsMap[agentId] ?? mcpAgentsMap[agentId];
+  const agentName = agent ? getLocalizedText(agent.name, language, agentId) : '';
 
   // `modelsMap` holds only the chat-interface deployments (see
   // fetchDialModels), so presence there is what actually determines whether
@@ -57,9 +59,9 @@ export const DialAppConfigurationModal: FC<DialAppConfigurationModalProps> = ({
       <div className="flex flex-col divide-y divide-tertiary">
         {agent && (
           <div className="flex items-center gap-3 px-6 py-4">
-            <ModelIcon name={agent.name} iconUrl={agent.iconUrl} size={40} radius={10} />
+            <ModelIcon name={agentName} iconUrl={agent.iconUrl} size={40} radius={10} />
             <div className="flex min-w-0 flex-col gap-0.5">
-              <span className="dial-small-semi-text truncate text-primary">{agent.name}</span>
+              <span className="dial-small-semi-text truncate text-primary">{agentName}</span>
               {agent.version && (
                 <span className="dial-tiny-text truncate text-secondary">{agent.version}</span>
               )}
