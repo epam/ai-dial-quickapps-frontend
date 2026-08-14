@@ -116,8 +116,8 @@ function mapAuthSettings(authSettings?: ToolsetApiAuthSettings): ToolsetAuthSett
   };
 }
 
-async function dialFetch<T>(path: string): Promise<T> {
-  const res = await fetch(`/api/dial${path}`);
+async function sdkFetch<T>(path: string): Promise<T> {
+  const res = await fetch(path);
   if (!res.ok) {
     if (handleUnauthorizedResponse(res)) {
       throw new Error(`DIAL API ${res.status} for ${path}: session expired`);
@@ -128,6 +128,10 @@ async function dialFetch<T>(path: string): Promise<T> {
     throw err;
   }
   return res.json() as Promise<T>;
+}
+
+async function dialFetch<T>(path: string): Promise<T> {
+  return sdkFetch<T>(`/api/dial${path}`);
 }
 
 function mapCoreToDialModel(entity: CoreApiEntity): DialModel {
@@ -192,8 +196,8 @@ export async function fetchDialBucket(): Promise<string> {
  * filtering client-side afterwards, is what actually narrows the set.
  */
 export async function fetchDialModels(): Promise<DialModel[]> {
-  const res = await dialFetch<CoreApiEntity[]>(
-    `/v1/deployments?interface_type=${REQUIRED_DEPLOYMENT_INTERFACE}`,
+  const res = await sdkFetch<CoreApiEntity[]>(
+    `/api/dial-deployments?interfaceType=${REQUIRED_DEPLOYMENT_INTERFACE}`,
   );
   return res
     .filter((entity) => entity.object === 'model' || entity.object === 'application')
@@ -208,8 +212,8 @@ export async function fetchDialModels(): Promise<DialModel[]> {
  * the caller, which already has the toolset list to dedupe against.
  */
 export async function fetchDialMcpAgents(): Promise<DialModel[]> {
-  const res = await dialFetch<CoreApiEntity[]>(
-    `/v1/deployments?interface_type=${MCP_DEPLOYMENT_INTERFACE}`,
+  const res = await sdkFetch<CoreApiEntity[]>(
+    `/api/dial-deployments?interfaceType=${MCP_DEPLOYMENT_INTERFACE}`,
   );
   return res
     .filter((entity) => entity.object === 'application')
@@ -392,7 +396,7 @@ export async function saveDialApp(
 }
 
 export async function fetchDialToolsets(): Promise<DialToolset[]> {
-  const res = await dialFetch<{ data: ToolsetApiEntity[] }>('/openai/toolsets');
+  const res = await sdkFetch<{ data: ToolsetApiEntity[] }>('/api/dial-toolsets');
   return res.data.map(mapApiToDialToolset).filter((t) => !isHiddenPath(t.id));
 }
 
