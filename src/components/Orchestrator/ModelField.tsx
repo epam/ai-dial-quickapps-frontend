@@ -9,13 +9,13 @@ import { DialModel } from '@/types/dial-entities';
 import { Translation } from '@/types/translation';
 import {
   DialLinkButton,
-  DialSpinner,
+  Spinner as DialSpinner,
   DialNoDataContent,
   DialPopup,
   DialSearch,
   DialSelect,
-  DialSkeleton,
-  DialSkeletonVariant,
+  Skeleton as DialSkeleton,
+  SkeletonVariant as DialSkeletonVariant,
   DialTabs,
   PopupSize,
   SelectSize,
