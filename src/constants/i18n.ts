@@ -162,6 +162,8 @@ export enum MarketplaceI18nKeys {
   CatalogTab = 'Catalog',
   SearchPlaceholder = 'Search',
   NoFavoritesYet = 'No favorites yet',
+  NoResultsFound = 'No results found',
+  NoResultsFoundInWorkspace = 'No results found in My workspace. See results from Marketplace',
   SelectAgentsAndToolsets = 'Select Agents & Toolsets',
   SelectedLabel = 'Selected',
   NoResourcesSelected = 'No resources selected',

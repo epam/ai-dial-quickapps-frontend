@@ -25,7 +25,7 @@ import FavoriteStarButton from '@/components/common/FavoriteStarButton/FavoriteS
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
 import { TopicsLine } from '@/components/common/TopicsLine/TopicsLine';
 import { VirtualCardGrid } from '@/components/common/VirtualCardGrid/VirtualCardGrid';
-import { IconAlertCircleFilled, IconBulb } from '@tabler/icons-react';
+import { IconAlertCircleFilled, IconBulb, IconSearch } from '@tabler/icons-react';
 import { SKELETON_COLOR } from '@/constants/quick-apps';
 import { getEntityNameFromId, isHiddenDialFolderId } from '@/utils/api';
 import { getLocalizedText } from '@/utils/get-localized-text';
@@ -383,14 +383,25 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
               </div>
             ) : filteredGroups.length === 0 ? (
               <div className="flex items-center justify-center py-8">
-                <DialNoDataContent
-                  title={t(
-                    activeTab === TAB_IDS.favorites
-                      ? MarketplaceI18nKeys.NoFavoritesYet
-                      : MarketplaceI18nKeys.NA,
-                  )}
-                  icon={<IconBulb size={48} stroke={0.5} />}
-                />
+                {search ? (
+                  <DialNoDataContent
+                    title={t(
+                      activeTab === TAB_IDS.favorites
+                        ? MarketplaceI18nKeys.NoResultsFoundInWorkspace
+                        : MarketplaceI18nKeys.NoResultsFound,
+                    )}
+                    icon={<IconSearch size={48} stroke={0.5} />}
+                  />
+                ) : (
+                  <DialNoDataContent
+                    title={t(
+                      activeTab === TAB_IDS.favorites
+                        ? MarketplaceI18nKeys.NoFavoritesYet
+                        : MarketplaceI18nKeys.NA,
+                    )}
+                    icon={<IconBulb size={48} stroke={0.5} />}
+                  />
+                )}
               </div>
             ) : (
               <div className="min-h-0 flex-1">
