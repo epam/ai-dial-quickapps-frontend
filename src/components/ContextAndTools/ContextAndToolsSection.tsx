@@ -88,7 +88,9 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
               readonly={isReadonly}
               tooltip={tooltip}
               onRemoveFile={(doc) => field.onChange(field.value.filter((f) => f !== doc))}
-              onAddFiles={(docs) => field.onChange(docs.map(decodeFileUrl))}
+              onAddFiles={(docs) =>
+                field.onChange([...field.value, ...docs.map(decodeFileUrl)])
+              }
             />
           )}
         />
