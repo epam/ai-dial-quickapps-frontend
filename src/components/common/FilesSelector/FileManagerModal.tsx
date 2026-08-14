@@ -212,17 +212,22 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
   );
 
   const handleAttach = useCallback(async () => {
-    const fileIds: string[] = [];
+    const fileIds = new Set<string>();
+    // Files the tree hasn't resolved yet (e.g. in an unvisited folder/tab) never
+    // made it into selectedPaths, so keep them as-is rather than dropping them.
+    for (const id of initialFileIds ?? []) {
+      if (!filesByPath.has(id)) fileIds.add(id);
+    }
     for (const f of selectedFiles) {
       if (f.nodeType === DialFileNodeType.FOLDER) {
         const folderFileIds = await expandFolderFileIds(f);
-        fileIds.push(...folderFileIds);
+        folderFileIds.forEach((id) => fileIds.add(id));
       } else if (f.nodeType === DialFileNodeType.ITEM && !isHiddenPath(f.path)) {
-        fileIds.push(f.id ?? f.path);
+        fileIds.add(f.id ?? f.path);
       }
     }
-    onClose(fileIds);
-  }, [selectedFiles, onClose, expandFolderFileIds]);
+    onClose(Array.from(fileIds));
+  }, [selectedFiles, onClose, expandFolderFileIds, initialFileIds, filesByPath]);
 
   const handleCancel = useCallback(() => {
     onClose([]);
