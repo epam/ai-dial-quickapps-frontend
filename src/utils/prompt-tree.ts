@@ -53,7 +53,19 @@ export const buildPromptTree = (prompts: DialPrompt[], bucketRoot: string): Prom
     parent.children.push(child);
   });
 
+  sortPromptTree(root);
+
   return root;
+};
+
+const sortPromptTree = (node: PromptTreeNode): void => {
+  node.prompts.sort((a, b) =>
+    getDisplayName(a.name).localeCompare(getDisplayName(b.name), undefined, {
+      sensitivity: 'base',
+    }),
+  );
+  node.children.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+  node.children.forEach(sortPromptTree);
 };
 
 export const matchesSearch = (p: DialPrompt, lower: string): boolean =>
