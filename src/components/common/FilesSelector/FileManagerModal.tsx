@@ -10,7 +10,7 @@ import {
   DialFileNodeType,
   DialNeutralButton,
   DialPopup,
-  DialSpinner,
+  Spinner as DialSpinner,
   GridSelectionMode,
   NOT_ALLOWED_SYMBOLS_REGEXP,
   NotificationVariant,
