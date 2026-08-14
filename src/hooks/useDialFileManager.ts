@@ -2,20 +2,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation as useI18nTranslation } from 'react-i18next';
 
+import { NotificationVariant } from '@epam/ai-dial-ui-kit';
+
 import type {
   DialCopiedItem,
   DialDeletedItem,
   DialFile,
   DialUploadFileItem,
-} from '@epam/ai-dial-ui-kit';
+} from '@epam/ai-dial-react-file-manager';
 import {
   DialFileManagerActions,
   DialFileManagerTabs,
   DialFileNodeType,
   DialFilePermission,
   FileManagerColumnKey,
-  NotificationVariant,
-} from '@epam/ai-dial-ui-kit';
+} from '@epam/ai-dial-react-file-manager';
 
 import { DIAL_HIDDEN_FOLDER_MARKER } from '@/constants/dial-files';
 import { DialFileManagerI18nKeys } from '@/constants/i18n';
