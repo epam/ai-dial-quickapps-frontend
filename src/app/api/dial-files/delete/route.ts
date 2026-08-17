@@ -23,27 +23,27 @@ const deleteFolderContents = async (
   bucket: string,
   folderPath: string,
 ): Promise<void> => {
-  try {
-    const { data } = await sdk.getFileMetadata(bucket, folderPath, {
-      ...withAuthHeader(token),
-      params: { query: { limit: 1000 } },
-    });
-    const children = (data as { items?: FolderChild[] } | undefined)?.items ?? [];
+  const { data } = await sdk.getFileMetadata(bucket, folderPath, {
+    ...withAuthHeader(token),
+    params: { query: { limit: 1000 } },
+  });
+  const children = (data as { items?: FolderChild[] } | undefined)?.items ?? [];
 
-    await Promise.all(
-      children.map(async (child) => {
-        const isFolder = (child.nodeType ?? '').toLowerCase() === 'folder';
-        const childName = child.name ?? '';
-        const childPath = isFolder ? `${folderPath}${childName}/` : `${folderPath}${childName}`;
-        if (isFolder) {
-          await deleteFolderContents(sdk, token, bucket, childPath);
-        }
-        await sdk.deleteFile(bucket, childPath, withAuthHeader(token));
-      }),
-    );
-  } catch {
-    // best-effort — the final deleteFile call below still runs for the folder itself
-  }
+  await Promise.all(
+    children.map(async (child) => {
+      const isFolder = (child.nodeType ?? '').toLowerCase() === 'folder';
+      const childName = child.name ?? '';
+      const childPath = isFolder ? `${folderPath}${childName}/` : `${folderPath}${childName}`;
+      if (isFolder) {
+        await deleteFolderContents(sdk, token, bucket, childPath);
+        return;
+      }
+      const { response } = await sdk.deleteFile(bucket, childPath, withAuthHeader(token));
+      if (!response.ok) {
+        throw new Error(`Failed to delete ${bucket}/${childPath}: ${response.status}`);
+      }
+    }),
+  );
 };
 
 /**
@@ -51,9 +51,12 @@ const deleteFolderContents = async (
  *
  * Body: { items: Array<{ bucket, path, nodeType }> }
  *
- * DIAL Core has no recursive/batch delete — folders are deleted by first
- * removing all of their contents (walked via metadata listing), then
- * deleting the folder path itself.
+ * DIAL Core has no folder resource and no recursive/batch delete — folders
+ * are virtual, inferred purely from the paths of the files inside them (see
+ * create-folder, which "creates" a folder by uploading a hidden marker
+ * file). Deleting a folder means recursively deleting every file under its
+ * path; there is no folder object to issue a DELETE against afterwards
+ * (DIAL Core returns 400 Bad Request for a DELETE on a folder-shaped path).
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const { token, dialApiHost } = await getDialAuth(req);
@@ -82,6 +85,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       try {
         if (item.nodeType === 'FOLDER') {
           await deleteFolderContents(sdk, token, item.bucket, relPath);
+          return { path: item.path, success: true };
         }
         const { response } = await sdk.deleteFile(item.bucket, relPath, withAuthHeader(token));
         return { path: item.path, success: response.ok };

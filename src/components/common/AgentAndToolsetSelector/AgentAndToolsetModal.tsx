@@ -152,7 +152,9 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
 
   const sortedItems = useMemo(
     () =>
-      sortBy(allItems, [(item) => getLocalizedText(item.name, language, item.id).toLowerCase()]),
+      sortBy(allItems, [
+        (item) => getLocalizedText(item.name, language, item.id).trim().toLowerCase(),
+      ]),
     [allItems, language],
   );
 
@@ -208,7 +210,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
         </div>
       }
     >
-      <div className="flex h-[calc(100vh-12rem)] flex-col gap-3 px-6 py-4">
+      <div className="flex h-[calc(100dvh-14rem)] flex-col gap-3 px-6 py-4 desktop:h-[calc(100vh-12rem)]">
         <div className="flex shrink-0 justify-between gap-3">
           <div className="flex-1">
             <DialSearch
