@@ -11,7 +11,7 @@ import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
 import { useThemeContext } from '@/context/ThemeContext';
 import { ThemeId } from '@/types/theme';
 
-import { LazyDialJsonEditor, LazyDialMarkdownEditor } from '@epam/ai-dial-ui-kit';
+import { LazyDialJsonEditor, LazyMarkdownEditor } from '@epam/ai-dial-ui-kit';
 
 export enum EditorThemes {
   dark = 'dark',
@@ -20,10 +20,9 @@ export enum EditorThemes {
 
 export type EditorTheme = `${EditorThemes}`;
 
-const DialMarkdownEditor = dynamic(
-  async () => (await LazyDialMarkdownEditor()).DialMarkdownEditor,
-  { ssr: false },
-);
+const MarkdownEditor = dynamic(async () => (await LazyMarkdownEditor()).MarkdownEditor, {
+  ssr: false,
+});
 
 const DialJsonEditor = dynamic(async () => (await LazyDialJsonEditor()).DialJsonEditor, {
   ssr: false,
@@ -110,11 +109,11 @@ export const DialMarkdownEditorContainer: FC<DialMarkdownEditorContainerProps> =
           )}
         </div>
       ) : (
-        <DialMarkdownEditor
+        <MarkdownEditor
           value={value}
           onChange={onChangeValue}
           height={height}
-          preview={preview}
+          defaultPreview={preview}
           theme={resolvedTheme as EditorThemes}
           placeholder={placeholder}
         />
