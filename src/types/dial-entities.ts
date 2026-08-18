@@ -5,6 +5,9 @@
  */
 export type LocalizedText = string | Record<string, string>;
 
+/** A `LocalizedText` field that may be absent, e.g. an optional General-step value. */
+export type MaybeLocalizedText = string | LocalizedText | undefined;
+
 export enum ApplicationStatus {
   Deployed = 'DEPLOYED',
   Deploying = 'DEPLOYING',
