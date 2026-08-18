@@ -3,6 +3,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import { AppContextProvider, type AppState } from '@/context/AppContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import type { MaybeLocalizedText } from '@/types/dial-entities';
 import { Translation } from '@/types/translation';
 import ForbiddenPage from '@/components/ForbiddenPage/ForbiddenPage';
 import LoadingScreen from '@/components/LoadingScreen/LoadingScreen';
@@ -12,7 +13,8 @@ import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { QuickApp2Config } from '@/types/quick-apps';
 import { ForbiddenError } from '@/utils/forbidden-error';
 import { decodeDialPath, fetchAppSettings, fetchDialApp, saveDialApp } from '@/utils/dialClient';
-import { hasQuickAppChanges } from '@/utils/has-quick-app-changes';
+import { buildLocalizedText } from '@/utils/get-localized-text';
+import { hasQuickAppChanges, type StoredGeneralFields } from '@/utils/has-quick-app-changes';
 import { QuickApp2Form, type QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form';
 import { AUTO_SAVE_INTERVAL_MS, DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
 import { DEFAULT_QUICK_APPS_SCHEMA_2_ID } from '@/constants/quick-apps';
@@ -153,10 +155,11 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
         case InboundMessageType.TriggerAutoSave: {
           const isAutoSave = msg.type === InboundMessageType.TriggerAutoSave;
           if (isAutoSave && !hasSavedOnceRef.current) break;
+          const generalFromHost = isAutoSave ? undefined : msg.general;
           dispatchTriggerSave({
             isAutoSave,
             ignoreDirty: isAutoSave ? msg.payload?.ignoreDirty : undefined,
-            general: isAutoSave ? undefined : msg.general,
+            general: generalFromHost,
           });
           break;
         }
@@ -225,18 +228,44 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
         };
         const rawForSave = (appState.app._rawForSave as Record<string, unknown>) ?? {};
         const generalForSave = {
-          name: (rawForSave.display_name as string | undefined) ?? appState.app.name,
-          description: rawForSave.description as string | undefined,
+          name: (rawForSave.display_name as MaybeLocalizedText) ?? appState.app.name,
+          description: rawForSave.description as MaybeLocalizedText,
           iconUrl: rawForSave.icon_url as string | undefined,
           topics: rawForSave.description_keywords as string[] | undefined,
           intro: rawForSave.intro as string | undefined,
           display_version: rawForSave.display_version as string | undefined,
         };
-        const effectiveGeneral = general ? { ...generalForSave, ...general } : generalForSave;
+        // `general.name`/`general.description` only carry the primary-locale
+        // text — recombine them with `general.locales` into the full
+        // LocalizedText dictionary before this ever reaches saveDialApp,
+        // otherwise every other locale's translation is silently dropped.
+        const normalizedGeneral: StoredGeneralFields | undefined = general
+          ? {
+              name: buildLocalizedText(
+                general.name,
+                general.primaryLocale,
+                general.locales,
+                'name',
+              ),
+              description: buildLocalizedText(
+                general.description,
+                general.primaryLocale,
+                general.locales,
+                'description',
+              ),
+              iconUrl: general.iconUrl,
+              topics: general.topics,
+              intro: general.intro,
+              display_version: general.display_version,
+            }
+          : undefined;
+        const effectiveGeneral = normalizedGeneral
+          ? { ...generalForSave, ...normalizedGeneral }
+          : generalForSave;
         const { hasChanges } = hasQuickAppChanges(
           existingConfig,
           newConfig,
-          general,
+          normalizedGeneral,
           generalForSave,
         );
         const updatedApp = await saveDialApp(appWithFormValues, newConfig, effectiveGeneral);

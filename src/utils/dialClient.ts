@@ -5,14 +5,15 @@ import type {
   DialPrompt,
   DialToolset,
   LocalizedText,
+  MaybeLocalizedText,
   ToolsetAuthSettings,
 } from '@/types/dial-entities';
 import type { QuickApp2Config } from '@/types/quick-apps';
 import { ApplicationStatus, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
-import type { TriggerSaveGeneralPayload } from '@/types/editor-messages';
 import { isHiddenDialFolderId } from '@/utils/api';
 import { isHiddenPath } from '@/utils/dial-file-path';
 import { ForbiddenError } from '@/utils/forbidden-error';
+import type { StoredGeneralFields } from '@/utils/has-quick-app-changes';
 import { handleUnauthorizedResponse } from '@/utils/handle-unauthorized-response';
 
 /**
@@ -215,14 +216,16 @@ export async function fetchDialMcpAgents(): Promise<DialModel[]> {
   const res = await sdkFetch<CoreApiEntity[]>(
     `/api/dial-deployments?interfaceType=${MCP_DEPLOYMENT_INTERFACE}`,
   );
-  return res
-    .filter((entity) => entity.object === 'application')
-    .filter((entity) => !isHiddenDialFolderId(entity.id))
-    .map(mapCoreToDialModel)
-    // Being returned by the mcp-interface query is itself the proof of MCP
-    // support — Core doesn't reliably echo an `mcp`/`features.mcp` flag on
-    // these entries, so stamp it explicitly rather than trusting the payload.
-    .map((model) => ({ ...model, mcp: true, features: { ...model.features, mcp: true } }));
+  return (
+    res
+      .filter((entity) => entity.object === 'application')
+      .filter((entity) => !isHiddenDialFolderId(entity.id))
+      .map(mapCoreToDialModel)
+      // Being returned by the mcp-interface query is itself the proof of MCP
+      // support — Core doesn't reliably echo an `mcp`/`features.mcp` flag on
+      // these entries, so stamp it explicitly rather than trusting the payload.
+      .map((model) => ({ ...model, mcp: true, features: { ...model.features, mcp: true } }))
+  );
 }
 
 interface CoreApplicationResponse {
@@ -230,7 +233,8 @@ interface CoreApplicationResponse {
   application?: string;
   /** Present for personal/shared apps; entity identifier. */
   name?: string;
-  display_name?: string;
+  display_name?: MaybeLocalizedText;
+  description?: MaybeLocalizedText;
   application_type_schema_id?: string;
   application_properties?: unknown;
   [key: string]: unknown;
@@ -341,7 +345,7 @@ export async function fetchDialApp(appId: string): Promise<DialApp | null> {
 export async function saveDialApp(
   app: DialApp,
   applicationProperties: unknown,
-  general?: TriggerSaveGeneralPayload,
+  general?: StoredGeneralFields,
 ): Promise<{
   id: string;
   applicationProperties: unknown;
@@ -356,6 +360,9 @@ export async function saveDialApp(
     // Exit), they take priority over this editor's possibly-stale cached
     // copy — this is the single write that replaces the host's own second
     // update-application call. `version` is deliberately never touched here.
+    // general.name/description must already be the fully-recombined
+    // LocalizedText value (see buildLocalizedText in EditorClient) — this
+    // function just writes it through, it doesn't know about per-locale entries.
     display_name: general?.name ?? rawForSave.display_name ?? app.name,
     display_version: general?.display_version ?? rawForSave.display_version,
     icon_url: general ? general.iconUrl : rawForSave.icon_url,
