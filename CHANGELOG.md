@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] - 2026-08-18
+
+### Added
+
+- Support for name localizations across the application
+
+### Fixed
+
+- File overwrite behavior on select (Issue #94)
+- Name and description localization edge cases (Issue #103)
+- Sorting and mobile layout issues (Issue #97)
+- File deletion flow
+- Search empty state behavior (Issue #79)
+- Delete file modal in File Manager (Issue #93)
+- Sorting of agents & toolsets in modal (Issue #67)
+- Error handling for agent/toolset name resolution (Issue #89)
+- File API integration issues (Issue #75, #76)
+- Duplicate attached files being displayed
+
+### Changed
+
+- Updated @epam/ai-dial-ui-kit to latest version
+- Bumped @hono/node-server and @modelcontextprotocol/sdk dependencies
+
 ## [0.1.3] - 2026-08-12
 
 ### Fixed
