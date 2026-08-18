@@ -5,6 +5,18 @@ import { safeDecodeURI } from '@/utils/safe-decode-uri';
 
 export const isHiddenPath = (path: string): boolean => path.includes(DIAL_HIDDEN_FOLDER_MARKER);
 
+// DIAL file resource ids look like `files/<bucket>/<...directories>/<name>`,
+// where `<bucket>` may be a private bucket hash or the shared `public` bucket.
+// Given a decoded resource id or path, this returns just the directory portion
+// (bucket segment and file name stripped), or '/' when the file lives at the bucket root.
+export const getFileDirectoryPath = (path: string): string => {
+  const segments = path.split('/').filter(Boolean);
+  if (segments.length <= 2) return '/';
+
+  const directorySegments = segments.slice(2, -1);
+  return directorySegments.length > 0 ? directorySegments.join('/') : '/';
+};
+
 export const resolveRelativeDialFilePath = (pathOrFileId: string, bucket: string): string => {
   const resourcePrefix = `files/${bucket}/`;
   if (pathOrFileId.startsWith(resourcePrefix)) {

@@ -4,7 +4,7 @@ import { useTranslation as useI18nTranslation } from 'react-i18next';
 import type { Translation, TranslationOptions } from '@/types/translation';
 
 export function useTranslation(ns: Translation) {
-  const { t } = useI18nTranslation(ns);
+  const { t, i18n } = useI18nTranslation(ns);
 
   const translate = useCallback(
     (key: string, options?: TranslationOptions) =>
@@ -12,5 +12,5 @@ export function useTranslation(ns: Translation) {
     [t],
   );
 
-  return useMemo(() => ({ t: translate }), [translate]);
+  return useMemo(() => ({ t: translate, language: i18n.language }), [translate, i18n.language]);
 }

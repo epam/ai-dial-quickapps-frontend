@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { errorLog, warnLog } from '@/server/logger';
-import {
-  getDialAuth,
-  getDialAuthHeaders,
-  JSON_CONTENT_TYPE_HEADERS,
-} from '@/utils/server/dial-server-auth';
+import { getDialAuth, JSON_CONTENT_TYPE_HEADERS } from '@/utils/server/dial-server-auth';
+import { getDialSDK, withAuthHeader } from '@/utils/server/dial-sdk';
 
 /**
  * GET /api/dial-files/list
@@ -32,33 +29,28 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const path = sp.get('path') ?? '';
   const permissions = sp.get('permissions') === 'true';
   const recursive = sp.get('recursive') === 'true';
-  const limit = sp.get('limit') ?? '1000';
+  const limit = Number(sp.get('limit') ?? '1000');
 
   if (!bucket) {
     warnLog('dial-files/list: missing bucket parameter');
     return NextResponse.json({ error: 'Missing bucket' }, { status: 400 });
   }
 
-  // Build the DIAL Core URL.  Folder paths MUST end with '/'.
-  // An empty path lists the bucket root (URL ends with bucket + '/').
+  // Folder paths MUST end with '/'. An empty path lists the bucket root.
   const cleanPath = path.replace(/\/$/, '');
   const folderSegment = cleanPath ? `${cleanPath}/` : '';
-  const qs = new URLSearchParams({ limit });
-  if (permissions) qs.set('permissions', 'true');
-  if (recursive) qs.set('recursive', 'true');
 
-  const dialUrl = `${dialApiHost}/v1/metadata/files/${bucket}/${folderSegment}?${qs}`;
-
-  const dialRes = await fetch(dialUrl, {
-    headers: getDialAuthHeaders(token),
+  const sdk = getDialSDK(dialApiHost);
+  const { data, error, response } = await sdk.getFileMetadata(bucket, folderSegment, {
+    ...withAuthHeader(token),
+    params: { query: { limit, ...(permissions && { permissions }), ...(recursive && { recursive }) } },
   });
 
-  const body = await dialRes.text();
-  if (!dialRes.ok) {
-    errorLog(`dial-files/list: upstream error ${dialRes.status} for bucket=${bucket}`);
+  if (!response.ok) {
+    errorLog(`dial-files/list: upstream error ${response.status} for bucket=${bucket}`);
   }
-  return new NextResponse(body, {
-    status: dialRes.status,
+  return NextResponse.json(data ?? error, {
+    status: response.status,
     headers: JSON_CONTENT_TYPE_HEADERS,
   });
 }

@@ -13,6 +13,7 @@ import { AnyToolset, DialAppTransportType } from '@/types/quick-apps';
 import { ThemeId } from '@/types/theme';
 import { Translation } from '@/types/translation';
 import { isDialAiEntityModel } from '@/utils/application';
+import { getLocalizedText } from '@/utils/get-localized-text';
 import {
   ButtonVariant,
   ConfirmationPopupVariant,
@@ -61,7 +62,7 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
   tooltip,
   jsonError,
 }) => {
-  const { t } = useTranslation(Translation.Marketplace);
+  const { t, language } = useTranslation(Translation.Marketplace);
   const { currentTheme } = useThemeContext();
   const editorMonacoTheme = currentTheme?.id === ThemeId.Light ? 'light' : 'vs-dark';
   const { modelsMap, toolsetsMap, mcpAgentsMap } = useDataContext();
@@ -88,9 +89,9 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
     () =>
       sortBy(
         agentsAndToolsets.map((a) => a[AgentOrToolsetSchemaKeys.id]),
-        [(id) => (allItemsMap[id]?.name ?? id).toLowerCase()],
+        [(id) => getLocalizedText(allItemsMap[id]?.name, language, id).toLowerCase()],
       ),
-    [agentsAndToolsets, allItemsMap],
+    [agentsAndToolsets, allItemsMap, language],
   );
 
   const handleAgentsChange = useCallback(

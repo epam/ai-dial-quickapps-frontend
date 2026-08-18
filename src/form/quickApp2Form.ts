@@ -18,6 +18,8 @@ import {
   type DialAIEntityModel,
 } from '@/utils/application';
 import { decodeApiUrl, encodeApiUrl, isApplicationId, isToolsetId } from '@/utils/api';
+import type { LocalizedText } from '@/types/dial-entities';
+import { getLocalizedText } from '@/utils/get-localized-text';
 import {
   AnyToolset,
   CodeInterpreterToolset,
@@ -279,14 +281,19 @@ export const buildQuickApp2Config = ({
   data,
   allEntitiesMap,
   existingConfig,
+  language,
 }: {
   data: QuickApp2Form;
-  allEntitiesMap: Record<string, DialAIEntityModel & { id: string; name?: string; type?: string }>;
+  allEntitiesMap: Record<
+    string,
+    DialAIEntityModel & { id: string; name?: LocalizedText; type?: string }
+  >;
   existingConfig?: QuickApp2Config;
+  language: string;
 }): QuickApp2Config => {
   const toolSets = data.isJsonView
     ? getJsonViewToolsets(data)
-    : getQuickApp2Toolsets({ allEntitiesMap, data });
+    : getQuickApp2Toolsets({ allEntitiesMap, data, language });
 
   const starters = data.starters
     .filter((s) => s.title.trim() || s.text.trim())
@@ -346,9 +353,14 @@ export const buildQuickApp2Config = ({
 export const getQuickApp2Toolsets = ({
   allEntitiesMap,
   data,
+  language,
 }: {
-  allEntitiesMap: Record<string, DialAIEntityModel & { id: string; name?: string; type?: string }>;
+  allEntitiesMap: Record<
+    string,
+    DialAIEntityModel & { id: string; name?: LocalizedText; type?: string }
+  >;
   data: QuickApp2Form;
+  language: string;
 }): AnyToolset[] => {
   const { dialDeploymentsToolsets, dialMCPToolsets, otherToolsets, dialAppToolsets } =
     data.agentsAndToolsets.reduce<{
@@ -401,7 +413,7 @@ export const getQuickApp2Toolsets = ({
         } else if (isApp) {
           acc.dialAppToolsets.push({
             ...toolData,
-            name: entity.name ?? entity.id,
+            name: getLocalizedText(entity.name, language, entity.id),
             type: ToolsetTypes.DialApp,
             deployment_id: encodeApiUrl(entity.id),
             ...(doesAgentSupportMcp(entity) && {

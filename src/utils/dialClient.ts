@@ -4,14 +4,16 @@ import type {
   DialModel,
   DialPrompt,
   DialToolset,
+  LocalizedText,
+  MaybeLocalizedText,
   ToolsetAuthSettings,
 } from '@/types/dial-entities';
 import type { QuickApp2Config } from '@/types/quick-apps';
 import { ApplicationStatus, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
-import type { TriggerSaveGeneralPayload } from '@/types/editor-messages';
 import { isHiddenDialFolderId } from '@/utils/api';
 import { isHiddenPath } from '@/utils/dial-file-path';
 import { ForbiddenError } from '@/utils/forbidden-error';
+import type { StoredGeneralFields } from '@/utils/has-quick-app-changes';
 import { handleUnauthorizedResponse } from '@/utils/handle-unauthorized-response';
 
 /**
@@ -37,10 +39,20 @@ const encodeDialPath = (id: string): string => id.split('/').map(encodeURICompon
 export const decodeDialPath = (url: string): string =>
   url.split('/').map(decodeURIComponent).join('/');
 
+/**
+ * DIAL Core responses are cast to typed interfaces without runtime
+ * validation, so a field declared as `string` (e.g. `display_name`) can
+ * still arrive as some other JSON type for a malformed entity. Consumers
+ * (sorting/search/filter) call `.toLowerCase()` on `name` unconditionally,
+ * so coerce it to a real string here rather than at every call site.
+ */
+const toDisplayName = (value: unknown, fallback: string): string =>
+  typeof value === 'string' && value.trim() ? value : fallback;
+
 interface CoreApiEntity {
   id: string;
   reference: string;
-  display_name?: string;
+  display_name?: LocalizedText;
   display_version?: string;
   icon_url?: string;
   object: string;
@@ -74,7 +86,7 @@ interface ToolsetApiEntity {
   toolset?: string;
   name?: string;
   reference?: string;
-  display_name?: string;
+  display_name?: LocalizedText;
   display_version?: string;
   icon_url?: string;
   mcp?: boolean;
@@ -105,8 +117,8 @@ function mapAuthSettings(authSettings?: ToolsetApiAuthSettings): ToolsetAuthSett
   };
 }
 
-async function dialFetch<T>(path: string): Promise<T> {
-  const res = await fetch(`/api/dial${path}`);
+async function sdkFetch<T>(path: string): Promise<T> {
+  const res = await fetch(path);
   if (!res.ok) {
     if (handleUnauthorizedResponse(res)) {
       throw new Error(`DIAL API ${res.status} for ${path}: session expired`);
@@ -119,11 +131,15 @@ async function dialFetch<T>(path: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+async function dialFetch<T>(path: string): Promise<T> {
+  return sdkFetch<T>(`/api/dial${path}`);
+}
+
 function mapCoreToDialModel(entity: CoreApiEntity): DialModel {
   return {
     id: decodeURIComponent(entity.id),
     reference: entity.reference,
-    name: entity.display_name ?? entity.id,
+    name: toDisplayName(entity.display_name, entity.id),
     type: entity.object as 'model' | 'application',
     version: entity.display_version,
     iconUrl: normalizeIconUrl(entity.icon_url),
@@ -151,7 +167,7 @@ function mapApiToDialToolset(data: ToolsetApiEntity): DialToolset {
   return {
     id,
     reference: data.reference ?? id,
-    name: data.display_name ?? id,
+    name: toDisplayName(data.display_name, id),
     type: 'toolset',
     version: data.display_version,
     iconUrl: normalizeIconUrl(data.icon_url),
@@ -181,8 +197,8 @@ export async function fetchDialBucket(): Promise<string> {
  * filtering client-side afterwards, is what actually narrows the set.
  */
 export async function fetchDialModels(): Promise<DialModel[]> {
-  const res = await dialFetch<CoreApiEntity[]>(
-    `/v1/deployments?interface_type=${REQUIRED_DEPLOYMENT_INTERFACE}`,
+  const res = await sdkFetch<CoreApiEntity[]>(
+    `/api/dial-deployments?interfaceType=${REQUIRED_DEPLOYMENT_INTERFACE}`,
   );
   return res
     .filter((entity) => entity.object === 'model' || entity.object === 'application')
@@ -197,17 +213,19 @@ export async function fetchDialModels(): Promise<DialModel[]> {
  * the caller, which already has the toolset list to dedupe against.
  */
 export async function fetchDialMcpAgents(): Promise<DialModel[]> {
-  const res = await dialFetch<CoreApiEntity[]>(
-    `/v1/deployments?interface_type=${MCP_DEPLOYMENT_INTERFACE}`,
+  const res = await sdkFetch<CoreApiEntity[]>(
+    `/api/dial-deployments?interfaceType=${MCP_DEPLOYMENT_INTERFACE}`,
   );
-  return res
-    .filter((entity) => entity.object === 'application')
-    .filter((entity) => !isHiddenDialFolderId(entity.id))
-    .map(mapCoreToDialModel)
-    // Being returned by the mcp-interface query is itself the proof of MCP
-    // support — Core doesn't reliably echo an `mcp`/`features.mcp` flag on
-    // these entries, so stamp it explicitly rather than trusting the payload.
-    .map((model) => ({ ...model, mcp: true, features: { ...model.features, mcp: true } }));
+  return (
+    res
+      .filter((entity) => entity.object === 'application')
+      .filter((entity) => !isHiddenDialFolderId(entity.id))
+      .map(mapCoreToDialModel)
+      // Being returned by the mcp-interface query is itself the proof of MCP
+      // support — Core doesn't reliably echo an `mcp`/`features.mcp` flag on
+      // these entries, so stamp it explicitly rather than trusting the payload.
+      .map((model) => ({ ...model, mcp: true, features: { ...model.features, mcp: true } }))
+  );
 }
 
 interface CoreApplicationResponse {
@@ -215,7 +233,8 @@ interface CoreApplicationResponse {
   application?: string;
   /** Present for personal/shared apps; entity identifier. */
   name?: string;
-  display_name?: string;
+  display_name?: MaybeLocalizedText;
+  description?: MaybeLocalizedText;
   application_type_schema_id?: string;
   application_properties?: unknown;
   [key: string]: unknown;
@@ -313,7 +332,7 @@ export async function fetchDialApp(appId: string): Promise<DialApp | null> {
 
   return {
     id: appId,
-    name: raw.display_name ?? appId,
+    name: toDisplayName(raw.display_name, appId),
     applicationTypeSchemaId: raw.application_type_schema_id,
     applicationProperties: mapApplicationPropertiesFromApi(raw.application_properties),
     inputAttachmentTypes: (raw.input_attachment_types as string[] | undefined) ?? [],
@@ -326,7 +345,7 @@ export async function fetchDialApp(appId: string): Promise<DialApp | null> {
 export async function saveDialApp(
   app: DialApp,
   applicationProperties: unknown,
-  general?: TriggerSaveGeneralPayload,
+  general?: StoredGeneralFields,
 ): Promise<{
   id: string;
   applicationProperties: unknown;
@@ -341,6 +360,9 @@ export async function saveDialApp(
     // Exit), they take priority over this editor's possibly-stale cached
     // copy — this is the single write that replaces the host's own second
     // update-application call. `version` is deliberately never touched here.
+    // general.name/description must already be the fully-recombined
+    // LocalizedText value (see buildLocalizedText in EditorClient) — this
+    // function just writes it through, it doesn't know about per-locale entries.
     display_name: general?.name ?? rawForSave.display_name ?? app.name,
     display_version: general?.display_version ?? rawForSave.display_version,
     icon_url: general ? general.iconUrl : rawForSave.icon_url,
@@ -381,7 +403,7 @@ export async function saveDialApp(
 }
 
 export async function fetchDialToolsets(): Promise<DialToolset[]> {
-  const res = await dialFetch<{ data: ToolsetApiEntity[] }>('/openai/toolsets');
+  const res = await sdkFetch<{ data: ToolsetApiEntity[] }>('/api/dial-toolsets');
   return res.data.map(mapApiToDialToolset).filter((t) => !isHiddenPath(t.id));
 }
 

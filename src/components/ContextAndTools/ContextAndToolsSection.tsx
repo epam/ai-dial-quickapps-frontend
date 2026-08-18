@@ -88,7 +88,11 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
               readonly={isReadonly}
               tooltip={tooltip}
               onRemoveFile={(doc) => field.onChange(field.value.filter((f) => f !== doc))}
-              onAddFiles={(docs) => field.onChange(docs.map(decodeFileUrl))}
+              onAddFiles={(docs) => {
+                const existing = new Set(field.value);
+                const newFiles = docs.map(decodeFileUrl).filter((doc) => !existing.has(doc));
+                field.onChange([...field.value, ...newFiles]);
+              }}
             />
           )}
         />

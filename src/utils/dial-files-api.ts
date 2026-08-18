@@ -1,4 +1,3 @@
-import { DIAL_HIDDEN_FOLDER_MARKER } from '@/constants/dial-files';
 import {
   handleUnauthorized401,
   handleUnauthorizedResponse,
@@ -84,30 +83,12 @@ interface CoreMetadataItem {
   bucket?: string;
 }
 
-const PROXY = '/api/dial';
-
-async function dialGet<T>(path: string): Promise<T> {
-  const res = await fetch(`${PROXY}${path}`);
+async function handleJsonResponse<T>(res: Response, action: string): Promise<T> {
   if (!res.ok) {
     if (handleUnauthorizedResponse(res)) {
-      throw new Error(`DIAL ${res.status} ${path}: session expired`);
+      throw new Error(`${action} failed: ${res.status}: session expired`);
     }
-    throw new Error(`DIAL ${res.status} ${path}`);
-  }
-  return res.json() as Promise<T>;
-}
-
-async function dialPost<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(`${PROXY}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    if (handleUnauthorizedResponse(res)) {
-      throw new Error(`DIAL ${res.status} ${path}: session expired`);
-    }
-    throw new Error(`DIAL ${res.status} ${path}`);
+    throw new Error(`${action} failed: ${res.status}`);
   }
   return res.json() as Promise<T>;
 }
@@ -155,16 +136,10 @@ export async function listFiles(params: {
   if (recursive) qs.set('recursive', 'true');
 
   const res = await fetch(`/api/dial-files/list?${qs}`);
-  if (!res.ok) {
-    if (handleUnauthorizedResponse(res)) {
-      throw new Error(`DIAL ${res.status}: session expired`);
-    }
-    throw new Error(`DIAL ${res.status}`);
-  }
-  const data = (await res.json()) as {
+  const data = await handleJsonResponse<{
     items?: CoreMetadataItem[];
     permissions?: string[];
-  };
+  }>(res, 'List files');
 
   return {
     items: (data.items ?? []).map((item) => normalizeCoreItem(item, bucket, path)),
@@ -181,17 +156,14 @@ export async function listPublicFiles(params?: { path?: string }): Promise<ListF
 }
 
 export async function listSharedFiles(): Promise<ListFilesResponse> {
-  const data = await dialPost<{ resources?: CoreMetadataItem[] }>('/v1/ops/resource/share/list', {
-    resourceTypes: ['FILE'],
-    with: 'me',
-    includeUserInfo: true,
-  });
+  const res = await fetch('/api/dial-files/list-shared');
+  const data = await handleJsonResponse<{ resources?: CoreMetadataItem[] }>(
+    res,
+    'List shared files',
+  );
 
   const resources = data.resources ?? [];
-  const items = resources.map((item) => {
-    const bucket = item.bucket ?? '';
-    return normalizeCoreItem(item, bucket, '');
-  });
+  const items = resources.map((item) => normalizeCoreItem(item, item.bucket ?? '', ''));
 
   return { items };
 }
@@ -201,125 +173,43 @@ export async function createFolder(params: {
   parentPath?: string;
   name: string;
 }): Promise<CreateFolderResponse> {
-  const { bucket, parentPath, name } = params;
-  const normalizedParent = parentPath ? parentPath.replace(/\/$/, '') + '/' : '';
-  const folderPath = `${normalizedParent}${name}/`;
-  const markerPath = `${folderPath}${DIAL_HIDDEN_FOLDER_MARKER}`;
-
-  const encodedMarker = markerPath
-    .split('/')
-    .map((s) => encodeURIComponent(s))
-    .join('/');
-
-  const res = await fetch(`${PROXY}/v1/files/${bucket}/${encodedMarker}`, {
-    method: 'PUT',
-    body: new Blob([], { type: 'application/octet-stream' }),
-    headers: { 'Content-Type': 'application/octet-stream' },
+  const res = await fetch('/api/dial-files/create-folder', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
   });
-  if (!res.ok) {
-    if (handleUnauthorizedResponse(res)) {
-      throw new Error(`createFolder failed: ${res.status}: session expired`);
-    }
-    throw new Error(`createFolder failed: ${res.status}`);
-  }
-
-  const resourcePath = `files/${bucket}/${folderPath}`;
-  return {
-    name,
-    path: resourcePath,
-    bucket,
-    parentPath: normalizedParent.replace(/\/$/, '') || undefined,
-    folderId: `${bucket}:${resourcePath}`,
-  };
+  return handleJsonResponse<CreateFolderResponse>(res, 'Create folder');
 }
 
 export async function deleteFiles(items: DeleteItemDto[]): Promise<DeleteFilesResponse> {
-  const results = await Promise.all(
-    items.map(async (item) => {
-      const relPath =
-        item.nodeType === 'FOLDER'
-          ? item.path.endsWith('/')
-            ? item.path
-            : `${item.path}/`
-          : item.path.replace(/\/$/, '');
-
-      const encoded = relPath
-        .split('/')
-        .filter(Boolean)
-        .map((s) => encodeURIComponent(s))
-        .join('/');
-
-      try {
-        if (item.nodeType === 'FOLDER') {
-          await deleteFolderContents(item.bucket, relPath);
-        }
-        const res = await fetch(`${PROXY}/v1/files/${item.bucket}/${encoded}`, {
-          method: 'DELETE',
-        });
-        return { path: item.path, success: res.ok };
-      } catch {
-        return { path: item.path, success: false };
-      }
+  const res = await fetch('/api/dial-files/delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      items: items.map(({ bucket, path, nodeType }) => ({ bucket, path, nodeType })),
     }),
-  );
-  return { results };
-}
-
-async function deleteFolderContents(bucket: string, folderPath: string): Promise<void> {
-  try {
-    const data = await dialGet<{ items?: CoreMetadataItem[] }>(
-      `/v1/metadata/files/${bucket}/${folderPath.replace(/\/$/, '')}/?limit=1000`,
-    );
-    const children = data.items ?? [];
-    await Promise.all(
-      children.map(async (child) => {
-        const isFolder = (child.nodeType ?? '').toLowerCase() === 'folder';
-        const childName = child.name ?? '';
-        const childPath = isFolder ? `${folderPath}${childName}/` : `${folderPath}${childName}`;
-        if (isFolder) {
-          await deleteFolderContents(bucket, childPath);
-        }
-        const encoded = childPath
-          .split('/')
-          .filter(Boolean)
-          .map((s) => encodeURIComponent(s))
-          .join('/');
-        await fetch(`${PROXY}/v1/files/${bucket}/${encoded}`, {
-          method: 'DELETE',
-        });
-      }),
-    );
-  } catch {
-    // best-effort
-  }
+  });
+  return handleJsonResponse<DeleteFilesResponse>(res, 'Delete files');
 }
 
 export async function renameFiles(items: RenameItemDto[]): Promise<RenameFilesResponse> {
-  const results = await Promise.all(
-    items.map(async (item) => {
-      const sourceUrl = `files/${item.bucket}/${item.sourcePath}`;
-      const destinationUrl = `files/${item.bucket}/${item.destinationPath}`;
-      try {
-        await dialPost('/v1/ops/resource/move', {
-          sourceUrl,
-          destinationUrl,
-          overwrite: false,
-        });
-        return { sourcePath: item.sourcePath, success: true };
-      } catch {
-        return { sourcePath: item.sourcePath, success: false };
-      }
+  const res = await fetch('/api/dial-files/rename', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      items: items.map(({ bucket, sourcePath, destinationPath }) => ({
+        bucket,
+        sourcePath,
+        destinationPath,
+      })),
     }),
-  );
-  return { results };
+  });
+  return handleJsonResponse<RenameFilesResponse>(res, 'Rename files');
 }
 
 export async function downloadFile(bucket: string, path: string): Promise<Response> {
-  const encoded = path
-    .split('/')
-    .map((s) => encodeURIComponent(s))
-    .join('/');
-  const res = await fetch(`${PROXY}/v1/files/${bucket}/${encoded}`);
+  const qs = new URLSearchParams({ bucket, path });
+  const res = await fetch(`/api/dial-files/download?${qs}`);
   if (!res.ok) {
     if (handleUnauthorizedResponse(res)) {
       throw new Error(`Download failed: ${res.status}: session expired`);
@@ -348,20 +238,17 @@ export async function uploadFile(
 ): Promise<FileUploadResponse> {
   const { signal, uploadMode, onProgress } = options ?? {};
 
-  const encodedPath = path
-    .split('/')
-    .map((s) => encodeURIComponent(s))
-    .join('/');
-  const url = `${PROXY}/v1/files/${bucket}/${encodedPath}`;
+  const qs = new URLSearchParams({ bucket, path });
+  if (uploadMode) qs.set('uploadMode', uploadMode);
+  const url = `/api/dial-files/upload?${qs}`;
 
-  const conditionalHeader: Record<string, string> =
-    uploadMode === 'create-only' ? { 'If-None-Match': '*' } : {};
+  const formData = new FormData();
+  formData.append('file', file);
 
   if (onProgress != null) {
     return new Promise<FileUploadResponse>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open('PUT', url);
-      Object.entries(conditionalHeader).forEach(([k, v]) => xhr.setRequestHeader(k, v));
 
       if (signal) signal.addEventListener('abort', () => xhr.abort());
 
@@ -382,17 +269,13 @@ export async function uploadFile(
       xhr.addEventListener('error', () => reject(new Error('Upload network error')));
       xhr.addEventListener('abort', () => reject(new DOMException('Upload aborted', 'AbortError')));
 
-      xhr.send(file);
+      xhr.send(formData);
     });
   }
 
   const res = await fetch(url, {
     method: 'PUT',
-    headers: {
-      'Content-Type': file.type || 'application/octet-stream',
-      ...conditionalHeader,
-    },
-    body: file,
+    body: formData,
     signal,
   });
 

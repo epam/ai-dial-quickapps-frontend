@@ -4,21 +4,24 @@ import { FC, memo, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import {
   ButtonVariant,
   DialButton,
+  DialNeutralButton,
+  Popup,
+  Spinner as DialSpinner,
+  NOT_ALLOWED_SYMBOLS_REGEXP,
+  NotificationVariant,
+  PopupSize,
+} from '@epam/ai-dial-ui-kit';
+
+import {
   DialFileManager,
   DialFileManagerActions,
   DialFileManagerTabs,
   DialFileNodeType,
-  DialNeutralButton,
-  DialPopup,
-  DialSpinner,
   GridSelectionMode,
-  NOT_ALLOWED_SYMBOLS_REGEXP,
-  NotificationVariant,
-  PopupSize,
   useDialFileManagerTabs,
   type DialFile,
   type FileManagerGridRow,
-} from '@epam/ai-dial-ui-kit';
+} from '@epam/ai-dial-react-file-manager';
 
 import { DialFileManagerI18nKeys } from '@/constants/i18n';
 import { useDialFileManager } from '@/hooks/useDialFileManager';
@@ -209,17 +212,22 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
   );
 
   const handleAttach = useCallback(async () => {
-    const fileIds: string[] = [];
+    const fileIds = new Set<string>();
+    // Files the tree hasn't resolved yet (e.g. in an unvisited folder/tab) never
+    // made it into selectedPaths, so keep them as-is rather than dropping them.
+    for (const id of initialFileIds ?? []) {
+      if (!filesByPath.has(id)) fileIds.add(id);
+    }
     for (const f of selectedFiles) {
       if (f.nodeType === DialFileNodeType.FOLDER) {
         const folderFileIds = await expandFolderFileIds(f);
-        fileIds.push(...folderFileIds);
+        folderFileIds.forEach((id) => fileIds.add(id));
       } else if (f.nodeType === DialFileNodeType.ITEM && !isHiddenPath(f.path)) {
-        fileIds.push(f.id ?? f.path);
+        fileIds.add(f.id ?? f.path);
       }
     }
-    onClose(fileIds);
-  }, [selectedFiles, onClose, expandFolderFileIds]);
+    onClose(Array.from(fileIds));
+  }, [selectedFiles, onClose, expandFolderFileIds, initialFileIds, filesByPath]);
 
   const handleCancel = useCallback(() => {
     onClose([]);
@@ -335,10 +343,15 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
         names.length === 1
           ? t(DialFileManagerI18nKeys.DeleteConfirmTitleSingle)
           : t(DialFileManagerI18nKeys.DeleteConfirmTitleMultiple),
-      contentRenderer: (names: string[]) =>
-        names.length === 1
-          ? `${t(DialFileManagerI18nKeys.DeleteConfirmBodySingle)} "${names[0]}"?`
-          : `${t(DialFileManagerI18nKeys.DeleteConfirmBodyMultiple)} ${names.length} ${t(DialFileManagerI18nKeys.DeleteConfirmBodyItems)}`,
+      contentRenderer: (names: string[]) => (
+        <div className="px-6 py-3 dial-small-text">
+          <p className="mb-3 text-secondary">
+            {names.length === 1
+              ? `${t(DialFileManagerI18nKeys.DeleteConfirmBodySingle)} "${names[0]}"?`
+              : `${t(DialFileManagerI18nKeys.DeleteConfirmBodyMultiple)} ${names.length} ${t(DialFileManagerI18nKeys.DeleteConfirmBodyItems)}`}
+          </p>
+        </div>
+      ),
     }),
     [t],
   );
@@ -373,11 +386,12 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
 
   return (
     <>
-      <DialPopup
+      <Popup
         open={isOpen}
         header={t(DialFileManagerI18nKeys.Title)}
         size={PopupSize.Lg}
-        className="flex !h-[min(800px,100dvh)] w-full flex-col !bg-layer-2 [&>[aria-label='popup-description']]:flex [&>[aria-label='popup-description']]:min-h-0 [&>[aria-label='popup-description']]:flex-col"
+        className="flex !h-[min(800px,100dvh)] w-full flex-col !bg-layer-sunken"
+        bodyClassName="flex min-h-0 flex-col"
         onClose={handleCancel}
         hideClose={true}
         footer={
@@ -413,9 +427,9 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
             />
           </div>
         ) : (
-          <div className="relative flex min-h-0 w-full grow overflow-auto bg-layer-2">
+          <div className="relative flex min-h-0 w-full grow overflow-auto bg-layer-sunken">
             <DialFileManager
-              className="min-h-0 w-full grow bg-layer-2"
+              className="min-h-0 w-full grow bg-layer-sunken"
               gridClassName="size-full"
               items={items}
               path={path}
@@ -485,7 +499,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
             )}
           </div>
         )}
-      </DialPopup>
+      </Popup>
 
       {uploadBatchState != null && (
         <UploadProgressModal

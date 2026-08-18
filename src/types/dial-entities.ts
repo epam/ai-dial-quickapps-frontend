@@ -1,3 +1,13 @@
+/**
+ * DIAL Core can return a display name either as a plain string or as a
+ * per-locale dictionary (e.g. `{ en: "...", fr: "..." }`) when the entity
+ * was published with translations. Resolve with `getLocalizedText`.
+ */
+export type LocalizedText = string | Record<string, string>;
+
+/** A `LocalizedText` field that may be absent, e.g. an optional General-step value. */
+export type MaybeLocalizedText = string | LocalizedText | undefined;
+
 export enum ApplicationStatus {
   Deployed = 'DEPLOYED',
   Deploying = 'DEPLOYING',
@@ -34,7 +44,7 @@ export enum ToolsetCredentialsLevel {
 export interface DialModel {
   id: string;
   reference: string;
-  name: string;
+  name: LocalizedText;
   type: 'model' | 'application';
   version?: string;
   iconUrl?: string;
@@ -61,7 +71,7 @@ export type ModelsMap = Record<string, DialModel>;
 export interface DialToolset {
   id: string;
   reference: string;
-  name: string;
+  name: LocalizedText;
   type: 'toolset';
   version?: string;
   iconUrl?: string;

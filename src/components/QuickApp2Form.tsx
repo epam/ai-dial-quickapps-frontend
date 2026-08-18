@@ -22,6 +22,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { AnyToolset, DialAppTransportType } from '@/types/quick-apps';
 import type { QuickApp2Config } from '@/types/quick-apps';
 import type { TriggerSaveGeneralPayload } from '@/types/editor-messages';
+import type { LocalizedText } from '@/types/dial-entities';
 import { Translation } from '@/types/translation';
 import { DialAIEntityModel } from '@/utils/application';
 
@@ -34,7 +35,7 @@ import UserAttachmentsSection from './UserAttachments/UserAttachmentsSection';
 
 export type QuickApp2AllEntitiesMap = Record<
   string,
-  DialAIEntityModel & { id: string; name?: string; type?: string }
+  DialAIEntityModel & { id: string; name?: LocalizedText; type?: string }
 >;
 
 interface QuickApp2FormProps {
@@ -56,7 +57,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   onModelReady,
   readonly,
 }) => {
-  const { t } = useTranslation(Translation.Marketplace);
+  const { t, language } = useTranslation(Translation.Marketplace);
   const { app, settings } = useAppContext();
   const { models, modelsMap, toolsetsMap, status } = useDataContext();
 
@@ -206,10 +207,11 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     const toolsets = getQuickApp2Toolsets({
       data: getValues(),
       allEntitiesMap,
+      language,
     });
     setValue('agentsAndToolsetsJson', JSON.stringify(toolsets, null, 2));
     setValue('isJsonView', true);
-  }, [allEntitiesMap, getValues, setValue]);
+  }, [allEntitiesMap, getValues, setValue, language]);
 
   const handleSwitchToSimpleView = useCallback(
     (toolsets: AnyToolset[]) => {
@@ -252,10 +254,11 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     const toolsets = getQuickApp2Toolsets({
       data: getValues(),
       allEntitiesMap,
+      language,
     });
     setValue('agentsAndToolsetsJson', JSON.stringify(toolsets, null, 2));
     setValue('isJsonView', false);
-  }, [allEntitiesMap, getValues, setValue]);
+  }, [allEntitiesMap, getValues, setValue, language]);
 
   return (
     <form

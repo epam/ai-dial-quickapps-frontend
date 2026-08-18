@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { errorLog, warnLog } from '@/server/logger';
-import {
-  getDialAuth,
-  getDialAuthHeaders,
-  JSON_CONTENT_TYPE_HEADERS,
-} from '@/utils/server/dial-server-auth';
+import { getDialAuth, JSON_CONTENT_TYPE_HEADERS } from '@/utils/server/dial-server-auth';
+import { getDialSDK, withAuthHeader } from '@/utils/server/dial-sdk';
 
 /**
  * GET /api/dial-prompts/list
@@ -31,7 +28,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const bucket = sp.get('bucket');
   const path = sp.get('path') ?? '';
   const recursive = sp.get('recursive') === 'true';
-  const limit = sp.get('limit') ?? '1000';
+  const limit = Number(sp.get('limit') ?? '1000');
 
   if (!bucket) {
     warnLog('dial-prompts/list: missing bucket parameter');
@@ -40,21 +37,18 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
   const cleanPath = path.replace(/\/$/, '');
   const folderSegment = cleanPath ? `${cleanPath}/` : '';
-  const qs = new URLSearchParams({ limit });
-  if (recursive) qs.set('recursive', 'true');
 
-  const dialUrl = `${dialApiHost}/v1/metadata/prompts/${bucket}/${folderSegment}?${qs}`;
-
-  const dialRes = await fetch(dialUrl, {
-    headers: getDialAuthHeaders(token),
+  const sdk = getDialSDK(dialApiHost);
+  const { data, error, response } = await sdk.getPromptMetadata(bucket, folderSegment, {
+    ...withAuthHeader(token),
+    params: { query: { limit, ...(recursive && { recursive }) } },
   });
 
-  const body = await dialRes.text();
-  if (!dialRes.ok) {
-    errorLog(`dial-prompts/list: upstream error ${dialRes.status} for bucket=${bucket}`);
+  if (!response.ok) {
+    errorLog(`dial-prompts/list: upstream error ${response.status} for bucket=${bucket}`);
   }
-  return new NextResponse(body, {
-    status: dialRes.status,
+  return NextResponse.json(data ?? error, {
+    status: response.status,
     headers: JSON_CONTENT_TYPE_HEADERS,
   });
 }

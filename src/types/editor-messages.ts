@@ -25,6 +25,13 @@ export interface ToolsetAuthResultPayload {
   credentials?: ToolsetCredentials;
 }
 
+/** One non-primary locale's translated text for a General-step field. */
+export interface LocaleTextEntryDto {
+  language: string;
+  name?: string;
+  description?: string;
+}
+
 /**
  * General-step fields the host (ai-dial-chat) owns, sent with TRIGGER_SAVE so
  * this editor's single save can persist the current values instead of racing
@@ -32,10 +39,18 @@ export interface ToolsetAuthResultPayload {
  * by this payload. Absent when the trigger is a Preview, or when the app was
  * created in this same editor session (host already wrote initial values via
  * create-application).
+ *
+ * `name` and `description` carry only the `primaryLocale` value; translations
+ * for every other locale arrive separately in `locales`. Use
+ * `buildLocalizedText` (`@/utils/get-localized-text`) to recombine these into
+ * the `LocalizedText` dictionary DIAL Core expects — never write `name`/
+ * `description` straight to Core, or every other locale's translation is lost.
  */
 export interface TriggerSaveGeneralPayload {
   name: string;
   description?: string;
+  locales?: LocaleTextEntryDto[];
+  primaryLocale?: string;
   iconUrl?: string;
   topics?: string[];
   intro?: string;

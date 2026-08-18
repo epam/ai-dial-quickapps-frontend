@@ -6,6 +6,7 @@ import ThemeProvider from '@/context/ThemeContext';
 import './globals.css';
 // Relative path bypasses the package exports field (no "style" condition exported)
 import '../../node_modules/@epam/ai-dial-ui-kit/dist/index.css';
+import '../../node_modules/@epam/ai-dial-react-file-manager/dist/index.css';
 
 // Self-hosted via next/font — matches ai-dial-chat's Inter typography without
 // external requests to Google Fonts, so no CSP allowance is needed.

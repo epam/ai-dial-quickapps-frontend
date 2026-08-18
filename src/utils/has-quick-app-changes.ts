@@ -1,11 +1,11 @@
 import isEqual from 'lodash-es/isEqual';
 
-import { TriggerSaveGeneralPayload } from '@/types/editor-messages';
+import type { MaybeLocalizedText } from '@/types/dial-entities';
 import { QuickApp2Config } from '@/types/quick-apps';
 
 export interface StoredGeneralFields {
-  name?: string;
-  description?: string;
+  name?: MaybeLocalizedText;
+  description?: MaybeLocalizedText;
   iconUrl?: string;
   topics?: string[];
   intro?: string;
@@ -22,11 +22,15 @@ export interface HasQuickAppChangesResult {
  * Whether this save actually changed any user-editable field — Settings-step
  * config or a forwarded General-step field — versus a no-op re-save that only
  * touches server-managed metadata like updatedAt.
+ *
+ * `general` must already be normalized (`name`/`description` recombined into
+ * their final `LocalizedText` form via `buildLocalizedText`) — this only
+ * diffs values, it doesn't know about the wire-level primary/locales split.
  */
 export const hasQuickAppChanges = (
   existingConfig: QuickApp2Config | undefined,
   newConfig: QuickApp2Config,
-  general: TriggerSaveGeneralPayload | undefined,
+  general: StoredGeneralFields | undefined,
   storedGeneral: StoredGeneralFields,
 ): HasQuickAppChangesResult => {
   const existingRecord = (existingConfig ?? {}) as unknown as Record<string, unknown>;
@@ -46,10 +50,10 @@ export const hasQuickAppChanges = (
   if (!general) return { hasChanges: false };
 
   const generalDiff: FieldDiff = {};
-  if (general.name !== storedGeneral.name) {
+  if (!isEqual(general.name, storedGeneral.name)) {
     generalDiff.name = { before: storedGeneral.name, after: general.name };
   }
-  if (general.description !== storedGeneral.description) {
+  if (!isEqual(general.description, storedGeneral.description)) {
     generalDiff.description = { before: storedGeneral.description, after: general.description };
   }
   if (general.iconUrl !== storedGeneral.iconUrl) {
