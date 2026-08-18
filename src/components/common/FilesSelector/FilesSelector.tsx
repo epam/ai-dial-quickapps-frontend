@@ -1,6 +1,6 @@
 'use client';
 
-import { IconFile, IconPlus, IconTrashX } from '@tabler/icons-react';
+import { IconPlus, IconTrashX } from '@tabler/icons-react';
 import React, { type MouseEvent, useCallback, useState } from 'react';
 
 import {
@@ -8,32 +8,56 @@ import {
   DialIconButton,
   DialLinkButton,
   DialNoDataContent,
+  mergeClasses,
 } from '@epam/ai-dial-ui-kit';
 
 import { CommonI18nKeys } from '@/constants/i18n';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
 import { decodeApiUrl } from '@/utils/api';
+import { getFileDirectoryPath } from '@/utils/dial-file-path';
+import { getAttachmentIcon } from '@/utils/file-name';
 
 import FileManagerModal from './FileManagerModal';
 
 interface SelectedFileProps {
   document: string;
+  isEven: boolean;
   readonly?: boolean;
   onRemove?: (document: string) => void;
 }
 
-const SelectedFile: React.FC<SelectedFileProps> = ({ document, readonly, onRemove }) => {
+const SelectedFile: React.FC<SelectedFileProps> = ({ document, isEven, readonly, onRemove }) => {
   const { t } = useTranslation(Translation.Common);
-  const displayName = decodeApiUrl(document).split('/').pop() ?? document;
+  const filePath = decodeApiUrl(document);
+  const displayName = filePath.split('/').pop() ?? document;
+  const directoryPath = getFileDirectoryPath(filePath);
   const removeFileLabel = t(CommonI18nKeys.RemoveFile);
+  const icon = getAttachmentIcon(displayName);
 
   return (
-    <div className="dial-small-text flex items-center gap-2">
-      <IconFile size={16} className="shrink-0 text-secondary" />
-      <span className="min-w-0 flex-1 truncate" title={displayName}>
-        {displayName}
-      </span>
+    <div
+      className={mergeClasses(
+        'dial-small-text flex items-center gap-2 px-2 py-1',
+        isEven ? 'bg-layer-base' : 'bg-layer-raised',
+      )}
+    >
+      {icon && (
+        <div className="shrink-0">
+          {React.createElement(icon, {
+            size: 18,
+            className: 'text-secondary',
+          })}
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
+        <div className="truncate" title={displayName}>
+          {displayName}
+        </div>
+        <div className="dial-caption-text truncate text-secondary" title={directoryPath}>
+          {directoryPath}
+        </div>
+      </div>
       {!readonly && onRemove && (
         <DialIconButton
           icon={<IconTrashX size={16} />}
@@ -101,11 +125,12 @@ export const FilesSelector: React.FC<Props> = ({
             containerClassName="rounded border border-primary p-4"
           />
         ) : (
-          <div className="flex flex-col gap-y-2 overflow-auto rounded border border-primary p-2">
-            {files.map((file) => (
+          <div className="flex max-h-[600px] flex-col overflow-y-auto rounded">
+            {files.map((file, index) => (
               <SelectedFile
                 key={file}
                 document={file}
+                isEven={index % 2 === 0}
                 readonly={readonly}
                 onRemove={onRemoveFile}
               />
