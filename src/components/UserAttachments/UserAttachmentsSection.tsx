@@ -68,7 +68,7 @@ const UserAttachmentsSection: FC<UserAttachmentsSectionProps> = ({
             <DialInput
               value={field.value?.toString() ?? ''}
               onChange={(value) => {
-                field.onChange(value ? Number(value) : undefined);
+                field.onChange(value ? Number(value) : '');
               }}
               type="number"
               min={1}
