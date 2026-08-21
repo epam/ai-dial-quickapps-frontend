@@ -370,8 +370,7 @@ export async function saveDialApp(
     features: rawForSave.features,
     input_attachment_types:
       (app.inputAttachmentTypes as string[] | undefined) ?? rawForSave.input_attachment_types,
-    max_input_attachments:
-      (app.maxInputAttachments as number | undefined) ?? rawForSave.max_input_attachments,
+    max_input_attachments: app.maxInputAttachments as number | undefined,
     reference: rawForSave.reference,
     description_keywords: general ? general.topics : rawForSave.description_keywords,
     application_type_schema_id:
