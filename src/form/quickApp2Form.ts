@@ -60,7 +60,10 @@ const AgentOrToolsetSchema = z.object({
 type AgentOrToolsetFormType = z.infer<typeof AgentOrToolsetSchema>;
 
 const AttachmentTypesSchema = z.array(z.string());
-const MaxInputAttachmentsSchema = z.coerce.number().int().positive();
+const MaxInputAttachmentsSchema = z.preprocess(
+  (value) => (value === '' ? undefined : value),
+  z.coerce.number().int().positive().optional(),
+);
 
 export const MIME_TYPE_REGEX = /^([a-zA-Z0-9!*\-.+]+|\*)\/([a-zA-Z0-9!*\-.+]+|\*)$/;
 
@@ -73,7 +76,7 @@ export const QuickApp2Schema = z
     agentsAndToolsets: z.array(AgentOrToolsetSchema),
     codeInterpreter: z.boolean(),
     inputAttachmentTypes: AttachmentTypesSchema,
-    maxInputAttachments: MaxInputAttachmentsSchema.optional(),
+    maxInputAttachments: MaxInputAttachmentsSchema,
     isJsonView: z.boolean(),
     agentsAndToolsetsJson: z.string(),
     introText: z.string().optional(),

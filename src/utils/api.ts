@@ -17,6 +17,16 @@ export const isApplicationId = (id?: string) => id?.startsWith('applications/') 
 
 export const isToolsetId = (id?: string) => id?.startsWith('toolsets/') ?? false;
 
+const TOOLSETS_ID_PREFIX = 'toolsets/';
+const PUBLIC_BUCKET_SEGMENT = 'public';
+
+/** Whether a toolset id belongs to the `public` bucket (shared with all users), mirroring the legacy `isEntityIdPublic` check. */
+export const isPublicToolsetId = (toolsetId: string): boolean => {
+  if (!toolsetId.startsWith(TOOLSETS_ID_PREFIX)) return false;
+  const bucket = toolsetId.slice(TOOLSETS_ID_PREFIX.length).split('/')[0];
+  return bucket === PUBLIC_BUCKET_SEGMENT;
+};
+
 export const isHiddenDialFolderId = (id?: string) => {
   const lastSegment = id?.split('/').pop() ?? '';
   const { name } = parseEntityApiKey(lastSegment, { parseVersion: true });
