@@ -5,14 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.5] - 2026-08-26
+## [0.1.1-rc.1] - 2026-08-31
+
+### Fixed
+
+- Temperature is no longer set for models that doesn't support it
+
+## [0.1.0] - 2026-08-26
+
+Finalized RC changes
+
+## [0.1.0-rc.4] - 2026-08-26
 
 ### Fixed
 
 - Max. attachments number now correctly saves
 - Toolsets show correct auth status for both auth ways
 
-## [0.1.4] - 2026-08-18
+## [0.1.0-rc.3] - 2026-08-18
 
 ### Added
 
@@ -36,7 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated @epam/ai-dial-ui-kit to latest version
 - Bumped @hono/node-server and @modelcontextprotocol/sdk dependencies
 
-## [0.1.3] - 2026-08-12
+## [0.1.0-rc.2] - 2026-08-12
 
 ### Fixed
 
@@ -44,7 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   access token (instead of an opaque one) when an API audience is configured
 - Agnents&Toolset popup now shows items that support MCP. The chip has now Configure button.
 
-## [0.1.2] - 2026-07-30
+## [0.1.0-rc.1] - 2026-07-30
 
 ### Added
 
@@ -53,7 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   used provider defaults: `AUTH_KEYCLOAK_SCOPE`, `AUTH_AUTH0_SCOPE`,
   `AUTH_OKTA_SCOPE`, `AUTH_COGNITO_SCOPE`
 
-## [0.1.1] - 2026-07-29
+## [0.1.0-rc.0] - 2026-07-29
 
 ### Added
 
