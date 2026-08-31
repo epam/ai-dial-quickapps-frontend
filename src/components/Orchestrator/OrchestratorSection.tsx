@@ -1,10 +1,12 @@
-import { FC, memo } from 'react';
-import { Control, Controller, FieldErrors } from 'react-hook-form';
+import { FC, memo, useMemo } from 'react';
+import { Control, Controller, FieldErrors, useWatch } from 'react-hook-form';
 
 import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { useDataContext } from '@/context/DataContext';
 import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
+import { doesModelAllowTemperature } from '@/utils/application';
 
 import { FormCollapsibleSection } from '@/components/common/FormCollapsibleSection';
 import { DialMarkdownEditorContainer } from '@/components/common/MarkdownEditor/MarkdownEditorContainer';
@@ -31,6 +33,13 @@ const OrchestratorSection: FC<OrchestratorSectionProps> = ({
   isProcessLargeFilesAvailable,
 }) => {
   const { t } = useTranslation(Translation.Marketplace);
+  const { modelsMap } = useDataContext();
+  const modelId = useWatch({ control, name: 'model' });
+
+  const showTemperatureSlider = useMemo(() => {
+    const selectedModel = modelsMap[modelId];
+    return selectedModel ? doesModelAllowTemperature(selectedModel) : true;
+  }, [modelId, modelsMap]);
 
   return (
     <FormCollapsibleSection
@@ -54,20 +63,22 @@ const OrchestratorSection: FC<OrchestratorSectionProps> = ({
         />
       </DialFormItem>
 
-      <DialFormItem label={t(MarketplaceI18nKeys.TemperatureMarketplace)}>
-        <Controller
-          control={control}
-          name="temperature"
-          render={({ field }) => (
-            <TemperatureSlider
-              temperature={field.value}
-              onChangeTemperature={field.onChange}
-              disabled={isReadonly}
-              tooltip={tooltip}
-            />
-          )}
-        />
-      </DialFormItem>
+      {showTemperatureSlider && (
+        <DialFormItem label={t(MarketplaceI18nKeys.TemperatureMarketplace)}>
+          <Controller
+            control={control}
+            name="temperature"
+            render={({ field }) => (
+              <TemperatureSlider
+                temperature={field.value}
+                onChangeTemperature={field.onChange}
+                disabled={isReadonly}
+                tooltip={tooltip}
+              />
+            )}
+          />
+        </DialFormItem>
+      )}
 
       <DialFormItem label={t(MarketplaceI18nKeys.InstructionsMarketplace)}>
         <Controller

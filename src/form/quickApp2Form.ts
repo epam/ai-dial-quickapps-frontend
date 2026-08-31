@@ -12,6 +12,7 @@ import {
 } from '@/constants/quick-apps';
 import {
   doesAgentSupportMcp,
+  doesModelAllowTemperature,
   getQuick2AppDocumentUrl,
   getQuickAppItemNameFromConfig,
   migrateMCPToolsetIdName,
@@ -316,7 +317,7 @@ export const buildQuickApp2Config = ({
       ...existingConfig?.orchestrator,
       deployment: {
         deployment_id: data.model,
-        parameters: { temperature: data.temperature },
+        parameters: doesModelAllowTemperature(model) ? { temperature: data.temperature } : undefined,
       },
       system_prompt: {
         type: 'custom',
