@@ -23,6 +23,8 @@ export interface ContextAndToolsSectionProps {
   isReadonly: boolean;
   tooltip?: string;
   isCodeInterpreterEnabled: boolean;
+  isWebFetchEnabled: boolean;
+  isAddAttachmentEnabled: boolean;
   agentsAndToolsets: QuickApp2FormType['agentsAndToolsets'];
   agentsAndToolsetsJson: string;
   isJsonView: boolean;
@@ -40,6 +42,8 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
   isReadonly,
   tooltip,
   isCodeInterpreterEnabled,
+  isWebFetchEnabled,
+  isAddAttachmentEnabled,
   agentsAndToolsets,
   agentsAndToolsetsJson,
   isJsonView,
@@ -140,47 +144,51 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
         />
       </DialFormItem>
 
-      <DialFormItem
-        label={t(MarketplaceI18nKeys.AddAttachment)}
-        description={t(MarketplaceI18nKeys.AddAttachmentDescription)}
-        className="!py-0"
-      >
-        <Controller
-          control={control}
-          name="addAttachment"
-          render={({ field }) => (
-            <ToggleSwitch
-              isOn={field.value}
-              handleSwitch={() => field.onChange(!field.value)}
-              disabled={isReadonly}
-              additionalText={t(MarketplaceI18nKeys.AllowTheAgentToAttachFilesToTheResponse)}
-              className="flex items-center gap-2"
-              tooltip={tooltip}
-            />
-          )}
-        />
-      </DialFormItem>
+      {isAddAttachmentEnabled && (
+        <DialFormItem
+          label={t(MarketplaceI18nKeys.AddAttachment)}
+          description={t(MarketplaceI18nKeys.AddAttachmentDescription)}
+          className="!py-0"
+        >
+          <Controller
+            control={control}
+            name="addAttachment"
+            render={({ field }) => (
+              <ToggleSwitch
+                isOn={field.value}
+                handleSwitch={() => field.onChange(!field.value)}
+                disabled={isReadonly}
+                additionalText={t(MarketplaceI18nKeys.AllowTheAgentToAttachFilesToTheResponse)}
+                className="flex items-center gap-2"
+                tooltip={tooltip}
+              />
+            )}
+          />
+        </DialFormItem>
+      )}
 
-      <DialFormItem
-        label={t(MarketplaceI18nKeys.WebFetch)}
-        description={t(MarketplaceI18nKeys.WebFetchDescription)}
-        className="!py-0"
-      >
-        <Controller
-          control={control}
-          name="webFetch"
-          render={({ field }) => (
-            <ToggleSwitch
-              isOn={field.value}
-              handleSwitch={() => field.onChange(!field.value)}
-              disabled={isReadonly}
-              additionalText={t(MarketplaceI18nKeys.AllowTheAgentToFetchWebResources)}
-              className="flex items-center gap-2"
-              tooltip={tooltip}
-            />
-          )}
-        />
-      </DialFormItem>
+      {isWebFetchEnabled && (
+        <DialFormItem
+          label={t(MarketplaceI18nKeys.WebFetch)}
+          description={t(MarketplaceI18nKeys.WebFetchDescription)}
+          className="!py-0"
+        >
+          <Controller
+            control={control}
+            name="webFetch"
+            render={({ field }) => (
+              <ToggleSwitch
+                isOn={field.value}
+                handleSwitch={() => field.onChange(!field.value)}
+                disabled={isReadonly}
+                additionalText={t(MarketplaceI18nKeys.AllowTheAgentToFetchWebResources)}
+                className="flex items-center gap-2"
+                tooltip={tooltip}
+              />
+            )}
+          />
+        </DialFormItem>
+      )}
     </FormCollapsibleSection>
   );
 };

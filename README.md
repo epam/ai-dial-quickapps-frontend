@@ -159,6 +159,8 @@ At least one OAuth provider below must be fully configured (all of its non-`_NAM
 | Variable                   | Required | Default | Description                                                                                                                                                         |
 | -------------------------- | :------: | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CODE_INTERPRETER_ENABLED` |    No    | `false` | Enables the Code Interpreter toggle in the QuickApp2 editor. Served to the client via `GET /api/settings`, mirroring the `ENABLED_FEATURES` flag in `ai-dial-chat`. |
+| `WEB_FETCH_ENABLED`        |    No    | `false` | Enables the Web Fetch toggle in the QuickApp2 editor. Served to the client via `GET /api/settings`, mirroring the `ENABLED_FEATURES` flag in `ai-dial-chat`.        |
+| `ADD_ATTACHMENT_ENABLED`   |    No    | `false` | Enables the Add Attachment toggle in the QuickApp2 editor. Served to the client via `GET /api/settings`, mirroring the `ENABLED_FEATURES` flag in `ai-dial-chat`.   |
 
 ### Security
 
