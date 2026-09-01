@@ -136,6 +136,18 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   }, [settings.isCodeInterpreterEnabled, setValue]);
 
   useEffect(() => {
+    if (!settings.isWebFetchEnabled) {
+      setValue('webFetch', false);
+    }
+  }, [settings.isWebFetchEnabled, setValue]);
+
+  useEffect(() => {
+    if (!settings.isAddAttachmentEnabled) {
+      setValue('addAttachment', false);
+    }
+  }, [settings.isAddAttachmentEnabled, setValue]);
+
+  useEffect(() => {
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
 
@@ -281,6 +293,8 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         isReadonly={isReadonly}
         tooltip={sharedTooltip}
         isCodeInterpreterEnabled={!!settings.isCodeInterpreterEnabled}
+        isWebFetchEnabled={!!settings.isWebFetchEnabled}
+        isAddAttachmentEnabled={!!settings.isAddAttachmentEnabled}
         agentsAndToolsets={agentsAndToolsets}
         agentsAndToolsetsJson={agentsAndToolsetsJson}
         isJsonView={isJsonView}
