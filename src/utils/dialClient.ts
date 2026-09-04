@@ -10,7 +10,7 @@ import type {
 } from '@/types/dial-entities';
 import type { QuickApp2Config } from '@/types/quick-apps';
 import { ApplicationStatus, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
-import { isHiddenDialFolderId } from '@/utils/api';
+import { isHiddenDialFolderId, isPublicToolsetId } from '@/utils/api';
 import { isHiddenPath } from '@/utils/dial-file-path';
 import { ForbiddenError } from '@/utils/forbidden-error';
 import type { StoredGeneralFields } from '@/utils/has-quick-app-changes';
@@ -106,13 +106,19 @@ function normalizeIconUrl(iconUrl?: string): string | undefined {
     .join('/');
 }
 
-function mapAuthSettings(authSettings?: ToolsetApiAuthSettings): ToolsetAuthSettings | undefined {
+function mapAuthSettings(
+  toolsetId: string,
+  authSettings?: ToolsetApiAuthSettings,
+): ToolsetAuthSettings | undefined {
   if (!authSettings?.authentication_type) return undefined;
+  // Public toolsets are signed in per-user, private ones per-workspace — mirrors
+  // the level selection in applyToolsetLoginResult.
+  const authStatus = isPublicToolsetId(toolsetId)
+    ? authSettings.user_level_auth_status
+    : authSettings.global_auth_status;
   return {
     authenticationType: authSettings.authentication_type,
-    // This app has no per-user/org credential split, so a user-level
-    // sign-in takes precedence over an org-wide one.
-    authStatus: authSettings.user_level_auth_status ?? authSettings.global_auth_status,
+    authStatus,
     apiKeyHeader: authSettings.api_key_header,
   };
 }
@@ -173,7 +179,7 @@ function mapApiToDialToolset(data: ToolsetApiEntity): DialToolset {
     iconUrl: normalizeIconUrl(data.icon_url),
     mcp: data.mcp,
     features: data.features,
-    authSettings: mapAuthSettings(data.auth_settings),
+    authSettings: mapAuthSettings(id, data.auth_settings),
     description: data.description,
     topics: data.description_keywords,
     updatedAt: data.updated_at,
