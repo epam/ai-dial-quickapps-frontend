@@ -2,7 +2,7 @@
 name: 🐛 Bug report
 description: Problems and issues with code in EPAM AI DIAL QuickApps Frontend
 labels: ['bug']
-projects: ['epam/68']
+projects: ["epam/91"]
 type: 'Bug'
 body:
   - type: markdown
