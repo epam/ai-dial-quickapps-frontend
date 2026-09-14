@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import { FC, useCallback, useMemo, useState } from 'react';
 
 import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { DialModel } from '@/types/dial-entities';
@@ -22,12 +23,13 @@ import {
 } from '@epam/ai-dial-ui-kit';
 
 import FavoriteStarButton from '@/components/common/FavoriteStarButton/FavoriteStarButton';
+import { EntityScopeLine } from '@/components/common/EntityScopeLine/EntityScopeLine';
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
 import { TopicsLine } from '@/components/common/TopicsLine/TopicsLine';
 import { VirtualCardGrid } from '@/components/common/VirtualCardGrid/VirtualCardGrid';
 import { IconAlertCircleFilled, IconBulb, IconSearch } from '@tabler/icons-react';
 import { SKELETON_COLOR } from '@/constants/quick-apps';
-import { getEntityNameFromId, isHiddenDialFolderId } from '@/utils/api';
+import { getEntityIdWithoutVersion, isHiddenDialFolderId } from '@/utils/api';
 import { getLocalizedText } from '@/utils/get-localized-text';
 import { getUpdatedAtTimestamp } from '@/utils/get-updated-at-timestamp';
 
@@ -42,14 +44,19 @@ interface ModelGroup {
   latestUpdatedAt?: string | number;
 }
 
-// Group by the version-stripped entity id, not the display name: two unrelated
-// entities can share a display name, and grouping by name merged them into one
-// card/favorite — e.g. a non-favorited app could ride along with a favorited
-// model of the same name and get shown (and starred) in the Favorites tab.
+// Group by the version-stripped full entity id (path, not just the name):
+// two entities can share a display name — e.g. a personal resource and its
+// Organization-published copy — and grouping by name alone merged them into
+// one card, hiding which is which. The full-path key keeps them as separate
+// cards, each disambiguated by its EntityScopeLine. Versions of the same
+// entity (same path, different `__version` suffixes) still group together,
+// and grouping by the full id (not the display name) also keeps a
+// non-favorited entity from riding along with a favorited one of the same
+// name into the Favorites tab.
 function groupModelsByEntity(models: DialModel[], language: string): ModelGroup[] {
   const map = new Map<string, DialModel[]>();
   for (const m of models) {
-    const key = getEntityNameFromId(m.id, { removeVersion: true });
+    const key = getEntityIdWithoutVersion(m.id);
     const bucket = map.get(key) ?? [];
     bucket.push(m);
     map.set(key, bucket);
@@ -156,6 +163,11 @@ const ModelCard: FC<ModelCardProps> = ({
       <div className="min-h-[22px]">
         <TopicsLine topics={group.topics} />
       </div>
+
+      {/* mt-auto pins the scope line to the card bottom: grid rows stretch
+          cards to equal height, so a short description would otherwise leave
+          the line floating mid-card. */}
+      <EntityScopeLine id={representativeId} className="mt-auto" />
     </article>
   );
 };
@@ -173,6 +185,7 @@ interface ModelFieldProps {
 
 export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, tooltip, error }) => {
   const { t, language } = useTranslation(Translation.Marketplace);
+  const { app } = useAppContext();
   const {
     modelsWithFavorites: models,
     favoriteIds,
@@ -180,6 +193,9 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
     error: dataError,
     refreshAll,
   } = useDataContext();
+  // The app being edited must not be selectable as its own orchestrator —
+  // that would make it call itself (recursion).
+  const currentAppEntityId = getEntityIdWithoutVersion(app.id);
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<ModelFieldTab>(TAB_IDS.catalog);
@@ -202,9 +218,15 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
 
   // Only tool-supporting models/agents can be selected in the modal — others
   // are hidden entirely rather than shown with an error after selection.
+  // The app being edited is excluded from the selectable set (recursion), but
+  // stays in `availableModels` so a previously saved value still shows its
+  // display name on the collapsed card.
   const selectableModels = useMemo(
-    () => availableModels.filter((m) => !!m.features?.tools),
-    [availableModels],
+    () =>
+      availableModels.filter(
+        (m) => !!m.features?.tools && getEntityIdWithoutVersion(m.id) !== currentAppEntityId,
+      ),
+    [availableModels, currentAppEntityId],
   );
 
   const allGroups = useMemo(

@@ -52,6 +52,15 @@ export const getVersionFromId = (id: string): string | undefined => {
   return parseEntityApiKey(name, { parseVersion: true }).version;
 };
 
+/** Full entity id with the trailing `__version` suffix removed (keeps the whole folder path). */
+export const getEntityIdWithoutVersion = (id: string): string => {
+  const version = getVersionFromId(id);
+  if (version == null) return id;
+  // Slice off the parsed version plus its separator so names that themselves
+  // contain `__` (e.g. `a__b__1.0` → `a__b`) keep all their segments.
+  return id.slice(0, id.length - version.length - PATH_KEY_SEPARATOR.length);
+};
+
 export const parseEntityApiKey = (
   apiKey: string,
   options?: { parseVersion?: boolean },
