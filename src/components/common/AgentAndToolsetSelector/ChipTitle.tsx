@@ -6,25 +6,13 @@ interface ChipTitleProps {
   name: string;
   version?: string;
   isError: boolean;
-  isCustomTool?: boolean;
   className?: string;
 }
 
-export const ChipTitle: React.FC<ChipTitleProps> = ({
-  name,
-  version,
-  isError,
-  isCustomTool,
-  className,
-}) => {
+export const ChipTitle: React.FC<ChipTitleProps> = ({ name, version, isError, className }) => {
   return (
     <div className={classNames('flex min-w-0 items-baseline justify-between gap-x-2', className)}>
-      <span
-        className={classNames(
-          'min-w-0 truncate',
-          isError && !isCustomTool ? 'text-error' : 'text-primary',
-        )}
-      >
+      <span className={classNames('min-w-0 truncate', isError ? 'text-error' : 'text-primary')}>
         {name}
       </span>
       {version && (

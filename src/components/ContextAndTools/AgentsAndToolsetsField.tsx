@@ -76,14 +76,26 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
   } | null>(null);
   const [viewingItem, setViewingItem] = useState<ChipEntity | null>(null);
 
-  const allItemsMap: Record<string, ChipEntity | undefined> = useMemo(
-    () => ({
+  const allItemsMap: Record<string, ChipEntity | undefined> = useMemo(() => {
+    const map: Record<string, ChipEntity | undefined> = {
       ...modelsMap,
       ...toolsetsMap,
       ...mcpAgentsMap,
-    }),
-    [modelsMap, toolsetsMap, mcpAgentsMap],
-  );
+    };
+    // Toolsets added via the JSON editor are inline configs with no
+    // deployment_id — the chip id for those is the toolset `name` from the
+    // config. Index toolsets by display name as well so those chips resolve
+    // against the toolset list from context (details, auth status, sign-in)
+    // instead of reporting the toolset as not available. Id-keyed entries
+    // always win; the first toolset wins on a display-name collision.
+    for (const toolset of Object.values(toolsetsMap)) {
+      const displayName = getLocalizedText(toolset.name, language, toolset.id);
+      if (displayName && !(displayName in map)) {
+        map[displayName] = toolset;
+      }
+    }
+    return map;
+  }, [modelsMap, toolsetsMap, mcpAgentsMap, language]);
 
   const selectedIds = useMemo(
     () =>

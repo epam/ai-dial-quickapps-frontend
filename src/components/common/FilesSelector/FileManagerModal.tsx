@@ -10,6 +10,7 @@ import {
   NOT_ALLOWED_SYMBOLS_REGEXP,
   NotificationVariant,
   PopupSize,
+  type TabItem,
 } from '@epam/ai-dial-ui-kit';
 
 import {
@@ -82,8 +83,13 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
 
   const rootLabel = tabLabels[activeTab] || tabLabels[DialFileManagerTabs.MyFiles];
 
-  const tabs = useMemo(
-    () => allTabs?.filter((tab) => tab.id !== DialFileManagerTabs.Review),
+  const tabs = useMemo<TabItem[] | undefined>(
+    () =>
+      allTabs
+        ?.filter((tab) => tab.id !== DialFileManagerTabs.Review)
+        // useDialFileManagerTabs returns TabModel[] (label: ReactNode), but the
+        // file manager toolbar expects TabItem[] (label: string).
+        .map((tab) => ({ id: tab.id, label: String(tab.label) })),
     [allTabs],
   );
 
