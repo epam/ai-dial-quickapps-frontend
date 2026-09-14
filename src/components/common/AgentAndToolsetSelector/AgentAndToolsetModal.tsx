@@ -5,14 +5,16 @@ import sortBy from 'lodash-es/sortBy';
 import { IconLayoutGrid } from '@tabler/icons-react';
 
 import FavoriteStarButton from '@/components/common/FavoriteStarButton/FavoriteStarButton';
+import { EntityScopeLine } from '@/components/common/EntityScopeLine/EntityScopeLine';
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
 import { TopicsLine } from '@/components/common/TopicsLine/TopicsLine';
 import { VirtualCardGrid } from '@/components/common/VirtualCardGrid/VirtualCardGrid';
 import { CommonI18nKeys, MarketplaceI18nKeys } from '@/constants/i18n';
+import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
-import { isHiddenDialFolderId } from '@/utils/api';
+import { getEntityIdWithoutVersion, isHiddenDialFolderId } from '@/utils/api';
 import { getEntityStatus } from '@/utils/get-entity-status';
 import { getLocalizedText } from '@/utils/get-localized-text';
 import { getUpdatedAtTimestamp } from '@/utils/get-updated-at-timestamp';
@@ -106,6 +108,11 @@ const AgentAndToolsetCard: React.FC<AgentAndToolsetCardProps> = ({
       <div className="min-h-[22px]">
         <TopicsLine topics={(item.topics as string[] | undefined) ?? []} />
       </div>
+
+      {/* mt-auto pins the scope line to the card bottom: grid rows stretch
+          cards to equal height, so a short description would otherwise leave
+          the line floating mid-card. */}
+      <EntityScopeLine id={item.id} className="mt-auto" />
     </article>
   );
 };
@@ -120,6 +127,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
   onConfirm,
 }) => {
   const { t, language } = useTranslation(Translation.Marketplace);
+  const { app } = useAppContext();
   const {
     modelsWithFavorites: models,
     toolsetsWithFavorites: toolsets,
@@ -128,6 +136,9 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
     status,
   } = useDataContext();
   const isLoading = status === 'loading' || status === 'idle';
+  // The app being edited must not be selectable as its own agent/toolset —
+  // that would make it call itself (recursion).
+  const currentAppEntityId = getEntityIdWithoutVersion(app.id);
 
   const [selectedIds, setSelectedIds] = useState<string[]>(initialSelectedIds);
   const [search, setSearch] = useState('');
@@ -142,12 +153,13 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
   );
 
   const allItems = useMemo<ChipEntity[]>(
-    () => [
-      ...models.filter((m) => !isHiddenDialFolderId(m.id)),
-      ...toolsets.filter((toolset) => !isHiddenDialFolderId(toolset.id)),
-      ...mcpAgents.filter((agent) => !isHiddenDialFolderId(agent.id)),
-    ],
-    [models, toolsets, mcpAgents],
+    () =>
+      [
+        ...models.filter((m) => !isHiddenDialFolderId(m.id)),
+        ...toolsets.filter((toolset) => !isHiddenDialFolderId(toolset.id)),
+        ...mcpAgents.filter((agent) => !isHiddenDialFolderId(agent.id)),
+      ].filter((item) => getEntityIdWithoutVersion(item.id) !== currentAppEntityId),
+    [models, toolsets, mcpAgents, currentAppEntityId],
   );
 
   const sortedItems = useMemo(
