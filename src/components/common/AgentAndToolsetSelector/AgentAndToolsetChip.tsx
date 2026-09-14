@@ -1,8 +1,6 @@
 import { IconApps, IconSettings, IconTool } from '@tabler/icons-react';
 import React, { useMemo } from 'react';
 
-import classNames from 'classnames';
-
 import type { ApplicationStatus, LocalizedText, ToolsetAuthSettings } from '@/types/dial-entities';
 import { ToolsetAuthType } from '@/types/dial-entities';
 import { Translation } from '@/types/translation';
@@ -14,7 +12,13 @@ import { useTranslation } from '@/hooks/useTranslation';
 
 import { ChipTooltipContent } from './ChipTooltipContent';
 
-import { DialGhostIconButton, DialTag, DialTooltip, ElementSize } from '@epam/ai-dial-ui-kit';
+import {
+  DialGhostIconButton,
+  DialTag,
+  DialTooltip,
+  ElementSize,
+  mergeClasses,
+} from '@epam/ai-dial-ui-kit';
 
 export interface ChipEntity {
   id: string;
@@ -83,11 +87,7 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
     ? getEntityNameFromId(id, { removeVersion: true })
     : getLocalizedText(item.name, language, getEntityNameFromId(id, { removeVersion: true }));
 
-  // No matching entity in the maps and the id isn't a recognizable toolset id — treat as a
-  // free-form/custom tool. (Application ids are no longer distinguishable by prefix alone.)
-  const isCustomTool = !item && !isToolsetId(id);
-
-  const version = isCustomTool ? '' : !item ? getVersionFromId(id) : item.version;
+  const version = !item ? getVersionFromId(id) : item.version;
 
   const tooltipContent = useMemo(
     () => (
@@ -98,11 +98,10 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
         version={version}
         status={status}
         isInSelectionList={isInSelectionList}
-        isCustomTool={isCustomTool}
         readonly={readonly}
       />
     ),
-    [id, item, name, version, status, isInSelectionList, readonly, isCustomTool],
+    [id, item, name, version, status, isInSelectionList, readonly],
   );
 
   const hasAuthSettings =
@@ -146,8 +145,7 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
           closable={!readonly}
           onRemove={handleRemove}
           onClick={onItemClick || canOpenLoginModal ? handleClick : undefined}
-          className={classNames(
-            isCustomTool && 'bg-layer-4',
+          className={mergeClasses(
             status.isError && 'bg-error',
             !readonly && isConfigurable && 'group-hover:pe-8',
           )}

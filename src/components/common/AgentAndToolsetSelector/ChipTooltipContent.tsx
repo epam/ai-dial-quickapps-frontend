@@ -16,7 +16,6 @@ interface ChipTooltipContentProps {
   version?: string;
   status?: EntityStatus;
   isInSelectionList?: boolean;
-  isCustomTool?: boolean;
   readonly?: boolean;
 }
 
@@ -27,12 +26,11 @@ export const ChipTooltipContent: React.FC<ChipTooltipContentProps> = ({
   version,
   status,
   isInSelectionList,
-  isCustomTool,
   readonly,
 }) => {
   const { t } = useTranslation(Translation.Common);
 
-  const showUnavailable = !item && !isCustomTool;
+  const showUnavailable = !item;
   const showReadonlyHint = readonly && !isInSelectionList;
   const isToolset = item ? item.type === 'toolset' : isToolsetId(id);
   const entityTypeKey = isToolset ? CommonI18nKeys.ToolsetEntityType : CommonI18nKeys.AgentEntityType;

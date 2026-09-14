@@ -1,12 +1,11 @@
 'use client';
 import React, { useCallback } from 'react';
-import classNames from 'classnames';
 import { getEntityNameFromId, getVersionFromId } from '@/utils/api';
 import { getLocalizedText } from '@/utils/get-localized-text';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
 import { CloseButtonSmall } from '@/components/common/CloseButtons';
-import { DialTooltip } from '@epam/ai-dial-ui-kit';
+import { DialTooltip, mergeClasses } from '@epam/ai-dial-ui-kit';
 import { ChipTitle } from './ChipTitle';
 import { ChipTooltipContent } from './ChipTooltipContent';
 import type { ChipEntity } from './AgentAndToolsetChip';
@@ -54,7 +53,7 @@ export const OverflowListItem: React.FC<OverflowListItemProps> = ({
       }
     >
       <div
-        className={classNames(
+        className={mergeClasses(
           'flex w-full items-center justify-between gap-3 px-3 py-2 transition-colors',
           'cursor-pointer',
           isError ? 'hover:bg-error' : 'hover:bg-accent-primary-alpha',
@@ -65,7 +64,7 @@ export const OverflowListItem: React.FC<OverflowListItemProps> = ({
           <ChipTitle name={name} version={version} isError={isError} />
         </div>
         <CloseButtonSmall
-          className={classNames(isError && 'hover:enabled:text-error')}
+          className={mergeClasses(isError && 'hover:enabled:text-error')}
           onClick={handleRemove}
         />
       </div>
