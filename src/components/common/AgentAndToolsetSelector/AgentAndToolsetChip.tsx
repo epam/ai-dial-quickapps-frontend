@@ -81,7 +81,7 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
   isInSelectionList,
 }) => {
   const { language } = useTranslation(Translation.Common);
-  const status = getEntityStatus(item);
+  const status = getEntityStatus(item, id);
 
   const name = !item
     ? getEntityNameFromId(id, { removeVersion: true })
@@ -146,7 +146,7 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
           onRemove={handleRemove}
           onClick={onItemClick || canOpenLoginModal ? handleClick : undefined}
           className={mergeClasses(
-            status.isInvalid ? 'bg-layer-sunken' : status.isError && 'bg-error',
+            status.isMissingDeploymentId ? 'bg-layer-sunken' : status.isError && 'bg-error',
             !readonly && isConfigurable && 'group-hover:pe-8',
           )}
         />

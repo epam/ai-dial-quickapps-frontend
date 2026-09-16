@@ -11,6 +11,7 @@
   "Switch to JSON view for Agents and Toolsets": "Switch to JSON view for Agents and Toolsets",
   "This application is public and cannot be edited": "This application is public and cannot be edited",
   "The {{entityType}} is not available in the Catalog and was added via JSON.": "The {{entityType}} is not available in the Catalog and was added via JSON.",
+  "The {{entityType}} is not available and needs to be removed.": "The {{entityType}} is not available and needs to be removed.",
   "Logged out toolset.": "Logged out toolset.",
   "Logged out toolset. Click to scroll to the toolset to log in.": "Logged out toolset. Click to scroll to the toolset to log in.",
   "Logged out toolset. Click on the toolset to log in.": "Logged out toolset. Click on the toolset to log in.",
