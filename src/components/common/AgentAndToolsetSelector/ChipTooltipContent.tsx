@@ -30,24 +30,25 @@ export const ChipTooltipContent: React.FC<ChipTooltipContentProps> = ({
 }) => {
   const { t } = useTranslation(Translation.Common);
 
-  const showUnavailable = !item;
+  const showAddedViaJsonHint = !item && status?.isMissingDeploymentId;
   const showReadonlyHint = readonly && !isInSelectionList;
   const isToolset = item ? item.type === 'toolset' : isToolsetId(id);
   const entityTypeKey = isToolset
     ? CommonI18nKeys.ToolsetEntityType
     : CommonI18nKeys.AgentEntityType;
+  const entityTypeLabel = t(entityTypeKey);
 
   const statusMessage = useMemo(
-    () => getEntityStatusMessage(status, readonly, t),
-    [status, readonly, t],
+    () => getEntityStatusMessage(status, readonly, t, entityTypeLabel),
+    [status, readonly, t, entityTypeLabel],
   );
 
   return (
     <div className="flex max-w-[440px] flex-col px-2 py-1">
-      {showUnavailable && (
+      {showAddedViaJsonHint && (
         <div className="mb-1">
           <p className="dial-tiny-text text-secondary">
-            {t(CommonI18nKeys.AddedViaJsonHint, { entityType: t(entityTypeKey) })}
+            {t(CommonI18nKeys.AddedViaJsonHint, { entityType: entityTypeLabel })}
           </p>
         </div>
       )}

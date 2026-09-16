@@ -1,3 +1,4 @@
+import { isApplicationId, isToolsetId } from '@/utils/api';
 import { ApplicationStatus, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
 import { CommonI18nKeys } from '@/constants/i18n';
 
@@ -10,7 +11,12 @@ export interface EntityStatusFields {
 }
 
 export interface EntityStatus {
-  isInvalid: boolean;
+  // Entity was added via JSON with only a `name`, no `deployment_id` —
+  // it can't be resolved against the catalog, but that's expected, not an error.
+  isMissingDeploymentId: boolean;
+  // Entity has a real deployment/toolset id, but that id doesn't match
+  // anything in the available toolsets/agents/models list — it needs removal.
+  isNotFoundInCatalog: boolean;
   isError: boolean;
   isLoggedOut: boolean;
   isUndeployed: boolean;
@@ -19,11 +25,13 @@ export interface EntityStatus {
   isRedeploying: boolean;
 }
 
-export const getEntityStatus = (entity?: EntityStatusFields): EntityStatus => {
+export const getEntityStatus = (entity?: EntityStatusFields, id?: string): EntityStatus => {
   if (!entity) {
+    const isNotFoundInCatalog = isApplicationId(id) || isToolsetId(id);
     return {
-      isInvalid: true,
-      isError: true,
+      isMissingDeploymentId: !isNotFoundInCatalog,
+      isNotFoundInCatalog,
+      isError: isNotFoundInCatalog,
       isLoggedOut: false,
       isUndeployed: false,
       isDeploying: false,
@@ -51,7 +59,8 @@ export const getEntityStatus = (entity?: EntityStatusFields): EntityStatus => {
     !isRedeploying;
 
   return {
-    isInvalid: false,
+    isMissingDeploymentId: false,
+    isNotFoundInCatalog: false,
     isError: isLoggedOut || isUndeployed,
     isLoggedOut,
     isUndeployed,
@@ -98,10 +107,15 @@ const STATUS_MESSAGE_KEY_BY_KIND = new Map<EntityStatusKind, CommonI18nKeys>([
 export const getEntityStatusMessage = (
   status: EntityStatus | undefined,
   isReadonly: boolean | undefined,
-  t: (key: string) => string,
+  t: (key: string, options?: Record<string, string>) => string,
+  entityTypeLabel?: string,
 ): string | undefined => {
   if (!status) {
     return undefined;
+  }
+
+  if (status.isNotFoundInCatalog) {
+    return t(CommonI18nKeys.NotAvailableEntityTypeRemove, { entityType: entityTypeLabel ?? '' });
   }
 
   if (status.isLoggedOut) {

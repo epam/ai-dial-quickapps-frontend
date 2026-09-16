@@ -1,6 +1,7 @@
 'use client';
 import React, { useCallback } from 'react';
 import { getEntityNameFromId, getVersionFromId } from '@/utils/api';
+import { getEntityStatus } from '@/utils/get-entity-status';
 import { getLocalizedText } from '@/utils/get-localized-text';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
@@ -24,7 +25,8 @@ export const OverflowListItem: React.FC<OverflowListItemProps> = ({
   onItemClick,
 }) => {
   const { language } = useTranslation(Translation.Common);
-  const isError = !item;
+  const status = getEntityStatus(item, id);
+  const isError = status.isError;
   const name = !item
     ? getEntityNameFromId(id, { removeVersion: true })
     : getLocalizedText(item.name, language, getEntityNameFromId(id, { removeVersion: true }));
@@ -49,7 +51,14 @@ export const OverflowListItem: React.FC<OverflowListItemProps> = ({
   return (
     <DialTooltip
       tooltip={
-        <ChipTooltipContent id={id} item={item} name={name} version={version} isInSelectionList />
+        <ChipTooltipContent
+          id={id}
+          item={item}
+          name={name}
+          version={version}
+          status={status}
+          isInSelectionList
+        />
       }
     >
       <div

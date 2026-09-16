@@ -19,6 +19,7 @@ export enum CommonI18nKeys {
   SwitchToJsonView = 'Switch to JSON view for Agents and Toolsets',
   AppIsPublicCannotBeEdited = 'This application is public and cannot be edited',
   AddedViaJsonHint = 'The {{entityType}} is not available in the Catalog and was added via JSON.',
+  NotAvailableEntityTypeRemove = 'The {{entityType}} is not available and needs to be removed.',
   LoggedOutToolset = 'Logged out toolset.',
   LoggedOutToolsetClickToScroll = 'Logged out toolset. Click to scroll to the toolset to log in.',
   LoggedOutToolsetClickOn = 'Logged out toolset. Click on the toolset to log in.',
