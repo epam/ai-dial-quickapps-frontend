@@ -146,7 +146,7 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
           onRemove={handleRemove}
           onClick={onItemClick || canOpenLoginModal ? handleClick : undefined}
           className={mergeClasses(
-            status.isError && 'bg-error',
+            status.isInvalid ? 'bg-layer-sunken' : status.isError && 'bg-error',
             !readonly && isConfigurable && 'group-hover:pe-8',
           )}
         />

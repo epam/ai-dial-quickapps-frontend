@@ -33,7 +33,9 @@ export const ChipTooltipContent: React.FC<ChipTooltipContentProps> = ({
   const showUnavailable = !item;
   const showReadonlyHint = readonly && !isInSelectionList;
   const isToolset = item ? item.type === 'toolset' : isToolsetId(id);
-  const entityTypeKey = isToolset ? CommonI18nKeys.ToolsetEntityType : CommonI18nKeys.AgentEntityType;
+  const entityTypeKey = isToolset
+    ? CommonI18nKeys.ToolsetEntityType
+    : CommonI18nKeys.AgentEntityType;
 
   const statusMessage = useMemo(
     () => getEntityStatusMessage(status, readonly, t),
@@ -43,11 +45,11 @@ export const ChipTooltipContent: React.FC<ChipTooltipContentProps> = ({
   return (
     <div className="flex max-w-[440px] flex-col px-2 py-1">
       {showUnavailable && (
-        <p className="dial-tiny-text mb-1 text-error">
-          {t(CommonI18nKeys.NotAvailableEntityTypePleaseChange, {
-            entityType: t(entityTypeKey),
-          })}
-        </p>
+        <div className="mb-1">
+          <p className="dial-tiny-text text-secondary">
+            {t(CommonI18nKeys.AddedViaJsonHint, { entityType: t(entityTypeKey) })}
+          </p>
+        </div>
       )}
       {statusMessage && <p className="dial-tiny-text mb-1 text-error">{statusMessage}</p>}
       {showReadonlyHint && <p className="dial-tiny-text mb-1 text-secondary">Read-only</p>}
