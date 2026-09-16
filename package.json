@@ -14,9 +14,9 @@
   },
   "dependencies": {
     "@epam/ai-dial-chat-visualizer-connector": "^0.47.3",
-    "@epam/ai-dial-react-file-manager": "0.1.0-dev.21",
+    "@epam/ai-dial-react-file-manager": "0.2.0-rc.1",
     "@epam/ai-dial-typescript-sdk": "0.1.0-dev.38",
-    "@epam/ai-dial-ui-kit": "^0.13.0-dev.64",
+    "@epam/ai-dial-ui-kit": "^0.14.0",
     "@floating-ui/react": "^0.27.19",
     "@hookform/resolvers": "^5.4.0",
     "@monaco-editor/react": "^4.7.0",
@@ -41,7 +41,7 @@
     "i18next": "^26.3.1",
     "lodash-es": "^4.18.1",
     "nanoid": "^5.1.16",
-    "next": "16.3.0",
+    "next": "16.3.3",
     "next-auth": "^4.24.15",
     "rc-slider": "^10.6.2",
     "react": "^19.2.7",
@@ -67,10 +67,10 @@
     "prettier": "^3.9.4",
     "tailwindcss": "^3.4.19",
     "typescript": "^5",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "overrides": {
-    "sharp": "0.35.0",
+    "sharp": "0.35.4",
     "brace-expansion": "^2.1.4",
     "ip-address": "10.3.1"
   }

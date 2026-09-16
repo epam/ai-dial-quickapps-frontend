@@ -2,7 +2,7 @@
 name: 🚀 Feature request
 description: Suggest an idea for EPAM AI DIAL QuickApps Frontend
 labels: ['enhancement', 'to-be-documented']
-projects: ['epam/68']
+projects: ["epam/91"]
 type: 'Feature'
 body:
   - type: markdown

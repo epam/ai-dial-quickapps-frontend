@@ -20,6 +20,7 @@ import type {
 import { InboundMessageType, ToolsetAuthResultPayload } from '@/types/editor-messages';
 import { applyToolsetLoginResult } from '@/utils/apply-toolset-login-result';
 import {
+  fetchDialBucket,
   fetchDialMcpAgents,
   fetchDialModels,
   fetchDialPrompts,
@@ -46,6 +47,12 @@ interface DataState {
   promptsMap: PromptsMap;
   promptsVersion: number;
   files: string[];
+  /**
+   * The user's own DIAL Core bucket id (GET /v1/bucket). Undefined while
+   * loading or on fetch failure — scope labels for non-public entities are
+   * hidden until it resolves.
+   */
+  userBucket?: string;
   favoriteIds: Set<string>;
   favoritesError?: string;
   status: 'idle' | 'loading' | 'ready' | 'error';
@@ -60,6 +67,7 @@ type DataAction =
   | { type: 'TOOLSET_LOGIN_RESULT_APPLIED'; payload: ToolsetAuthResultPayload }
   | { type: 'PROMPTS_LOADED'; payload: DialPrompt[] }
   | { type: 'FILES_LOADED'; payload: string[] }
+  | { type: 'BUCKET_LOADED'; payload?: string }
   | { type: 'FAVORITES_LOADED'; payload: { ids: Set<string>; error?: string } }
   | { type: 'READY' }
   | { type: 'ERROR'; payload: string };
@@ -120,6 +128,8 @@ function reducer(state: DataState, action: DataAction): DataState {
     }
     case 'FILES_LOADED':
       return { ...state, files: action.payload };
+    case 'BUCKET_LOADED':
+      return { ...state, userBucket: action.payload };
     case 'FAVORITES_LOADED':
       return { ...state, favoriteIds: action.payload.ids, favoritesError: action.payload.error };
     case 'READY':
@@ -176,8 +186,14 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
       fetchDialMcpAgents(),
       fetchDialPrompts(),
       favorites,
+      // A bucket failure must not fail the whole load — Personal/Shared scope
+      // labels are simply hidden (undefined) until a later refresh succeeds.
+      fetchDialBucket().catch((err: unknown) => {
+        console.warn('[DataContext] failed to load bucket, scope labels degraded:', err);
+        return undefined;
+      }),
     ])
-      .then(([modelsRaw, toolsets, mcpAgentsRaw, prompts, favoritesPayload]) => {
+      .then(([modelsRaw, toolsets, mcpAgentsRaw, prompts, favoritesPayload, bucket]) => {
         // The `mcp` deployment interface also returns entries that are
         // already present as chat models/applications — for those, fold the
         // mcp flag into the existing chat-interface entry (so it's still
@@ -200,6 +216,9 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
         dispatch({ type: 'MCP_AGENTS_LOADED', payload: mcpAgents });
         dispatch({ type: 'PROMPTS_LOADED', payload: prompts });
         dispatch({ type: 'FAVORITES_LOADED', payload: favoritesPayload });
+        // Dispatched before READY so chips rendered from saved config get
+        // their scope label with the rest of the data (no label flash).
+        dispatch({ type: 'BUCKET_LOADED', payload: bucket });
         dispatch({ type: 'READY' });
       })
       .catch((err: unknown) => {

@@ -5,6 +5,7 @@ import classNames from 'classnames';
 
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
 import { TopicsLine } from '@/components/common/TopicsLine/TopicsLine';
+import { EntityScopeLine } from '@/components/common/EntityScopeLine/EntityScopeLine';
 import { CommonI18nKeys } from '@/constants/i18n';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
@@ -67,6 +68,8 @@ export const EntityInfoModal: FC<EntityInfoModalProps> = ({ item, onClose }) => 
         {description && <p className="dial-small-text text-secondary">{description}</p>}
 
         {topics.length > 0 && <TopicsLine topics={topics} />}
+
+        <EntityScopeLine id={item.id} />
       </div>
     </DialPopup>
   );

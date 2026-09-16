@@ -5,6 +5,7 @@ import { Translation } from '@/types/translation';
 import { CommonI18nKeys } from '@/constants/i18n';
 import { isToolsetId } from '@/utils/api';
 import { getEntityStatusMessage, type EntityStatus } from '@/utils/get-entity-status';
+import { EntityScopeLine } from '@/components/common/EntityScopeLine/EntityScopeLine';
 
 import type { ChipEntity } from './AgentAndToolsetChip';
 
@@ -15,7 +16,6 @@ interface ChipTooltipContentProps {
   version?: string;
   status?: EntityStatus;
   isInSelectionList?: boolean;
-  isCustomTool?: boolean;
   readonly?: boolean;
 }
 
@@ -26,12 +26,11 @@ export const ChipTooltipContent: React.FC<ChipTooltipContentProps> = ({
   version,
   status,
   isInSelectionList,
-  isCustomTool,
   readonly,
 }) => {
   const { t } = useTranslation(Translation.Common);
 
-  const showUnavailable = !item && !isCustomTool;
+  const showUnavailable = !item;
   const showReadonlyHint = readonly && !isInSelectionList;
   const isToolset = item ? item.type === 'toolset' : isToolsetId(id);
   const entityTypeKey = isToolset ? CommonI18nKeys.ToolsetEntityType : CommonI18nKeys.AgentEntityType;
@@ -56,6 +55,7 @@ export const ChipTooltipContent: React.FC<ChipTooltipContentProps> = ({
         <div className="dial-small-text flex min-w-0 flex-1 flex-col">
           <span className="w-full truncate">{name}</span>
           {version && <span className="text-secondary">v{version}</span>}
+          <EntityScopeLine id={id} />
         </div>
       </div>
     </div>
