@@ -74,6 +74,13 @@ export const prepareDownloadDestination = async (
     if (error instanceof DOMException && error.name === 'AbortError') {
       return { type: DownloadDestinationType.Cancelled };
     }
+    // showSaveFilePicker throws a SecurityError when called from a cross-origin
+    // iframe (e.g. this app embedded in the chat host), since the picker is only
+    // available to a top-level browsing context or a same-origin iframe. Fall back
+    // to a blob download instead of failing the whole download in that case.
+    if (error instanceof DOMException && error.name === 'SecurityError') {
+      return { type: DownloadDestinationType.Blob };
+    }
     throw error;
   }
 };
