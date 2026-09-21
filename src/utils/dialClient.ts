@@ -2,7 +2,7 @@ import type {
   AppSettings,
   DialApp,
   DialModel,
-  DialPrompt,
+  DialSkill,
   DialToolset,
   LocalizedText,
   MaybeLocalizedText,
@@ -10,7 +10,7 @@ import type {
 } from '@/types/dial-entities';
 import type { QuickApp2Config } from '@/types/quick-apps';
 import { ApplicationStatus, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
-import { isHiddenDialFolderId, isPublicToolsetId } from '@/utils/api';
+import { decodeApiUrl, isHiddenDialFolderId, isPublicToolsetId } from '@/utils/api';
 import { isHiddenPath } from '@/utils/dial-file-path';
 import { ForbiddenError } from '@/utils/forbidden-error';
 import type { StoredGeneralFields } from '@/utils/has-quick-app-changes';
@@ -429,37 +429,50 @@ export async function fetchDialFiles(path = 'files'): Promise<DialFileMetadataIt
   return res.items ?? [];
 }
 
-async function fetchPromptsFromBucket(bucket: string): Promise<DialPrompt[]> {
-  const qs = new URLSearchParams({ bucket, limit: '1000', recursive: 'true' });
-  let res: { items?: DialFileMetadataItem[] };
-  try {
-    const response = await fetch(`/api/dial-prompts/list?${qs}`);
-    if (!response.ok) return [];
-    res = (await response.json()) as { items?: DialFileMetadataItem[] };
-  } catch {
-    return [];
-  }
-  return (res.items ?? [])
-    .filter((item) => item.nodeType === 'ITEM')
-    .map((item) => {
-      const parts = ['prompts', bucket];
-      if (item.parentPath) parts.push(item.parentPath);
-      parts.push(item.name);
-      const id = parts.join('/');
-      return {
-        id,
-        name: item.name,
-        folderId: id.slice(0, id.lastIndexOf('/')),
-      };
-    })
-    .filter(({ id }) => !isHiddenPath(id));
+interface DialSkillCatalogItem {
+  name: string;
+  url: string;
+  description?: string;
+  author?: string;
+  updatedAt?: number;
+  isMy?: boolean;
+  canEdit?: boolean;
+  sharedWithMe?: boolean;
 }
 
-export async function fetchDialPrompts(): Promise<DialPrompt[]> {
+interface DialSkillCatalogResponse {
+  skills: DialSkillCatalogItem[];
+  publicSkills: DialSkillCatalogItem[];
+  sharedWithMe: DialSkillCatalogItem[];
+}
+
+function mapCoreToDialSkill(item: DialSkillCatalogItem): DialSkill {
+  const id = decodeApiUrl(item.url);
+  return {
+    id,
+    reference: id,
+    name: item.name,
+    type: 'skill',
+    description: item.description,
+    updatedAt: item.updatedAt,
+    author: item.author,
+    isMy: item.isMy,
+    canEdit: item.canEdit,
+    sharedWithMe: item.sharedWithMe,
+  };
+}
+
+/**
+ * Fetches the Skills catalog by replicating `ai-dial-chat`'s
+ * `SkillsListingService.listCatalogSkills` aggregation directly against DIAL
+ * Core (see `/api/dial-skills/catalog`), since this app has no BFF of its own.
+ */
+export async function fetchDialSkills(): Promise<DialSkill[]> {
   const { bucket } = await dialFetch<{ bucket: string }>('/v1/bucket');
-  const [personal, organization] = await Promise.all([
-    fetchPromptsFromBucket(bucket),
-    fetchPromptsFromBucket('public'),
-  ]);
-  return [...personal, ...organization];
+  const res = await sdkFetch<DialSkillCatalogResponse>(
+    `/api/dial-skills/catalog?bucket=${encodeURIComponent(bucket)}`,
+  );
+  return [...res.skills, ...res.publicSkills, ...res.sharedWithMe]
+    .map(mapCoreToDialSkill)
+    .filter((skill) => !isHiddenDialFolderId(skill.id));
 }

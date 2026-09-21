@@ -29,6 +29,7 @@ const toUserConfig = (dto: UserConfigDto): UserConfig => {
     version: migrated.version ?? CURRENT_USER_CONFIG_VERSION,
     deployments: { installed: migrated.deployments?.installed ?? [] },
     toolsets: { installed: migrated.toolsets?.installed ?? [] },
+    skills: { installed: migrated.skills?.installed ?? [] },
     raw: migrated,
   };
 };
@@ -52,5 +53,9 @@ export const getUserConfig = async (): Promise<UserConfig> => {
 /** Favorite ids: "installed" on the backend is "favorite" in the UI. */
 export const fetchFavoriteIds = async (): Promise<Set<string>> => {
   const config = await getUserConfig();
-  return new Set([...config.deployments.installed, ...config.toolsets.installed]);
+  return new Set([
+    ...config.deployments.installed,
+    ...config.toolsets.installed,
+    ...config.skills.installed,
+  ]);
 };
