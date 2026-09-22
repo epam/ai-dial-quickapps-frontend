@@ -56,6 +56,7 @@ export enum ChatI18nKeys {
 
 // marketplace.json
 export enum MarketplaceI18nKeys {
+  ApplicationCredentials = 'Application credentials',
   NA = 'N/A',
   Change = 'Change',
   AddMarketplace = 'Add',

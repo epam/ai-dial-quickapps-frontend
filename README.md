@@ -224,3 +224,16 @@ Clone `https://github.com/vercel/opentelemetry-collector-dev-setup` locally and 
 | `OTEL_METRICS_EXPORTER`       |    No    | What to use as metrics exporter          | "otlp" or empty                | empty, it means that Prometheus will be used          |                       |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` |    No    | Collector endpoint address               | Any valid url                  |                                                       | http://localhost:4318 |
 | `OTEL_EXPORTER_OTLP_PROTOCOL` |    No    | Which protocol to use                    | grpc, http/protobuf, http/json |                                                       |                       |
+
+## Application credentials in the Chat host
+
+When embedded by a Chat host advertising `applicationCredentials=true` in the iframe URL,
+selected agents load their individual application metadata because deployment lists omit
+`external_services`. Agents requiring authentication expose credentials from their chip
+and Advanced settings. If metadata loading fails, the action remains available so the
+host can display its retry form. The editor sends `{ type: 'REQUEST_APPLICATION_CREDENTIALS', appId }`
+to its configured parent origin. The host opens its shared Catalog credential forms,
+including API keys, OAuth and DIAL-native offline consent. No credentials are passed to
+this editor or saved in the Quick app configuration. Closing the host dialog preserves
+unsaved transport settings. Older hosts do not advertise the query parameter, so this
+action is hidden there.

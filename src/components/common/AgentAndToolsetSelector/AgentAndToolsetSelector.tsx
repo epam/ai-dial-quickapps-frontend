@@ -2,6 +2,8 @@
 import { IconLayoutGrid, IconPlus } from '@tabler/icons-react';
 import React, { MouseEvent, useCallback, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useAppContext } from '@/context/AppContext';
+import { requestApplicationCredentials } from '@/utils/request-application-credentials';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
 import { CommonI18nKeys } from '@/constants/i18n';
@@ -37,6 +39,7 @@ export const AgentAndToolsetSelector: React.FC<AgentAndToolsetSelectorProps> = (
 }) => {
   const { t } = useTranslation(Translation.Common);
   const searchParams = useSearchParams();
+  const { settings } = useAppContext();
 
   const [isSelectModalOpen, setSelectModalOpen] = useState(
     searchParams.get(AgentsAndToolsetsModalQueryParams.Modal) === '1',
@@ -120,6 +123,11 @@ export const AgentAndToolsetSelector: React.FC<AgentAndToolsetSelectorProps> = (
                 onItemClick={onItemClick}
                 onConfigure={onConfigureClick}
                 onLoginToolset={setLoginToolset}
+                onApplicationCredentials={
+                  searchParams.get('applicationCredentials') === 'true'
+                    ? (item) => requestApplicationCredentials(item.id, settings.allowedOrigin)
+                    : undefined
+                }
               />
             ))}
           </div>

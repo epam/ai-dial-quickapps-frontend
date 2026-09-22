@@ -9,6 +9,7 @@ import { doesAgentSupportMcp, isDialAiEntityModel } from '@/utils/application';
 import { getEntityStatus } from '@/utils/get-entity-status';
 import { getLocalizedText } from '@/utils/get-localized-text';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useApplicationAuthentication } from '@/hooks/useApplicationAuthentication';
 
 import { ChipTooltipContent } from './ChipTooltipContent';
 
@@ -41,8 +42,9 @@ const EntityIcon: React.FC<{ id: string; type?: string; size?: number }> = ({
   type,
   size = 18,
 }) => {
-  if (type === 'toolset' || (!type && isToolsetId(id))) return <IconTool size={size} stroke={1.5} />;
-  return <IconApps size={size} stroke={1.5} />;
+  if (type === 'toolset' || (!type && isToolsetId(id)))
+    return <IconTool size={size} stroke={1.5} aria-hidden />;
+  return <IconApps size={size} stroke={1.5} aria-hidden />;
 };
 
 interface ChipConfigureButtonProps {
@@ -52,7 +54,7 @@ interface ChipConfigureButtonProps {
 const ChipConfigureButton: React.FC<ChipConfigureButtonProps> = ({ onClick }) => (
   <DialGhostIconButton
     name="Configure"
-    icon={<IconSettings size={16} stroke={1.5} />}
+    icon={<IconSettings size={16} stroke={1.5} aria-hidden />}
     size={ElementSize.Small}
     className="invisible absolute end-1 top-1/2 -translate-y-1/2 group-hover:visible"
     onClick={onClick}
@@ -67,6 +69,7 @@ interface AgentAndToolsetChipProps {
   onItemClick?: (id: string) => void;
   onConfigure?: (item: ChipEntity) => void;
   onLoginToolset?: (item: ChipEntity) => void;
+  onApplicationCredentials?: (item: ChipEntity) => void;
   isInSelectionList?: boolean;
 }
 
@@ -78,6 +81,7 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
   onItemClick,
   onConfigure,
   onLoginToolset,
+  onApplicationCredentials,
   isInSelectionList,
 }) => {
   const { language } = useTranslation(Translation.Common);
@@ -110,7 +114,12 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
 
   const isConfigurableApp =
     !readonly && !!item && isDialAiEntityModel(item) && doesAgentSupportMcp(item) && !!onConfigure;
-  const isConfigurable = isConfigurableApp || canOpenLoginModal;
+  const hasApplicationAuthentication = useApplicationAuthentication(
+    !readonly && item?.type === 'application' && onApplicationCredentials ? id : undefined,
+  );
+  const canManageApplicationCredentials =
+    hasApplicationAuthentication && !!onApplicationCredentials;
+  const isConfigurable = isConfigurableApp || canOpenLoginModal || canManageApplicationCredentials;
 
   const handleRemove = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -119,6 +128,10 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
 
   const handleClick = () => {
     if (readonly) return;
+    if (canManageApplicationCredentials && item) {
+      onApplicationCredentials?.(item);
+      return;
+    }
     if (canOpenLoginModal) {
       onLoginToolset?.(item as ChipEntity);
       return;
@@ -129,6 +142,10 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
   const handleConfigureClick = () => {
     if (isConfigurableApp) {
       onConfigure?.(item as ChipEntity);
+      return;
+    }
+    if (canManageApplicationCredentials && item) {
+      onApplicationCredentials?.(item);
       return;
     }
     if (canOpenLoginModal) {
@@ -144,7 +161,11 @@ export const AgentAndToolsetChip: React.FC<AgentAndToolsetChipProps> = ({
           icon={<EntityIcon id={id} type={item?.type} />}
           closable={!readonly}
           onRemove={handleRemove}
-          onClick={onItemClick || canOpenLoginModal ? handleClick : undefined}
+          onClick={
+            onItemClick || canOpenLoginModal || canManageApplicationCredentials
+              ? handleClick
+              : undefined
+          }
           className={mergeClasses(
             status.isMissingDeploymentId ? 'bg-layer-sunken' : status.isError && 'bg-error',
             !readonly && isConfigurable && 'group-hover:pe-8',
