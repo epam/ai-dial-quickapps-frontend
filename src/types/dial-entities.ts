@@ -115,10 +115,20 @@ export interface AppSettings {
   applicationName?: string;
 }
 
-export interface DialPrompt {
+export interface DialSkill {
   id: string;
+  reference: string;
   name: string;
-  folderId: string;
+  type: 'skill';
+  description?: string;
+  updatedAt?: string | number;
+  author?: string;
+  isMy?: boolean;
+  canEdit?: boolean;
+  sharedWithMe?: boolean;
+  isUserFavorite?: boolean;
+  isStarred?: boolean;
+  [key: string]: unknown;
 }
 
-export type PromptsMap = Record<string, DialPrompt>;
+export type SkillsMap = Record<string, DialSkill | undefined>;

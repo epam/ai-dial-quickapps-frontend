@@ -3,6 +3,7 @@ export interface UserConfigDto {
   version?: number;
   deployments?: { installed?: string[] };
   toolsets?: { installed?: string[] };
+  skills?: { installed?: string[] };
   [key: string]: unknown;
 }
 
@@ -11,5 +12,6 @@ export interface UserConfig {
   version: number;
   deployments: { installed: string[] };
   toolsets: { installed: string[] };
+  skills: { installed: string[] };
   raw: UserConfigDto;
 }

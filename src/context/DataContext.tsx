@@ -11,10 +11,10 @@ import React, {
 
 import type {
   DialModel,
-  DialPrompt,
+  DialSkill,
   DialToolset,
   ModelsMap,
-  PromptsMap,
+  SkillsMap,
   ToolsetsMap,
 } from '@/types/dial-entities';
 import { InboundMessageType, ToolsetAuthResultPayload } from '@/types/editor-messages';
@@ -23,7 +23,7 @@ import {
   fetchDialBucket,
   fetchDialMcpAgents,
   fetchDialModels,
-  fetchDialPrompts,
+  fetchDialSkills,
   fetchDialToolsets,
 } from '@/utils/dialClient';
 import { fetchFavoriteIds } from '@/utils/user-config';
@@ -43,9 +43,8 @@ interface DataState {
    */
   mcpAgents: DialModel[];
   mcpAgentsMap: ModelsMap;
-  prompts: DialPrompt[];
-  promptsMap: PromptsMap;
-  promptsVersion: number;
+  skills: DialSkill[];
+  skillsMap: SkillsMap;
   files: string[];
   /**
    * The user's own DIAL Core bucket id (GET /v1/bucket). Undefined while
@@ -65,7 +64,7 @@ type DataAction =
   | { type: 'TOOLSETS_LOADED'; payload: DialToolset[] }
   | { type: 'MCP_AGENTS_LOADED'; payload: DialModel[] }
   | { type: 'TOOLSET_LOGIN_RESULT_APPLIED'; payload: ToolsetAuthResultPayload }
-  | { type: 'PROMPTS_LOADED'; payload: DialPrompt[] }
+  | { type: 'SKILLS_LOADED'; payload: DialSkill[] }
   | { type: 'FILES_LOADED'; payload: string[] }
   | { type: 'BUCKET_LOADED'; payload?: string }
   | { type: 'FAVORITES_LOADED'; payload: { ids: Set<string>; error?: string } }
@@ -79,9 +78,8 @@ const initialState: DataState = {
   toolsetsMap: {},
   mcpAgents: [],
   mcpAgentsMap: {},
-  prompts: [],
-  promptsMap: {},
-  promptsVersion: 0,
+  skills: [],
+  skillsMap: {},
   files: [],
   favoriteIds: new Set(),
   status: 'idle',
@@ -117,14 +115,9 @@ function reducer(state: DataState, action: DataAction): DataState {
         toolsetsMap: { ...state.toolsetsMap, [updated.id]: updated },
       };
     }
-    case 'PROMPTS_LOADED': {
-      const promptsMap = Object.fromEntries(action.payload.map((p) => [p.id, p]));
-      return {
-        ...state,
-        prompts: action.payload,
-        promptsMap,
-        promptsVersion: state.promptsVersion + 1,
-      };
+    case 'SKILLS_LOADED': {
+      const skillsMap = Object.fromEntries(action.payload.map((s) => [s.id, s]));
+      return { ...state, skills: action.payload, skillsMap };
     }
     case 'FILES_LOADED':
       return { ...state, files: action.payload };
@@ -148,7 +141,9 @@ interface DataContextValue extends DataState {
   toolsetsWithFavorites: DialToolset[];
   /** `mcpAgents`, stamped with `isUserFavorite`/`isStarred` from `favoriteIds`. */
   mcpAgentsWithFavorites: DialModel[];
-  refreshPrompts: () => Promise<void>;
+  /** `skills`, stamped with `isUserFavorite`/`isStarred` from `favoriteIds`. */
+  skillsWithFavorites: DialSkill[];
+  refreshSkills: () => Promise<void>;
   refreshToolsets: () => Promise<void>;
   refreshAll: () => void;
 }
@@ -158,7 +153,8 @@ const DataContext = createContext<DataContextValue>({
   modelsWithFavorites: [],
   toolsetsWithFavorites: [],
   mcpAgentsWithFavorites: [],
-  refreshPrompts: async () => undefined,
+  skillsWithFavorites: [],
+  refreshSkills: async () => undefined,
   refreshToolsets: async () => undefined,
   refreshAll: () => undefined,
 });
@@ -184,7 +180,7 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
       fetchDialModels(),
       fetchDialToolsets(),
       fetchDialMcpAgents(),
-      fetchDialPrompts(),
+      fetchDialSkills(),
       favorites,
       // A bucket failure must not fail the whole load — Personal/Shared scope
       // labels are simply hidden (undefined) until a later refresh succeeds.
@@ -193,7 +189,7 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
         return undefined;
       }),
     ])
-      .then(([modelsRaw, toolsets, mcpAgentsRaw, prompts, favoritesPayload, bucket]) => {
+      .then(([modelsRaw, toolsets, mcpAgentsRaw, skills, favoritesPayload, bucket]) => {
         // The `mcp` deployment interface also returns entries that are
         // already present as chat models/applications — for those, fold the
         // mcp flag into the existing chat-interface entry (so it's still
@@ -214,7 +210,7 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
         dispatch({ type: 'MODELS_LOADED', payload: models });
         dispatch({ type: 'TOOLSETS_LOADED', payload: toolsets });
         dispatch({ type: 'MCP_AGENTS_LOADED', payload: mcpAgents });
-        dispatch({ type: 'PROMPTS_LOADED', payload: prompts });
+        dispatch({ type: 'SKILLS_LOADED', payload: skills });
         dispatch({ type: 'FAVORITES_LOADED', payload: favoritesPayload });
         // Dispatched before READY so chips rendered from saved config get
         // their scope label with the rest of the data (no label flash).
@@ -257,9 +253,9 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
     return () => window.removeEventListener('message', handleMessage);
   }, [settings.allowedOrigin]);
 
-  const refreshPrompts = async () => {
-    const prompts = await fetchDialPrompts();
-    dispatch({ type: 'PROMPTS_LOADED', payload: prompts });
+  const refreshSkills = async () => {
+    const skills = await fetchDialSkills();
+    dispatch({ type: 'SKILLS_LOADED', payload: skills });
   };
 
   const refreshToolsets = async () => {
@@ -297,6 +293,16 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
     [state.mcpAgents, state.favoriteIds],
   );
 
+  const skillsWithFavorites = useMemo(
+    () =>
+      state.skills.map((s) => ({
+        ...s,
+        isUserFavorite: state.favoriteIds.has(s.id),
+        isStarred: state.favoriteIds.has(s.id),
+      })),
+    [state.skills, state.favoriteIds],
+  );
+
   return (
     <DataContext.Provider
       value={{
@@ -304,7 +310,8 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
         modelsWithFavorites,
         toolsetsWithFavorites,
         mcpAgentsWithFavorites,
-        refreshPrompts,
+        skillsWithFavorites,
+        refreshSkills,
         refreshToolsets,
         refreshAll: loadAll,
       }}
