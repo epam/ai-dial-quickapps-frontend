@@ -64,6 +64,7 @@ export enum OutboundMessageType {
   SaveError = 'SAVE_ERROR',
   AutoSaveComplete = 'AUTO_SAVE_COMPLETE',
   HeightChange = 'HEIGHT_CHANGE',
+  RequestApplicationCredentials = 'REQUEST_APPLICATION_CREDENTIALS',
   RequestToolsetLogin = 'REQUEST_TOOLSET_LOGIN',
   RequestToolsetLogout = 'REQUEST_TOOLSET_LOGOUT',
 }

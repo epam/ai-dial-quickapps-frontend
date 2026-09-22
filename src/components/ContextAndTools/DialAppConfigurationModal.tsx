@@ -1,6 +1,11 @@
 'use client';
 import { FC, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
+import { useAppContext } from '@/context/AppContext';
+import { useApplicationAuthentication } from '@/hooks/useApplicationAuthentication';
+import { requestApplicationCredentials } from '@/utils/request-application-credentials';
+import { NeutralButton } from '@epam/ai-dial-ui-kit';
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
 import { MarketplaceI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
@@ -25,7 +30,12 @@ export const DialAppConfigurationModal: FC<DialAppConfigurationModalProps> = ({
 }) => {
   const { t, language } = useTranslation(Translation.Marketplace);
   const { modelsMap, mcpAgentsMap } = useDataContext();
+  const { settings } = useAppContext();
+  const searchParams = useSearchParams();
   const agent = modelsMap[agentId] ?? mcpAgentsMap[agentId];
+  const hasApplicationAuthentication = useApplicationAuthentication(
+    searchParams.get('applicationCredentials') === 'true' ? agentId : undefined,
+  );
   const agentName = agent ? getLocalizedText(agent.name, language, agentId) : '';
 
   // `modelsMap` holds only the chat-interface deployments (see
@@ -69,6 +79,15 @@ export const DialAppConfigurationModal: FC<DialAppConfigurationModalProps> = ({
           </div>
         )}
 
+        {hasApplicationAuthentication && (
+          <div className="px-6 py-4">
+            <NeutralButton
+              className="min-h-11"
+              label={t(MarketplaceI18nKeys.ApplicationCredentials)}
+              onClick={() => requestApplicationCredentials(agentId, settings.allowedOrigin)}
+            />
+          </div>
+        )}
         <div className="flex flex-col gap-3 px-6 py-4">
           <span className="dial-tiny-text text-secondary">{t(MarketplaceI18nKeys.ConnectVia)}</span>
           <DialRadioButton

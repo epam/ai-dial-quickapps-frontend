@@ -186,6 +186,18 @@ function mapApiToDialToolset(data: ToolsetApiEntity): DialToolset {
   };
 }
 
+/** Read one selected app: the deployments listing omits external-service metadata. */
+export async function fetchApplicationRequiresAuthentication(appId: string): Promise<boolean> {
+  const application = await dialFetch<{
+    external_services?: Record<string, { auth_settings?: { authentication_type?: string } }>;
+  }>(`/openai/applications/${encodeDialPath(appId)}`);
+  return Object.values(application.external_services ?? {}).some(
+    (service) =>
+      !!service.auth_settings?.authentication_type &&
+      service.auth_settings.authentication_type !== 'NONE',
+  );
+}
+
 export async function fetchDialBucket(): Promise<string> {
   const { bucket } = await dialFetch<{ bucket: string }>('/v1/bucket');
   return bucket;
