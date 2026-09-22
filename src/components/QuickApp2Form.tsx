@@ -59,7 +59,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
 }) => {
   const { t, language } = useTranslation(Translation.Marketplace);
   const { app, settings } = useAppContext();
-  const { models, modelsMap, toolsetsMap, status } = useDataContext();
+  const { models, modelsMap, toolsetsMap, mcpAgentsMap, status } = useDataContext();
 
   const toolSupportingModelIds = useMemo(
     () => models.filter((m) => m.features?.tools).map((m) => m.id),
@@ -152,8 +152,12 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   }, [isDirty, onDirtyChange]);
 
   const allEntitiesMap = useMemo(
-    () => ({ ...modelsMap, ...toolsetsMap }),
-    [modelsMap, toolsetsMap],
+    // `mcpAgentsMap` holds applications exposed only via the MCP interface
+    // (see DataContext) — they must be included here too, otherwise the
+    // entity lookup in getQuickApp2Toolsets fails for them and the dial-app
+    // toolset name falls back to "unknown".
+    () => ({ ...modelsMap, ...toolsetsMap, ...mcpAgentsMap }),
+    [modelsMap, toolsetsMap, mcpAgentsMap],
   );
 
   useEffect(() => {
