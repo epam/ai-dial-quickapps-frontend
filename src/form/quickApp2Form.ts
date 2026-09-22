@@ -28,7 +28,7 @@ import {
   DialAppTransportType,
   DialDeploymentSimpleTool,
   DialDeploymentToolset,
-  DialPromptSkill,
+  DialSkillRef,
   MCPToolset,
   QuickApp2Config,
   UnknownToolset,
@@ -252,7 +252,7 @@ export const getQuickApp2FormData = (
     toolSupportingModelIds,
     availableModelIds,
     agentSkills: (appProperties?.skills ?? [])
-      .filter((s): s is DialPromptSkill => s.type === 'dial-prompt')
+      .filter((s): s is DialSkillRef => s.type === 'dial-skill')
       .map((s) => decodeApiUrl(s.url)),
     timestamp,
     processLargeFiles,
@@ -304,7 +304,7 @@ export const buildQuickApp2Config = ({
     .map(({ title, text }) => ({ title, text }));
 
   const skills = data.agentSkills.map((url) => ({
-    type: 'dial-prompt' as const,
+    type: 'dial-skill' as const,
     url,
   }));
 

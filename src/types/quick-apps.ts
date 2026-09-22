@@ -86,8 +86,8 @@ export interface ConversationStarters {
   starters: ConversationStarter[];
 }
 
-export interface DialPromptSkill {
-  type: 'dial-prompt';
+export interface DialSkillRef {
+  type: 'dial-skill';
   url: string;
 }
 
@@ -111,7 +111,7 @@ export interface QuickApp2Config {
   conversation_starters: ConversationStarters | null;
   input_attachment_types?: string[];
   max_input_attachments?: number;
-  skills?: DialPromptSkill[];
+  skills?: DialSkillRef[];
   features?: {
     timestamp?: {
       injection_strategy: 'tool_call';

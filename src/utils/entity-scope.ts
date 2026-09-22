@@ -4,7 +4,7 @@ import { type EntityScopeInfo, ResourceScope } from '@/types/resource-scope';
  * Entity roots whose second id segment is always a bucket
  * (same convention as `isPublicToolsetId` in `@/utils/api`).
  */
-const BUCKETED_ROOTS = new Set(['toolsets', 'applications']);
+const BUCKETED_ROOTS = new Set(['toolsets', 'applications', 'skills']);
 
 /** Entity roots whose second segment is a publisher path, not a bucket (`model/openai/gpt-4o`). */
 const MODEL_ROOTS = new Set(['model', 'models']);
