@@ -1,8 +1,7 @@
-'use client';
 import { IconLayoutGrid, IconPlus } from '@tabler/icons-react';
 import React, { MouseEvent, useCallback, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
+import { useSearchParams } from '@/hooks/useSearchParams';
 import { requestApplicationCredentials } from '@/utils/request-application-credentials';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';

@@ -1,4 +1,3 @@
-'use client';
 import { FC, memo, ReactNode, useCallback } from 'react';
 
 import { ButtonVariant, DialButton, DialFileName, DialPopup } from '@epam/ai-dial-ui-kit';

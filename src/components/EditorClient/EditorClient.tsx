@@ -1,4 +1,3 @@
-'use client';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import { AppContextProvider, type AppState } from '@/context/AppContext';
@@ -122,7 +121,10 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
       Promise.all([fetchDialApp(appId), fetchAppSettings()])
         .then(([app, settings]) => {
           if (cancelled) return;
-          allowedOriginRef.current = settings.allowedOrigin ?? '*';
+          // `||`, not `??` — an explicitly-empty allowedOrigin (unset in
+          // CUSTOM_CLIENT_VARIABLES) must fall back to '*' the same as
+          // undefined, or postMessage's target-origin validation breaks.
+          allowedOriginRef.current = settings.allowedOrigin || '*';
           setAppState({
             app: app ?? {
               id: appId,
@@ -228,17 +230,18 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
         };
         const rawForSave = (appState.app._rawForSave as Record<string, unknown>) ?? {};
         const generalForSave = {
-          name: (rawForSave.display_name as MaybeLocalizedText) ?? appState.app.name,
+          name: (rawForSave.displayName as MaybeLocalizedText) ?? appState.app.name,
           description: rawForSave.description as MaybeLocalizedText,
-          iconUrl: rawForSave.icon_url as string | undefined,
-          topics: rawForSave.description_keywords as string[] | undefined,
-          intro: rawForSave.intro as string | undefined,
-          display_version: rawForSave.display_version as string | undefined,
+          iconUrl: rawForSave.iconUrl as string | undefined,
+          topics: rawForSave.topics as string[] | undefined,
+          display_version: rawForSave.displayVersion as string | undefined,
         };
         // `general.name`/`general.description` only carry the primary-locale
         // text — recombine them with `general.locales` into the full
-        // LocalizedText dictionary before this ever reaches saveDialApp,
-        // otherwise every other locale's translation is silently dropped.
+        // LocalizedText dictionary for diffing purposes (hasQuickAppChanges).
+        // `locales`/`primaryLocale` are also carried through unmodified for
+        // saveDialApp, which sends them to chat-api's own locales/primaryLocale
+        // fields directly — no recombination needed on that side.
         const normalizedGeneral: StoredGeneralFields | undefined = general
           ? {
               name: buildLocalizedText(
@@ -255,8 +258,9 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
               ),
               iconUrl: general.iconUrl,
               topics: general.topics,
-              intro: general.intro,
               display_version: general.display_version,
+              locales: general.locales,
+              primaryLocale: general.primaryLocale,
             }
           : undefined;
         const effectiveGeneral = normalizedGeneral

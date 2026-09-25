@@ -1,4 +1,3 @@
-'use client';
 import { IconTrashX } from '@tabler/icons-react';
 import { FC, FocusEvent } from 'react';
 

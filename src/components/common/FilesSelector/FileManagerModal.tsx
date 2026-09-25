@@ -1,4 +1,3 @@
-'use client';
 import { FC, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
@@ -25,13 +24,13 @@ import {
 } from '@epam/ai-dial-react-file-manager';
 
 import { DialFileManagerI18nKeys } from '@/constants/i18n';
+import { useAuthContext } from '@/context/AuthContext';
 import { useDialFileManager } from '@/hooks/useDialFileManager';
 import { useTranslation } from '@/hooks/useTranslation';
 import { FileUploadStatus } from '@/types/file-manager';
 import { Translation } from '@/types/translation';
 import { isHiddenPath } from '@/utils/dial-file-path';
 import { listFiles } from '@/utils/dial-files-api';
-import { fetchDialBucket } from '@/utils/dialClient';
 
 import UploadProgressModal from './UploadProgressModal';
 
@@ -49,15 +48,9 @@ interface Notification {
 
 const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, onClose }) => {
   const { t } = useTranslation(Translation.Common);
-  const [bucket, setBucket] = useState('');
+  const { user } = useAuthContext();
+  const bucket = user?.bucket ?? '';
   const [notification, setNotification] = useState<Notification | null>(null);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    fetchDialBucket()
-      .then(setBucket)
-      .catch(() => setBucket(''));
-  }, [isOpen]);
 
   useEffect(() => {
     if (!notification) return;

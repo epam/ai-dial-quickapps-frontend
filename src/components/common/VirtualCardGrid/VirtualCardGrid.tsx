@@ -1,4 +1,3 @@
-'use client';
 import classNames from 'classnames';
 import { memo, ReactNode, useEffect, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
