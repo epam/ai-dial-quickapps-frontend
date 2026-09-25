@@ -1,0 +1,211 @@
+schema: spec-driven
+
+context: |
+  # AI DIAL QuickApps Frontend
+
+  ## Transition in progress
+  See docs/TRANSITION_PLAN.md and docs/TECH_DEBT.md. This repo is mid-migration:
+  Next.js → React SPA on the ai-dial-chat NestJS BFF (chat-api) image, then a UI
+  rewrite against new designs. Until phase 2 lands, the stack below (Next.js) is
+  current; specs describe *behaviour*, not the soon-to-change platform, so they
+  survive the migration.
+
+  ## Tech Stack
+  - Single app, no monorepo: Next.js 16 (App Router), port 4600
+  - Frontend: React 19, `'use client'` throughout — no SSR, no server components,
+    no server actions. The app is a single client-rendered page (src/app/page.tsx)
+    embedded as an <iframe> in ai-dial-chat/admin, communicating via postMessage.
+  - "Server": next-auth + Next.js route handlers under src/app/api/** acting as
+    thin proxies to DIAL Core (being replaced by chat-api in the migration).
+  - Language: TypeScript 5, strict mode. `moduleResolution: "bundler"` — relative
+    TypeScript imports omit `.js`/`.ts`/`.tsx` extensions (resource files like
+    .css/.json keep theirs). Do not change to node16/nodenext.
+  - Styling: Tailwind CSS 3
+  - i18n: i18next + react-i18next (namespaces: marketplace, common, settings, chat)
+  - Forms: react-hook-form + zod (scheduled for removal — see docs/TECH_DEBT.md)
+  - State: React Context (AppContext, DataContext) + custom hooks
+  - Testing: Vitest 4 + jsdom
+  - Linting: ESLint 9 flat config + Prettier 3
+  - Commits: Conventional commits — feat/fix/chore/refactor/test/docs with optional scope
+
+  ## Libraries
+  - @epam/ai-dial-ui-kit: Design system base components — use the MCP tools
+    (searchEntity/getEntityDetails), never grep/glob, to discover components
+  - @epam/ai-dial-chat-visualizer-connector: postMessage handshake with the
+    admin/chat host (ChatVisualizerConnector)
+  - @epam/ai-dial-react-file-manager: context-files UI
+  - @epam/ai-dial-typescript-sdk: server-side DIAL Core client (removed once
+    the browser talks only to chat-api's typed endpoints — see transition plan)
+  - @tabler/icons-react: Icon set
+  - react-i18next / i18next: Internationalisation
+  - react-hook-form + @hookform/resolvers + zod: form schema/validation (disposable)
+
+  ## Path Aliases
+  - @/*  → src/*
+
+  ## Commands
+  - Dev:        `npm run dev` (port 4600)
+  - Build:      `npm run build` (type-check + build)
+  - Lint:       `npm run lint`
+  - Typecheck:  `npm run typecheck`
+  - Test:       `npm test` (vitest run)
+  - Format:     `npm run format` / `npm run format:check`
+
+  ## Architecture
+  - `src/app/` — App Router pages/layouts. Root route `/` (src/app/page.tsx) is
+    the iframe-embedded editor. `src/app/api/**` are the current server-side
+    proxy routes (disposable — replaced by chat-api calls in the migration).
+  - `src/components/` — React components. Shared reusables in
+    src/components/common/; form-specific in src/components/QuickApp2Form/.
+    Folder name must be PascalCase and match the component name
+    (e.g. ToggleSwitch/ToggleSwitch.tsx). Tests go in a tests/ subfolder inside
+    the component folder. Disposable — replaced wholesale in the UI rewrite
+    (transition plan phase 4).
+  - `src/context/` — React context providers (AppContext, DataContext)
+  - `src/form/` — react-hook-form schema definitions and form data builders
+    (zod-validated) — domain logic here (serialization) survives the rewrite;
+    the RHF wiring itself does not
+  - `src/hooks/` — custom hooks
+  - `src/i18n/` — i18next setup and locale JSON files
+  - `src/types/` — TypeScript types, interfaces, enums
+  - `src/utils/` — pure utility functions, kebab-case filenames matching their
+    primary export, no `.utils` suffix
+  - `src/constants/` — app-wide constants, including i18n key enums
+
+  ## Specs organization
+  - openspec/specs/ is flat: every spec lives at `openspec/specs/<spec-id>/spec.md`,
+    one directory level, never nested deeper (no `specs/<domain>/<feature>/spec.md`).
+  - `<spec-id>` naming: `<domain>_<feature-slug>` — underscore separates the domain
+    from its feature, hyphens separate words within each part (e.g.
+    `toolsets_auth-configuration`, `orchestrator_selection`). A spec that is its own
+    top-level concept with no sibling specs under a shared domain may skip the
+    domain prefix and use a plain hyphenated slug instead (e.g. `host-integration`).
+  - Before writing a new spec (or a change's delta spec), check `openspec/specs/`
+    for an existing spec-id the new content belongs under, so related requirements
+    stay together instead of spreading across near-duplicate spec-ids.
+
+  ## Module boundary rules
+  - Utility/helper functions never live in the same file as a component that
+    uses them — they belong in src/utils/ in a general-purpose file
+  - Domain logic destined to survive the migration/rewrite (application model,
+    application_properties serialization, file-path/URL encoding, entity scope,
+    toolset credential level) should be kept separable from disposable UI code
+    — see docs/TRANSITION_PLAN.md "Guiding principle: invest only in what survives"
+
+rules:
+  # Coding conventions (arrow functions, component folder structure, boolean/
+  # event-handler naming, enums, RTL, import extensions, etc.) are defined in
+  # AGENTS.md and .claude/rules/*.md — this rules block governs
+  # proposal/design/spec/task quality only.
+
+  proposal:
+    - 'Keep proposals concise but include every required section: Problem, Solution,
+      Non-goals, Acceptance criteria (how we know the change is done and correct).'
+    - >-
+      Compare alternatives before committing. For broad or architectural changes,
+      weigh 2-4 options (include a conservative baseline) on correctness,
+      complexity/delivery risk, security/performance, and migration/rollback, then
+      state the pick and why the rest were rejected. Base any "best practice" claim
+      on authoritative sources; separate facts from assumptions and flag unknowns
+      explicitly. For small changes, a one-line alternatives-considered is enough.
+    - Include a rollback / backward-compat note — is this breaking, and how do we revert it?
+    - Investigate the codebase before proposing — check if the pattern already exists
+      in context/, hooks/, form/, utils/, or components/common/. Cite the closest
+      existing file as `path:line` to prove the investigation happened.
+    - State whether the proposal touches code that "survives" or is "disposable" per
+      docs/TRANSITION_PLAN.md's guiding principle, and scope effort accordingly —
+      do not polish disposable UI code ahead of the phase 4 rewrite.
+    - Flag scope creep — call out anything touching auth, host integration, or the
+      API layer, since those survive the migration and warrant more scrutiny.
+    - Ask clarifying questions before finalising — especially around state ownership
+      and whether a feature needs a new context or can reuse an existing one.
+    - 'Include impact on i18n: does this introduce new user-visible strings?'
+    - State the RTL / direction impact — logical properties and icon mirroring
+      per .claude/rules/rtl.md — or say "none" only when direction-agnostic.
+
+  design:
+    # Code-syntax conventions (Tailwind logical properties, boolean/event-handler
+    # naming, enums, import extensions, async/await) are NOT repeated here — they
+    # auto-load from .claude/rules/*.md and AGENTS.md when matching files are
+    # touched. This block governs design decisions only.
+    - 'All user-visible strings go through react-i18next useTranslation — pick the
+      correct namespace (marketplace, common, settings, chat).'
+    - Do not call fetch directly in components — route calls through the existing
+      API layer under src/app/api/** today, or (post-migration) the generated
+      chat-api client, per docs/TRANSITION_PLAN.md.
+    - Fetch inside useEffect with a cancelled flag to prevent setState-on-unmount warnings
+    - Context value must be wrapped in useMemo — prevents all consumers re-rendering
+      on every parent render
+    - Consumer hooks must throw a clear error when used outside their provider
+    - Custom hooks go in src/hooks/ — one hook per file
+    - Prefer interface over type for object shapes; name component props
+      `{ComponentName}Props`, never an inline anonymous type
+    - Prefer string enums (src/types/ or src/constants/) over string-literal unions
+      for finite sets of statuses/modes/variants, especially when reused or compared
+    - Never write nested ternaries — use if/else, early returns, or switch
+    - Use @epam/ai-dial-ui-kit's MCP tools (searchEntity/getEntityDetails) to confirm
+      current component props before using or modifying a ui-kit component
+    - Design explicit loading, empty, and error states for any new UI surface —
+      not just the happy path
+    - State the `dir`/RTL handling for any new UI surface
+
+  specs:
+    - Before creating a spec-id, read the existing entries under openspec/specs/ and
+      place the new content under the closest existing spec-id if one fits, rather
+      than creating a near-duplicate. Follow the naming convention in this file's
+      "Specs organization" section (flat `specs/<spec-id>/spec.md`,
+      `<domain>_<feature-slug>` naming, hyphen-only slug when there's no shared domain).
+    - Specify which context or hook owns the state being introduced
+    - Define the API endpoint shape if the feature requires a new or changed route
+      under src/app/api/** (method, path, request body, response body, error codes).
+      Include a concrete example request and response payload, not just type names.
+    - Include i18n key names (namespace + key) for all new user-visible strings
+    - State the RTL / direction impact for any new UI — whether it needs logical
+      properties and icon mirroring (see .claude/rules/rtl.md); say "none" only
+      when the surface is direction-agnostic
+    - Flag any memoisation requirements (useMemo, useCallback, React.memo)
+    - Define accessibility requirements — keyboard navigation, ARIA roles/labels
+    - State which part of docs/TRANSITION_PLAN.md's survives/disposable split the
+      spec's subject falls into, so the level of investment is calibrated correctly
+
+  tasks:
+    - Order tasks as thin vertical slices with explicit dependencies — each slice
+      independently verifiable (not one big-bang task list)
+    - >-
+      Choose and state a slicing strategy — vertical (default; one path through the
+      stack working end to end before widening), contract-first (agree types, then
+      build both sides in parallel), or risk-first (prove the highest-risk part first)
+    - Scope discipline — each task touches only what it requires. No drive-by
+      cleanup or refactors in untouched files. Record out-of-scope findings as
+      explicit follow-up tasks, not inline edits
+    - Reference specific file paths — never vague descriptions like "update the form"
+    - |-
+      Follow the file location conventions:
+      - Context in src/context/, hooks in src/hooks/, form schemas/builders in src/form/
+      - Components in src/components/{ComponentName}/{ComponentName}.tsx (PascalCase
+        folder matching the component name), tests in a tests/ subfolder
+      - Pure utilities in src/utils/ (kebab-case, no .utils suffix), not co-located
+        with the component that uses them
+    - Before writing tasks, read AGENTS.md and the relevant file(s) under
+      .claude/rules/ (all-ts.md, rtl.md) so task wording matches repo conventions
+    - For TypeScript source changes, require extensionless relative code imports
+      (keep extensions only for non-code resources) and preserve bundler module
+      resolution
+    - Require unit tests for all new hooks, utilities, and domain logic as a
+      dedicated task; component tests are not required for src/components/** until
+      docs/TRANSITION_PLAN.md phase 4 (current components are disposable)
+    - Tests co-locate with source — components use a tests/ subfolder
+      (ComponentName/tests/ComponentName.spec.tsx)
+    - Test names describe observable behaviour — not implementation details
+    - Tests must use role, label, and text queries instead of implementation-specific selectors
+    - Do not add manual testing tasks
+    - Add i18n keys to the correct locale JSON file(s) as a dedicated task when new
+      strings are introduced, for every supported locale
+    - Add a dedicated RTL task for new UI — logical Tailwind classes (ms/me, ps/pe,
+      start/end), directional-icon mirroring, and an RTL check (see .claude/rules/rtl.md)
+    - Add a docs-update task when the change alters behaviour documented under docs/
+      (transition plan, tech debt, README, env vars)
+    - Give every implementation task an explicit Verification subsection naming the
+      exact Vitest file(s) to run, plus `npm run lint` and `npm run typecheck` for
+      the touched files. Run the full `npm test` once after a completed vertical
+      slice, not after each micro-edit.
