@@ -177,6 +177,16 @@ Covers the `TECH_DEBT.md` item "Add OpenSpec and start using SDD. Cover old func
 - `openspec/` initialised in the repo, with one spec per capability above;
 - the SDD workflow noted in `AGENTS.md`, so new work starts from a spec change.
 
+**Spec coverage is not all delivered up front.** `TECH_DEBT.md`'s "OpenSpec spec creation
+candidates" list enumerates the capabilities above at file-level granularity (e.g.
+`application_editing`, `toolsets_selection`/`toolsets_login`, `context-files`, `theming`).
+Only `host-integration` and `auth` are written so far. Whenever a future change (in phase 1
+or later) touches source files under one of that list's areas and the capability has no spec
+yet, writing or extending that spec is in scope for the change — not deferred to "someday" —
+following the naming convention in `openspec/config.yaml`'s "Specs organization" section.
+`openspec/config.yaml`'s `specs` rules already require checking `openspec/specs/` before
+adding a spec-id; treat `TECH_DEBT.md`'s list as the first place to check.
+
 ---
 
 ## Phase 2: Platform migration (Next.js → Vite SPA on chat-api)
