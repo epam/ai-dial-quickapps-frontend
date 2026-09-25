@@ -28,6 +28,23 @@ Use the `@/*` path alias (resolves to `src/`) for all imports that would otherwi
 - `npm run build` — type-check and build
 - `npm run lint` — run ESLint
 
+## Spec-driven development (OpenSpec)
+
+This repo uses [OpenSpec](https://github.com/Fission-AI/OpenSpec) for spec-driven development. See `docs/TRANSITION_PLAN.md` (Phase 1) and `docs/TECH_DEBT.md` for why and the rollout status.
+
+- `openspec/config.yaml` — schema, repo context, and the "Specs organization" naming rules.
+- `openspec/specs/` — the current, agreed behaviour, one capability per folder. Written so far: `host-integration`, `auth`. Not every capability has a spec yet — `docs/TECH_DEBT.md`'s "OpenSpec spec creation candidates" list is the first place to check before adding a new spec-id.
+- `openspec/changes/` — in-flight change proposals (design + delta specs + tasks) before they're archived into `openspec/specs/`.
+
+**New work starts from a spec change, not from code:**
+
+1. Explore the idea first if it's still fuzzy — `openspec-explore`.
+2. Propose the change — `openspec-propose` — which generates the design, delta specs and task breakdown together.
+3. Implement the tasks — `openspec-apply-change`.
+4. Once implemented and reviewed, sync or archive — `openspec-sync-specs` / `openspec-archive-change`.
+
+If a change touches source files under an area listed in `docs/TECH_DEBT.md`'s candidates list and that capability has no spec yet, writing or extending the spec is in scope for the change — not deferred to "someday".
+
 ## Skill routing
 
 Use these local skills for specific workflows:
@@ -35,9 +52,15 @@ Use these local skills for specific workflows:
 - `.claude/skills/code-review-and-quality/SKILL.md` — quality pass before merge or on explicit review requests
 - `.claude/skills/feature-research/SKILL.md` — broad feature research and trade-off analysis before implementation
 - `.claude/skills/figma/SKILL.md` — translating Figma designs into React components
+- `.claude/skills/openspec-explore/SKILL.md` — think through an idea or requirement before proposing a change
+- `.claude/skills/openspec-propose/SKILL.md` — propose a new change (design + delta specs + tasks) from a description
+- `.claude/skills/openspec-apply-change/SKILL.md` — implement the tasks of an in-progress OpenSpec change
+- `.claude/skills/openspec-sync-specs/SKILL.md` — sync a change's delta specs into `openspec/specs/` without archiving
+- `.claude/skills/openspec-archive-change/SKILL.md` — finalize and archive a completed change
 
 Default behavior:
 
+- New feature or behaviour work starts from an OpenSpec change (see above), not straight from code.
 - Before merge (or on explicit review requests), run the five-axis quality review.
 
 ## TypeScript module imports

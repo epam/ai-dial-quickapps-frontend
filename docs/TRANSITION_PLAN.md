@@ -2,6 +2,10 @@
 
 Status: draft · Owner: QuickApps frontend team · Last updated: 2026-09-25
 
+**Progress:** Phase 1 started — `openspec/` is initialised in the repo (`openspec/config.yaml`, `openspec/specs/`, `openspec/changes/`) with the OpenSpec skills installed under `.claude/skills/`. Specs written so far: `host-integration`, `auth`.
+
+Phase 0 is underway: items 1, 2, 5, 8 are decided; items 3, 4, 7 are investigated with findings below (item 3 surfaced a real gap — the `intro` field); item 6 (image tag) remains open.
+
 This document describes the planned sequence of changes to this repository:
 
 1. Move from Next.js to a **React SPA served by the ai-dial-chat NestJS BFF** (`chat-api`) image.
@@ -66,7 +70,7 @@ QuickApps is simply the editor behind the QuickApps schema.
 ### Consequences we accept
 
 - **We depend on chat-api's API contract.** Its endpoints evolve with ai-dial-chat releases.
-  - Mitigation: pin the image to a release tag (never `:development` in production), and generate our API client from the OpenAPI spec of that same tag (`libs/chat-api-client/openapi.json` in ai-dial-chat).
+  - Mitigation: pin the image to a release tag (never `:development` in production), and pin `@epam/ai-dial-chat-api-client` (the published, generated OpenAPI client — see Phase 0, item 5) to the matching version.
 - **The browser never has a DIAL token.** The SPA can talk only to chat-api's typed endpoints; there is no generic Core proxy. That's a feature, but anything chat-api lacks must be added there.
 - **Chat branding stays in some places:**
   - the default cookie names (`chat.*`) can be overridden with env vars;
@@ -124,28 +128,25 @@ These items need an answer before or early in phase 2. Each is a small investiga
    - Allowing a `quickapps` app id upstream would only be cosmetic, so it isn't needed. Only real per-app config would require upstream work (registry and `EnvConfigProvider`), and we don't need it.
    - The remaining task is to validate `customVariables` in the SPA (e.g. with zod), because it's untyped.
 
-2. **Session cookie inside the iframe.** chat-api sets `SameSite=None` only when `OVERLAY_ENABLED=true` and `ALLOWED_IFRAME_ORIGINS` is set. Otherwise it uses `Lax`. We need to:
-   - confirm what else `OVERLAY_ENABLED` switches on;
-   - decide whether each deployment is same-site with its admin/chat host (`Lax` is then enough) or cross-site (then `None` is required);
-   - if the side effects are unwanted, request a dedicated flag upstream.
-3. **Saving and loading the application.**
-   - Today the editor loads the app through the catch-all proxy and saves it with a full-body `PUT /v1/{appId}` rebuilt from `_rawForSave`.
-   - chat-api offers `GET /api/v1/deployments/:deployment/details`, which includes `applicationProperties`, and `PATCH /api/v1/applications/:name`, which fully replaces `applicationProperties` and keeps everything else.
-   - Confirm that this covers every field the editor reads and writes, and whether chat-api encodes URLs in `application_properties` itself or whether we still must.
-4. **Files API shape.** chat-api's `/api/v1/files/{list,shared,metadata,folders,delete,rename,download}` and `POST /api/v1/files` cover all our operations. Confirm the request/response shapes work for `@epam/ai-dial-react-file-manager`, and that upload keeps its "create-only" semantics.
-5. **API client.** `@epam/ai-dial-chat-api-client` is `private` (not published). Options:
-   - **(a)** generate our own client from the pinned `openapi.json`, e.g. with `openapi-typescript` + `openapi-fetch`, committed or generated at build time;
-   - **(b)** ask the chat team to publish theirs.
+2. **Session cookie inside the iframe: decided — `SameSite=Lax`, `OVERLAY_ENABLED` unset.** Confirmed against `apps/chat-api/src/auth/cookies/cookie-options.ts`: chat-api only ever emits `SameSite=None` when `OVERLAY_ENABLED=true` **and** `ALLOWED_IFRAME_ORIGINS` is non-empty (`isOverlayEmbeddingEnabled`); `OVERLAY_ENABLED` is chat's own overlay-runtime-mode flag (see `chat-overlay-security-config` in ai-dial-chat), unrelated to QuickApps, so we leave it unset and accept `Lax`.
+   - QuickApps deployments are always cross-site with their admin/chat host (different domain). We accept `Lax` here because the auth backend the browser talks to (the chat-api-based BFF) lives on QuickApps' **own** origin, in our own repo/deployment — the browser only ever needs to send the cookie to same-site requests initiated by the top-level QuickApps page when it's opened standalone, or by the SPA's own fetches while embedded.
+   - **Risk to verify empirically once 2.1–2.4 land:** browsers compute `SameSite` from the full ancestor-frame chain, not just the immediate request's origin — a fetch made by script running inside a cross-site iframe (QuickApps framed by admin/chat) can be treated as cross-site even when the request target shares the iframe document's own origin, which would make `Lax` cookies get dropped on those calls. Test this concretely (embedded in both admin and chat, `SameSite=Lax`, confirm `/api/v1/auth/me` and a mutating call succeed) as part of the Phase 2 exit criteria (§2.8). If it fails in practice, the fallback is requesting a dedicated upstream flag to decouple `SameSite=None` from `OVERLAY_ENABLED` (not "turn overlay mode on" as originally considered here).
+3. **Saving and loading the application: mostly confirmed, one real gap found (`intro`).** Checked against the local `ai-dial-chat` checkout (`apps/chat-api/src/applications/{applications.controller.ts,dto/update-application.dto.ts}`, `apps/chat-api/src/deployments/dto/deployment-details.dto.ts`, `openspec/specs/applications-write-api/spec.md`):
+   - `PATCH /api/v1/applications/:name` (`UpdateApplicationBodyDto`) covers `name`, `description`, `iconUrl`, `topics` (→ `descriptionKeywords`), `version`, `endpoint`, `features`, `inputAttachmentTypes`, `maxInputAttachments`, `locales`/`primaryLocale`, and `applicationProperties` (omit/`null` leaves it untouched; supplied, it fully replaces the stored value — matches today's full-body `PUT`).
+   - `GET /api/v1/deployments/:deployment/details` → `applicationDetails.applicationProperties` is an explicitly documented **verbatim passthrough** of the stored `application_properties`; chat-api does no encoding/decoding of anything inside it (it's `Record<string, unknown>` end to end). So URL encoding inside `application_properties` (icon/context-file references, etc.) stays entirely our responsibility, unchanged from today — nothing to adapt here.
+   - **Gap: `intro` has no home in the typed API.** Our current editor round-trips a top-level `intro` field end to end (`EditorClient.tsx`, `dialClient.ts`'s `_rawForSave`/`saveDialApp`, `has-quick-app-changes.ts`, `editor-messages.ts`'s `TriggerSaveGeneralPayload.intro`) via the raw `PUT /v1/{appId}`, which passes any field through to DIAL Core untyped. chat-api's typed endpoints deliberately don't: `openspec/specs/applications-write-api/spec.md` documents that `intro` was **removed from the request/response contract entirely** — `CreateApplicationBodyDto`/`UpdateApplicationBodyDto` have no `intro` field, and a body containing one is rejected with 400 (`forbidNonWhitelisted`). `ApplicationDetailsDto` doesn't return it either.
+     - Before 2.4 starts: confirm with the ai-dial-chat team why `intro` was dropped and whether it maps onto a still-supported field (a locale of `description`? a key inside `applicationProperties`?) or is genuinely retired. If it's retired, decide whether the host-supplied `intro` field in our own `editor-messages.ts` contract (phase 1's host-integration spec) is dropped too, or kept as a QuickApps-only concept stored inside our own `applicationProperties` instead of at the DIAL Core application level.
+4. **Files API shape: confirmed, one behavior difference to account for.** Checked against `apps/chat-api/src/files/files.controller.ts`:
+   - `POST /api/v1/files` accepts an optional `uploadMode: 'overwrite' | 'create-only'` field; **`'overwrite'` is the default**, not create-only. Our current upload semantics must set `uploadMode: 'create-only'` explicitly on every call, or we'd silently switch from create-only to overwrite-by-default.
+   - The rest of the surface (`list`, `shared`, `metadata`, `folders`, `delete`, `rename`, `download`) matches the route mapping in Appendix A; still confirm exact response field names against `@epam/ai-dial-react-file-manager`'s expected shape when wiring 2.4.
+5. **API client: resolved — it's already published.** `@epam/ai-dial-chat-api-client` ("Generated OpenAPI client for the AI DIAL Chat API") is public on npm, not private as originally assumed here. Its dist-tags map onto ai-dial-chat's own release channel: `latest` tracks the current stable chat-api release, `development` tracks `:development`, and versioned tags like `1.1-rc`/`1.0-rc` track past release lines. So:
+   - Install `@epam/ai-dial-chat-api-client` pinned to the exact version published alongside the ai-dial-chat image tag we pin (Phase 0, item 6) — no client generation step needed.
+   - No need for `openapi-typescript` / `openapi-fetch` or committing a generated client; upgrading the image tag is just bumping this dependency to the matching version.
+   - Confirm the package's exported API surface (it ships per-domain API classes, e.g. `ApplicationsApi`, `AuthApi`, `DeploymentsApi`, `FilesApi`, `AppConfigApi`, `ChatApi`, `ClientChannelApi`, `ExternalServicesApi`) covers every endpoint in [Appendix A](#appendix-a-route-mapping) before wiring it in during 2.4.
 
-   Recommendation: (a). It's independent of their release process, and it pins the contract to the image tag.
-
-6. **Image tag policy.** Choose the ai-dial-chat release we pin to, and decide who bumps it and how. Upgrading means bumping the tag, regenerating the client and running the checks.
-7. **CI.** `.github/workflows/*` use the shared `epam/ai-dial-ci` workflows. Confirm they build the root `Dockerfile` unchanged, and that pulling `ghcr.io/epam/ai-dial-chat` during the build works: registry access, and the image is amd64-only.
-8. **Sign-in outside the iframe (open).**
-   - Embedded in admin/chat, sign-in stays a popup, because most IdPs refuse to be framed (see 2.3).
-   - If QuickApps is also opened on its own, it could instead redirect the whole page to `/api/v1/auth/login/<provider>?callbackUrl=<current URL>`. The query string survives the round trip, subject to the 2048-character limit on `callbackUrl`.
-   - Decide whether that mode is needed. If not, popup only.
-9. **Entry URL encoding (hosts).** An example entry URL carried `id=applications%%2Ftest__0.0.1`, which isn't valid percent-encoding: `decodeURIComponent` throws on it. This repo only builds `authProvider` links, using `encodeURIComponent`, so the fix belongs in whichever admin/chat code generates the entry URL. `id` must be encoded exactly once (`%2F`).
+6. **Image tag policy.** Choose the ai-dial-chat release we pin to, and decide who bumps it and how. Upgrading means bumping the Docker image tag and the `@epam/ai-dial-chat-api-client` npm version together (their release lines match, per item 5), then running the checks.
+7. **CI: workflows confirmed, registry access still to verify.** `.github/workflows/{pr,release,deploy-development}.yml` call the shared reusable workflows `epam/ai-dial-ci/.github/workflows/{node_pr,node_release,deploy-development}.yml@4.11.0` — generic Node build/deploy workflows, not specific to this repo's current Dockerfile. Today's `Dockerfile` builds entirely from `node:24-alpine` with no external image pull, so this repo's CI has never needed registry credentials for a second image. Still open, and org-specific rather than something readable from source: does the runner these reusable workflows execute on have `docker login ghcr.io` access (or is `ghcr.io/epam/ai-dial-chat` public), and does it build `--platform=linux/amd64` (the image is amd64-only)?
+8. **Sign-in outside the iframe: decided — iframe-only, popup sign-in.** QuickApps is only ever opened embedded in admin/chat, never standalone, so the full-page-redirect flow (`/api/v1/auth/login/<provider>?callbackUrl=<current URL>`) isn't needed. Popup sign-in only (see 2.3).
 
 ---
 
@@ -174,8 +175,8 @@ Covers the `TECH_DEBT.md` item "Add OpenSpec and start using SDD. Cover old func
 
 **Deliverables:**
 
-- `openspec/` initialised in the repo, with one spec per capability above;
-- the SDD workflow noted in `AGENTS.md`, so new work starts from a spec change.
+- [x] `openspec/` initialised in the repo, with one spec per capability above (in progress: `host-integration` and `auth` are written; the rest follow the "spec coverage is not all delivered up front" rule below);
+- [x] the SDD workflow noted in `AGENTS.md`, so new work starts from a spec change.
 
 **Spec coverage is not all delivered up front.** `TECH_DEBT.md`'s "OpenSpec spec creation
 candidates" list enumerates the capabilities above at file-level granularity (e.g.
@@ -239,7 +240,7 @@ Goal: the same behaviour, verified against the phase 1 specs, shipped as the cha
 
 ### 2.4 API layer: replace `/api/*` with typed chat-api calls
 
-Generate the client from the pinned `openapi.json` (Phase 0, item 5), and point every call site in `dialClient.ts`, `dial-files-api.ts`, `user-config.ts`, `resolve-icon-url.ts`, `ThemeContext.tsx` and `ToolsetLoginModal.tsx` at it. The full mapping is in [Appendix A](#appendix-a-route-mapping).
+Install `@epam/ai-dial-chat-api-client` (Phase 0, item 5), pinned to the version matching the chosen image tag, and point every call site in `dialClient.ts`, `dial-files-api.ts`, `user-config.ts`, `resolve-icon-url.ts`, `ThemeContext.tsx` and `ToolsetLoginModal.tsx` at it. The full mapping is in [Appendix A](#appendix-a-route-mapping).
 
 Logic that moves from our routes into the SPA:
 
@@ -333,7 +334,7 @@ Applies [`TECH_DEBT.md`](./TECH_DEBT.md) to the code that survives the UI rewrit
 
 | TECH_DEBT item                                          | Resolution                                                                                                                                                                                                                                                                                                 |
 | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Use typescript-sdk instead of hardcoded Core endpoints  | **Closed by phase 2.** The browser no longer calls Core. chat-api uses the typescript-sdk server-side, and we call chat-api through a client generated from its OpenAPI spec, so no endpoints are hard-coded.                                                                                              |
+| Use typescript-sdk instead of hardcoded Core endpoints  | **Closed by phase 2.** The browser no longer calls Core. chat-api uses the typescript-sdk server-side, and we call chat-api through the published `@epam/ai-dial-chat-api-client`, so no endpoints are hard-coded.                                                                                              |
 | Add OpenSpec / SDD                                      | **Closed by phase 1.** From then on, every change starts with a spec change.                                                                                                                                                                                                                               |
 | Test coverage                                           | **Done here, for surviving code only.** Unit tests for the API layer (mocked HTTP), the domain logic and the auth/host-integration flows, derived from the specs. Add `@vitest/coverage-v8` with a CI gate scoped to non-UI folders; suggested target ≥ 80 % lines. Components are excluded until phase 4. |
 | Remove react-hook-form                                  | **Deferred to phase 4.** The new forms are built without it. Here, only extract the form model out of RHF (zod schema, `quickApp2Form` builders, the save serialization) into the domain layer, so phase 4 reuses it.                                                                                      |
@@ -343,7 +344,7 @@ Applies [`TECH_DEBT.md`](./TECH_DEBT.md) to the code that survives the UI rewrit
 
 ```text
 src/
-  api/        generated chat-api client + thin wrappers (auth/CSRF, 401 handling)
+  api/        @epam/ai-dial-chat-api-client + thin wrappers (auth/CSRF, 401 handling)
   domain/     application model, serialization, file paths, entity scope — pure, fully tested
   host/       postMessage contract, ChatVisualizerConnector
   hooks/      state and data hooks used by the UI
@@ -367,8 +368,8 @@ src/
 
 | Risk                                                    | Mitigation                                                                                        |
 | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| A chat-api release changes an endpoint we use           | Pin the image tag. Regenerate the client from the same tag and run the spec checks on every bump. |
-| The session cookie is blocked in a cross-site iframe    | Phase 0, item 2. Test the embedding in both admin and chat before the rollout.                    |
+| A chat-api release changes an endpoint we use           | Pin the image tag. Bump `@epam/ai-dial-chat-api-client` to the matching npm version and run the spec checks on every bump. |
+| The session cookie (`SameSite=Lax`) is dropped on iframe-internal fetches because SameSite is computed from the full ancestor-frame chain, not just the request's own origin | Phase 0, item 2. Test `/api/v1/auth/me` and a mutating call from inside both admin and chat before the rollout; fall back to requesting a dedicated upstream flag to decouple `SameSite=None` from `OVERLAY_ENABLED` if it fails. |
 | A gap in chat-api found during migration                | Interim workaround in the SPA or env, then an upstream PR to ai-dial-chat.                        |
 | The IdP redirect URIs aren't updated during the rollout | Add it to the rollout checklist per environment, and run a smoke test of sign-in per provider.    |
 | The stricter CSP breaks Monaco or the markdown editor   | Bundle them locally, and use `report-only` before `enforce`.                                      |

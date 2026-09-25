@@ -1,7 +1,7 @@
 ## List of known pending improvements:
 
 - [] Use typescript-sdk for call to Core instead of hardcoded endpoints
-- [] Add OpenSpec and start using SDD. Cover old functionality
+- [x] Add OpenSpec and start using SDD. `openspec/` is initialised (see `openspec/config.yaml`, `AGENTS.md`'s "Spec-driven development" section) and new work now starts from a spec change. Coverage of old functionality is still in progress — only `host-integration` and `auth` are written so far; see the candidates list below for what's left.
 - [] Test coverage - now it's not checked, targets are not set. And it's probably is low, there are very few tests in the repo, not covering even main logic.
 - [] react-hook-form usage - should get rid of it
 - [] need to review components, some seem to be unnecessary, e.g. AgentSkillsField just proxy SkillsSelectors
