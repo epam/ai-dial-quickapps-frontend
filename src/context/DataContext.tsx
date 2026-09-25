@@ -1,5 +1,3 @@
-'use client';
-
 import React, {
   createContext,
   useCallback,
@@ -19,8 +17,8 @@ import type {
 } from '@/types/dial-entities';
 import { InboundMessageType, ToolsetAuthResultPayload } from '@/types/editor-messages';
 import { applyToolsetLoginResult } from '@/utils/apply-toolset-login-result';
+import { useAuthContext } from '@/context/AuthContext';
 import {
-  fetchDialBucket,
   fetchDialMcpAgents,
   fetchDialModels,
   fetchDialSkills,
@@ -162,6 +160,11 @@ const DataContext = createContext<DataContextValue>({
 export function DataContextProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { isReady, settings } = useAppContext();
+  // The user's bucket comes from `/api/v1/auth/me` (already fetched by
+  // AuthContext) — no separate round trip needed, unlike the old
+  // `fetchDialBucket()` call against the generic DIAL Core proxy.
+  const { user } = useAuthContext();
+  const bucket = user?.bucket;
 
   const loadAll = useCallback(() => {
     dispatch({ type: 'LOADING' });
@@ -182,14 +185,8 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
       fetchDialMcpAgents(),
       fetchDialSkills(),
       favorites,
-      // A bucket failure must not fail the whole load — Personal/Shared scope
-      // labels are simply hidden (undefined) until a later refresh succeeds.
-      fetchDialBucket().catch((err: unknown) => {
-        console.warn('[DataContext] failed to load bucket, scope labels degraded:', err);
-        return undefined;
-      }),
     ])
-      .then(([modelsRaw, toolsets, mcpAgentsRaw, skills, favoritesPayload, bucket]) => {
+      .then(([modelsRaw, toolsets, mcpAgentsRaw, skills, favoritesPayload]) => {
         // The `mcp` deployment interface also returns entries that are
         // already present as chat models/applications — for those, fold the
         // mcp flag into the existing chat-interface entry (so it's still
@@ -201,10 +198,7 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
         const models = modelsRaw.map((m) =>
           mcpIds.has(m.id) ? { ...m, mcp: true, features: { ...m.features, mcp: true } } : m,
         );
-        const existingIds = new Set([
-          ...models.map((m) => m.id),
-          ...toolsets.map((t) => t.id),
-        ]);
+        const existingIds = new Set([...models.map((m) => m.id), ...toolsets.map((t) => t.id)]);
         const mcpAgents = mcpAgentsRaw.filter((agent) => !existingIds.has(agent.id));
 
         dispatch({ type: 'MODELS_LOADED', payload: models });
@@ -223,7 +217,7 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
           payload: err instanceof Error ? err.message : 'Failed to load data',
         });
       });
-  }, []);
+  }, [bucket]);
 
   useEffect(() => {
     if (!isReady) return;

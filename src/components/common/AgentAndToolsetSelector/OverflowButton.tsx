@@ -1,4 +1,3 @@
-'use client';
 import { DialButton } from '@epam/ai-dial-ui-kit';
 import { autoUpdate, useClick, useDismiss, useFloating, useInteractions } from '@floating-ui/react';
 import classNames from 'classnames';

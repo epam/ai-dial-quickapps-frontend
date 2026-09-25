@@ -9,7 +9,7 @@ All UI must support Arabic (`ar`) and any other right-to-left locale. The active
 
 ## Direction attribute
 
-The `<html>` element's `dir` attribute must be set dynamically in `src/app/layout.tsx`. When the active language is RTL (Arabic `ar`, Hebrew `he`, Persian `fa`, Urdu `ur`), set `dir="rtl"`; otherwise `dir="ltr"`. Never hardcode `dir` or `lang` as static HTML attributes.
+The `<html>` element's `dir` attribute must be set dynamically — in this Vite SPA, from `src/components/I18nProvider.tsx` (mounted in `src/main.tsx`), not a Next.js `layout.tsx` (removed in `docs/TRANSITION_PLAN.md` Phase 2). When the active language is RTL (Arabic `ar`, Hebrew `he`, Persian `fa`, Urdu `ur`), set `dir="rtl"`; otherwise `dir="ltr"`. Never hardcode `dir` or `lang` as static HTML attributes.
 
 ## Tailwind: logical over physical
 
@@ -47,4 +47,4 @@ Symmetric icons (×, +, ⚙, ↑, ↓) must NOT be flipped.
 1. Create `src/i18n/locales/<lang>.json` (copy keys from existing locale files for each namespace: `marketplace`, `common`, `settings`, `chat`).
 2. Register the locale in `src/i18n/index.ts`.
 3. Add the locale to the language selector UI.
-4. If the locale is RTL, add its language code to the RTL language list in the dir-switching logic in `src/app/layout.tsx`.
+4. If the locale is RTL, add its language code to the RTL language list in the dir-switching logic in `src/components/I18nProvider.tsx`.

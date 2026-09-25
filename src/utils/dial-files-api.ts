@@ -1,4 +1,15 @@
 import {
+  CreateFolderResponseDto,
+  DeleteFilesResponseDto,
+  DeleteItemDtoNodeTypeEnum,
+  ListFilesItemDto,
+  RenameItemDtoNodeTypeEnum,
+  UploadFileUploadModeEnum,
+} from '@epam/ai-dial-chat-api-client';
+
+import { chatApiFetch, getCsrfToken } from '@/utils/chat-api-fetch';
+import { filesApi } from '@/utils/chat-api-client';
+import {
   handleUnauthorized401,
   handleUnauthorizedResponse,
 } from '@/utils/handle-unauthorized-response';
@@ -68,56 +79,27 @@ export interface FileUploadResponse {
   bucket: string;
 }
 
-// DIAL Core raw item shape from /v1/metadata/files/...
-interface CoreMetadataItem {
-  name?: string;
-  url?: string;
-  nodeType?: string;
-  parentPath?: string;
-  contentType?: string;
-  contentLength?: number;
-  updatedAt?: number;
-  permissions?: string[];
-  author?: string;
-  owner?: string;
-  bucket?: string;
-}
-
-async function handleJsonResponse<T>(res: Response, action: string): Promise<T> {
-  if (!res.ok) {
-    if (handleUnauthorizedResponse(res)) {
-      throw new Error(`${action} failed: ${res.status}: session expired`);
-    }
-    throw new Error(`${action} failed: ${res.status}`);
-  }
-  return res.json() as Promise<T>;
-}
-
-function normalizeCoreItem(
-  item: CoreMetadataItem,
-  bucket: string,
-  apiFolder: string,
-): ListFilesItem {
-  const name = item.name ?? '';
-  const isFolder = (item.nodeType ?? '').toLowerCase() === 'folder';
-
-  const folderPrefix = apiFolder ? apiFolder.replace(/\/$/, '') + '/' : '';
-  const rawPath = item.url ?? `files/${bucket}/${folderPrefix}${name}`;
-  const path = isFolder && !rawPath.endsWith('/') ? `${rawPath}/` : rawPath;
-
+/**
+ * chat-api's `ListFilesItemDto` already carries `folderId`, camelCase fields
+ * and a synthesized `path` — the only real gaps vs. this app's `ListFilesItem`
+ * are the lowercase `nodeType` enum and `updatedAt` being epoch ms rather
+ * than an ISO string.
+ */
+function normalizeFileItem(item: ListFilesItemDto): ListFilesItem {
   return {
-    name,
-    path,
+    name: item.name,
+    path: item.path,
     url: item.url,
-    nodeType: isFolder ? 'FOLDER' : 'ITEM',
-    bucket,
-    parentPath: item.parentPath ?? (apiFolder ? apiFolder.replace(/\/$/, '') : undefined),
-    contentType: isFolder ? undefined : item.contentType,
-    contentLength: isFolder ? undefined : item.contentLength,
+    nodeType: item.nodeType === 'folder' ? 'FOLDER' : 'ITEM',
+    bucket: item.bucket,
+    folderId: item.folderId,
+    parentPath: item.parentPath,
+    contentType: item.contentType,
+    contentLength: item.contentLength,
     updatedAt: item.updatedAt != null ? new Date(item.updatedAt).toISOString() : undefined,
     permissions: item.permissions,
-    author: item.author ?? item.owner,
-    folderId: isFolder ? `${bucket}:${path}` : `${bucket}:files/${bucket}/${folderPrefix}`,
+    author: item.author,
+    resourceType: item.resourceType,
   };
 }
 
@@ -127,45 +109,21 @@ export async function listFiles(params: {
   permissions?: boolean;
   recursive?: boolean;
 }): Promise<ListFilesResponse> {
-  const { bucket, path = '', permissions, recursive } = params;
+  const { bucket, path, permissions, recursive } = params;
   if (!bucket) return { items: [] };
 
-  const qs = new URLSearchParams({ bucket, limit: '1000' });
-  if (path) qs.set('path', path);
-  if (permissions) qs.set('permissions', 'true');
-  if (recursive) qs.set('recursive', 'true');
-
-  const res = await fetch(`/api/dial-files/list?${qs}`);
-  const data = await handleJsonResponse<{
-    items?: CoreMetadataItem[];
-    permissions?: string[];
-  }>(res, 'List files');
-
-  return {
-    items: (data.items ?? []).map((item) => normalizeCoreItem(item, bucket, path)),
-    permissions: data.permissions,
-  };
+  const data = await filesApi.listFiles({ bucket, path, permissions, recursive, limit: 1000 });
+  return { items: data.items.map(normalizeFileItem), permissions: data.permissions };
 }
 
 export async function listPublicFiles(params?: { path?: string }): Promise<ListFilesResponse> {
-  return listFiles({
-    bucket: 'public',
-    path: params?.path,
-    permissions: false,
-  });
+  const data = await filesApi.listPublicFiles({ path: params?.path, limit: 1000 });
+  return { items: data.items.map(normalizeFileItem) };
 }
 
 export async function listSharedFiles(): Promise<ListFilesResponse> {
-  const res = await fetch('/api/dial-files/list-shared');
-  const data = await handleJsonResponse<{ resources?: CoreMetadataItem[] }>(
-    res,
-    'List shared files',
-  );
-
-  const resources = data.resources ?? [];
-  const items = resources.map((item) => normalizeCoreItem(item, item.bucket ?? '', ''));
-
-  return { items };
+  const data = await filesApi.listSharedFiles();
+  return { items: data.items.map(normalizeFileItem) };
 }
 
 export async function createFolder(params: {
@@ -173,43 +131,51 @@ export async function createFolder(params: {
   parentPath?: string;
   name: string;
 }): Promise<CreateFolderResponse> {
-  const res = await fetch('/api/dial-files/create-folder', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(params),
+  const data: CreateFolderResponseDto = await filesApi.createFolder({
+    createFolderDto: params,
   });
-  return handleJsonResponse<CreateFolderResponse>(res, 'Create folder');
+  return data;
 }
 
 export async function deleteFiles(items: DeleteItemDto[]): Promise<DeleteFilesResponse> {
-  const res = await fetch('/api/dial-files/delete', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      items: items.map(({ bucket, path, nodeType }) => ({ bucket, path, nodeType })),
-    }),
+  const data: DeleteFilesResponseDto = await filesApi.deleteFiles({
+    deleteFilesDto: {
+      items: items.map(({ bucket, path, name, nodeType }) => ({
+        bucket,
+        path,
+        name,
+        nodeType:
+          nodeType === 'FOLDER' ? DeleteItemDtoNodeTypeEnum.Folder : DeleteItemDtoNodeTypeEnum.Item,
+      })),
+    },
   });
-  return handleJsonResponse<DeleteFilesResponse>(res, 'Delete files');
+  return { results: data.results.map(({ path, success }) => ({ path, success })) };
 }
 
 export async function renameFiles(items: RenameItemDto[]): Promise<RenameFilesResponse> {
-  const res = await fetch('/api/dial-files/rename', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      items: items.map(({ bucket, sourcePath, destinationPath }) => ({
+  const data = await filesApi.renameFiles({
+    renameFilesDto: {
+      items: items.map(({ bucket, sourcePath, destinationPath, name, nodeType }) => ({
         bucket,
         sourcePath,
         destinationPath,
+        name,
+        nodeType:
+          nodeType === 'FOLDER' ? RenameItemDtoNodeTypeEnum.Folder : RenameItemDtoNodeTypeEnum.Item,
       })),
-    }),
+    },
   });
-  return handleJsonResponse<RenameFilesResponse>(res, 'Rename files');
+  return {
+    results: data.results.map(({ sourcePath, success }) => ({ sourcePath, success })),
+  };
 }
 
+// Hand-written (not routed through the generated FilesApi, whose
+// `downloadFile()` resolves a `Blob`) — callers need the raw streaming
+// `Response` to drive `triggerBrowserDownload`.
 export async function downloadFile(bucket: string, path: string): Promise<Response> {
   const qs = new URLSearchParams({ bucket, path });
-  const res = await fetch(`/api/dial-files/download?${qs}`);
+  const res = await chatApiFetch(`/api/v1/files/download?${qs}`);
   if (!res.ok) {
     if (handleUnauthorizedResponse(res)) {
       throw new Error(`Download failed: ${res.status}: session expired`);
@@ -223,9 +189,15 @@ export async function downloadArchive(items: ArchiveItemDto[]): Promise<Response
   if (items.length === 1 && items[0].nodeType === 'ITEM') {
     return downloadFile(items[0].bucket, items[0].path);
   }
+  // chat-api does expose a real archive-download endpoint
+  // (FilesApi.downloadArchive) — using it for multi-item downloads is a
+  // deliberate future enhancement, not required by this migration.
   throw new Error('Multi-file archive download is not supported');
 }
 
+// Kept hand-written rather than routed through the generated client: the
+// `XMLHttpRequest` progress path is a hard requirement of the file manager
+// UI that a generated OpenAPI client doesn't support.
 export async function uploadFile(
   bucket: string,
   path: string,
@@ -236,19 +208,27 @@ export async function uploadFile(
     onProgress?: (percent: number) => void;
   },
 ): Promise<FileUploadResponse> {
-  const { signal, uploadMode, onProgress } = options ?? {};
+  const { signal, onProgress } = options ?? {};
+  // chat-api defaults `uploadMode` to 'overwrite' when omitted — always send
+  // an explicit value so this app's create-only-by-default semantics survive.
+  const uploadMode = options?.uploadMode ?? UploadFileUploadModeEnum.CreateOnly;
+  const url = '/api/v1/files';
 
-  const qs = new URLSearchParams({ bucket, path });
-  if (uploadMode) qs.set('uploadMode', uploadMode);
-  const url = `/api/dial-files/upload?${qs}`;
-
+  // chat-api's uploadFile takes bucket/path/uploadMode as multipart form
+  // fields, not query params — see FilesApi.uploadFileRaw.
   const formData = new FormData();
   formData.append('file', file);
+  formData.append('bucket', bucket);
+  formData.append('path', path);
+  formData.append('uploadMode', uploadMode);
 
   if (onProgress != null) {
     return new Promise<FileUploadResponse>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.open('PUT', url);
+      xhr.open('POST', url);
+      xhr.withCredentials = true;
+      const csrfToken = getCsrfToken();
+      if (csrfToken) xhr.setRequestHeader('X-CSRF-Token', csrfToken);
 
       if (signal) signal.addEventListener('abort', () => xhr.abort());
 
@@ -273,11 +253,7 @@ export async function uploadFile(
     });
   }
 
-  const res = await fetch(url, {
-    method: 'PUT',
-    body: formData,
-    signal,
-  });
+  const res = await chatApiFetch(url, { method: 'POST', body: formData, signal });
 
   if (!res.ok) {
     if (handleUnauthorizedResponse(res)) {

@@ -1,4 +1,3 @@
-'use client';
 import { FC } from 'react';
 import { SkillsSelector } from '@/components/common/SkillsSelector/SkillsSelector';
 

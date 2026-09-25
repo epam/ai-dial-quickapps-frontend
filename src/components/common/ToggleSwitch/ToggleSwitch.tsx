@@ -1,5 +1,3 @@
-'use client';
-
 import { IconAlertTriangleFilled } from '@tabler/icons-react';
 import { DialSwitch, DialTooltip } from '@epam/ai-dial-ui-kit';
 import { FC, useId } from 'react';

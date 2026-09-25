@@ -1,23 +1,25 @@
-<!-- BEGIN:nextjs-agent-rules -->
-
-# This is NOT the Next.js you know
-
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
-
-<!-- END:nextjs-agent-rules -->
-
 ## Architecture
 
-Single Next.js 16 app (App Router), no monorepo. All source lives under `src/`:
+Single-page React 19 app built with Vite, no monorepo — a pure static SPA served by
+[chat-api](https://github.com/epam/ai-dial-chat)'s own server (see `docs/TRANSITION_PLAN.md`
+Phase 2). This app has no server-side code of its own: auth and every DIAL entity call go
+through chat-api's `/api/v1/*` REST surface via the typed `@epam/ai-dial-chat-api-client`
+package (`src/utils/chat-api-client.ts`), not through a route handler in this repo. All source
+lives under `src/`:
 
-- `app/` — App Router pages and layouts. The main feature lives at `app/page.tsx` (root route `/`) — an iframe-embedded app that communicates with its host via `postMessage`.
+- `main.tsx` — the entry point: providers, `react-router` routes (`/` → `App.tsx`, `/signin/complete` →
+  `pages/SignInCompletePage.tsx`, the popup sign-in flow's landing page).
+- `App.tsx` — the root route component — an iframe-embedded app that communicates with its host
+  via `postMessage`.
+- `pages/` — top-level route components other than the root (currently just the sign-in popup).
 - `components/` — React components. Shared reusables go in `components/common/`; form-specific components go in `components/QuickApp2Form/`.
-- `context/` — React context providers (`AppContext`, `DataContext`).
+- `context/` — React context providers (`AppContext`, `DataContext`, `AuthContext`, `ThemeContext`).
 - `form/` — `react-hook-form` schema definitions and form data builders (validated with `zod`).
 - `hooks/` — Custom React hooks.
 - `i18n/` — i18next setup and locale JSON files (namespaces: `marketplace`, `common`, `settings`, `chat`).
 - `types/` — TypeScript types, interfaces, and enums.
-- `utils/` — Pure utility functions.
+- `utils/` — Pure utility functions, including the chat-api client layer (`chat-api-client.ts`,
+  `chat-api-fetch.ts`, `auth-api.ts`, `dialClient.ts`, `dial-files-api.ts`, `user-config.ts`).
 - `constants/` — App-wide constants including i18n key enums.
 
 Use the `@/*` path alias (resolves to `src/`) for all imports that would otherwise require multiple `../` traversals.
@@ -90,7 +92,7 @@ Place enums in `src/types/` or `src/constants/`.
 
 All UI must support Arabic (`ar`) and any other right-to-left locale. Arabic changes the visual direction of the entire UI.
 
-The `<html dir>` attribute must be set dynamically in `src/app/layout.tsx` when the active locale is RTL. See `.claude/rules/rtl.md` for the full ruleset — it applies to every file.
+The `<html dir>` attribute must be set dynamically from `src/components/I18nProvider.tsx` (mounted in `main.tsx`) when the active locale is RTL. See `.claude/rules/rtl.md` for the full ruleset — it applies to every file.
 
 ## @epam/ai-dial-ui-kit MCP tools
 

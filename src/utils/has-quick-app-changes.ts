@@ -1,6 +1,7 @@
 import isEqual from 'lodash-es/isEqual';
 
 import type { MaybeLocalizedText } from '@/types/dial-entities';
+import type { LocaleTextEntryDto } from '@/types/editor-messages';
 import { QuickApp2Config } from '@/types/quick-apps';
 
 export interface StoredGeneralFields {
@@ -8,8 +9,10 @@ export interface StoredGeneralFields {
   description?: MaybeLocalizedText;
   iconUrl?: string;
   topics?: string[];
-  intro?: string;
   display_version?: string;
+  /** Carried through to chat-api's `updateApplication` body untouched — not diffed here (a locale change already shows up as a `name`/`description` dict difference). */
+  locales?: LocaleTextEntryDto[];
+  primaryLocale?: string;
 }
 
 type FieldDiff = Record<string, { before: unknown; after: unknown }>;
@@ -58,9 +61,6 @@ export const hasQuickAppChanges = (
   }
   if (general.iconUrl !== storedGeneral.iconUrl) {
     generalDiff.iconUrl = { before: storedGeneral.iconUrl, after: general.iconUrl };
-  }
-  if (general.intro !== storedGeneral.intro) {
-    generalDiff.intro = { before: storedGeneral.intro, after: general.intro };
   }
   if (!isEqual(general.topics, storedGeneral.topics)) {
     generalDiff.topics = { before: storedGeneral.topics, after: general.topics };

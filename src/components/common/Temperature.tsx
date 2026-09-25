@@ -1,5 +1,3 @@
-'use client';
-
 import { IconHelp } from '@tabler/icons-react';
 import { DialSlider, DialTooltip } from '@epam/ai-dial-ui-kit';
 import { FC } from 'react';

@@ -1,4 +1,3 @@
-'use client';
 import { useCallback, useMemo } from 'react';
 import { useTranslation as useI18nTranslation } from 'react-i18next';
 import type { Translation, TranslationOptions } from '@/types/translation';

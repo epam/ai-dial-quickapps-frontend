@@ -1,4 +1,3 @@
-'use client';
 import { IconLayoutGrid } from '@tabler/icons-react';
 import React from 'react';
 

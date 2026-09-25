@@ -1,4 +1,3 @@
-'use client';
 import React, { useCallback } from 'react';
 import { AgentAndToolsetChip, type ChipEntity } from './AgentAndToolsetChip';
 import { OverflowButton } from './OverflowButton';

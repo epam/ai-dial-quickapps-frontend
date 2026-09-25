@@ -1,5 +1,3 @@
-'use client';
-
 import { IconPlus, IconTrashX } from '@tabler/icons-react';
 import React, { type MouseEvent, useCallback, useState } from 'react';
 

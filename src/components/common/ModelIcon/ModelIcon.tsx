@@ -1,6 +1,4 @@
-'use client';
 import classNames from 'classnames';
-import Image from 'next/image';
 import { FC, memo, useCallback, useState } from 'react';
 import { resolveIconUrl } from '@/utils/resolve-icon-url';
 
@@ -42,14 +40,13 @@ const ModelIcon: FC<ModelIconProps> = memo(({ name, iconUrl, size, radius = 8 })
       )}
       style={{ width: size, height: size, borderRadius: radius }}
     >
-      <Image
+      <img
         src={resolvedUrl}
         width={size}
         height={size}
         alt={name}
         className="size-full object-cover"
         onError={handleError}
-        unoptimized
       />
     </span>
   );
