@@ -1,4 +1,3 @@
-'use client';
 import { FC, ReactNode, useId } from 'react';
 
 import { DialRadioButton, DialTooltip } from '@epam/ai-dial-ui-kit';

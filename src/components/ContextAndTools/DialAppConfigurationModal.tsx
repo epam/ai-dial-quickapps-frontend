@@ -1,9 +1,8 @@
-'use client';
 import { FC, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 
 import { useAppContext } from '@/context/AppContext';
 import { useApplicationAuthentication } from '@/hooks/useApplicationAuthentication';
+import { useSearchParams } from '@/hooks/useSearchParams';
 import { requestApplicationCredentials } from '@/utils/request-application-credentials';
 import { NeutralButton } from '@epam/ai-dial-ui-kit';
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';

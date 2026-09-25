@@ -1,4 +1,3 @@
-'use client';
 import { FC } from 'react';
 
 import { useTranslation } from '@/hooks/useTranslation';

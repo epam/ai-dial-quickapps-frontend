@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Sets the fallback Tailwind/ui-kit already reference (`var(--theme-font, var(--font-inter))`)
+   to the self-hosted @fontsource-variable/inter font registered in main.tsx — replaces what
+   next/font/google's generated class used to provide. */
+:root {
+  --font-inter: 'Inter Variable', sans-serif;
+}
+
+body {
+  background-color: var(--bg-layer-0, #fcfcfc);
+  color: var(--text-primary, #161b2d);
+}
+
+::selection {
+  background-color: var(--controls-bg-accent-primary, #3664e2);
+  color: var(--controls-text-permanent, #fcfcfc);
+}

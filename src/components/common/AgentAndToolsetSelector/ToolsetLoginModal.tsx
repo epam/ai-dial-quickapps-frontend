@@ -1,4 +1,3 @@
-'use client';
 import { FC, useCallback, useEffect, useState } from 'react';
 
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
@@ -13,6 +12,8 @@ import {
   ToolsetAuthResultPayload,
 } from '@/types/editor-messages';
 import { Translation } from '@/types/translation';
+import { isPublicToolsetId } from '@/utils/api';
+import { toolsetsApi } from '@/utils/chat-api-client';
 import { getLocalizedText } from '@/utils/get-localized-text';
 import {
   DialInput,
@@ -21,6 +22,11 @@ import {
   DialPrimaryButton,
   PopupSize,
 } from '@epam/ai-dial-ui-kit';
+import {
+  ToolsetLoginBodyDtoAuthenticationTypeEnum,
+  ToolsetLoginBodyDtoCredentialsLevelEnum,
+  ToolsetLogoutBodyDtoAuthenticationTypeEnum,
+} from '@epam/ai-dial-chat-api-client';
 
 import type { ChipEntity } from './AgentAndToolsetChip';
 
@@ -29,8 +35,11 @@ interface ToolsetLoginModalProps {
   onClose: () => void;
 }
 
-const TOOLSET_SIGNIN_URL = '/api/dial-toolsets/signin';
-const TOOLSET_SIGNOUT_URL = '/api/dial-toolsets/signout';
+/** Public toolsets are signed in per-user, private ones per-workspace — mirrors dialClient.ts's mapAuthSettings. */
+const credentialsLevelFor = (toolsetId: string): ToolsetLoginBodyDtoCredentialsLevelEnum =>
+  isPublicToolsetId(toolsetId)
+    ? ToolsetLoginBodyDtoCredentialsLevelEnum.User
+    : ToolsetLoginBodyDtoCredentialsLevelEnum.Global;
 
 export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose }) => {
   const { t, language } = useTranslation(Translation.Marketplace);
@@ -52,12 +61,14 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
     setIsSubmitting(true);
     setError(undefined);
     try {
-      const res = await fetch(TOOLSET_SIGNOUT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: toolset.id }),
+      await toolsetsApi.logoutToolset({
+        toolsetName: toolset.id,
+        toolsetLogoutBodyDto: {
+          url: toolset.id,
+          credentialsLevel: credentialsLevelFor(toolset.id),
+          authenticationType: ToolsetLogoutBodyDtoAuthenticationTypeEnum.ApiKey,
+        },
       });
-      if (!res.ok) throw new Error(`${res.status}`);
       await refreshToolsets();
       onClose();
     } catch {
@@ -71,12 +82,15 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
     setIsSubmitting(true);
     setError(undefined);
     try {
-      const res = await fetch(TOOLSET_SIGNIN_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: toolset.id, apiKey }),
+      await toolsetsApi.loginToolset({
+        toolsetName: toolset.id,
+        toolsetLoginBodyDto: {
+          url: toolset.id,
+          credentialsLevel: credentialsLevelFor(toolset.id),
+          authenticationType: ToolsetLoginBodyDtoAuthenticationTypeEnum.ApiKey,
+          apiKey,
+        },
       });
-      if (!res.ok) throw new Error(`${res.status}`);
       await refreshToolsets();
       onClose();
     } catch {

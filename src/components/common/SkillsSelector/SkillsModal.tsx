@@ -1,4 +1,3 @@
-'use client';
 import React, { useCallback, useMemo, useState } from 'react';
 import classNames from 'classnames';
 import sortBy from 'lodash-es/sortBy';

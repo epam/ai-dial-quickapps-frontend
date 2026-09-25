@@ -1,4 +1,3 @@
-'use client';
 import { IconLayoutGrid, IconPlus } from '@tabler/icons-react';
 import React, { MouseEvent, useCallback, useState } from 'react';
 

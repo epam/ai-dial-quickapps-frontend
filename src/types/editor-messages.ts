@@ -53,7 +53,6 @@ export interface TriggerSaveGeneralPayload {
   primaryLocale?: string;
   iconUrl?: string;
   topics?: string[];
-  intro?: string;
   display_version?: string;
 }
 

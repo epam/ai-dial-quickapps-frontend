@@ -1,4 +1,3 @@
-'use client';
 import {
   createContext,
   FC,
@@ -14,6 +13,7 @@ import {
 import type { Theme, ThemeConfiguration } from '@/types/theme';
 import { ThemeId } from '@/types/theme';
 import { applyThemeColors, getOsPreferredTheme } from '@/utils/apply-theme-colors';
+import { chatApiFetch } from '@/utils/chat-api-fetch';
 
 const THEMES_URL = '/api/themes';
 const STORAGE_KEY = 'dial-theme';
@@ -70,9 +70,11 @@ const ThemeProvider: FC<ThemeProviderProps> = ({ children }) => {
     };
   }, []);
 
-  // Fetch theme configuration
+  // Fetch theme configuration — this URL is already chat-api's own native
+  // theme-config endpoint (Appendix A), so only the transport (chatApiFetch
+  // over plain fetch) changes here.
   useEffect(() => {
-    fetch(THEMES_URL)
+    chatApiFetch(THEMES_URL)
       .then((r) => r.json() as Promise<ThemeConfiguration>)
       .then((data) => {
         setConfig(data);

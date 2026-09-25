@@ -1,10 +1,6 @@
-'use client';
-
 import { type OnValidate } from '@monaco-editor/react';
 import { type PreviewType } from '@uiw/react-md-editor';
-import { type FC, type ReactNode, useCallback, useState } from 'react';
-
-import dynamic from 'next/dynamic';
+import { lazy, type FC, type ReactNode, Suspense, useCallback, useState } from 'react';
 
 import { Label } from '@/components/common/Forms/Label';
 import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
@@ -20,13 +16,13 @@ export enum EditorThemes {
 
 export type EditorTheme = `${EditorThemes}`;
 
-const MarkdownEditor = dynamic(async () => (await LazyMarkdownEditor()).MarkdownEditor, {
-  ssr: false,
-});
+const MarkdownEditor = lazy(async () => ({
+  default: (await LazyMarkdownEditor()).MarkdownEditor,
+}));
 
-const DialJsonEditor = dynamic(async () => (await LazyDialJsonEditor()).DialJsonEditor, {
-  ssr: false,
-});
+const DialJsonEditor = lazy(async () => ({
+  default: (await LazyDialJsonEditor()).DialJsonEditor,
+}));
 
 export interface DialMarkdownEditorContainerProps {
   value?: string;
@@ -95,28 +91,32 @@ export const DialMarkdownEditorContainer: FC<DialMarkdownEditorContainerProps> =
       {showSwitcher && isJSONContentMode ? (
         <div className="rounded border border-primary" style={{ height: `${height}px` }}>
           {isEditorMounted && (
-            <DialJsonEditor
-              value={value}
-              onChange={handleChange}
-              onValidateJSON={onValidateJSON}
-              currentTheme={resolvedTheme === EditorThemes.dark ? 'vs-dark' : 'light'}
-              options={{
-                minimap: { enabled: false },
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-              }}
-            />
+            <Suspense fallback={null}>
+              <DialJsonEditor
+                value={value}
+                onChange={handleChange}
+                onValidateJSON={onValidateJSON}
+                currentTheme={resolvedTheme === EditorThemes.dark ? 'vs-dark' : 'light'}
+                options={{
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
+                }}
+              />
+            </Suspense>
           )}
         </div>
       ) : (
-        <MarkdownEditor
-          value={value}
-          onChange={onChangeValue}
-          height={height}
-          defaultPreview={preview}
-          theme={resolvedTheme as EditorThemes}
-          placeholder={placeholder}
-        />
+        <Suspense fallback={null}>
+          <MarkdownEditor
+            value={value}
+            onChange={onChangeValue}
+            height={height}
+            defaultPreview={preview}
+            theme={resolvedTheme as EditorThemes}
+            placeholder={placeholder}
+          />
+        </Suspense>
       )}
     </div>
   );
