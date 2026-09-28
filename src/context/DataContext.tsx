@@ -15,8 +15,9 @@ import type {
   SkillsMap,
   ToolsetsMap,
 } from '@/types/dial-entities';
+import { ToolsetAuthStatus } from '@/types/dial-entities';
 import { InboundMessageType, ToolsetAuthResultPayload } from '@/types/editor-messages';
-import { applyToolsetLoginResult } from '@/utils/apply-toolset-login-result';
+import { applyToolsetAuthResult } from '@/utils/apply-toolset-auth-result';
 import { useAuthContext } from '@/context/AuthContext';
 import {
   fetchDialMcpAgents,
@@ -61,7 +62,11 @@ type DataAction =
   | { type: 'MODELS_LOADED'; payload: DialModel[] }
   | { type: 'TOOLSETS_LOADED'; payload: DialToolset[] }
   | { type: 'MCP_AGENTS_LOADED'; payload: DialModel[] }
-  | { type: 'TOOLSET_LOGIN_RESULT_APPLIED'; payload: ToolsetAuthResultPayload }
+  | {
+      type: 'TOOLSET_AUTH_RESULT_APPLIED';
+      payload: ToolsetAuthResultPayload;
+      fallbackStatus: ToolsetAuthStatus;
+    }
   | { type: 'SKILLS_LOADED'; payload: DialSkill[] }
   | { type: 'FILES_LOADED'; payload: string[] }
   | { type: 'BUCKET_LOADED'; payload?: string }
@@ -99,13 +104,13 @@ function reducer(state: DataState, action: DataAction): DataState {
       const mcpAgentsMap = Object.fromEntries(action.payload.map((a) => [a.id, a]));
       return { ...state, mcpAgents: action.payload, mcpAgentsMap };
     }
-    case 'TOOLSET_LOGIN_RESULT_APPLIED': {
+    case 'TOOLSET_AUTH_RESULT_APPLIED': {
       const existing = state.toolsetsMap[action.payload.toolsetId];
-      // Unrelated logins elsewhere in the host app are expected to arrive
-      // here too — silently ignore anything not in the current config.
+      // Unrelated logins/logouts elsewhere in the host app are expected to
+      // arrive here too — silently ignore anything not in the current config.
       if (!existing) return state;
 
-      const updated = applyToolsetLoginResult(existing, action.payload);
+      const updated = applyToolsetAuthResult(existing, action.payload, action.fallbackStatus);
       const toolsets = state.toolsets.map((t) => (t.id === updated.id ? updated : t));
       return {
         ...state,
@@ -143,6 +148,13 @@ interface DataContextValue extends DataState {
   skillsWithFavorites: DialSkill[];
   refreshSkills: () => Promise<void>;
   refreshToolsets: () => Promise<void>;
+  /**
+   * Applies a TOOLSET_LOGIN_RESULT/TOOLSET_LOGOUT_RESULT the host already
+   * confirmed, without a round trip back through the toolsets list — trusts
+   * the host's own report of the toolset's fresh auth status directly,
+   * avoiding a race with the list endpoint's own cache/propagation delay.
+   */
+  applyToolsetAuthResult: (payload: ToolsetAuthResultPayload, fallbackStatus: ToolsetAuthStatus) => void;
   refreshAll: () => void;
 }
 
@@ -154,6 +166,7 @@ const DataContext = createContext<DataContextValue>({
   skillsWithFavorites: [],
   refreshSkills: async () => undefined,
   refreshToolsets: async () => undefined,
+  applyToolsetAuthResult: () => undefined,
   refreshAll: () => undefined,
 });
 
@@ -240,7 +253,11 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
       if (msg?.type !== InboundMessageType.ToolsetLoginResult) return;
       if (!msg.success || !msg.toolsetId) return;
 
-      dispatch({ type: 'TOOLSET_LOGIN_RESULT_APPLIED', payload: msg as ToolsetAuthResultPayload });
+      dispatch({
+        type: 'TOOLSET_AUTH_RESULT_APPLIED',
+        payload: msg as ToolsetAuthResultPayload,
+        fallbackStatus: ToolsetAuthStatus.SignedIn,
+      });
     };
 
     window.addEventListener('message', handleMessage);
@@ -255,6 +272,13 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
   const refreshToolsets = async () => {
     const toolsets = await fetchDialToolsets();
     dispatch({ type: 'TOOLSETS_LOADED', payload: toolsets });
+  };
+
+  const applyToolsetAuthResult = (
+    payload: ToolsetAuthResultPayload,
+    fallbackStatus: ToolsetAuthStatus,
+  ) => {
+    dispatch({ type: 'TOOLSET_AUTH_RESULT_APPLIED', payload, fallbackStatus });
   };
 
   const modelsWithFavorites = useMemo(
@@ -307,6 +331,7 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
         skillsWithFavorites,
         refreshSkills,
         refreshToolsets,
+        applyToolsetAuthResult,
         refreshAll: loadAll,
       }}
     >

@@ -44,7 +44,7 @@ const credentialsLevelFor = (toolsetId: string): ToolsetLoginBodyDtoCredentialsL
 export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose }) => {
   const { t, language } = useTranslation(Translation.Marketplace);
   const { settings } = useAppContext();
-  const { refreshToolsets } = useDataContext();
+  const { refreshToolsets, applyToolsetAuthResult } = useDataContext();
 
   const toolsetName = getLocalizedText(toolset.name, language, toolset.id);
   const authSettings = toolset.authSettings;
@@ -138,7 +138,14 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
       if (isLogoutResult) setIsLoggingOut(false);
 
       if (msg.success) {
-        void refreshToolsets().then(onClose);
+        // Trust the host's own report of the fresh auth status directly
+        // instead of re-fetching the toolsets list, which can still return
+        // stale data for a moment after a login/logout completes.
+        applyToolsetAuthResult(
+          msg as ToolsetAuthResultPayload,
+          isLoginResult ? ToolsetAuthStatus.SignedIn : ToolsetAuthStatus.SignedOut,
+        );
+        onClose();
       } else {
         setError(t(CommonI18nKeys.ToolsetSignInFailed));
       }
@@ -146,7 +153,7 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [isOAuth, settings.allowedOrigin, toolset.id, refreshToolsets, onClose, t]);
+  }, [isOAuth, settings.allowedOrigin, toolset.id, applyToolsetAuthResult, onClose, t]);
 
   return (
     <DialPopup

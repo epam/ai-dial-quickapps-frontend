@@ -500,11 +500,18 @@ returning `services.length > 0`. Covered by `src/utils/tests/application-authent
 Still worth a one-time check, not a code gap: confirm the `liveChatInteraction` feature flag is
 enabled on this integration's chat-api deployment.
 
-### C.3 Toolset login in the QuickApps editor always signs in at `User` level — **Filed, not our code**
+### C.3 Toolset login in the QuickApps editor always signs in at `User` level — **Fixed (host side)**
 
 Private (non-public) toolsets are meant to sign in at `Global` level (our own auth logic, and
 `ai-dial-chat`'s `signin-interrupt.ts`, agree on this). But `AppEditorIframe.tsx` — the host
-handler for our `RequestToolsetLogin` postMessage — hardcodes `ToolsetCredentialsLevel.User`
-regardless of the toolset's bucket. Result: login succeeds, but our chip (correctly reading
-`globalAuthStatus` for a private toolset) never sees it and reverts to logged-out. Bug is in
-`ai-dial-chat`, not this repo; filed with the chat-api team.
+handler for our `RequestToolsetLogin` postMessage — hardcoded `ToolsetCredentialsLevel.User`
+regardless of the toolset's bucket. Result: login succeeded, but our chip (correctly reading
+`globalAuthStatus` for a private toolset) never saw it and reverted to logged-out. Fixed on the
+`ai-dial-chat` side.
+
+A follow-on bug then surfaced in this repo: after a successful logout, the chip still showed
+signed-in. `ToolsetLoginModal.tsx` was discarding the host's `TOOLSET_LOGOUT_RESULT` payload
+(which already carried the fresh, correct status) and instead re-fetching the toolsets list,
+which raced chat-api's list endpoint and returned stale data. Fixed by applying the host's
+reported status directly (`applyToolsetAuthResult`, `src/utils/apply-toolset-auth-result.ts`)
+instead of refetching.

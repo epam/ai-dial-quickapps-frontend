@@ -120,7 +120,7 @@ function mapAuthSettings(
 ): ToolsetAuthSettings | undefined {
   if (!authSettings?.authenticationType) return undefined;
   // Public toolsets are signed in per-user, private ones per-workspace — mirrors
-  // the level selection in applyToolsetLoginResult.
+  // the level selection in applyToolsetAuthResult.
   const authStatus = isPublicToolsetId(toolsetId)
     ? authSettings.userLevelAuthStatus
     : authSettings.globalAuthStatus;
