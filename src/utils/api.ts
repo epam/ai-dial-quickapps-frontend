@@ -3,7 +3,7 @@ import { DIAL_HIDDEN_FOLDER_MARKER } from '@/constants/dial-files';
 const PATH_KEY_SEPARATOR = '__';
 
 const safeEncodeURIComponent = (s: string) =>
-  s.replace(/[^\uD800-􏰀-\uDFFF]+/gm, (match) => encodeURIComponent(match));
+  s.replace(/[^\uD800-\uDFFF]+/gu, (match) => encodeURIComponent(match));
 
 const constructPath = (...parts: string[]) => parts.join('/');
 
