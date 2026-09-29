@@ -32,8 +32,8 @@ USER node
 # whether you're running `npm run dev` or this built image locally — override
 # with `-e PORT=...`/`--env-file` for a real deployment. chat-api's own
 # default (absent this) is 5000.
-ENV PORT=4600
-EXPOSE 4600
+ENV PORT=5000
+EXPOSE 5000
 
 # No curl in the image, so use Node's fetch. Respects PORT and API_PREFIX overrides.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
