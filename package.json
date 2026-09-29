@@ -13,7 +13,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "docker:run": "node scripts/docker-run-dist.mjs",
-    "docker:run:watch": "node scripts/docker-run-watch.mjs"
+    "chat-api:local": "node scripts/run-chat-api-local.mjs"
   },
   "dependencies": {
     "@epam/ai-dial-chat-api-client": "^1.2.0-dev.173",

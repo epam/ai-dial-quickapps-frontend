@@ -15,8 +15,10 @@ npm run dev
 `npm run dev` starts the Vite dev server on `http://localhost:4600` and proxies `/api/*` to a
 chat-api instance running locally on `http://localhost:5000` (see `vite.config.ts`). Start that
 backend with `npm run docker:run:backend` (runs the published chat-api image directly, on 5000,
-reading env from `.env.example` — see [Configuration](#configuration) for what to put in it),
-then `npm run dev` in another terminal for a live-reloading frontend against a real backend.
+reading env from `.env.example` — see [Configuration](#configuration) for what to put in it), or
+with `npm run chat-api:local` (runs a local chat-api checkout instead — see
+[Running chat-api from a local checkout](#running-chat-api-from-a-local-checkout)), then
+`npm run dev` in another terminal for a live-reloading frontend against a real backend.
 
 ## Commands
 
@@ -29,8 +31,8 @@ then `npm run dev` in another terminal for a live-reloading frontend against a r
 | `npm run docker:build`       | Build this repo's own Docker image (frontend + chat-api, see [Docker build](#docker-build))              |
 | `npm run docker:run`         | Run that locally-built image                                                                             |
 | `npm run docker:run:dist`    | Rebuild `dist/` and run it mounted into the published chat-api image — faster than a full `docker:build` |
-| `npm run docker:run:watch`   | Like `docker:run:dist`, but keeps `vite build --watch` running so `dist/` (and the container) picks up source changes live, without rerunning the script |
 | `npm run docker:run:backend` | Run just the published chat-api image, for pairing with `npm run dev`'s live frontend (see above)        |
+| `npm run chat-api:local`     | Run chat-api from a local checkout instead of a Docker image (see below)                                 |
 
 ## Docker build
 
@@ -55,12 +57,28 @@ For faster iteration without a full image build, `npm run docker:run:dist` rebui
 mounts it straight into the published chat-api image (see `scripts/docker-run-dist.mjs`) —
 override the image tag with `CHAT_API_IMAGE=ghcr.io/epam/ai-dial-chat:<tag> npm run docker:run:dist`.
 
-If you're iterating on the frontend against the containerized image rather than `npm run dev`,
-`npm run docker:run:watch` (see `scripts/docker-run-watch.mjs`) does the same dist-mount trick but
-runs `vite build --watch` in the background instead of a one-off build, so every source change is
-picked up by the already-running container on the next request — no need to stop and rerun the
-script after each edit. Same `CHAT_API_IMAGE` override applies. Stop it with Ctrl+C; it tears down
-the watch process along with the container.
+## Running chat-api from a local checkout
+
+If you have your own local checkout of [ai-dial-chat](https://github.com/epam/ai-dial-chat) and
+want to work on this app and chat-api together (both live-reloading — this app via `npm run dev`,
+chat-api via its own watch mode), `npm run chat-api:local` (see
+`scripts/run-chat-api-local.mjs`) runs chat-api's `npm run start:api` directly from that checkout
+instead of pulling and running a Docker image.
+
+It reads this repo's own `.env.local` (create one if you don't have it — it's gitignored) for:
+
+- `CHAT_API_LOCAL_DIR` — absolute path to your local ai-dial-chat checkout, e.g.
+  `CHAT_API_LOCAL_DIR=/c/projects/dial/ai-dial-chat`.
+- Every other variable chat-api itself needs at runtime (`PORT`, `DIAL_CORE_URL`, `AUTH_*`, ...,
+  same set `.env.template` documents for the Docker path) — these are passed straight through as
+  chat-api's own env. Set `PORT=5000` to match `vite.config.ts`'s dev-server proxy target.
+
+Then, in separate terminals:
+
+```bash
+npm run chat-api:local   # chat-api from your local checkout, on 5000
+npm run dev              # this app, on 4600, proxying /api/* to it
+```
 
 ## Configuration
 
