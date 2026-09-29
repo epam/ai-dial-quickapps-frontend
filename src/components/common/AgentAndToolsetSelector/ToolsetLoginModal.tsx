@@ -14,6 +14,7 @@ import {
 import { Translation } from '@/types/translation';
 import { isPublicToolsetId } from '@/utils/api';
 import { toolsetsApi } from '@/utils/chat-api-client';
+import { encodeDialPath } from '@/utils/dialClient';
 import { getLocalizedText } from '@/utils/get-localized-text';
 import {
   DialInput,
@@ -62,7 +63,7 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
     setError(undefined);
     try {
       await toolsetsApi.logoutToolset({
-        toolsetName: toolset.id,
+        toolsetName: encodeDialPath(toolset.id),
         toolsetLogoutBodyDto: {
           url: toolset.id,
           credentialsLevel: credentialsLevelFor(toolset.id),
@@ -83,7 +84,7 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
     setError(undefined);
     try {
       await toolsetsApi.loginToolset({
-        toolsetName: toolset.id,
+        toolsetName: encodeDialPath(toolset.id),
         toolsetLoginBodyDto: {
           url: toolset.id,
           credentialsLevel: credentialsLevelFor(toolset.id),

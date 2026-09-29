@@ -50,8 +50,22 @@ const CHAT_DEPLOYMENT_INTERFACE = ListDeploymentsInterfaceTypeEnum.Chat;
  */
 const MCP_DEPLOYMENT_INTERFACE = ListDeploymentsInterfaceTypeEnum.Mcp;
 
-/** Encode each path segment individually, preserving '/' as a separator. */
-const encodeDialPath = (id: string): string => id.split('/').map(encodeURIComponent).join('/');
+/**
+ * Encode each path segment individually, preserving '/' as a separator.
+ *
+ * chat-api's application/deployment/toolset ids are canonically stored and
+ * returned with special characters already percent-encoded (e.g. a space is
+ * literally `%20` inside the id string, confirmed against a working
+ * PATCH /applications/{applicationName} request/response pair whose response
+ * body's `id` field itself contains `%20`, not a real space). This app's
+ * internal `appId`/`toolset.id` is kept decoded (see decodeDialPath below,
+ * used once on mount) for display purposes, so it must be re-encoded back to
+ * that canonical form here before use as a path parameter — the generated
+ * client's own encodeURIComponent then wraps it once more for URL transport,
+ * which is why the wire ends up "double-encoded" (e.g. `%2520`): that's
+ * chat-api's expected shape, not a bug.
+ */
+export const encodeDialPath = (id: string): string => id.split('/').map(encodeURIComponent).join('/');
 
 /** Decode each path segment individually. */
 export const decodeDialPath = (url: string): string =>
@@ -133,7 +147,10 @@ function mapAuthSettings(
 }
 
 export async function fetchApplicationRequiresAuthentication(appId: string): Promise<boolean> {
-  const services = await externalServicesApi.listExternalServices({ appId });
+  // Re-encode to chat-api's canonical id form — see encodeDialPath's comment.
+  const services = await externalServicesApi.listExternalServices({
+    appId: encodeDialPath(appId),
+  });
   return services.length > 0;
 }
 
@@ -299,7 +316,10 @@ async function fetchApplicationSummary(appId: string): Promise<DeploymentItemDto
 export async function fetchDialApp(appId: string): Promise<DialApp | null> {
   let details;
   try {
-    [details] = await Promise.all([deploymentsApi.getDeploymentDetails({ deployment: appId })]);
+    [details] = await Promise.all([
+      // Re-encode to chat-api's canonical id form — see encodeDialPath's comment.
+      deploymentsApi.getDeploymentDetails({ deployment: encodeDialPath(appId) }),
+    ]);
   } catch (error) {
     if (isNotFoundError(error)) return null;
     if (isForbiddenError(error)) throw new ForbiddenError();
@@ -307,17 +327,24 @@ export async function fetchDialApp(appId: string): Promise<DialApp | null> {
   }
   const summary = await fetchApplicationSummary(appId).catch(() => undefined);
   const appDetails = details.applicationDetails;
+  // appDetails.displayName comes from the same getDeploymentDetails call that
+  // just succeeded, so it's always available; summary (a separate, interface-
+  // filtered /deployments listing) can miss this app entirely — e.g. when it
+  // isn't tagged with the 'chat' interface — leaving `summary` undefined. Without
+  // this appDetails fallback, `name` silently became the raw entity id (slashes
+  // and all), which then fails chat-api's `name` validator on save.
+  const displayName = appDetails?.displayName ?? summary?.displayName;
 
   return {
     id: appId,
-    name: toDisplayName(summary?.displayName, appId),
+    name: toDisplayName(displayName, appId),
     applicationTypeSchemaId: appDetails?.applicationTypeSchemaId,
     applicationProperties: mapApplicationPropertiesFromApi(appDetails?.applicationProperties),
     inputAttachmentTypes: appDetails?.inputAttachmentTypes ?? [],
     maxInputAttachments: appDetails?.maxInputAttachments,
     // Stored so saveDialApp can reconstruct the fields it doesn't itself own.
     _rawForSave: {
-      displayName: summary?.displayName,
+      displayName,
       description: summary?.description,
       iconUrl: summary?.iconUrl,
       topics: summary?.topics,
@@ -347,7 +374,8 @@ export async function saveDialApp(
       : toDisplayText(rawForSave.description as LocalizedText | undefined);
 
   const updated = await applicationsApi.updateApplication({
-    applicationName: app.id,
+    // Re-encode to chat-api's canonical id form — see encodeDialPath's comment.
+    applicationName: encodeDialPath(app.id),
     updateApplicationBodyDto: {
       name,
       description,

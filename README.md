@@ -29,6 +29,7 @@ then `npm run dev` in another terminal for a live-reloading frontend against a r
 | `npm run docker:build`       | Build this repo's own Docker image (frontend + chat-api, see [Docker build](#docker-build))              |
 | `npm run docker:run`         | Run that locally-built image                                                                             |
 | `npm run docker:run:dist`    | Rebuild `dist/` and run it mounted into the published chat-api image — faster than a full `docker:build` |
+| `npm run docker:run:watch`   | Like `docker:run:dist`, but keeps `vite build --watch` running so `dist/` (and the container) picks up source changes live, without rerunning the script |
 | `npm run docker:run:backend` | Run just the published chat-api image, for pairing with `npm run dev`'s live frontend (see above)        |
 
 ## Docker build
@@ -53,6 +54,13 @@ image.
 For faster iteration without a full image build, `npm run docker:run:dist` rebuilds `dist/` and
 mounts it straight into the published chat-api image (see `scripts/docker-run-dist.mjs`) —
 override the image tag with `CHAT_API_IMAGE=ghcr.io/epam/ai-dial-chat:<tag> npm run docker:run:dist`.
+
+If you're iterating on the frontend against the containerized image rather than `npm run dev`,
+`npm run docker:run:watch` (see `scripts/docker-run-watch.mjs`) does the same dist-mount trick but
+runs `vite build --watch` in the background instead of a one-off build, so every source change is
+picked up by the already-running container on the next request — no need to stop and rerun the
+script after each edit. Same `CHAT_API_IMAGE` override applies. Stop it with Ctrl+C; it tears down
+the watch process along with the container.
 
 ## Configuration
 

@@ -16,8 +16,12 @@ describe('application authentication metadata', () => {
     expect(await fetchApplicationRequiresAuthentication('applications/public/My agent')).toBe(
       false,
     );
+    // Re-encoded to chat-api's canonical id form (space -> %20) before being
+    // used as a path parameter — confirmed against a real working
+    // PATCH /applications/{applicationName} request/response pair whose
+    // response `id` field itself contains a literal `%20`, not a real space.
     expect(listExternalServices).toHaveBeenCalledWith({
-      appId: 'applications/public/My agent',
+      appId: 'applications/public/My%20agent',
     });
   });
 
