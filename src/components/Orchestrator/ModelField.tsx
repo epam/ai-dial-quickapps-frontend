@@ -1,4 +1,3 @@
-'use client';
 import classNames from 'classnames';
 import { FC, useCallback, useMemo, useState } from 'react';
 

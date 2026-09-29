@@ -1,8 +1,6 @@
-'use client';
-
 import { FC, memo } from 'react';
 
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/hooks/useAuth';
 import { DialNeutralButton } from '@epam/ai-dial-ui-kit';
 
 interface LoginPromptProps {

@@ -1,4 +1,3 @@
-'use client';
 import { FC, useCallback, useEffect, useState } from 'react';
 
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
@@ -13,6 +12,9 @@ import {
   ToolsetAuthResultPayload,
 } from '@/types/editor-messages';
 import { Translation } from '@/types/translation';
+import { isPublicToolsetId } from '@/utils/api';
+import { toolsetsApi } from '@/utils/chat-api-client';
+import { encodeDialPath } from '@/utils/dialClient';
 import { getLocalizedText } from '@/utils/get-localized-text';
 import {
   DialInput,
@@ -21,6 +23,11 @@ import {
   DialPrimaryButton,
   PopupSize,
 } from '@epam/ai-dial-ui-kit';
+import {
+  ToolsetLoginBodyDtoAuthenticationTypeEnum,
+  ToolsetLoginBodyDtoCredentialsLevelEnum,
+  ToolsetLogoutBodyDtoAuthenticationTypeEnum,
+} from '@epam/ai-dial-chat-api-client';
 
 import type { ChipEntity } from './AgentAndToolsetChip';
 
@@ -29,13 +36,16 @@ interface ToolsetLoginModalProps {
   onClose: () => void;
 }
 
-const TOOLSET_SIGNIN_URL = '/api/dial-toolsets/signin';
-const TOOLSET_SIGNOUT_URL = '/api/dial-toolsets/signout';
+/** Public toolsets are signed in per-user, private ones per-workspace — mirrors dialClient.ts's mapAuthSettings. */
+const credentialsLevelFor = (toolsetId: string): ToolsetLoginBodyDtoCredentialsLevelEnum =>
+  isPublicToolsetId(toolsetId)
+    ? ToolsetLoginBodyDtoCredentialsLevelEnum.User
+    : ToolsetLoginBodyDtoCredentialsLevelEnum.Global;
 
 export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose }) => {
   const { t, language } = useTranslation(Translation.Marketplace);
   const { settings } = useAppContext();
-  const { refreshToolsets } = useDataContext();
+  const { refreshToolsets, applyToolsetAuthResult } = useDataContext();
 
   const toolsetName = getLocalizedText(toolset.name, language, toolset.id);
   const authSettings = toolset.authSettings;
@@ -52,12 +62,14 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
     setIsSubmitting(true);
     setError(undefined);
     try {
-      const res = await fetch(TOOLSET_SIGNOUT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: toolset.id }),
+      await toolsetsApi.logoutToolset({
+        toolsetName: encodeDialPath(toolset.id),
+        toolsetLogoutBodyDto: {
+          url: toolset.id,
+          credentialsLevel: credentialsLevelFor(toolset.id),
+          authenticationType: ToolsetLogoutBodyDtoAuthenticationTypeEnum.ApiKey,
+        },
       });
-      if (!res.ok) throw new Error(`${res.status}`);
       await refreshToolsets();
       onClose();
     } catch {
@@ -71,12 +83,15 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
     setIsSubmitting(true);
     setError(undefined);
     try {
-      const res = await fetch(TOOLSET_SIGNIN_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: toolset.id, apiKey }),
+      await toolsetsApi.loginToolset({
+        toolsetName: encodeDialPath(toolset.id),
+        toolsetLoginBodyDto: {
+          url: toolset.id,
+          credentialsLevel: credentialsLevelFor(toolset.id),
+          authenticationType: ToolsetLoginBodyDtoAuthenticationTypeEnum.ApiKey,
+          apiKey,
+        },
       });
-      if (!res.ok) throw new Error(`${res.status}`);
       await refreshToolsets();
       onClose();
     } catch {
@@ -124,7 +139,14 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
       if (isLogoutResult) setIsLoggingOut(false);
 
       if (msg.success) {
-        void refreshToolsets().then(onClose);
+        // Trust the host's own report of the fresh auth status directly
+        // instead of re-fetching the toolsets list, which can still return
+        // stale data for a moment after a login/logout completes.
+        applyToolsetAuthResult(
+          msg as ToolsetAuthResultPayload,
+          isLoginResult ? ToolsetAuthStatus.SignedIn : ToolsetAuthStatus.SignedOut,
+        );
+        onClose();
       } else {
         setError(t(CommonI18nKeys.ToolsetSignInFailed));
       }
@@ -132,7 +154,7 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [isOAuth, settings.allowedOrigin, toolset.id, refreshToolsets, onClose, t]);
+  }, [isOAuth, settings.allowedOrigin, toolset.id, applyToolsetAuthResult, onClose, t]);
 
   return (
     <DialPopup

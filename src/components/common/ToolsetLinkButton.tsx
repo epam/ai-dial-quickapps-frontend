@@ -1,5 +1,3 @@
-'use client';
-
 import { IconCopy, IconCheck } from '@tabler/icons-react';
 import React, { FC, useCallback, useState } from 'react';
 

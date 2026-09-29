@@ -1,5 +1,3 @@
-'use client';
-
 import React, {
   createContext,
   useCallback,
@@ -17,10 +15,11 @@ import type {
   SkillsMap,
   ToolsetsMap,
 } from '@/types/dial-entities';
+import { ToolsetAuthStatus } from '@/types/dial-entities';
 import { InboundMessageType, ToolsetAuthResultPayload } from '@/types/editor-messages';
-import { applyToolsetLoginResult } from '@/utils/apply-toolset-login-result';
+import { applyToolsetAuthResult } from '@/utils/apply-toolset-auth-result';
+import { useAuthContext } from '@/context/AuthContext';
 import {
-  fetchDialBucket,
   fetchDialMcpAgents,
   fetchDialModels,
   fetchDialSkills,
@@ -63,7 +62,11 @@ type DataAction =
   | { type: 'MODELS_LOADED'; payload: DialModel[] }
   | { type: 'TOOLSETS_LOADED'; payload: DialToolset[] }
   | { type: 'MCP_AGENTS_LOADED'; payload: DialModel[] }
-  | { type: 'TOOLSET_LOGIN_RESULT_APPLIED'; payload: ToolsetAuthResultPayload }
+  | {
+      type: 'TOOLSET_AUTH_RESULT_APPLIED';
+      payload: ToolsetAuthResultPayload;
+      fallbackStatus: ToolsetAuthStatus;
+    }
   | { type: 'SKILLS_LOADED'; payload: DialSkill[] }
   | { type: 'FILES_LOADED'; payload: string[] }
   | { type: 'BUCKET_LOADED'; payload?: string }
@@ -101,13 +104,13 @@ function reducer(state: DataState, action: DataAction): DataState {
       const mcpAgentsMap = Object.fromEntries(action.payload.map((a) => [a.id, a]));
       return { ...state, mcpAgents: action.payload, mcpAgentsMap };
     }
-    case 'TOOLSET_LOGIN_RESULT_APPLIED': {
+    case 'TOOLSET_AUTH_RESULT_APPLIED': {
       const existing = state.toolsetsMap[action.payload.toolsetId];
-      // Unrelated logins elsewhere in the host app are expected to arrive
-      // here too — silently ignore anything not in the current config.
+      // Unrelated logins/logouts elsewhere in the host app are expected to
+      // arrive here too — silently ignore anything not in the current config.
       if (!existing) return state;
 
-      const updated = applyToolsetLoginResult(existing, action.payload);
+      const updated = applyToolsetAuthResult(existing, action.payload, action.fallbackStatus);
       const toolsets = state.toolsets.map((t) => (t.id === updated.id ? updated : t));
       return {
         ...state,
@@ -145,6 +148,13 @@ interface DataContextValue extends DataState {
   skillsWithFavorites: DialSkill[];
   refreshSkills: () => Promise<void>;
   refreshToolsets: () => Promise<void>;
+  /**
+   * Applies a TOOLSET_LOGIN_RESULT/TOOLSET_LOGOUT_RESULT the host already
+   * confirmed, without a round trip back through the toolsets list — trusts
+   * the host's own report of the toolset's fresh auth status directly,
+   * avoiding a race with the list endpoint's own cache/propagation delay.
+   */
+  applyToolsetAuthResult: (payload: ToolsetAuthResultPayload, fallbackStatus: ToolsetAuthStatus) => void;
   refreshAll: () => void;
 }
 
@@ -156,12 +166,18 @@ const DataContext = createContext<DataContextValue>({
   skillsWithFavorites: [],
   refreshSkills: async () => undefined,
   refreshToolsets: async () => undefined,
+  applyToolsetAuthResult: () => undefined,
   refreshAll: () => undefined,
 });
 
 export function DataContextProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { isReady, settings } = useAppContext();
+  // The user's bucket comes from `/api/v1/auth/me` (already fetched by
+  // AuthContext) — no separate round trip needed, unlike the old
+  // `fetchDialBucket()` call against the generic DIAL Core proxy.
+  const { user } = useAuthContext();
+  const bucket = user?.bucket;
 
   const loadAll = useCallback(() => {
     dispatch({ type: 'LOADING' });
@@ -182,14 +198,8 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
       fetchDialMcpAgents(),
       fetchDialSkills(),
       favorites,
-      // A bucket failure must not fail the whole load — Personal/Shared scope
-      // labels are simply hidden (undefined) until a later refresh succeeds.
-      fetchDialBucket().catch((err: unknown) => {
-        console.warn('[DataContext] failed to load bucket, scope labels degraded:', err);
-        return undefined;
-      }),
     ])
-      .then(([modelsRaw, toolsets, mcpAgentsRaw, skills, favoritesPayload, bucket]) => {
+      .then(([modelsRaw, toolsets, mcpAgentsRaw, skills, favoritesPayload]) => {
         // The `mcp` deployment interface also returns entries that are
         // already present as chat models/applications — for those, fold the
         // mcp flag into the existing chat-interface entry (so it's still
@@ -201,10 +211,7 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
         const models = modelsRaw.map((m) =>
           mcpIds.has(m.id) ? { ...m, mcp: true, features: { ...m.features, mcp: true } } : m,
         );
-        const existingIds = new Set([
-          ...models.map((m) => m.id),
-          ...toolsets.map((t) => t.id),
-        ]);
+        const existingIds = new Set([...models.map((m) => m.id), ...toolsets.map((t) => t.id)]);
         const mcpAgents = mcpAgentsRaw.filter((agent) => !existingIds.has(agent.id));
 
         dispatch({ type: 'MODELS_LOADED', payload: models });
@@ -223,7 +230,7 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
           payload: err instanceof Error ? err.message : 'Failed to load data',
         });
       });
-  }, []);
+  }, [bucket]);
 
   useEffect(() => {
     if (!isReady) return;
@@ -246,7 +253,11 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
       if (msg?.type !== InboundMessageType.ToolsetLoginResult) return;
       if (!msg.success || !msg.toolsetId) return;
 
-      dispatch({ type: 'TOOLSET_LOGIN_RESULT_APPLIED', payload: msg as ToolsetAuthResultPayload });
+      dispatch({
+        type: 'TOOLSET_AUTH_RESULT_APPLIED',
+        payload: msg as ToolsetAuthResultPayload,
+        fallbackStatus: ToolsetAuthStatus.SignedIn,
+      });
     };
 
     window.addEventListener('message', handleMessage);
@@ -261,6 +272,13 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
   const refreshToolsets = async () => {
     const toolsets = await fetchDialToolsets();
     dispatch({ type: 'TOOLSETS_LOADED', payload: toolsets });
+  };
+
+  const applyToolsetAuthResult = (
+    payload: ToolsetAuthResultPayload,
+    fallbackStatus: ToolsetAuthStatus,
+  ) => {
+    dispatch({ type: 'TOOLSET_AUTH_RESULT_APPLIED', payload, fallbackStatus });
   };
 
   const modelsWithFavorites = useMemo(
@@ -313,6 +331,7 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
         skillsWithFavorites,
         refreshSkills,
         refreshToolsets,
+        applyToolsetAuthResult,
         refreshAll: loadAll,
       }}
     >

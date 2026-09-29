@@ -122,6 +122,7 @@ const bgColorsToRemove = {
 module.exports = {
   blocklist: ['[-:=]'],
   content: [
+    './index.html',
     './src/**/*.{html,js,ts,tsx,yaml}',
     './node_modules/@epam/ai-dial-ui-kit/**/*.{js,ts,jsx,tsx}',
   ],

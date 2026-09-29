@@ -1,4 +1,3 @@
-'use client';
 import type { ChipEntity } from '@/components/common/AgentAndToolsetSelector/AgentAndToolsetChip';
 import { AgentAndToolsetSelector } from '@/components/common/AgentAndToolsetSelector/AgentAndToolsetSelector';
 import { EntityInfoModal } from '@/components/common/AgentAndToolsetSelector/EntityInfoModal';
@@ -26,13 +25,12 @@ import {
 } from '@epam/ai-dial-ui-kit';
 import { IconArrowsMaximize, IconArrowsMinimize } from '@tabler/icons-react';
 import sortBy from 'lodash-es/sortBy';
-import dynamic from 'next/dynamic';
-import { FC, useCallback, useMemo, useState } from 'react';
+import { FC, lazy, Suspense, useCallback, useMemo, useState } from 'react';
 import { DialAppConfigurationModal } from './DialAppConfigurationModal';
 
-const DialJsonEditor = dynamic(async () => (await LazyDialJsonEditor()).DialJsonEditor, {
-  ssr: false,
-});
+const DialJsonEditor = lazy(async () => ({
+  default: (await LazyDialJsonEditor()).DialJsonEditor,
+}));
 interface AgentsAndToolsetsFieldProps {
   agentsAndToolsets: QuickApp2Form['agentsAndToolsets'];
   agentsAndToolsetsJson: string;
@@ -205,12 +203,14 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
               </div>
             )}
             <div style={{ height: isFullscreen ? 'calc(100% - 80px)' : '300px' }}>
-              <DialJsonEditor
-                value={agentsAndToolsetsJson}
-                onChange={(val) => onJsonChange(val ?? '')}
-                currentTheme={editorMonacoTheme}
-                options={{ readOnly: readonly, automaticLayout: true }}
-              />
+              <Suspense fallback={null}>
+                <DialJsonEditor
+                  value={agentsAndToolsetsJson}
+                  onChange={(val) => onJsonChange(val ?? '')}
+                  currentTheme={editorMonacoTheme}
+                  options={{ readOnly: readonly, automaticLayout: true }}
+                />
+              </Suspense>
             </div>
             {(editorError ?? jsonError) && (
               <p className="dial-tiny-text text-error">{editorError ?? jsonError}</p>

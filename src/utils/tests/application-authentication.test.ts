@@ -1,34 +1,32 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
 import { fetchApplicationRequiresAuthentication } from '../dialClient';
 
-vi.mock('../handle-unauthorized-response', () => ({ handleUnauthorizedResponse: () => false }));
-afterEach(() => vi.unstubAllGlobals());
+const { listExternalServices } = vi.hoisted(() => ({
+  listExternalServices: vi.fn(),
+}));
+
+vi.mock('@/utils/chat-api-client', () => ({
+  externalServicesApi: { listExternalServices },
+}));
+
 describe('application authentication metadata', () => {
-  it.each(['API_KEY', 'OAUTH', 'DIAL_NATIVE'])(
-    'recognizes %s from the selected application',
-    async (authenticationType) => {
-      const fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          external_services: {
-            service: { auth_settings: { authentication_type: authenticationType } },
-          },
-        }),
-      });
-      vi.stubGlobal('fetch', fetch);
-      expect(await fetchApplicationRequiresAuthentication('applications/public/My agent')).toBe(
-        true,
-      );
-      expect(fetch).toHaveBeenCalledWith(
-        '/api/dial/openai/applications/applications/public/My%20agent',
-      );
-    },
-  );
-  it.each([
-    {},
-    { external_services: { public: { auth_settings: { authentication_type: 'NONE' } } } },
-  ])('does not require credentials for unauthenticated applications', async (application) => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => application }));
-    expect(await fetchApplicationRequiresAuthentication('agent')).toBe(false);
+  it('returns false when the application has no external services', async () => {
+    listExternalServices.mockResolvedValueOnce([]);
+    expect(await fetchApplicationRequiresAuthentication('applications/public/My agent')).toBe(
+      false,
+    );
+    // Re-encoded to chat-api's canonical id form (space -> %20) before being
+    // used as a path parameter — confirmed against a real working
+    // PATCH /applications/{applicationName} request/response pair whose
+    // response `id` field itself contains a literal `%20`, not a real space.
+    expect(listExternalServices).toHaveBeenCalledWith({
+      appId: 'applications/public/My%20agent',
+    });
+  });
+
+  it('returns true when the application has at least one external service', async () => {
+    listExternalServices.mockResolvedValueOnce([{ id: 'finhub-api', authenticationType: 'OAUTH' }]);
+    expect(await fetchApplicationRequiresAuthentication('applications/public/My agent')).toBe(true);
   });
 });

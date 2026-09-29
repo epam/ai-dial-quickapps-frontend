@@ -1,4 +1,3 @@
-'use client';
 import React, { useCallback } from 'react';
 import { getEntityNameFromId, getVersionFromId } from '@/utils/api';
 import { getEntityStatus } from '@/utils/get-entity-status';
