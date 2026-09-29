@@ -63,7 +63,17 @@ if (!chatApiDir) {
   process.exit(1);
 }
 
-const resolvedChatApiDir = path.resolve(chatApiDir);
+// Normalize a git-bash/WSL-style absolute path (/c/foo/bar) to a native
+// Windows one (C:/foo/bar) before resolving — Node's own path.resolve
+// doesn't do this translation, so on Windows a leading `/c/...` otherwise
+// gets treated as "root of the current drive" and resolves to something
+// like C:\c\foo\bar instead of C:\foo\bar.
+const normalizedChatApiDir =
+  process.platform === 'win32'
+    ? chatApiDir.replace(/^\/([a-zA-Z])(\/|$)/, '$1:$2')
+    : chatApiDir;
+
+const resolvedChatApiDir = path.resolve(normalizedChatApiDir);
 if (!fs.existsSync(path.join(resolvedChatApiDir, 'package.json'))) {
   console.error(
     `[chat-api:local] ${ENV_LOCAL_VAR} (${resolvedChatApiDir}) doesn't look like an ai-dial-chat checkout — no package.json there.`,
