@@ -10,8 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Migrated the app to a different tech stack: it's no longer a Next.js app with its own
 `next-auth`-based BFF and API routes. It's now a plain Vite-built React SPA (no server code of
 its own) served directly by [chat-api](https://github.com/epam/ai-dial-chat)'s own server, which
-also now owns auth and every DIAL entity call. See `docs/TRANSITION_PLAN.md` for the full
-rationale and rollout detail.
+also now owns auth and every DIAL entity call.
 
 ### ⚠ BREAKING CHANGES — must read before deploying this version
 

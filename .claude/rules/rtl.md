@@ -9,7 +9,7 @@ All UI must support Arabic (`ar`) and any other right-to-left locale. The active
 
 ## Direction attribute
 
-The `<html>` element's `dir` attribute must be set dynamically — in this Vite SPA, from `src/components/I18nProvider.tsx` (mounted in `src/main.tsx`), not a Next.js `layout.tsx` (removed in `docs/TRANSITION_PLAN.md` Phase 2). When the active language is RTL (Arabic `ar`, Hebrew `he`, Persian `fa`, Urdu `ur`), set `dir="rtl"`; otherwise `dir="ltr"`. Never hardcode `dir` or `lang` as static HTML attributes.
+The `<html>` element's `dir` attribute must be set dynamically — in this Vite SPA, from `src/components/I18nProvider.tsx` (mounted in `src/main.tsx`). When the active language is RTL (Arabic `ar`, Hebrew `he`, Persian `fa`, Urdu `ur`), set `dir="rtl"`; otherwise `dir="ltr"`. Never hardcode `dir` or `lang` as static HTML attributes.
 
 ## Tailwind: logical over physical
 

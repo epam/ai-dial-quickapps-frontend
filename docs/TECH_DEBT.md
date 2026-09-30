@@ -1,8 +1,17 @@
 ## List of known pending improvements:
 
-- [] Use typescript-sdk for call to Core instead of hardcoded endpoints
+- [x] Use typescript-sdk for call to Core instead of hardcoded endpoints
 - [x] Add OpenSpec and start using SDD. `openspec/` is initialised (see `openspec/config.yaml`, `AGENTS.md`'s "Spec-driven development" section) and new work now starts from a spec change. Coverage of old functionality is still in progress — only `host-integration` and `auth` are written so far; see the candidates list below for what's left.
-- [] Test coverage - now it's not checked, targets are not set. And it's probably is low, there are very few tests in the repo, not covering even main logic.
+- [] Test coverage - `@vitest/coverage-v8` is wired up (`vitest.config.ts`), enforced by `npm test`
+  (now runs with `--coverage`, so it fails the build below threshold — use `npm run test:watch` for
+  a plain watch-mode run without coverage) across all of `src/**/*.{ts,tsx}`. The thresholds are
+  set to the real baseline as of 2026-09-30 (~15% statements, ~7% branches, ~5% functions, ~16%
+  lines) with `autoUpdate: true`, so they ratchet up automatically whenever coverage improves and
+  the build only fails on a regression, not on the size of the remaining gap. **70% is the actual
+  goal, not the current threshold** — most of `components/`, `context/`, and `form/` have no tests
+  at all. Once the auto-updated numbers get close to 70%, raise the long-term target itself (this
+  item) accordingly. Closing the gap is still open work; see `openspec/specs/` /
+  `openspec/changes/` for tracking individual pieces of it as they're picked up.
 - [] react-hook-form usage - should get rid of it
 - [] need to review components, some seem to be unnecessary, e.g. AgentSkillsField just proxy SkillsSelectors
 - [] ...

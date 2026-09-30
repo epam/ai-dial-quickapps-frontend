@@ -3,19 +3,36 @@ node_modules
 .next
 .DS_Store
 *.log
+*.tsbuildinfo
 
-# Environment / secrets
-.env
-.env.local
+# Environment / secrets — everything except the checked-in template, so a
+# real .env, .env.local, .env.docker, .env.local.bak, etc. never end up in
+# the build context (mirrors .gitignore's own env-file pattern).
+.env*
+!.env.template
 
 # Editor / IDE
 .vscode
 .idea
 
-# Test / build outputs
+# Test / build outputs — all rebuilt inside the image, no need to ship a
+# stale local copy into the build context.
 coverage
 test-results
 e2e
+dist
+build
+
+# Tooling / docs — not read by `npm ci`/`npm run build`
+.claude
+.codemie
+.github
+.mcp.json
+.ort.yml
+.trivyignore
+docs
+openspec
+*.md
 
 # Git
 .git

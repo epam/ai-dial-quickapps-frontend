@@ -37,9 +37,8 @@ export const useAuth = (provider: string) => {
 
   // chat-api's login/callback flow is a plain full-page redirect with no
   // postMessage handshake — IdP login pages can set COOP headers that sever
-  // window.opener unpredictably (see docs/TRANSITION_PLAN.md §2.3 and
-  // ai-dial-chat's useOverlayExternalLogin). Poll our own session instead of
-  // waiting on a message from the popup.
+  // window.opener unpredictably (see ai-dial-chat's useOverlayExternalLogin).
+  // Poll our own session instead of waiting on a message from the popup.
   useEffect(() => {
     if (!isWindowOpen) return;
 

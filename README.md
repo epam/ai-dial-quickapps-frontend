@@ -1,66 +1,72 @@
 # Quick Apps Frontend
 
 A static single-page React app for the QuickApp2 settings editor, built with Vite and served by
-[chat-api](https://github.com/epam/ai-dial-chat)'s own server (see `docs/TRANSITION_PLAN.md`
-Phase 2 — this app has no server-side code of its own). Designed to be embedded as an `<iframe>`
-inside `ai-dial-chat` and communicate with the host via `postMessage`.
+[chat-api](https://github.com/epam/ai-dial-chat)'s own server — this app has no server-side code
+of its own. Designed to be embedded as an `<iframe>` inside `ai-dial-chat` and communicate with
+the host via `postMessage`.
 
 ## Development
 
 ```bash
 npm install
-npm run dev
+npm start
 ```
 
-`npm run dev` starts the Vite dev server on `http://localhost:4600` and proxies `/api/*` to a
+`npm start` starts the Vite dev server on `http://localhost:4600` and proxies `/api/*` to a
 chat-api instance running locally on `http://localhost:5000` (see `vite.config.ts`). Start that
-backend with `npm run docker:run:backend` (runs the published chat-api image directly, on 5000,
-reading env from `.env.example` — see [Configuration](#configuration) for what to put in it), or
-with `npm run start:api:dev` (runs a local chat-api checkout instead — see
-[Running chat-api from a local checkout](#running-chat-api-from-a-local-checkout)), then
-`npm run dev` in another terminal for a live-reloading frontend against a real backend.
+backend with `npm run start:api:dev` (runs chat-api from a local checkout — see
+[Running chat-api from a local checkout](#running-chat-api-from-a-local-checkout)), then `npm start`
+in another terminal for a live-reloading frontend against a real backend.
 
 ## Commands
 
-| Command                      | Description                                                                                              |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `npm run dev`                | Start the Vite dev server (hot-reloading frontend only — see above for the backend)                      |
-| `npm run build`              | Type-check and build                                                                                     |
-| `npm run lint`               | Run ESLint                                                                                               |
-| `npm test`                   | Run the test suite                                                                                       |
-| `npm run docker:build`       | Build this repo's own Docker image (frontend + chat-api, see [Docker build](#docker-build))              |
-| `npm run docker:run`         | Run that locally-built image                                                                             |
-| `npm run docker:run:dist`    | Rebuild `dist/` and run it mounted into the published chat-api image — faster than a full `docker:build` |
-| `npm run docker:run:backend` | Run just the published chat-api image, for pairing with `npm run dev`'s live frontend (see above)        |
-| `npm run start:api:dev`      | Run chat-api from a local checkout instead of a Docker image (see below)                                 |
+| Command                 | Description                                                                       |
+| ------------------------ | ---------------------------------------------------------------------------------- |
+| `npm start`              | Start the Vite dev server (hot-reloading frontend only — see above for the backend) |
+| `npm run start:api:dev`  | Run chat-api from a local checkout instead of a Docker image (see below)          |
+| `npm run build`          | Type-check and build                                                              |
+| `npm run preview`        | Preview the production build locally                                              |
+| `npm run lint`           | Run ESLint                                                                        |
+| `npm test`               | Run the test suite with coverage (fails below the 70% threshold — see [Test coverage](#test-coverage)) |
+| `npm run test:watch`     | Run the test suite in watch mode, without coverage                               |
+| `npm run typecheck`      | Type-check only (no build)                                                        |
+| `npm run format`         | Format the repo with Prettier                                                     |
+| `npm run format:check`   | Check formatting without writing changes                                          |
+| `npm run docker:run`     | Rebuild `dist/` and run it mounted into the published chat-api image (see below)  |
 
-## Docker build
+## Docker
 
 The root `Dockerfile` builds this app's static assets and layers them onto a published chat-api
-image (`CHAT_API_IMAGE` build arg — see the Dockerfile for the exact tag to pin). From the project
-root:
+image (`CHAT_API_IMAGE` build arg — see the Dockerfile for the exact tag to pin). It isn't wired to
+an npm script; build and run it directly when you need a real deployable image:
 
 ```bash
-npm run docker:build
-cp .env.template .env.example   # fill in values — see Configuration below
-npm run docker:run
+docker build --platform=linux/amd64 -t quickapps-frontend .   # image is amd64-only
+docker run --rm -p 5000:5000 --env-file .env quickapps-frontend
 ```
 
-(`npm run docker:run`/`docker:run:dist`/`docker:run:backend` all read `.env.example` — edit those
-scripts in `package.json` if you'd rather use a different filename.) The image is amd64-only
-(`docker:build` already passes `--platform=linux/amd64`, needed on ARM hosts). App will be
-available at http://localhost:4600 — the image's default `PORT` (see the Dockerfile) matches this
-app's own Vite dev port, so the URL is the same whether you're running `npm run dev` or this built
-image.
+For faster local iteration, `npm run docker:run` (see `scripts/docker-run-dist.mjs`) skips the
+full image build: it rebuilds `dist/`, pulls the published chat-api image (default
+`ghcr.io/epam/ai-dial-chat:development`, override with
+`CHAT_API_IMAGE=ghcr.io/epam/ai-dial-chat:<tag> npm run docker:run`), and mounts `dist/` straight
+into it, reading env from `.env.docker` (copy `.env.template` to `.env.docker` and fill in values —
+see [Configuration](#configuration)). It publishes on `http://localhost:4600` to match this app's
+own Vite dev port.
 
-For faster iteration without a full image build, `npm run docker:run:dist` rebuilds `dist/` and
-mounts it straight into the published chat-api image (see `scripts/docker-run-dist.mjs`) —
-override the image tag with `CHAT_API_IMAGE=ghcr.io/epam/ai-dial-chat:<tag> npm run docker:run:dist`.
+## Test coverage
+
+`npm test` runs the full suite through `@vitest/coverage-v8` across every file under
+`src/**/*.{ts,tsx}` (see `vitest.config.ts`) and fails the build if coverage drops — so it doubles
+as the CI gate. The thresholds aren't 70% yet: they're pinned to the real current baseline (well
+below that — see `docs/TECH_DEBT.md`'s "Test coverage" item for the latest numbers and what's
+still untested) with `autoUpdate: true`, so they ratchet up automatically as tests are added and
+only fail the build on an actual regression, not on the size of the remaining gap to 70%. Use
+`npm run test:watch` for a fast watch-mode loop without the coverage overhead while writing tests.
 
 ## Running chat-api from a local checkout
 
 If you have your own local checkout of [ai-dial-chat](https://github.com/epam/ai-dial-chat) and
-want to work on this app and chat-api together (both live-reloading — this app via `npm run dev`,
+want to work on this app and chat-api together (both live-reloading — this app via `npm start`,
 chat-api via its own watch mode), `npm run start:api:dev` (see
 `scripts/run-chat-api-local.mjs`) runs chat-api's `npm run start:api` directly from that checkout
 instead of pulling and running a Docker image.
@@ -70,43 +76,45 @@ It reads this repo's own `.env.local` (create one if you don't have it — it's 
 - `CHAT_API_LOCAL_DIR` — absolute path to your local ai-dial-chat checkout, e.g.
   `CHAT_API_LOCAL_DIR=/c/projects/dial/ai-dial-chat`.
 - Every other variable chat-api itself needs at runtime (`PORT`, `DIAL_CORE_URL`, `AUTH_*`, ...,
-  same set `.env.template` documents for the Docker path) — these are passed straight through as
-  chat-api's own env. Set `PORT=5000` to match `vite.config.ts`'s dev-server proxy target.
+  same set `.env.template` documents) — these are passed straight through as chat-api's own env.
+  Set `PORT=5000` to match `vite.config.ts`'s dev-server proxy target.
 
 Then, in separate terminals:
 
 ```bash
 npm run start:api:dev   # chat-api from your local checkout, on 5000
-npm run dev              # this app, on 4600, proxying /api/* to it
+npm start                # this app, on 4600, proxying /api/* to it
 ```
 
 ## Configuration
 
-The Docker image built from this repo (see [Docker build](#docker-build)) is chat-api's own
-server with this app's static build layered on top (`docs/TRANSITION_PLAN.md` Phase 2) — this
-app has no server-side code or build-time env vars of its own, but the **running container**
-still needs chat-api's own runtime configuration to actually work, same as any other chat-api
-deployment. Copy `.env.template` to `.env` and fill in values; `docs/TRANSITION_PLAN.md`
-Appendix B has the full old-to-new mapping from this app's former standalone-Next.js setup, for
-context on why these are named the way they are.
+The Docker image built from this repo (see [Docker](#docker)) is chat-api's own server with this
+app's static build layered on top — this app has no server-side code or build-time env vars of its
+own, but the **running container** still needs chat-api's own runtime configuration to actually
+work, same as any other chat-api deployment. Copy `.env.template` to `.env` (or `.env.docker`/
+`.env.local`, depending on how you're running it — see above) and fill in values.
+
+The tables below cover the variables this app's deployment actually relies on; for the full list
+of everything chat-api itself accepts, see
+[chat-api's own README](https://github.com/epam/ai-dial-chat/blob/development/apps/chat-api/README.md#environment-variables).
 
 ### Server
 
 | Variable     | Required | Default | Description                                                                                                                                                     |
 | ------------ | :------: | :-----: | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PORT`       |    No    | `4600`  | Port the server listens on. Defaults to this app's own Vite dev port (see `vite.config.ts`) so the URL is consistent between `npm run dev` and the built image. |
+| `PORT`       |    No    | `4600`  | Port the server listens on. Defaults to this app's own Vite dev port (see `vite.config.ts`) so the URL is consistent between `npm start` and the built image.  |
 | `API_PREFIX` |    No    |  `api`  | Path prefix for the API and health-check routes.                                                                                                                |
 
 ### DIAL core
 
 | Variable        | Required | Description                                                     |
-| --------------- | :------: | --------------------------------------------------------------- |
+| --------------- | :------: | ----------------------------------------------------------------- |
 | `DIAL_CORE_URL` |   Yes    | Base URL of the DIAL Core API, e.g. `https://core.example.com`. |
 
 ### Auth: session
 
 | Variable                       | Required | Description                                                                                                                                                                          |
-| ------------------------------ | :------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ------------------------------- | :------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `AUTH_SESSION_SECRET`          |   Yes    | 64 hex characters, used to sign/encrypt the session cookie. Generate with e.g. `openssl rand -hex 32`.                                                                               |
 | `AUTH_SESSION_PREV_SECRET`     |    No    | Previous session secret, for zero-downtime rotation — sessions signed with either secret are accepted while both are set.                                                            |
 | `AUTH_CALLBACK_BASE_URL`       |   Yes    | This app's own origin, e.g. `https://quickapps.example.com`. The popup sign-in's `callbackUrl` must be on this origin.                                                               |
@@ -120,11 +128,11 @@ context on why these are named the way they are.
 `431 Request Header Fields Too Large` on the sign-in redirect (or any request) means the browser
 is sending more cookie data for this origin than the server's header-size limit allows. It shows
 up when this app (or a build of it) has previously run on the same host under a different cookie
-setup — most commonly, a pre-migration deployment that used next-auth's own `chat.*`/`next-auth.*`
-cookie names on `localhost:4600` (or the same production host) before this app's chat-api-based
-auth (with its own `AUTH_SESSION_COOKIE_NAME`/`AUTH_TRANSACTION_COOKIE_NAME`) took over — the
-browser keeps sending both the old and new cookies on every request, and their combined size
-eventually exceeds the limit.
+setup — most commonly, a next-auth-based deployment that used `chat.*`/`next-auth.*` cookie names
+on `localhost:4600` (or the same production host) before this app's chat-api-based auth (with its
+own `AUTH_SESSION_COOKIE_NAME`/`AUTH_TRANSACTION_COOKIE_NAME`) took over — the browser keeps
+sending both the old and new cookies on every request, and their combined size eventually exceeds
+the limit.
 
 **Local dev fix:** clear cookies for `localhost:4600` (or whatever host you're testing) in the
 browser, then retry.
@@ -134,9 +142,9 @@ rejected for being oversized _before_ the server parses it far enough to run any
 cookie-clearing logic — the fix has to happen on the next request, not the failing one. Two
 things reduce the risk instead:
 
-- Set `AUTH_LEGACY_COOKIE_NAMES` to the exact old cookie names being retired on that host (e.g.
-  next-auth's defaults) so chat-api actively expires them on the first request that _does_ get
-  through, rather than letting them accumulate indefinitely.
+- Set `AUTH_LEGACY_COOKIE_NAMES` to the exact old cookie names being retired on that host so
+  chat-api actively expires them on the first request that _does_ get through, rather than
+  letting them accumulate indefinitely.
 - Give the reverse proxy/load balancer in front of chat-api some header-size headroom above the
   default (e.g. nginx's `large_client_header_buffers`, or Node's own
   `--max-http-header-size`) as a safety margin — this doesn't fix stale cookies, but it buys
@@ -155,7 +163,7 @@ concrete example — see chat-api's own documentation for every supported provid
 variable names.
 
 | Variable                  | Required | Description                                                                                                                                                                                                                |
-| ------------------------- | :------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| -------------------------- | :------: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `AUTH_KEYCLOAK_HOST`      |    †     | Keycloak realm base URL, e.g. `https://keycloak.example.com/realms/dial`.                                                                                                                                                  |
 | `AUTH_KEYCLOAK_CLIENT_ID` |    †     | OAuth client id registered for this app in that realm.                                                                                                                                                                     |
 | `AUTH_KEYCLOAK_SECRET`    |    †     | That client's secret. **Never commit a real value** — this is the one variable in this table you should treat as sensitive and set out-of-band (e.g. `docker run -e`, a secrets manager), not in a checked-in `.env` file. |
@@ -167,38 +175,38 @@ as that client's redirect URI.
 ### Themes
 
 | Variable            | Required | Default | Description                                                                                                     |
-| ------------------- | :------: | ------- | --------------------------------------------------------------------------------------------------------------- |
+| -------------------- | :------: | ------- | ------------------------------------------------------------------------------------------------------------------ |
 | `THEMES_CONFIG_URL` |    No    | —       | Base URL for DIAL themes; chat-api appends `/config.json` itself. Falls back to CSS variable defaults if unset. |
 
 ### Iframe embedding
 
 | Variable                 | Required | Default | Description                                                                                                                                                                                                     |
-| ------------------------ | :------: | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ------------------------- | :------: | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ALLOWED_IFRAME_ORIGINS` |    No    | none    | Space-separated list of origins allowed to embed this app in an `<iframe>` (CSP `frame-ancestors`). Set to the exact admin/chat origin(s) in production.                                                        |
-| `OVERLAY_ENABLED`        |    No    | unset   | Leave unset (decided in Phase 0, item 2) unless the session cookie needs `SameSite=None` for a specific embedding scenario — turning it on is chat's own overlay-runtime flag, not a QuickApps-specific toggle. |
+| `OVERLAY_ENABLED`        |    No    | unset   | Leave unset unless the session cookie needs `SameSite=None` for a specific embedding scenario — turning it on is chat's own overlay-runtime flag, not a QuickApps-specific toggle.                             |
 
 ### Content Security Policy
 
 | Variable                  | Required | Default       | Description                                                                                                                                                             |
-| ------------------------- | :------: | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| -------------------------- | :------: | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CSP_MODE`                |    No    | `report-only` | Set to `enforce` only after confirming `report-only` produces no violation reports for this deployment — see [Content Security Policy](#content-security-policy) below. |
 | `ALLOWED_CONNECT_ORIGINS` |    No    | none          | Additional origins the page may `fetch`/`XHR` to, beyond its own. Leave empty — this app only ever calls its own origin.                                                |
 
 ### Default model
 
 | Variable             | Required | Description                                                                                                                               |
-| -------------------- | :------: | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| --------------------- | :------: | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `DEFAULT_DEPLOYMENT` |    No    | Deployment id pre-selected in the form when no model is stored in the app config. Returned to the client as `config.defaultDeploymentId`. |
 
 ### QuickApps-specific settings
 
 These don't map onto a native chat-api concept, so they travel inside `CUSTOM_CLIENT_VARIABLES`
-— a single JSON object (Phase 0, item 1), passed through untouched to the client via
-`GET /api/v1/client-config` (`src/utils/dialClient.ts`'s `fetchAppSettings`). Keys map 1:1 onto
-`AppSettings` (`src/types/dial-entities.ts`):
+— a single JSON object, passed through untouched to the client via `GET /api/v1/client-config`
+(`src/utils/dialClient.ts`'s `fetchAppSettings`). Keys map 1:1 onto `AppSettings`
+(`src/types/dial-entities.ts`):
 
 | Key               | Required | Description                                                                                                                                                                                        |
-| ----------------- | :------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ------------------ | :------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `allowedOrigin`   |    No    | Origin allowed to send/receive `postMessage` events with the editor iframe. Set to the exact `ai-dial-chat`/admin origin in production; `*` accepts any origin — unsafe outside local dev.         |
 | `dialAdminHost`   |    No    | Origin of the admin host this app is embedded in. Default target for `@epam/ai-dial-chat-visualizer-connector`.                                                                                    |
 | `dialChatHost`    |    No    | Origin of the `ai-dial-chat` host. Used instead of `dialAdminHost` when the app detects it's embedded directly inside chat (`document.location.ancestorOrigins[0]` matches this value).            |
@@ -216,29 +224,27 @@ to need.
 
 ## Authentication
 
-Auth is handled entirely by chat-api itself (see `docs/TRANSITION_PLAN.md` §2.3) — this app's
-own frontend code calls chat-api's `/api/v1/auth/*` endpoints same-origin
-(`credentials: 'include'`, CSRF token from the `/me` response echoed back on non-GET calls) and
-has no auth logic of its own. The **runtime environment** still needs the "Auth: session" and
-"Auth: identity provider" variables above, since that's chat-api's own auth configuration
-running inside the same container this app's build is shipped in.
+Auth is handled entirely by chat-api itself — this app's own frontend code calls chat-api's
+`/api/v1/auth/*` endpoints same-origin (`credentials: 'include'`, CSRF token from the `/me`
+response echoed back on non-GET calls) and has no auth logic of its own. The **runtime
+environment** still needs the "Auth: session" and "Auth: identity provider" variables above,
+since that's chat-api's own auth configuration running inside the same container this app's
+build is shipped in.
 
 ## API layer
 
 Every DIAL entity call (applications, deployments, toolsets, skills, files, user config, themes,
 client config) goes through the typed `@epam/ai-dial-chat-api-client` package against chat-api's
-`/api/v1/*` REST surface (see `docs/TRANSITION_PLAN.md` §2.4 and Appendix A for the full route
-mapping) — this app has no server-side proxy of its own. `src/utils/chat-api-client.ts` holds one
-shared `Configuration` (CSRF + credentials via `src/utils/chat-api-fetch.ts`, plus a 401
+`/api/v1/*` REST surface — this app has no server-side proxy of its own. `src/utils/chat-api-client.ts`
+holds one shared `Configuration` (CSRF + credentials via `src/utils/chat-api-fetch.ts`, plus a 401
 loop-breaker) that every typed API instance is built from.
 
 ## Content Security Policy
 
-CSP is enforced by chat-api's own server (Helmet), not by this app — see `docs/TRANSITION_PLAN.md`
-§2.6. This app's build carries a `__DIAL_CSP_NONCE__` placeholder on its built `<script>`/`<link
-rel="stylesheet">` tags (see `vite.config.ts`) for chat-api's nonce-based `CSP_MODE=enforce`
-policy, and bundles Monaco locally (`src/monaco-setup.ts`) instead of loading it from a CDN, since
-`script-src` has no CDN allowance.
+CSP is enforced by chat-api's own server (Helmet), not by this app. This app's build carries a
+`__DIAL_CSP_NONCE__` placeholder on its built `<script>`/`<link rel="stylesheet">` tags (see
+`vite.config.ts`) for chat-api's nonce-based `CSP_MODE=enforce` policy, and bundles Monaco locally
+(`src/monaco-setup.ts`) instead of loading it from a CDN, since `script-src` has no CDN allowance.
 
 ## postMessage protocol
 
@@ -254,7 +260,7 @@ document.querySelector('iframe').contentWindow.postMessage({ type: 'TRIGGER_SAVE
 **Host → iframe**
 
 | Message type        | Payload                                                                                     | Description                                                                                                                                                                                                                                                              |
-| ------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| -------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `TRIGGER_SAVE`      | `{ general?: { name: string; description?: string; iconUrl?: string; topics?: string[] } }` | Triggers a manual save. `general` carries the host's current General-step fields for an existing app so they're merged into this single save instead of a separate host-side write; omitted for Preview or for an app created in this session. Never includes `version`. |
 | `TRIGGER_AUTO_SAVE` | `{ ignoreDirty?: boolean }`                                                                 | Triggers an auto-save                                                                                                                                                                                                                                                    |
 | `RESET`             | —                                                                                           | Resets the form to the last saved state                                                                                                                                                                                                                                  |
@@ -264,7 +270,7 @@ In addition to host-triggered `TRIGGER_AUTO_SAVE` messages, the editor auto-save
 **Iframe → host**
 
 | Message type         | Payload                                 | Description                                                                                                   |
-| -------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| --------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
 | `READY`              | —                                       | Editor mounted; host should send `INIT`                                                                       |
 | `DIRTY_STATE`        | `{ isDirty: boolean }`                  | Form dirty state changed                                                                                      |
 | `SAVE_SUCCESS`       | `{ updatedApp }`, `hasChanges: boolean` | Save completed successfully; `hasChanges` is `true` if any user-editable field changed versus a no-op re-save |
@@ -284,11 +290,3 @@ including API keys, OAuth and DIAL-native offline consent. No credentials are pa
 this editor or saved in the Quick app configuration. Closing the host dialog preserves
 unsaved transport settings. Older hosts do not advertise the query parameter, so this
 action is hidden there.
-
-> **Known regression (§2.4):** the per-selected-application metadata load this section
-> describes (`fetchApplicationRequiresAuthentication` in `src/utils/dialClient.ts`) has no
-> chat-api equivalent — `ApplicationDetailsDto` carries nothing corresponding to Core's raw
-> `external_services` map. That function is currently a stub that always returns `false`, so
-> **the credentials action described above never appears**, regardless of whether the
-> selected application actually needs one. Flagged for follow-up with the ai-dial-chat team;
-> see `docs/TRANSITION_PLAN.md` §2.4.
