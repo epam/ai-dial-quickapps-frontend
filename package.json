@@ -64,7 +64,7 @@
   },
   "overrides": {
     "sharp": "0.35.4",
-    "brace-expansion": "^2.1.4",
+    "brace-expansion": "^2.1.7",
     "ip-address": "10.3.1"
   }
 }
