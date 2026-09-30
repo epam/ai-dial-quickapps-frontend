@@ -16,7 +16,7 @@ npm run dev
 chat-api instance running locally on `http://localhost:5000` (see `vite.config.ts`). Start that
 backend with `npm run docker:run:backend` (runs the published chat-api image directly, on 5000,
 reading env from `.env.example` — see [Configuration](#configuration) for what to put in it), or
-with `npm run chat-api:local` (runs a local chat-api checkout instead — see
+with `npm run start:api:dev` (runs a local chat-api checkout instead — see
 [Running chat-api from a local checkout](#running-chat-api-from-a-local-checkout)), then
 `npm run dev` in another terminal for a live-reloading frontend against a real backend.
 
@@ -32,7 +32,7 @@ with `npm run chat-api:local` (runs a local chat-api checkout instead — see
 | `npm run docker:run`         | Run that locally-built image                                                                             |
 | `npm run docker:run:dist`    | Rebuild `dist/` and run it mounted into the published chat-api image — faster than a full `docker:build` |
 | `npm run docker:run:backend` | Run just the published chat-api image, for pairing with `npm run dev`'s live frontend (see above)        |
-| `npm run chat-api:local`     | Run chat-api from a local checkout instead of a Docker image (see below)                                 |
+| `npm run start:api:dev`      | Run chat-api from a local checkout instead of a Docker image (see below)                                 |
 
 ## Docker build
 
@@ -61,7 +61,7 @@ override the image tag with `CHAT_API_IMAGE=ghcr.io/epam/ai-dial-chat:<tag> npm 
 
 If you have your own local checkout of [ai-dial-chat](https://github.com/epam/ai-dial-chat) and
 want to work on this app and chat-api together (both live-reloading — this app via `npm run dev`,
-chat-api via its own watch mode), `npm run chat-api:local` (see
+chat-api via its own watch mode), `npm run start:api:dev` (see
 `scripts/run-chat-api-local.mjs`) runs chat-api's `npm run start:api` directly from that checkout
 instead of pulling and running a Docker image.
 
@@ -76,7 +76,7 @@ It reads this repo's own `.env.local` (create one if you don't have it — it's 
 Then, in separate terminals:
 
 ```bash
-npm run chat-api:local   # chat-api from your local checkout, on 5000
+npm run start:api:dev   # chat-api from your local checkout, on 5000
 npm run dev              # this app, on 4600, proxying /api/* to it
 ```
 

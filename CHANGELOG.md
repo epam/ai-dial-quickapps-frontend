@@ -21,35 +21,59 @@ Next.js server), and **every runtime environment variable sets for this app has 
 and the exact variable table are in `README.md` → Configuration and
 `docs/TRANSITION_PLAN.md` → Appendix A/B; summary below.
 
-- **Removed:** `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `ALLOWED_FRAME_ANCESTORS`,
-  `QUICK_APPS_DEFAULT_MODEL`, `CODE_INTERPRETER_ENABLED`, `WEB_FETCH_ENABLED`,
-  `ADD_ATTACHMENT_ENABLED`, `ALLOWED_ORIGIN`, `DIAL_ADMIN_URL`, `DIAL_CHAT_URL`,
-  `QUICK_APPS_APPLICATION_NAME`.
-- **Renamed (same purpose, new name):**
-  - `NEXTAUTH_SECRET` → `AUTH_SESSION_SECRET` (64 hex chars; `AUTH_SESSION_PREV_SECRET` for rotation)
-  - `NEXTAUTH_URL` → `AUTH_CALLBACK_BASE_URL` (also drives `CORS_ORIGIN`, set separately)
-  - `THEMES_URL` → `THEMES_CONFIG_URL`
-  - `ALLOWED_FRAME_ANCESTORS` → `ALLOWED_IFRAME_ORIGINS`
-  - `QUICK_APPS_DEFAULT_MODEL` → `DEFAULT_DEPLOYMENT`
-  - `CODE_INTERPRETER_ENABLED` / `WEB_FETCH_ENABLED` / `ADD_ATTACHMENT_ENABLED` / `ALLOWED_ORIGIN` /
-    `DIAL_ADMIN_URL` / `DIAL_CHAT_URL` / `QUICK_APPS_APPLICATION_NAME` → folded into one JSON
-    object, `CUSTOM_CLIENT_VARIABLES` (same key names, camelCased, inside the JSON)
-  - Auth identity provider variables (`AUTH_<PROVIDER>_*`) — **names differ per provider and are
-    not a simple find/replace.** Confirmed so far: Keycloak's client secret variable is
-    `AUTH_KEYCLOAK_SECRET`, not the `AUTH_KEYCLOAK_CLIENT_SECRET` this project briefly documented.
-    Every other provider (Azure AD, Google, Auth0, Okta, Cognito, GitLab) still needs to be
-    verified against a live deployment before trusting its exact variable names — check
-    `docs/TRANSITION_PLAN.md` Appendix B's "Confirmed corrections" table for the latest state.
-- **New, required:** `CORS_ORIGIN`, `DIAL_CORE_URL` (was already required, now under this name
-  directly rather than proxied).
-- **New, optional but likely wanted:** `AUTH_SESSION_COOKIE_NAME` / `AUTH_TRANSACTION_COOKIE_NAME`
-  (rename away from chat-api's own `chat.*` defaults, e.g. `__Host-quickapps.sess` /
-  `__Host-quickapps.tx`), `AUTH_LEGACY_COOKIE_NAMES` (list the old next-auth cookie names here so
-  they get actively expired — see the `HTTP ERROR 431` known issue in `README.md` if this isn't
-  set), `CSP_MODE` (defaults to `report-only`), `ALLOWED_CONNECT_ORIGINS`.
-- **Port default changed:** this image now defaults to `PORT=4600` (matching this app's own Vite
-  dev port) instead of chat-api's own default of `5000` — override with `-e PORT=...` if a
-  deployment expects a different port.
+Every variable below appears in exactly one of the categories that follow — check the old name
+against the "Renamed / consolidated" table first; if it's not there, it was never a standalone
+variable pre-1.0.0.
+
+- **Renamed / consolidated** — old variable still has an equivalent, but under a new name or
+  nested inside a JSON blob:
+
+  | Old variable                  | New location                                                                  |
+  | ----------------------------- | ----------------------------------------------------------------------------- |
+  | `NEXTAUTH_SECRET`             | `AUTH_SESSION_SECRET` (64 hex chars; `AUTH_SESSION_PREV_SECRET` for rotation) |
+  | `NEXTAUTH_URL`                | `AUTH_CALLBACK_BASE_URL` (also drives `CORS_ORIGIN`, set separately)          |
+  | `THEMES_URL`                  | `THEMES_CONFIG_URL`                                                           |
+  | `ALLOWED_FRAME_ANCESTORS`     | `ALLOWED_IFRAME_ORIGINS`                                                      |
+  | `QUICK_APPS_DEFAULT_MODEL`    | `DEFAULT_DEPLOYMENT`                                                          |
+  | `CODE_INTERPRETER_ENABLED`    | `CUSTOM_CLIENT_VARIABLES.codeInterpreterEnabled` (JSON)                       |
+  | `WEB_FETCH_ENABLED`           | `CUSTOM_CLIENT_VARIABLES.webFetchEnabled` (JSON)                              |
+  | `ADD_ATTACHMENT_ENABLED`      | `CUSTOM_CLIENT_VARIABLES.addAttachmentEnabled` (JSON)                         |
+  | `ALLOWED_ORIGIN`              | `CUSTOM_CLIENT_VARIABLES.allowedOrigin` (JSON)                                |
+  | `DIAL_ADMIN_URL`              | `CUSTOM_CLIENT_VARIABLES.dialAdminHost` (JSON)                                |
+  | `DIAL_CHAT_URL`               | `CUSTOM_CLIENT_VARIABLES.dialChatHost` (JSON)                                 |
+  | `QUICK_APPS_APPLICATION_NAME` | `CUSTOM_CLIENT_VARIABLES.applicationName` (JSON)                              |
+
+  The last six are folded into one JSON object env var, `CUSTOM_CLIENT_VARIABLES`, with the same
+  meaning as before, just camelCased and nested (field names as read by `readCustomVariables` in
+  `src/utils/dialClient.ts`).
+
+- **Auth identity provider variables (`AUTH_<PROVIDER>_*`)** — not covered by the table above and
+  **not** a simple find/replace on the old `NEXTAUTH_*` provider variables; the per-provider
+  suffix changed inconsistently:
+
+  | Old variable                  | New variable           |
+  | ----------------------------- | ---------------------- |
+  | `AUTH_AUTH0_ISSUER`           | `AUTH_AUTH0_HOST`      |
+  | `AUTH_AUTH0_CLIENT_SECRET`    | `AUTH_AUTH0_SECRET`    |
+  | `AUTH_KEYCLOAK_ISSUER`        | `AUTH_KEYCLOAK_HOST`   |
+  | `AUTH_KEYCLOAK_CLIENT_SECRET` | `AUTH_KEYCLOAK_SECRET` |
+  | `AUTH_AZURE_AD_CLIENT_SECRET` | `AUTH_AZURE_AD_SECRET` |
+
+  For Google, Okta, Cognito, and GitLab, check `docs/TRANSITION_PLAN.md` Appendix B's "Confirmed
+  corrections" table for the current variable names.
+
+- **New** — did not exist pre-1.0.0:
+
+  | Variable                       | Required? | Notes                                                                                                                                         |
+  | ------------------------------ | --------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `CORS_ORIGIN`                  | Yes       | —                                                                                                                                             |
+  | `DIAL_CORE_URL`                | Yes       | Was already required, but previously proxied rather than read directly from this name                                                         |
+  | `AUTH_POST_LOGOUT_REDIRECT_URI`| Yes       | Should be set to the same value as `CORS_ORIGIN` and `AUTH_CALLBACK_BASE_URL`                                                                  |
+  | `AUTH_SESSION_COOKIE_NAME`     | No        | Rename away from chat-api's own `chat.*` default, e.g. `__Host-quickapps.sess`                                                                |
+  | `AUTH_TRANSACTION_COOKIE_NAME` | No        | Rename away from chat-api's own `chat.*` default, e.g. `__Host-quickapps.tx`                                                                  |
+  | `AUTH_LEGACY_COOKIE_NAMES`     | No        | List the old next-auth cookie names here so they get actively expired — see the `HTTP ERROR 431` known issue in `README.md` if this isn't set |
+  | `CSP_MODE`                     | No        | Defaults to `report-only`                                                                                                                     |
+  | `ALLOWED_CONNECT_ORIGINS`      | No        | External connection origins permitted by CSP                                                                                                  |
 
 ## [0.2.0] - 2026-09-16
 
