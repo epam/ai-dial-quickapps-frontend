@@ -3,9 +3,9 @@ import path from 'path';
 import { defineConfig, Plugin } from 'vite';
 
 /**
- * chat-api's stricter CSP (docs/TRANSITION_PLAN.md §2.6) can run in
- * `CSP_MODE=enforce`, a nonce-based `script-src`/`style-src` policy rather
- * than a blanket `'self'`. Stamp every built `<script>`/`<link
+ * chat-api's stricter CSP can run in `CSP_MODE=enforce`, a nonce-based
+ * `script-src`/`style-src` policy rather than a blanket `'self'`. Stamp
+ * every built `<script>`/`<link
  * rel="stylesheet">` tag with a literal `__DIAL_CSP_NONCE__` placeholder
  * (matching ai-dial-chat's own `tools/vite/csp-nonce.mjs` convention) —
  * chat-api's static file server is expected to replace it with a real
@@ -34,10 +34,8 @@ export default defineConfig({
   server: {
     port: 4600,
     proxy: {
-      // Points at the chat-api BFF this app will eventually run behind (see
-      // docs/TRANSITION_PLAN.md §2.1/§2.3/§2.4). Nothing listens here yet, so
-      // /api/* calls fail with a connection error until that lands — expected
-      // for now.
+      // Points at the chat-api BFF this app runs behind. Start it locally
+      // via `npm run start:api:dev` (or `npm run docker:run`) — see README.md.
       '/api': {
         target: 'http://localhost:5000',
         changeOrigin: true,

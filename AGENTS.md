@@ -1,8 +1,7 @@
 ## Architecture
 
 Single-page React 19 app built with Vite, no monorepo — a pure static SPA served by
-[chat-api](https://github.com/epam/ai-dial-chat)'s own server (see `docs/TRANSITION_PLAN.md`
-Phase 2). This app has no server-side code of its own: auth and every DIAL entity call go
+[chat-api](https://github.com/epam/ai-dial-chat)'s own server. This app has no server-side code of its own: auth and every DIAL entity call go
 through chat-api's `/api/v1/*` REST surface via the typed `@epam/ai-dial-chat-api-client`
 package (`src/utils/chat-api-client.ts`), not through a route handler in this repo. All source
 lives under `src/`:
@@ -26,13 +25,13 @@ Use the `@/*` path alias (resolves to `src/`) for all imports that would otherwi
 
 ## Commands
 
-- `npm run dev` — start development server
+- `npm start` — start development server
 - `npm run build` — type-check and build
 - `npm run lint` — run ESLint
 
 ## Spec-driven development (OpenSpec)
 
-This repo uses [OpenSpec](https://github.com/Fission-AI/OpenSpec) for spec-driven development. See `docs/TRANSITION_PLAN.md` (Phase 1) and `docs/TECH_DEBT.md` for why and the rollout status.
+This repo uses [OpenSpec](https://github.com/Fission-AI/OpenSpec) for spec-driven development. See `docs/TECH_DEBT.md` for why and the rollout status.
 
 - `openspec/config.yaml` — schema, repo context, and the "Specs organization" naming rules.
 - `openspec/specs/` — the current, agreed behaviour, one capability per folder. Written so far: `host-integration`, `auth`. Not every capability has a spec yet — `docs/TECH_DEBT.md`'s "OpenSpec spec creation candidates" list is the first place to check before adding a new spec-id.

@@ -16,6 +16,9 @@
 # vite
 /dist/
 
+# leftover cache from the pre-migration Next.js setup (this app is Vite-only now)
+/.next/
+
 # production
 /build
 

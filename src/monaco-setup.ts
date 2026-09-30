@@ -1,7 +1,7 @@
 // Configures @monaco-editor/react (and, transitively, every ui-kit component
 // that renders Monaco — JsonEditor, MarkdownEditor's JSON mode) to load
 // Monaco from this app's own bundle instead of the cdn.jsdelivr.net default.
-// Required for CSP `script-src 'self'` (docs/TRANSITION_PLAN.md §2.6) — the
+// Required for CSP `script-src 'self'` — the
 // loader and worker setup are process-wide singletons, so importing this
 // once at app startup (see main.tsx) covers every Monaco instance.
 import { loader } from '@monaco-editor/react';
