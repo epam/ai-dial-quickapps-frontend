@@ -4,7 +4,7 @@
 # in global scope for classic builders (no buildx/BuildKit).
 # Point it at a real, published release tag of ai-dial-chat (the "Packages" tab of
 # the epam/ai-dial-chat repo). Run `docker login ghcr.io` first if the package is private.
-ARG CHAT_API_IMAGE=ghcr.io/epam/ai-dial-chat
+ARG CHAT_API_IMAGE=ghcr.io/epam/ai-dial-chat:development
 
 # Pin exact Node (and, if needed for a security patch, npm) versions for reproducible builds.
 FROM node:24.17-alpine AS builder
