@@ -17,13 +17,9 @@ rationale and rollout detail.
 
 The Docker image is different (it's now `chat-api` + this app's static build, not a standalone
 Next.js server), and **every runtime environment variable sets for this app has changed**
-— old `.env`/deployment config for a pre-1.0.0 deployment will not work unchanged. Full details
-and the exact variable table are in `README.md` → Configuration and
-`docs/TRANSITION_PLAN.md` → Appendix A/B; summary below.
+— old `.env`/deployment config for a pre-1.0.0 deployment will not work unchanged.
 
-Every variable below appears in exactly one of the categories that follow — check the old name
-against the "Renamed / consolidated" table first; if it's not there, it was never a standalone
-variable pre-1.0.0.
+#### Environment variables changes
 
 - **Renamed / consolidated** — old variable still has an equivalent, but under a new name or
   nested inside a JSON blob:
@@ -44,12 +40,9 @@ variable pre-1.0.0.
   | `QUICK_APPS_APPLICATION_NAME` | `CUSTOM_CLIENT_VARIABLES.applicationName` (JSON)                              |
 
   The last six are folded into one JSON object env var, `CUSTOM_CLIENT_VARIABLES`, with the same
-  meaning as before, just camelCased and nested (field names as read by `readCustomVariables` in
-  `src/utils/dialClient.ts`).
+  meaning as before, just camelCased and nested.
 
-- **Auth identity provider variables (`AUTH_<PROVIDER>_*`)** — not covered by the table above and
-  **not** a simple find/replace on the old `NEXTAUTH_*` provider variables; the per-provider
-  suffix changed inconsistently:
+- **Auth identity provider variables (`AUTH_<PROVIDER>_*`)**
 
   | Old variable                  | New variable           |
   | ----------------------------- | ---------------------- |
@@ -59,21 +52,29 @@ variable pre-1.0.0.
   | `AUTH_KEYCLOAK_CLIENT_SECRET` | `AUTH_KEYCLOAK_SECRET` |
   | `AUTH_AZURE_AD_CLIENT_SECRET` | `AUTH_AZURE_AD_SECRET` |
 
-  For Google, Okta, Cognito, and GitLab, check `docs/TRANSITION_PLAN.md` Appendix B's "Confirmed
-  corrections" table for the current variable names.
+  If there were other providers configured, make similar changes.
 
 - **New** — did not exist pre-1.0.0:
 
-  | Variable                       | Required? | Notes                                                                                                                                         |
-  | ------------------------------ | --------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-  | `CORS_ORIGIN`                  | Yes       | —                                                                                                                                             |
-  | `DIAL_CORE_URL`                | Yes       | Was already required, but previously proxied rather than read directly from this name                                                         |
-  | `AUTH_POST_LOGOUT_REDIRECT_URI`| Yes       | Should be set to the same value as `CORS_ORIGIN` and `AUTH_CALLBACK_BASE_URL`                                                                  |
-  | `AUTH_SESSION_COOKIE_NAME`     | No        | Rename away from chat-api's own `chat.*` default, e.g. `__Host-quickapps.sess`                                                                |
-  | `AUTH_TRANSACTION_COOKIE_NAME` | No        | Rename away from chat-api's own `chat.*` default, e.g. `__Host-quickapps.tx`                                                                  |
-  | `AUTH_LEGACY_COOKIE_NAMES`     | No        | List the old next-auth cookie names here so they get actively expired — see the `HTTP ERROR 431` known issue in `README.md` if this isn't set |
-  | `CSP_MODE`                     | No        | Defaults to `report-only`                                                                                                                     |
-  | `ALLOWED_CONNECT_ORIGINS`      | No        | External connection origins permitted by CSP                                                                                                  |
+  | Variable                        | Required? | Notes                                                                                                                                         |
+  | ------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `CORS_ORIGIN`                   | Yes       | Same value as AUTH_CALLBACK_BASE_URL                                                                                                          |
+  | `DIAL_CORE_URL`                 | Yes       | Was already required                                                                                                                          |
+  | `AUTH_POST_LOGOUT_REDIRECT_URI` | Yes       | Should be set to the same value as `CORS_ORIGIN` and `AUTH_CALLBACK_BASE_URL`                                                                 |
+  | `AUTH_SESSION_COOKIE_NAME`      | No        | Rename away from chat-api's own `chat.*` default, e.g. `__Host-quickapps.sess`                                                                |
+  | `AUTH_TRANSACTION_COOKIE_NAME`  | No        | Rename away from chat-api's own `chat.*` default, e.g. `__Host-quickapps.tx`                                                                  |
+  | `AUTH_LEGACY_COOKIE_NAMES`      | No        | List the old next-auth cookie names here so they get actively expired — see the `HTTP ERROR 431` known issue in `README.md` if this isn't set |
+  | `CSP_MODE`                      | No        | Defaults to `report-only`                                                                                                                     |
+  | `ALLOWED_CONNECT_ORIGINS`       | No        | External connection origins permitted by CSP                                                                                                  |
+
+### OAuth redirect URI path changed for every provider
+
+The callback path moved from `/api/auth/callback/<provider>` to `/api/v1/auth/callback/<provider>`.
+Each identity provider's registered redirect URI must be updated to match, or sign-in will fail.
+Example (Keycloak):
+
+- Before: `https://keycloak.example/realms/dial/protocol/openid-connect/auth?client_id=client_id&scope=openid%20profile%20email%20offline_access&response_type=code&redirect_uri=https%3A%2F%2Fquickapps.example%2Fapi%2Fauth%2Fcallback%2Fkeycloak`
+- Now: `https://keycloak.example/realms/dial/protocol/openid-connect/auth?client_id=client_id&scope=dial%20openid%20email%20profile&response_type=code&redirect_uri=https%3A%2F%2Fquickapps.example%2Fapi%2Fv1%2Fauth%2Fcallback%2Fkeycloak`
 
 ## [0.2.0] - 2026-09-16
 
