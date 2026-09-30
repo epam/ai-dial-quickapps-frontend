@@ -265,6 +265,9 @@ interface CustomVariables {
   dialAdminHost?: string;
   dialChatHost?: string;
   applicationName?: string;
+  isCodeInterpreterEnabled?: boolean;
+  isWebFetchEnabled?: boolean;
+  isAddAttachmentEnabled?: boolean;
 }
 
 const readCustomVariables = (value: unknown): CustomVariables => {
@@ -272,23 +275,27 @@ const readCustomVariables = (value: unknown): CustomVariables => {
   const record = value as Record<string, unknown>;
   const asString = (key: string): string | undefined =>
     typeof record[key] === 'string' ? (record[key] as string) : undefined;
+  const asBoolean = (key: string): boolean | undefined =>
+    typeof record[key] === 'boolean' ? (record[key] as boolean) : undefined;
   return {
     allowedOrigin: asString('allowedOrigin'),
     dialAdminHost: asString('dialAdminHost'),
     dialChatHost: asString('dialChatHost'),
     applicationName: asString('applicationName'),
+    isCodeInterpreterEnabled: asBoolean('codeInterpreterEnabled'),
+    isWebFetchEnabled: asBoolean('webFetchEnabled'),
+    isAddAttachmentEnabled: asBoolean('addAttachmentEnabled'),
   };
 };
 
 export async function fetchAppSettings(): Promise<AppSettings> {
   try {
     const res = await appConfigApi.getClientConfig({ appId: 'chat-ui' });
-    const features = (res.features ?? {}) as Record<string, unknown>;
     const custom = readCustomVariables(res.config.customVariables);
     return {
-      isCodeInterpreterEnabled: features.codeInterpreter === true,
-      isWebFetchEnabled: features.webFetch === true,
-      isAddAttachmentEnabled: features.attachments === true,
+      isCodeInterpreterEnabled: custom.isCodeInterpreterEnabled === true,
+      isWebFetchEnabled: custom.isWebFetchEnabled === true,
+      isAddAttachmentEnabled: custom.isAddAttachmentEnabled === true,
       dialCoreExternalUrl: res.config.dialCoreExternalUrl ?? undefined,
       defaultModelId: res.config.defaultDeploymentId ?? undefined,
       allowedOrigin: custom.allowedOrigin,
