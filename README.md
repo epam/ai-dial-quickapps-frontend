@@ -46,9 +46,9 @@ docker run --rm -p 5000:5000 --env-file .env quickapps-frontend
 ```
 
 For faster local iteration, `npm run docker:run` (see `scripts/docker-run-dist.mjs`) skips the
-full image build: it rebuilds `dist/`, pulls the published chat-api image (default
-`ghcr.io/epam/ai-dial-chat:development`, override with
-`CHAT_API_IMAGE=ghcr.io/epam/ai-dial-chat:<tag> npm run docker:run`), and mounts `dist/` straight
+full image build: it rebuilds `dist/`, pulls the published `ai-dial-chat-bff` image (default
+`ghcr.io/epam/ai-dial-chat-bff:development`, override with
+`CHAT_API_IMAGE=ghcr.io/epam/ai-dial-chat-bff:<tag> npm run docker:run`), and mounts `dist/` straight
 into it, reading env from `.env.docker` (copy `.env.template` to `.env.docker` and fill in values —
 see [Configuration](#configuration)). It publishes on `http://localhost:4600` to match this app's
 own Vite dev port.
