@@ -16,6 +16,79 @@
 - [] need to review components, some seem to be unnecessary, e.g. AgentSkillsField just proxy SkillsSelectors
 - [] ...
 
+## Documentation and behavior reconciliation backlog
+
+The documentation source-of-truth policy is defined in `AGENTS.md`. Before treating the
+existing specs as a complete description of the current product contract, reconcile the
+following known discrepancies. These are deliberately tracked separately from capability
+coverage: each item may require a product decision, a spec change, a code change, or only a
+documentation correction.
+
+- [ ] **Host entry and authentication contract** — decide whether `authProvider` is optional
+  or required. `openspec/specs/host-integration/spec.md` describes optional provider pinning,
+  while `src/App.tsx` currently shows an error when no provider is present.
+- [ ] **Host message protocol** — reconcile the exact handshake and message contract:
+  application-name prefixes, connector-generated versus manually posted messages, the README's
+  `INIT` claim, and the timing/duplication semantics of `READY`, `readyToSave`, and `loggedOut`.
+- [ ] **Save, auto-save, and reset semantics** — document the conditions under which saves are
+  ignored, the actual meaning of `SaveSuccess.hasChanges`, and that `RESET` remounts the current
+  state rather than refetching from the API.
+- [ ] **Origin validation defaults** — decide and document behavior while runtime settings are
+  unresolved and when `allowedOrigin` is empty, including the current `*` fallback and its
+  security implications.
+- [ ] **Authentication error coverage** — reconcile the broad 401/forbidden guarantees in
+  `openspec/specs/auth/spec.md` with the different behavior of generated API calls, auth,
+  themes, configuration, and file upload/download wrappers.
+- [ ] **Runtime port and image policy** — reconcile the Vite development port with the Docker
+  image default, and document whether the floating `development` image/client versions are
+  local-only or an accepted deployment policy.
+- [ ] **Coverage status and target** — use one consistent description of the ratcheting
+  baseline, tested scope, and long-term 70% goal; do not describe 70% as the current gate.
+- [ ] **Post-migration source map** — refresh the candidate paths below so they point to the
+  current `src/` tree rather than deleted `src/app/api/**` routes, and mark historical paths
+  as such.
+- [ ] **API-layer exceptions and configuration keys** — document the deliberate raw wrappers
+  for auth, themes, and file transfer, and add all runtime custom flags to the configuration
+  documentation and eventual `app-configuration` spec.
+- [ ] **RTL and i18n status** — distinguish the current English/legacy behavior from the future
+  dynamic locale and RTL requirement; do not present deferred behavior as implemented.
+- [ ] **Repository conventions and stale comments** — reconcile the documented component path
+  convention with the current flat `src/components/QuickApp2Form.tsx`, and correct comments
+  that still refer to removed endpoints or pre-migration behavior.
+
+Resolve each observable behavior decision through the normal OpenSpec change workflow. Keep
+pure documentation corrections in the same reconciliation change only when they do not alter
+the product contract.
+
+## OpenSpec coverage matrix
+
+Track these dimensions separately for every capability:
+
+- **Spec exists** — a current capability spec is present under `openspec/specs/`.
+- **Source area mapped** — the spec identifies the current implementation entry points,
+  state owners, API wrappers, and relevant domain utilities.
+- **Tests exist** — focused tests cover the capability's important observable behavior.
+- **Behavior verified** — the implementation has been checked against the spec, including
+  relevant integration or manual host/API verification where unit tests are insufficient.
+
+| Capability | Spec exists | Source area mapped | Tests exist | Behavior verified |
+| --- | --- | --- | --- | --- |
+| `host-integration` | Yes | Partial | Partial | Reconcile |
+| `auth` | Yes | Partial | Partial | Reconcile |
+| `application_editing` | No | Yes | Partial | Planned |
+| `context-files` | No | Yes | Partial | Planned |
+| `toolsets_selection` | No | Yes | Partial | Planned |
+| `toolsets_login` | No | Yes | Partial | Planned |
+| `application_credentials` | No | Yes | Partial | Planned |
+| `skills_catalog` | No | Yes | Partial | Planned |
+| `orchestrator_model-selection` | No | Yes | Partial | Planned |
+| `app-configuration` | No | Yes | Partial | Planned |
+| `theming` | No | Yes | Partial | Planned |
+| `i18n` | No | Yes | Partial | Planned |
+
+A spec existing does not imply that it has been verified against the current implementation.
+Update this matrix as each capability is explored, specified, tested, and checked.
+
 ## OpenSpec spec creation candidates
 
 ### Application editing/persistence (survives migration — core domain logic)

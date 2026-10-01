@@ -46,6 +46,28 @@ This repo uses [OpenSpec](https://github.com/Fission-AI/OpenSpec) for spec-drive
 
 If a change touches source files under an area listed in `docs/TECH_DEBT.md`'s candidates list and that capability has no spec yet, writing or extending the spec is in scope for the change — not deferred to "someday".
 
+## Documentation and sources of truth
+
+Use each documentation layer for its intended purpose:
+
+- `openspec/specs/` is the normative source for current, externally observable
+  product behavior. If a host, user, browser, or API consumer can observe it,
+  document it here.
+- `openspec/changes/` contains proposed behavior changes, design decisions,
+  delta specs, and implementation tasks before they become current behavior.
+- `README.md` contains developer setup, commands, deployment instructions,
+  runtime configuration, and concise operational usage notes. It must not
+  redefine behavior specified by OpenSpec.
+- `docs/TECH_DEBT.md` tracks known gaps, uncovered capabilities, and follow-up
+  work. It is a backlog, not a behavior contract.
+- `docs/TRANSITION_PLAN.md` is historical migration context. Do not use it as
+  the current behavior contract; update OpenSpec and README when behavior or
+  operations change.
+- Code comments explain implementation decisions, compatibility constraints,
+  and non-obvious invariants. They must not introduce a conflicting public
+  contract. Update the relevant OpenSpec requirement when observable behavior
+  changes.
+
 ## Skill routing
 
 Use these local skills for specific workflows:
