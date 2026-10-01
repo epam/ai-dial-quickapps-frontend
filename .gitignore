@@ -44,3 +44,13 @@ yarn-error.log*
 
 .claude/settings.local.json
 .vscode/*
+.playwright-mcp
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
