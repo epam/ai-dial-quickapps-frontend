@@ -30,6 +30,7 @@ import AgentSkillsFormSection from './AgentSkills/AgentSkillsFormSection';
 import ContextAndToolsSection from './ContextAndTools/ContextAndToolsSection';
 import ConversationStartersSection from './ConversationStarters/ConversationStartersSection';
 import OrchestratorSection from './Orchestrator/OrchestratorSection';
+import ModelConfigurationSection from './Orchestrator/ModelConfigurationSection/ModelConfigurationSection';
 import UserAttachmentsSection from './UserAttachments/UserAttachmentsSection';
 
 export type QuickApp2AllEntitiesMap = Record<
@@ -278,66 +279,70 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   return (
     <form
       onSubmit={handleSubmit((data) => onSave(data, allEntitiesMap, false))}
-      className="flex flex-col"
+      className="grid grid-cols-1 desktop:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]"
     >
-      <OrchestratorSection
+      <div className="min-w-0">
+        <OrchestratorSection control={control} />
+
+        <hr className="border-secondary" />
+
+        <ContextAndToolsSection
+          control={control}
+          errors={errors}
+          isReadonly={isReadonly}
+          tooltip={sharedTooltip}
+          isCodeInterpreterEnabled={!!settings.isCodeInterpreterEnabled}
+          isWebFetchEnabled={!!settings.isWebFetchEnabled}
+          isAddAttachmentEnabled={!!settings.isAddAttachmentEnabled}
+          agentsAndToolsets={agentsAndToolsets}
+          agentsAndToolsetsJson={agentsAndToolsetsJson}
+          isJsonView={isJsonView}
+          onAgentsChange={handleAgentsChange}
+          onJsonChange={(json: string) => setValue('agentsAndToolsetsJson', json)}
+          onSwitchToJsonView={handleSwitchToJsonView}
+          onSwitchToSimpleView={handleSwitchToSimpleView}
+          onDiscardJson={handleDiscardJson}
+          onConfigureAgent={handleConfigureAgent}
+        />
+
+        <hr className="border-secondary" />
+
+        <AgentSkillsFormSection control={control} isReadonly={isReadonly} tooltip={sharedTooltip} />
+
+        <hr className="border-secondary" />
+
+        <UserAttachmentsSection
+          control={control}
+          errors={errors}
+          isReadonly={isReadonly}
+          tooltip={sharedTooltip}
+          attachmentTypesResetKey={attachmentTypesResetKey}
+          onAttachmentTypesChange={handleAttachmentTypesChange}
+        />
+
+        <hr className="border-secondary" />
+
+        <ConversationStartersSection
+          control={control}
+          isReadonly={isReadonly}
+          hasStarters={hasStarters}
+          startersSettingsTooltip={startersSettingsTooltip}
+          autoSubmit={autoSubmit}
+          chatMessageInputDisabled={chatMessageInputDisabled}
+        />
+
+        <hr className="border-secondary" />
+
+        <AdvancedSettingsSection control={control} isReadonly={isReadonly} tooltip={sharedTooltip} />
+      </div>
+
+      <ModelConfigurationSection
         control={control}
         errors={errors}
         isReadonly={isReadonly}
         tooltip={sharedTooltip}
         isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
       />
-
-      <hr className="border-secondary" />
-
-      <ContextAndToolsSection
-        control={control}
-        errors={errors}
-        isReadonly={isReadonly}
-        tooltip={sharedTooltip}
-        isCodeInterpreterEnabled={!!settings.isCodeInterpreterEnabled}
-        isWebFetchEnabled={!!settings.isWebFetchEnabled}
-        isAddAttachmentEnabled={!!settings.isAddAttachmentEnabled}
-        agentsAndToolsets={agentsAndToolsets}
-        agentsAndToolsetsJson={agentsAndToolsetsJson}
-        isJsonView={isJsonView}
-        onAgentsChange={handleAgentsChange}
-        onJsonChange={(json: string) => setValue('agentsAndToolsetsJson', json)}
-        onSwitchToJsonView={handleSwitchToJsonView}
-        onSwitchToSimpleView={handleSwitchToSimpleView}
-        onDiscardJson={handleDiscardJson}
-        onConfigureAgent={handleConfigureAgent}
-      />
-
-      <hr className="border-secondary" />
-
-      <AgentSkillsFormSection control={control} isReadonly={isReadonly} tooltip={sharedTooltip} />
-
-      <hr className="border-secondary" />
-
-      <UserAttachmentsSection
-        control={control}
-        errors={errors}
-        isReadonly={isReadonly}
-        tooltip={sharedTooltip}
-        attachmentTypesResetKey={attachmentTypesResetKey}
-        onAttachmentTypesChange={handleAttachmentTypesChange}
-      />
-
-      <hr className="border-secondary" />
-
-      <ConversationStartersSection
-        control={control}
-        isReadonly={isReadonly}
-        hasStarters={hasStarters}
-        startersSettingsTooltip={startersSettingsTooltip}
-        autoSubmit={autoSubmit}
-        chatMessageInputDisabled={chatMessageInputDisabled}
-      />
-
-      <hr className="border-secondary" />
-
-      <AdvancedSettingsSection control={control} isReadonly={isReadonly} tooltip={sharedTooltip} />
     </form>
   );
 };

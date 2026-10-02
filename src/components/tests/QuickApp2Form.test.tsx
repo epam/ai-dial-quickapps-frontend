@@ -1,0 +1,78 @@
+import React, { act } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { QuickApp2Form } from '../QuickApp2Form';
+
+vi.mock('@/hooks/useTranslation', () => ({
+  useTranslation: () => ({ language: 'en', t: (key: string) => key }),
+}));
+vi.mock('@/context/AppContext', () => ({
+  useAppContext: () => ({
+    app: { id: 'app', applicationProperties: {} },
+    settings: {},
+  }),
+}));
+vi.mock('@/context/DataContext', () => ({
+  useDataContext: () => ({
+    models: [],
+    modelsMap: {},
+    toolsetsMap: {},
+    mcpAgentsMap: {},
+    status: 'ready',
+  }),
+}));
+vi.mock('@/components/Orchestrator/OrchestratorSection', () => ({
+  default: () => <section aria-label="Instructions">Instructions editor</section>,
+}));
+vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationSection', () => ({
+  default: () => <aside aria-label="Configuration">Model Temperature Process files</aside>,
+}));
+vi.mock('@/components/ContextAndTools/ContextAndToolsSection', () => ({ default: () => null }));
+vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => ({ default: () => null }));
+vi.mock('@/components/UserAttachments/UserAttachmentsSection', () => ({ default: () => null }));
+vi.mock('@/components/ConversationStarters/ConversationStartersSection', () => ({ default: () => null }));
+vi.mock('@/components/AdvancedSettings/AdvancedSettingsSection', () => ({ default: () => null }));
+
+let root: Root;
+let container: HTMLDivElement;
+
+beforeEach(() => {
+  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
+  container = document.createElement('div');
+  document.body.append(container);
+  root = createRoot(container);
+});
+
+afterEach(() => {
+  act(() => root.unmount());
+  container.remove();
+});
+
+describe('QuickApp2Form layout', () => {
+  it('places the standalone Instructions and Configuration areas in the responsive form grid', () => {
+    act(() => {
+      root.render(
+        <QuickApp2Form
+          onSave={vi.fn()}
+          onDirtyChange={vi.fn()}
+          onModelReady={vi.fn()}
+        />,
+      );
+    });
+
+    const form = container.querySelector('form');
+    expect(form?.className).toContain('grid-cols-1');
+    expect(form?.className).toContain('desktop:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]');
+    expect(container.querySelector('[aria-label="Instructions"]')).toBeTruthy();
+    expect(container.querySelector('[aria-label="Orchestrator"]')).toBeNull();
+    expect(container.querySelector('[aria-label="Configuration"]')).toBeTruthy();
+    expect(container.textContent).toContain('Model Temperature Process files');
+    expect(container.querySelector('[aria-label="Instructions"]')?.textContent).toBe(
+      'Instructions editor',
+    );
+    expect(container.querySelector('[aria-label="Configuration"]')?.textContent).toBe(
+      'Model Temperature Process files',
+    );
+  });
+});
