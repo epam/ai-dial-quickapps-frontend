@@ -10,7 +10,7 @@
 //     e.g. CHAT_API_LOCAL_DIR=/c/projects/dial/ai-dial-chat
 // Every other variable in `.env.local` (PORT, DIAL_CORE_URL, AUTH_*, ...) is
 // passed straight through as chat-api's own runtime env, same set as
-// `.env.template` documents for the Docker path — set PORT=5000 there to
+// `.env.template` documents for the Docker path — set PORT=5001 there to
 // match `vite.config.ts`'s dev-server proxy target.
 //
 // A plain Node script (invoked via `npm run chat-api:local`) rather than a
@@ -50,7 +50,7 @@ if (!fs.existsSync(envLocalPath)) {
   console.error(
     `[chat-api:local] ${envLocalPath} not found. Create it with at least:\n` +
       `  ${ENV_LOCAL_VAR}=/absolute/path/to/ai-dial-chat\n` +
-      'plus chat-api\'s own runtime vars (see .env.template) — PORT=5000 to match vite.config.ts.',
+      'plus chat-api\'s own runtime vars (see .env.template) — PORT=5001 to match vite.config.ts.',
   );
   process.exit(1);
 }
@@ -83,9 +83,11 @@ if (!fs.existsSync(path.join(resolvedChatApiDir, 'package.json'))) {
 
 console.log(`[chat-api:local] starting chat-api from ${resolvedChatApiDir}...`);
 
-const result = spawnSync('npm', ['run', 'start:api'], {
+// Keep the QuickApps BFF on its dedicated port even when the sibling chat-api
+// checkout has its own .env.local configured for the main Chat instance.
+const result = spawnSync('npm', ['run', 'start:api:dev'], {
   cwd: resolvedChatApiDir,
-  env: { ...process.env, ...envLocal },
+  env: { ...process.env, ...envLocal, PORT: '5001' },
   stdio: 'inherit',
   shell: true,
 });
