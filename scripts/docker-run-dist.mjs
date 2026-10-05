@@ -9,7 +9,7 @@
 // PowerShell or zsh — no shell-specific path syntax ($(pwd) vs %cd% vs
 // ${PWD}) or quoting rules to get wrong.
 //
-// Override the image with: CHAT_API_IMAGE=ghcr.io/epam/ai-dial-chat:<tag> npm run docker:run:dist
+// Override the image with: CHAT_API_IMAGE=ghcr.io/epam/ai-dial-chat-bff:<tag> npm run docker:run
 
 import { execSync, spawnSync } from 'node:child_process';
 import path from 'node:path';
@@ -17,7 +17,7 @@ import path from 'node:path';
 execSync('npm run build', { stdio: 'inherit' });
 
 const distPath = path.resolve(process.cwd(), 'dist');
-const chatApiImage = process.env.CHAT_API_IMAGE ?? 'ghcr.io/epam/ai-dial-chat:development';
+const chatApiImage = process.env.CHAT_API_IMAGE ?? 'ghcr.io/epam/ai-dial-chat-bff:development';
 
 // `docker run` reuses whatever's already cached locally under this tag and
 // never checks the registry on its own — a floating tag like `:development`
