@@ -2,7 +2,7 @@ import { FC } from 'react';
 
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
-import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { RadioButton } from '@/components/common/Forms/RadioButton';
 
 interface RadioGroupProps {
@@ -18,19 +18,19 @@ export const StartersBehaviourRadioGroup: FC<RadioGroupProps> = ({
   disabled,
   tooltip,
 }) => {
-  const { t } = useTranslation(Translation.Marketplace);
+  const { t } = useTranslation(Translation.QuickAppEditor);
 
   return (
     <div className="relative flex flex-col gap-2">
       <RadioButton
-        caption={t(MarketplaceI18nKeys.ImmediatelySendPrompt)}
+        caption={t(QuickAppEditorI18nKeys.ImmediatelySendPrompt)}
         checked={value}
         onChange={() => onChange(true)}
         disabled={disabled}
         tooltip={tooltip}
       />
       <RadioButton
-        caption={t(MarketplaceI18nKeys.PopulatePromptInTheChatInput)}
+        caption={t(QuickAppEditorI18nKeys.PopulatePromptInTheChatInput)}
         checked={!value}
         onChange={() => onChange(false)}
         disabled={disabled}

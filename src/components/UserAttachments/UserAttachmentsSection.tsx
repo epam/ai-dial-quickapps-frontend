@@ -1,7 +1,7 @@
 import { FC, memo } from 'react';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
 
-import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
@@ -29,16 +29,16 @@ const UserAttachmentsSection: FC<UserAttachmentsSectionProps> = ({
   attachmentTypesResetKey,
   onAttachmentTypesChange,
 }) => {
-  const { t } = useTranslation(Translation.Marketplace);
+  const { t } = useTranslation(Translation.QuickAppEditor);
 
   return (
     <FormCollapsibleSection
-      name={t(MarketplaceI18nKeys.UserAttachments)}
-      description={t(MarketplaceI18nKeys.UserAttachmentsDescription)}
+      name={t(QuickAppEditorI18nKeys.UserAttachments)}
+      description={t(QuickAppEditorI18nKeys.UserAttachmentsDescription)}
     >
       <DialFormItem
-        label={t(MarketplaceI18nKeys.AttachmentTypes)}
-        description={t(MarketplaceI18nKeys.InputMIMEType)}
+        label={t(QuickAppEditorI18nKeys.AttachmentTypes)}
+        description={t(QuickAppEditorI18nKeys.InputMIMEType)}
       >
         <Controller
           control={control}
@@ -49,7 +49,7 @@ const UserAttachmentsSection: FC<UserAttachmentsSectionProps> = ({
               initialTags={field.value}
               onChange={(tags) => onAttachmentTypesChange(tags, field.value)}
               disabled={isReadonly}
-              placeholder={t(MarketplaceI18nKeys.EnterAttachmentTypes)}
+              placeholder={t(QuickAppEditorI18nKeys.EnterAttachmentTypes)}
               invalid={!!errors.inputAttachmentTypes}
               errorText={errors.inputAttachmentTypes?.message}
             />
@@ -58,7 +58,7 @@ const UserAttachmentsSection: FC<UserAttachmentsSectionProps> = ({
       </DialFormItem>
 
       <DialFormItem
-        label={t(MarketplaceI18nKeys.MaxAttachmentsNumber)}
+        label={t(QuickAppEditorI18nKeys.MaxAttachmentsNumber)}
         error={errors.maxInputAttachments?.message as string | undefined}
       >
         <Controller
@@ -74,7 +74,7 @@ const UserAttachmentsSection: FC<UserAttachmentsSectionProps> = ({
               min={1}
               disabled={isReadonly}
               title={tooltip}
-              placeholder={t(MarketplaceI18nKeys.EnterMaxAttachments)}
+              placeholder={t(QuickAppEditorI18nKeys.EnterMaxAttachments)}
               invalid={!!errors.maxInputAttachments}
             />
           )}

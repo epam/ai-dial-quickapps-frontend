@@ -23,7 +23,7 @@ import {
   type FileManagerGridRow,
 } from '@epam/ai-dial-react-file-manager';
 
-import { DialFileManagerI18nKeys } from '@/constants/i18n';
+import { CommonI18nKeys, DialFileManagerI18nKeys } from '@/constants/i18n';
 import { useAuthContext } from '@/context/AuthContext';
 import { useDialFileManager } from '@/hooks/useDialFileManager';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -321,22 +321,22 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
       actionLabels: {
         replace: t(DialFileManagerI18nKeys.ConflictReplace),
         duplicate: t(DialFileManagerI18nKeys.ConflictDuplicate),
-        cancel: t('Cancel'),
+        cancel: t(CommonI18nKeys.Cancel),
       },
       strategyLabels: {
         replaceAll: t(DialFileManagerI18nKeys.ConflictReplaceAll),
         duplicateAll: t(DialFileManagerI18nKeys.ConflictDuplicateAll),
         decideForEach: t(DialFileManagerI18nKeys.ConflictDecideForEach),
       },
-      confirmLabel: t('Attach'),
-      cancelLabel: t('Cancel'),
+      confirmLabel: t(CommonI18nKeys.Attach),
+      cancelLabel: t(CommonI18nKeys.Cancel),
     }),
     [t],
   );
 
   const deleteConfirmationOptions = useMemo(
     () => ({
-      cancelLabel: t('Cancel'),
+      cancelLabel: t(CommonI18nKeys.Cancel),
       confirmLabel: t(DialFileManagerI18nKeys.DeleteConfirmButton),
       titleRenderer: (names: string[]) =>
         names.length === 1
@@ -395,7 +395,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
         hideClose={true}
         footer={
           <div className="flex justify-end gap-2 px-6 py-4">
-            <DialNeutralButton label={t('Cancel')} onClick={handleCancel} />
+            <DialNeutralButton label={t(CommonI18nKeys.Cancel)} onClick={handleCancel} />
             <DialButton
               variant={ButtonVariant.Primary}
               label={t(DialFileManagerI18nKeys.Attach)}
@@ -505,7 +505,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
           batchState={uploadBatchState}
           uploadProgressTitle={t(DialFileManagerI18nKeys.UploadProgressTitle)}
           uploadProgressText={uploadProgressText}
-          cancelLabel={t('Cancel')}
+          cancelLabel={t(CommonI18nKeys.Cancel)}
           onCancel={handleUploadCancel}
         />
       )}

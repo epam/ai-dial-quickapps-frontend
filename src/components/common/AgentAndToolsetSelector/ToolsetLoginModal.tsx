@@ -1,7 +1,7 @@
 import { FC, useCallback, useEffect, useState } from 'react';
 
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
-import { CommonI18nKeys, MarketplaceI18nKeys } from '@/constants/i18n';
+import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -43,7 +43,7 @@ const credentialsLevelFor = (toolsetId: string): ToolsetLoginBodyDtoCredentialsL
     : ToolsetLoginBodyDtoCredentialsLevelEnum.Global;
 
 export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose }) => {
-  const { t, language } = useTranslation(Translation.Marketplace);
+  const { t, language } = useTranslation(Translation.QuickAppEditor);
   const { settings } = useAppContext();
   const { refreshToolsets, applyToolsetAuthResult } = useDataContext();
 
@@ -159,7 +159,7 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
   return (
     <DialPopup
       open
-      header={t(MarketplaceI18nKeys.AdvancedSettings)}
+      header={t(QuickAppEditorI18nKeys.AdvancedSettings)}
       size={PopupSize.Sm}
       onClose={onClose}
     >
@@ -181,8 +181,8 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
                 <DialPrimaryButton
                   label={t(
                     isLoggingOut
-                      ? MarketplaceI18nKeys.LoggingOutToolsetAction
-                      : MarketplaceI18nKeys.LogoutToolsetAction,
+                      ? QuickAppEditorI18nKeys.LoggingOutToolsetAction
+                      : QuickAppEditorI18nKeys.LogoutToolsetAction,
                   )}
                   onClick={handleOAuthLogout}
                   disabled={isLoggingOut}
@@ -191,8 +191,8 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
                 <DialPrimaryButton
                   label={t(
                     isLoggingIn
-                      ? MarketplaceI18nKeys.LoggingInToolsetAction
-                      : MarketplaceI18nKeys.LoginToolsetAction,
+                      ? QuickAppEditorI18nKeys.LoggingInToolsetAction
+                      : QuickAppEditorI18nKeys.LoginToolsetAction,
                   )}
                   onClick={handleOAuthLogin}
                   disabled={isLoggingIn}
@@ -205,7 +205,7 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
             <DialInput
               value={apiKey}
               onChange={(v) => setApiKey(v ?? '')}
-              placeholder={authSettings?.apiKeyHeader ?? t(MarketplaceI18nKeys.ApiKeyLabel)}
+              placeholder={authSettings?.apiKeyHeader ?? t(QuickAppEditorI18nKeys.ApiKeyLabel)}
               containerClassName="w-full"
               type="password"
               disabled={isSignedIn}
@@ -215,13 +215,13 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
               <DialNeutralButton label={t(CommonI18nKeys.Cancel)} onClick={onClose} />
               {isSignedIn ? (
                 <DialPrimaryButton
-                  label={t(MarketplaceI18nKeys.LogoutToolsetAction)}
+                  label={t(QuickAppEditorI18nKeys.LogoutToolsetAction)}
                   onClick={handleApiKeySignOut}
                   disabled={isSubmitting}
                 />
               ) : (
                 <DialPrimaryButton
-                  label={t(MarketplaceI18nKeys.LoginToolsetAction)}
+                  label={t(QuickAppEditorI18nKeys.LoginToolsetAction)}
                   onClick={handleApiKeySubmit}
                   disabled={isSubmitting || !apiKey.trim()}
                 />

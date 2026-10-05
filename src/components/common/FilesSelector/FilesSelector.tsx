@@ -109,11 +109,11 @@ export const FilesSelector: React.FC<Props> = ({
         <div className="absolute end-0 top-[-26px]">
           <DialLinkButton
             tooltipProps={{
-              tooltip: addBtnTooltip ?? t(CommonI18nKeys.AddCommon),
+              tooltip: addBtnTooltip ?? t(CommonI18nKeys.Add),
             }}
             disabled={!!readonly}
             iconBefore={<IconPlus size={18} />}
-            label={t(CommonI18nKeys.AddCommon)}
+            label={t(CommonI18nKeys.Add)}
             onClick={handleOpenModal}
           />
         </div>

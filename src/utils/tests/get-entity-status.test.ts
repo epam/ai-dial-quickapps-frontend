@@ -110,15 +110,15 @@ describe('getEntityStatusMessage', () => {
         t,
         'toolset',
       ),
-    ).toBe(CommonI18nKeys.NotAvailableEntityTypeRemove);
-    expect(t).toHaveBeenLastCalledWith(CommonI18nKeys.NotAvailableEntityTypeRemove, {
+    ).toBe(CommonI18nKeys.UnavailableEntityRemovalRequired);
+    expect(t).toHaveBeenLastCalledWith(CommonI18nKeys.UnavailableEntityRemovalRequired, {
       entityType: 'toolset',
     });
 
     expect(
       getEntityStatusMessage(createStatus({ isNotFoundInCatalog: true }), false, t),
-    ).toBe(CommonI18nKeys.NotAvailableEntityTypeRemove);
-    expect(t).toHaveBeenLastCalledWith(CommonI18nKeys.NotAvailableEntityTypeRemove, {
+    ).toBe(CommonI18nKeys.UnavailableEntityRemovalRequired);
+    expect(t).toHaveBeenLastCalledWith(CommonI18nKeys.UnavailableEntityRemovalRequired, {
       entityType: '',
     });
   });
@@ -128,7 +128,7 @@ describe('getEntityStatusMessage', () => {
       CommonI18nKeys.LoggedOutToolset,
     );
     expect(getEntityStatusMessage(createStatus({ isLoggedOut: true }), false, t)).toBe(
-      CommonI18nKeys.LoggedOutToolsetClickOn,
+      CommonI18nKeys.LoggedOutToolsetClickHint,
     );
   });
 
@@ -150,13 +150,13 @@ describe('getEntityStatusMessage', () => {
         false,
         t,
       ),
-    ).toBe(CommonI18nKeys.NotAvailableEntityTypeRemove);
+    ).toBe(CommonI18nKeys.UnavailableEntityRemovalRequired);
     expect(
       getEntityStatusMessage(
         createStatus({ isLoggedOut: true, isDeploying: true }),
         false,
         t,
       ),
-    ).toBe(CommonI18nKeys.LoggedOutToolsetClickOn);
+    ).toBe(CommonI18nKeys.LoggedOutToolsetClickHint);
   });
 });

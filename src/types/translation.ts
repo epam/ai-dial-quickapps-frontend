@@ -1,5 +1,5 @@
 export enum Translation {
-  Marketplace = 'marketplace',
+  QuickAppEditor = 'quickAppEditor',
   Common = 'common',
   Settings = 'settings',
   Chat = 'chat',

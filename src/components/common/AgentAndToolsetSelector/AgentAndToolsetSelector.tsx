@@ -81,7 +81,7 @@ export const AgentAndToolsetSelector: React.FC<AgentAndToolsetSelectorProps> = (
               disabled={readonly}
               onClick={handleOpenSelectModal}
               iconBefore={<IconPlus size={18} />}
-              label={t(CommonI18nKeys.AddCommon)}
+              label={t(CommonI18nKeys.Add)}
             />
           </span>
           {!!onJsonSwitchClick && (
@@ -92,12 +92,12 @@ export const AgentAndToolsetSelector: React.FC<AgentAndToolsetSelectorProps> = (
                   isOn={false}
                   handleSwitch={onJsonSwitchClick}
                   disabled={readonly}
-                  additionalText={t(CommonI18nKeys.JSONCommon)}
+                  additionalText={t(CommonI18nKeys.JSON)}
                   className="flex w-fit items-center gap-2"
                   tooltip={t(
                     !readonly
                       ? CommonI18nKeys.SwitchToJsonView
-                      : CommonI18nKeys.AppIsPublicCannotBeEdited,
+                      : CommonI18nKeys.PublicAppCannotBeEdited,
                   )}
                 />
               </span>

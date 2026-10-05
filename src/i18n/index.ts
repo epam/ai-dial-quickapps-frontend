@@ -3,7 +3,7 @@ import { initReactI18next } from 'react-i18next';
 
 import chat from './locales/chat.json';
 import common from './locales/common.json';
-import marketplace from './locales/marketplace.json';
+import quickAppEditor from './locales/quick-app-editor.json';
 import settings from './locales/settings.json';
 
 if (!i18n.isInitialized) {
@@ -11,7 +11,7 @@ if (!i18n.isInitialized) {
     lng: 'en',
     fallbackLng: 'en',
     resources: {
-      en: { marketplace, common, settings, chat },
+      en: { quickAppEditor, common, settings, chat },
     },
     interpolation: { escapeValue: false },
   });

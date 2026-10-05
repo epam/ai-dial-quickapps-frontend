@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Renamed the Quick App editor i18n locale and namespace from `marketplace` to `quickAppEditor`.
+- Renamed `MarketplaceI18nKeys` to `QuickAppEditorI18nKeys` and removed stale `Marketplace` suffixes from editor key names.
+- Updated application code and developer documentation to use the new namespace consistently.
+- Removed unused i18n enum members and locale entries, and normalized common translation key names.
+
 ## [1.0.0] - 2026-09-26
 
 Migrated the app to a different tech stack: it's no longer a Next.js app with its own

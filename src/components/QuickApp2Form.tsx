@@ -3,7 +3,7 @@ import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { Resolver, useForm, useWatch } from 'react-hook-form';
 
 import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
-import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { ToolsetTypes } from '@/constants/quick-apps';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
@@ -57,7 +57,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   onModelReady,
   readonly,
 }) => {
-  const { t, language } = useTranslation(Translation.Marketplace);
+  const { t, language } = useTranslation(Translation.QuickAppEditor);
   const { app, settings } = useAppContext();
   const { models, modelsMap, toolsetsMap, mcpAgentsMap, status } = useDataContext();
 
@@ -68,7 +68,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   const availableModelIds = useMemo(() => models.map((m) => m.id), [models]);
 
   const sharedTooltip = app.isShared
-    ? t(MarketplaceI18nKeys.CannotChangeSharedApp, { context: 'field' })
+    ? t(QuickAppEditorI18nKeys.CannotChangeSharedApp, { context: 'field' })
     : undefined;
 
   const isReadonly = readonly || !!app.isShared;
@@ -187,7 +187,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   const hasStarters = starters.some((s) => s.title.trim() && s.text.trim());
   const startersSettingsTooltip =
     sharedTooltip ??
-    (!hasStarters ? t(MarketplaceI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings) : undefined);
+    (!hasStarters ? t(QuickAppEditorI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings) : undefined);
 
   const handleAgentsChange = useCallback(
     (ids: string[]) => {
@@ -253,7 +253,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
       if (hasInvalidTag) {
         setError('inputAttachmentTypes', {
           type: 'manual',
-          message: t(MarketplaceI18nKeys.PleaseMatchTheMimeFormat),
+          message: t(QuickAppEditorI18nKeys.PleaseMatchTheMimeFormat),
         });
         // DialTagInput adds tags optimistically to its own state, so force
         // it to remount and resync with the last valid RHF value.

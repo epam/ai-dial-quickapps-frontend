@@ -1,7 +1,7 @@
 import { IconLayoutGrid, IconPlus } from '@tabler/icons-react';
 import React, { MouseEvent, useCallback, useState } from 'react';
 
-import { CommonI18nKeys, MarketplaceI18nKeys } from '@/constants/i18n';
+import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
@@ -23,7 +23,7 @@ export const SkillsSelector: React.FC<SkillsSelectorProps> = ({
   readonly,
   tooltip,
 }) => {
-  const { t } = useTranslation(Translation.Marketplace);
+  const { t } = useTranslation(Translation.QuickAppEditor);
   const { skillsMap } = useDataContext();
 
   const [isSelectModalOpen, setSelectModalOpen] = useState(false);
@@ -57,16 +57,16 @@ export const SkillsSelector: React.FC<SkillsSelectorProps> = ({
       <div className="flex flex-col">
         <div className="absolute right-0 top-[-29px] flex items-center">
           <DialLinkButton
-            tooltipProps={{ tooltip: tooltip ?? t(MarketplaceI18nKeys.AddAgentSkills) }}
+            tooltipProps={{ tooltip: tooltip ?? t(QuickAppEditorI18nKeys.AddAgentSkills) }}
             disabled={readonly}
             onClick={handleOpenSelectModal}
             iconBefore={<IconPlus size={18} />}
-            label={t(CommonI18nKeys.AddCommon)}
+            label={t(CommonI18nKeys.Add)}
           />
         </div>
         {!value.length ? (
           <DialNoDataContent
-            title={t(MarketplaceI18nKeys.NoAgentSkillsAdded)}
+            title={t(QuickAppEditorI18nKeys.NoAgentSkillsAdded)}
             icon={<IconLayoutGrid size={60} stroke={0.5} />}
             containerClassName="rounded border border-primary p-4"
           />

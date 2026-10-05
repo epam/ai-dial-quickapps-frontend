@@ -2,7 +2,7 @@ import type { ChipEntity } from '@/components/common/AgentAndToolsetSelector/Age
 import { AgentAndToolsetSelector } from '@/components/common/AgentAndToolsetSelector/AgentAndToolsetSelector';
 import { EntityInfoModal } from '@/components/common/AgentAndToolsetSelector/EntityInfoModal';
 import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
-import { CommonI18nKeys, MarketplaceI18nKeys } from '@/constants/i18n';
+import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
 import { useThemeContext } from '@/context/ThemeContext';
 import type { QuickApp2Form } from '@/form/quickApp2Form';
@@ -60,7 +60,7 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
   tooltip,
   jsonError,
 }) => {
-  const { t, language } = useTranslation(Translation.Marketplace);
+  const { t, language } = useTranslation(Translation.QuickAppEditor);
   const { currentTheme } = useThemeContext();
   const editorMonacoTheme = currentTheme?.id === ThemeId.Light ? 'light' : 'vs-dark';
   const { modelsMap, toolsetsMap, mcpAgentsMap } = useDataContext();
@@ -174,9 +174,9 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
               isOn={true}
               handleSwitch={handleJsonSwitchClick}
               disabled={readonly}
-              additionalText={t(MarketplaceI18nKeys.JSONLabel)}
+              additionalText={t(QuickAppEditorI18nKeys.JSON)}
               className="flex w-fit items-center gap-2"
-              tooltip={readonly ? tooltip : t(MarketplaceI18nKeys.SwitchToMarketplaceView)}
+              tooltip={readonly ? tooltip : t(QuickAppEditorI18nKeys.SwitchToMarketplaceView)}
             />
             <DialNeutralIconButton
               size={ElementSize.Small}
@@ -220,13 +220,13 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
                 <DialNeutralButton
                   size={ElementSize.Small}
                   onClick={() => setIsDiscardConfirmOpen(true)}
-                  label={t(MarketplaceI18nKeys.DiscardMarketplace)}
+                  label={t(QuickAppEditorI18nKeys.Discard)}
                 />
                 <DialButton
                   variant={ButtonVariant.Primary}
                   size={ElementSize.Small}
                   onClick={handleJsonSwitchClick}
-                  label={t(MarketplaceI18nKeys.SaveJSON)}
+                  label={t(QuickAppEditorI18nKeys.SaveJSON)}
                 />
               </div>
             )}
@@ -262,10 +262,10 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
       <DialConfirmationPopup
         variant={ConfirmationPopupVariant.Danger}
         open={isDiscardConfirmOpen}
-        header={t(MarketplaceI18nKeys.DiscardChanges)}
-        description={t(MarketplaceI18nKeys.DiscardJsonChangesConfirmation)}
-        confirmLabel={t(MarketplaceI18nKeys.DiscardMarketplace)}
-        cancelLabel={t(MarketplaceI18nKeys.ContinueEditing)}
+        header={t(QuickAppEditorI18nKeys.DiscardChanges)}
+        description={t(QuickAppEditorI18nKeys.DiscardJsonChangesConfirmation)}
+        confirmLabel={t(QuickAppEditorI18nKeys.Discard)}
+        cancelLabel={t(QuickAppEditorI18nKeys.ContinueEditing)}
         onConfirm={handleDiscardConfirm}
         onCancel={() => setIsDiscardConfirmOpen(false)}
         onClose={() => setIsDiscardConfirmOpen(false)}
