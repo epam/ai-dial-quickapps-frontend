@@ -28,15 +28,13 @@ COPY --from=builder /app/dist /app/apps/chat/dist
 
 USER node
 
-# Match this app's own dev port (vite.config.ts) so the URL is the same
-# whether you're running `npm run dev` or this built image locally — override
-# with `-e PORT=...`/`--env-file` for a real deployment. chat-api's own
-# default (absent this) is 5000.
-ENV PORT=5000
-EXPOSE 5000
+# The QuickApps BFF uses its dedicated port so a local Chat API can keep its own default port.
+# Override only when deploying behind a platform that requires a different listener port.
+ENV PORT=5001
+EXPOSE 5001
 
 # No curl in the image, so use Node's fetch. Respects PORT and API_PREFIX overrides.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD ["node", "-e", "fetch('http://127.0.0.1:' + (process.env.PORT || '5000') + '/' + (process.env.API_PREFIX || 'api').replace(/^[/]+|[/]+$/g, '') + '/health', {signal: AbortSignal.timeout(4000), redirect: 'error'}).then(r => process.exit(r.status === 200 ? 0 : 1)).catch(() => process.exit(1))"]
+  CMD ["node", "-e", "fetch('http://127.0.0.1:' + (process.env.PORT || '5001') + '/' + (process.env.API_PREFIX || 'api').replace(/^[/]+|[/]+$/g, '') + '/health', {signal: AbortSignal.timeout(4000), redirect: 'error'}).then(r => process.exit(r.status === 200 ? 0 : 1)).catch(() => process.exit(1))"]
 
 CMD ["node", "apps/chat-api/dist/main.js"]

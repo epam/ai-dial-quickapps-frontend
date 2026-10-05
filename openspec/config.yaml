@@ -43,7 +43,7 @@ context: |
   - @/*  → src/*
 
   ## Commands
-  - Dev:        `npm start` (port 4600, proxies /api/* to chat-api on port 5000 —
+  - Dev:        `npm start` (port 4600, proxies /api/* to the QuickApps BFF on port 5001 —
     see README.md "Development" for how to run a backend alongside it)
   - Build:      `npm run build` (type-check + build)
   - Lint:       `npm run lint`

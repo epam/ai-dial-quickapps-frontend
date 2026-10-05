@@ -37,7 +37,7 @@ export default defineConfig({
       // Points at the chat-api BFF this app runs behind. Start it locally
       // via `npm run start:api:dev` (or `npm run docker:run`) — see README.md.
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'http://localhost:5001',
         changeOrigin: true,
       },
     },
