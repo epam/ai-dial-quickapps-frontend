@@ -88,7 +88,7 @@ context: |
   - Before writing a new spec (or a change's delta spec), check `openspec/specs/`
     for an existing spec-id the new content belongs under, so related requirements
     stay together instead of spreading across near-duplicate spec-ids.
-  - Written so far: `host-integration`, `auth`. Not every capability has a spec
+  - Written so far: `host-integration`, `auth`, `deployment_docker-image`. Not every capability has a spec
     yet — `docs/TECH_DEBT.md`'s "OpenSpec spec creation candidates" list is the
     first place to check before adding a new spec-id.
 
