@@ -1,7 +1,7 @@
 import { FC, memo, useMemo } from 'react';
 import { Control, Controller, FieldErrors, useWatch } from 'react-hook-form';
 
-import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
 import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -30,7 +30,7 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
   tooltip,
   isProcessLargeFilesAvailable,
 }) => {
-  const { t } = useTranslation(Translation.Marketplace);
+  const { t } = useTranslation(Translation.QuickAppEditor);
   const { modelsMap } = useDataContext();
   const modelId = useWatch({ control, name: 'model' });
 
@@ -45,10 +45,10 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
       className="px-8"
     >
       <h2 id="model-configuration-heading" className="dial-small-semi-text">
-        {t(MarketplaceI18nKeys.Configuration)}
+        {t(QuickAppEditorI18nKeys.Configuration)}
       </h2>
       <div className="mt-3 flex flex-col gap-3">
-        <DialFormItem label={t(MarketplaceI18nKeys.ModelMarketplace)}>
+        <DialFormItem label={t(QuickAppEditorI18nKeys.Model)}>
           <Controller
             control={control}
             name="model"
@@ -65,7 +65,7 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
         </DialFormItem>
 
         {showTemperatureSlider && (
-          <DialFormItem label={t(MarketplaceI18nKeys.TemperatureMarketplace)}>
+          <DialFormItem label={t(QuickAppEditorI18nKeys.Temperature)}>
             <Controller
               control={control}
               name="temperature"
@@ -83,8 +83,8 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
 
         {isProcessLargeFilesAvailable && (
           <DialFormItem
-            label={t(MarketplaceI18nKeys.ProcessFiles)}
-            description={t(MarketplaceI18nKeys.ProcessFilesDescription)}
+            label={t(QuickAppEditorI18nKeys.ProcessFiles)}
+            description={t(QuickAppEditorI18nKeys.ProcessFilesDescription)}
             className="!py-0"
           >
             <Controller
@@ -95,7 +95,7 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
                   isOn={field.value}
                   handleSwitch={() => field.onChange(!field.value)}
                   disabled={isReadonly}
-                  additionalText={t(MarketplaceI18nKeys.AllowOrchestratorToProcessFiles)}
+                  additionalText={t(QuickAppEditorI18nKeys.AllowOrchestratorToProcessFiles)}
                   className="flex items-center gap-2"
                   tooltip={tooltip}
                 />

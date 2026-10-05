@@ -1,7 +1,7 @@
 import { FC, memo } from 'react';
 import { Control, Controller } from 'react-hook-form';
 
-import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
@@ -31,12 +31,12 @@ const ConversationStartersSection: FC<ConversationStartersSectionProps> = ({
   autoSubmit,
   chatMessageInputDisabled,
 }) => {
-  const { t } = useTranslation(Translation.Marketplace);
+  const { t } = useTranslation(Translation.QuickAppEditor);
 
   return (
     <FormCollapsibleSection
-      name={t(MarketplaceI18nKeys.ConversationStarters)}
-      description={t(MarketplaceI18nKeys.StartersDescription)}
+      name={t(QuickAppEditorI18nKeys.ConversationStarters)}
+      description={t(QuickAppEditorI18nKeys.StartersDescription)}
     >
       <div className="mb-4">
         <Controller
@@ -56,9 +56,9 @@ const ConversationStartersSection: FC<ConversationStartersSectionProps> = ({
       {/* Starters settings — always visible; controls disabled until a valid starter exists */}
       <div className="mt-1 flex flex-col gap-3">
         <div>
-          <h3 className="dial-small-semi-text">{t(MarketplaceI18nKeys.StartersSettings)}</h3>
+          <h3 className="dial-small-semi-text">{t(QuickAppEditorI18nKeys.StartersSettings)}</h3>
           <p className="dial-small-text mt-1 text-secondary">
-            {t(MarketplaceI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings)}
+            {t(QuickAppEditorI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings)}
           </p>
         </div>
 
@@ -68,20 +68,20 @@ const ConversationStartersSection: FC<ConversationStartersSectionProps> = ({
           render={({ field }) => (
             <DialInput
               labelProps={{
-                label: t(MarketplaceI18nKeys.IntroText),
-                caption: t(MarketplaceI18nKeys.OptionalTextShownAboveTheStarters),
+                label: t(QuickAppEditorI18nKeys.IntroText),
+                caption: t(QuickAppEditorI18nKeys.OptionalTextShownAboveTheStarters),
               }}
               value={field.value ?? ''}
               onChange={(val) => field.onChange(val ?? '')}
               disabled={isReadonly || !hasStarters}
-              placeholder={t(MarketplaceI18nKeys.EnterIntroText)}
+              placeholder={t(QuickAppEditorI18nKeys.EnterIntroText)}
               containerClassName="w-full"
               tooltipText={startersSettingsTooltip}
             />
           )}
         />
 
-        <DialFormItem label={t(MarketplaceI18nKeys.StartersBehavior)}>
+        <DialFormItem label={t(QuickAppEditorI18nKeys.StartersBehavior)}>
           <Controller
             control={control}
             name="autoSubmit"
@@ -102,17 +102,17 @@ const ConversationStartersSection: FC<ConversationStartersSectionProps> = ({
           render={({ field }) => (
             <div className="flex flex-col gap-1">
               <p className="dial-small-text font-medium">
-                {t(MarketplaceI18nKeys.DisableChatInput)}
+                {t(QuickAppEditorI18nKeys.DisableChatInput)}
               </p>
               <ToggleSwitch
                 isOn={field.value}
                 handleSwitch={() => field.onChange(!field.value)}
                 disabled={isReadonly || !hasStarters}
-                additionalText={t(MarketplaceI18nKeys.DisableChatInputSoUsersCanOnlyUseStarters)}
+                additionalText={t(QuickAppEditorI18nKeys.DisableChatInputSoUsersCanOnlyUseStarters)}
                 tooltip={startersSettingsTooltip}
                 warning={
                   !autoSubmit && chatMessageInputDisabled
-                    ? t(MarketplaceI18nKeys.PayAttentionTheUserWontBeAbleToEdit)
+                    ? t(QuickAppEditorI18nKeys.PayAttentionTheUserWontBeAbleToEdit)
                     : undefined
                 }
               />

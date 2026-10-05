@@ -1,7 +1,7 @@
 import { FC, memo } from 'react';
 import { Control, Controller } from 'react-hook-form';
 
-import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
@@ -21,12 +21,12 @@ const AgentSkillsFormSection: FC<AgentSkillsFormSectionProps> = ({
   isReadonly,
   tooltip,
 }) => {
-  const { t } = useTranslation(Translation.Marketplace);
+  const { t } = useTranslation(Translation.QuickAppEditor);
 
   return (
     <FormCollapsibleSection
-      name={t(MarketplaceI18nKeys.AgentSkills)}
-      description={t(MarketplaceI18nKeys.AgentSkillsDescription)}
+      name={t(QuickAppEditorI18nKeys.AgentSkills)}
+      description={t(QuickAppEditorI18nKeys.AgentSkillsDescription)}
     >
       <Controller
         control={control}

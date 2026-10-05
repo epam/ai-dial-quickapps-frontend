@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
-import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useAppContext } from '@/context/AppContext';
 import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
 
@@ -18,7 +18,7 @@ export const CodeInterpreterField: FC<CodeInterpreterFieldProps> = ({
   disabled,
   tooltip,
 }) => {
-  const { t } = useTranslation(Translation.Marketplace);
+  const { t } = useTranslation(Translation.QuickAppEditor);
   const { settings } = useAppContext();
 
   if (!settings.isCodeInterpreterEnabled) return null;
@@ -28,7 +28,7 @@ export const CodeInterpreterField: FC<CodeInterpreterFieldProps> = ({
       isOn={value}
       handleSwitch={() => onChange(!value)}
       disabled={disabled}
-      additionalText={t(MarketplaceI18nKeys.UseToExecuteCustomPythonCode)}
+      additionalText={t(QuickAppEditorI18nKeys.UseToExecuteCustomPythonCode)}
       className="flex items-center gap-2"
       tooltip={tooltip}
     />

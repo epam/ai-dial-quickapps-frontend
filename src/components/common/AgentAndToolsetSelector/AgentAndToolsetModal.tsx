@@ -8,7 +8,7 @@ import { EntityScopeLine } from '@/components/common/EntityScopeLine/EntityScope
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
 import { TopicsLine } from '@/components/common/TopicsLine/TopicsLine';
 import { VirtualCardGrid } from '@/components/common/VirtualCardGrid/VirtualCardGrid';
-import { CommonI18nKeys, MarketplaceI18nKeys } from '@/constants/i18n';
+import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -125,7 +125,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
   onClose,
   onConfirm,
 }) => {
-  const { t, language } = useTranslation(Translation.Marketplace);
+  const { t, language } = useTranslation(Translation.QuickAppEditor);
   const { app } = useAppContext();
   const {
     modelsWithFavorites: models,
@@ -145,8 +145,8 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
 
   const tabs = useMemo(
     () => [
-      { id: TAB_IDS.favorites, label: t(MarketplaceI18nKeys.MyFavorites) },
-      { id: TAB_IDS.catalog, label: t(MarketplaceI18nKeys.CatalogTab) },
+      { id: TAB_IDS.favorites, label: t(QuickAppEditorI18nKeys.MyFavorites) },
+      { id: TAB_IDS.catalog, label: t(QuickAppEditorI18nKeys.CatalogTab) },
     ],
     [t],
   );
@@ -211,7 +211,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
   return (
     <DialPopup
       open
-      header={t(MarketplaceI18nKeys.SelectAgentsAndToolsets)}
+      header={t(QuickAppEditorI18nKeys.SelectAgentsAndToolsets)}
       size={PopupSize.Lg}
       onClose={onClose}
       footer={
@@ -225,7 +225,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
         <div className="flex shrink-0 justify-between gap-3">
           <div className="flex-1">
             <DialSearch
-              placeholder={t(MarketplaceI18nKeys.SearchPlaceholder)}
+              placeholder={t(QuickAppEditorI18nKeys.SearchPlaceholder)}
               value={search}
               onChange={setSearch}
               autoFocus
@@ -238,7 +238,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
           {selectedIds.length ? (
             <>
               <p className="dial-tiny-text mb-2 text-secondary">
-                {t(MarketplaceI18nKeys.SelectedLabel)}
+                {t(QuickAppEditorI18nKeys.SelectedLabel)}
               </p>
               <div className="flex min-h-[34px] flex-wrap gap-1">
                 {selectedIds.map((id) => (
@@ -254,7 +254,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
             </>
           ) : (
             <p className="dial-tiny-text flex h-[34px] items-center text-secondary">
-              {t(MarketplaceI18nKeys.NoResourcesSelected)}
+              {t(QuickAppEditorI18nKeys.NoResourcesSelected)}
             </p>
           )}
         </div>
@@ -268,7 +268,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
             <DialNoDataContent
               title={t(
                 activeTab === TAB_IDS.favorites
-                  ? MarketplaceI18nKeys.NoFavoritesYet
+                  ? QuickAppEditorI18nKeys.NoFavoritesYet
                   : CommonI18nKeys.NoAgentsAndToolsetsAdded,
               )}
               icon={<IconLayoutGrid size={60} stroke={0.5} />}

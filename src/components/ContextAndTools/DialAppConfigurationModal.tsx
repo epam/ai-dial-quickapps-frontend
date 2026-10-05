@@ -6,7 +6,7 @@ import { useSearchParams } from '@/hooks/useSearchParams';
 import { requestApplicationCredentials } from '@/utils/request-application-credentials';
 import { NeutralButton } from '@epam/ai-dial-ui-kit';
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
-import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { DialAppTransportType } from '@/types/quick-apps';
@@ -27,7 +27,7 @@ export const DialAppConfigurationModal: FC<DialAppConfigurationModalProps> = ({
   onClose,
   onSave,
 }) => {
-  const { t, language } = useTranslation(Translation.Marketplace);
+  const { t, language } = useTranslation(Translation.QuickAppEditor);
   const { modelsMap, mcpAgentsMap } = useDataContext();
   const { settings } = useAppContext();
   const searchParams = useSearchParams();
@@ -56,12 +56,12 @@ export const DialAppConfigurationModal: FC<DialAppConfigurationModalProps> = ({
   return (
     <DialPopup
       open
-      header={t(MarketplaceI18nKeys.AdvancedSettings)}
+      header={t(QuickAppEditorI18nKeys.AdvancedSettings)}
       size={PopupSize.Sm}
       onClose={onClose}
       footer={
         <div className="flex justify-end px-6 py-4">
-          <DialPrimaryButton label={t(MarketplaceI18nKeys.ApplyChanges)} onClick={handleApply} />
+          <DialPrimaryButton label={t(QuickAppEditorI18nKeys.ApplyChanges)} onClick={handleApply} />
         </div>
       }
     >
@@ -82,18 +82,18 @@ export const DialAppConfigurationModal: FC<DialAppConfigurationModalProps> = ({
           <div className="px-6 py-4">
             <NeutralButton
               className="min-h-11"
-              label={t(MarketplaceI18nKeys.ApplicationCredentials)}
+              label={t(QuickAppEditorI18nKeys.ApplicationCredentials)}
               onClick={() => requestApplicationCredentials(agentId, settings.allowedOrigin)}
             />
           </div>
         )}
         <div className="flex flex-col gap-3 px-6 py-4">
-          <span className="dial-tiny-text text-secondary">{t(MarketplaceI18nKeys.ConnectVia)}</span>
+          <span className="dial-tiny-text text-secondary">{t(QuickAppEditorI18nKeys.ConnectVia)}</span>
           <DialRadioButton
             name="transport"
             value={DialAppTransportType.MCP}
             inputId={DialAppTransportType.MCP}
-            label={t(MarketplaceI18nKeys.MCP)}
+            label={t(QuickAppEditorI18nKeys.MCP)}
             checked={selectedTransport === DialAppTransportType.MCP}
             onChange={(v) => setSelectedTransport(v as DialAppTransportType)}
           />
@@ -101,7 +101,7 @@ export const DialAppConfigurationModal: FC<DialAppConfigurationModalProps> = ({
             name="transport"
             value={DialAppTransportType.ChatCompletion}
             inputId={DialAppTransportType.ChatCompletion}
-            label={t(MarketplaceI18nKeys.ChatCompletion)}
+            label={t(QuickAppEditorI18nKeys.ChatCompletion)}
             checked={selectedTransport === DialAppTransportType.ChatCompletion}
             disabled={!doesSupportChatCompletion}
             onChange={(v) => setSelectedTransport(v as DialAppTransportType)}

@@ -44,7 +44,7 @@ Symmetric icons (×, +, ⚙, ↑, ↓) must NOT be flipped.
 
 ## Adding a new locale
 
-1. Create `src/i18n/locales/<lang>.json` (copy keys from existing locale files for each namespace: `marketplace`, `common`, `settings`, `chat`).
+1. Create `src/i18n/locales/<lang>.json` (copy keys from existing locale files for each namespace: `quickAppEditor`, `common`, `settings`, `chat`).
 2. Register the locale in `src/i18n/index.ts`.
 3. Add the locale to the language selector UI.
 4. If the locale is RTL, add its language code to the RTL language list in the dir-switching logic in `src/components/I18nProvider.tsx`.

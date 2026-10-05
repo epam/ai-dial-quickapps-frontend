@@ -6,7 +6,7 @@ import { IconLayoutGrid } from '@tabler/icons-react';
 import FavoriteStarButton from '@/components/common/FavoriteStarButton/FavoriteStarButton';
 import { EntityScopeLine } from '@/components/common/EntityScopeLine/EntityScopeLine';
 import { VirtualCardGrid } from '@/components/common/VirtualCardGrid/VirtualCardGrid';
-import { MarketplaceI18nKeys, CommonI18nKeys } from '@/constants/i18n';
+import { QuickAppEditorI18nKeys, CommonI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import type { DialSkill } from '@/types/dial-entities';
@@ -74,7 +74,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
   onClose,
   onConfirm,
 }) => {
-  const { t } = useTranslation(Translation.Marketplace);
+  const { t } = useTranslation(Translation.QuickAppEditor);
   const { skillsWithFavorites: skills, skillsMap, favoriteIds, status } = useDataContext();
   const isLoading = status === 'loading' || status === 'idle';
 
@@ -84,8 +84,8 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
 
   const tabs = useMemo(
     () => [
-      { id: TAB_IDS.favorites, label: t(MarketplaceI18nKeys.MyFavorites) },
-      { id: TAB_IDS.catalog, label: t(MarketplaceI18nKeys.CatalogTab) },
+      { id: TAB_IDS.favorites, label: t(QuickAppEditorI18nKeys.MyFavorites) },
+      { id: TAB_IDS.catalog, label: t(QuickAppEditorI18nKeys.CatalogTab) },
     ],
     [t],
   );
@@ -140,13 +140,13 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
   return (
     <DialPopup
       open
-      header={t(MarketplaceI18nKeys.AddAgentSkills)}
+      header={t(QuickAppEditorI18nKeys.AddAgentSkills)}
       size={PopupSize.Lg}
       onClose={onClose}
       footer={
         <div className="flex w-full justify-end gap-2 px-6 py-4">
           <DialNeutralButton label={t(CommonI18nKeys.Cancel)} onClick={onClose} />
-          <DialPrimaryButton label={t(MarketplaceI18nKeys.SelectAgentSkills)} onClick={handleConfirm} />
+          <DialPrimaryButton label={t(QuickAppEditorI18nKeys.SelectAgentSkills)} onClick={handleConfirm} />
         </div>
       }
     >
@@ -154,7 +154,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
         <div className="flex shrink-0 justify-between gap-3">
           <div className="flex-1">
             <DialSearch
-              placeholder={t(MarketplaceI18nKeys.SearchAgentSkills)}
+              placeholder={t(QuickAppEditorI18nKeys.SearchAgentSkills)}
               value={search}
               onChange={setSearch}
               autoFocus
@@ -167,7 +167,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
           {selectedIds.length ? (
             <>
               <p className="dial-tiny-text mb-2 text-secondary">
-                {t(MarketplaceI18nKeys.SelectedLabel)}
+                {t(QuickAppEditorI18nKeys.SelectedLabel)}
               </p>
               <div className="flex min-h-[34px] flex-wrap gap-1">
                 {selectedIds.map((id) => (
@@ -177,7 +177,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
             </>
           ) : (
             <p className="dial-tiny-text flex h-[34px] items-center text-secondary">
-              {t(MarketplaceI18nKeys.NoResourcesSelected)}
+              {t(QuickAppEditorI18nKeys.NoResourcesSelected)}
             </p>
           )}
         </div>
@@ -191,8 +191,8 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
             <DialNoDataContent
               title={t(
                 activeTab === TAB_IDS.favorites
-                  ? MarketplaceI18nKeys.NoFavoritesYet
-                  : MarketplaceI18nKeys.NoAgentSkillsAdded,
+                  ? QuickAppEditorI18nKeys.NoFavoritesYet
+                  : QuickAppEditorI18nKeys.NoAgentSkillsAdded,
               )}
               icon={<IconLayoutGrid size={60} stroke={0.5} />}
             />

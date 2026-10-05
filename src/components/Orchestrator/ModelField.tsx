@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import { FC, useCallback, useMemo, useState } from 'react';
 
-import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -183,7 +183,7 @@ interface ModelFieldProps {
 }
 
 export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, tooltip, error }) => {
-  const { t, language } = useTranslation(Translation.Marketplace);
+  const { t, language } = useTranslation(Translation.QuickAppEditor);
   const { app } = useAppContext();
   const {
     modelsWithFavorites: models,
@@ -201,8 +201,8 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
 
   const tabs = useMemo(
     () => [
-      { id: TAB_IDS.favorites, label: t(MarketplaceI18nKeys.MyFavorites) },
-      { id: TAB_IDS.catalog, label: t(MarketplaceI18nKeys.CatalogTab) },
+      { id: TAB_IDS.favorites, label: t(QuickAppEditorI18nKeys.MyFavorites) },
+      { id: TAB_IDS.catalog, label: t(QuickAppEditorI18nKeys.CatalogTab) },
     ],
     [t],
   );
@@ -236,7 +236,7 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
   const selectedModel = availableModels.find((m) => m.id === value);
   const displayName = selectedModel
     ? getLocalizedText(selectedModel.name, language, selectedModel.id)
-    : (value ?? t(MarketplaceI18nKeys.SelectModel));
+    : (value ?? t(QuickAppEditorI18nKeys.SelectModel));
   const isModelInfoLoading = (status === 'loading' || status === 'idle') && !selectedModel;
 
   const selectedGroup = allGroups.find((g) => g.models.some((m) => m.id === value));
@@ -332,7 +332,7 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
           {(hasVersions || selectedModel?.version) && (
             <div className="dial-tiny-text flex items-center gap-1">
               <span className="shrink-0 text-secondary">
-                {t(MarketplaceI18nKeys.VersionPrefixMarketplace)}
+                {t(QuickAppEditorI18nKeys.VersionPrefix)}
               </span>
               {hasVersions ? (
                 <div className="w-fit" onClick={(e) => e.stopPropagation()}>
@@ -356,7 +356,7 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
 
         <DialLinkButton
           className="shrink-0"
-          label={t(MarketplaceI18nKeys.Change)}
+          label={t(QuickAppEditorI18nKeys.Change)}
           onClick={handleOpen}
           disabled={disabled || isModelInfoLoading}
         />
@@ -366,7 +366,7 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
 
       <DialPopup
         open={isOpen}
-        header={t(MarketplaceI18nKeys.SelectModel)}
+        header={t(QuickAppEditorI18nKeys.SelectModel)}
         size={PopupSize.Lg}
         onClose={handleClose}
       >
@@ -376,7 +376,7 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
             <div className="flex-1 bg-layer-0">
               <DialSearch
                 value={search}
-                placeholder={t(MarketplaceI18nKeys.SearchPlaceholder)}
+                placeholder={t(QuickAppEditorI18nKeys.SearchPlaceholder)}
                 onChange={setSearch}
               />
             </div>
@@ -390,17 +390,17 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
                 <DialSpinner
                   size={32}
                   fullWidth={false}
-                  ariaLabel={t(MarketplaceI18nKeys.LoadingModels)}
+                  ariaLabel={t(QuickAppEditorI18nKeys.LoadingModels)}
                 />
               </div>
             ) : status === 'error' ? (
               <div className="flex flex-col items-center justify-center gap-3 py-8">
                 <DialNoDataContent
-                  title={t(MarketplaceI18nKeys.FailedToLoadModels)}
+                  title={t(QuickAppEditorI18nKeys.FailedToLoadModels)}
                   description={dataError}
                   icon={<IconAlertCircleFilled size={48} stroke={0.5} className="text-error" />}
                 />
-                <DialLinkButton label={t(MarketplaceI18nKeys.Retry)} onClick={refreshAll} />
+                <DialLinkButton label={t(QuickAppEditorI18nKeys.Retry)} onClick={refreshAll} />
               </div>
             ) : filteredGroups.length === 0 ? (
               <div className="flex items-center justify-center py-8">
@@ -408,8 +408,8 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
                   <DialNoDataContent
                     title={t(
                       activeTab === TAB_IDS.favorites
-                        ? MarketplaceI18nKeys.NoResultsFoundInWorkspace
-                        : MarketplaceI18nKeys.NoResultsFound,
+                        ? QuickAppEditorI18nKeys.NoResultsFoundInWorkspace
+                        : QuickAppEditorI18nKeys.NoResultsFound,
                     )}
                     icon={<IconSearch size={48} stroke={0.5} />}
                   />
@@ -417,8 +417,8 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
                   <DialNoDataContent
                     title={t(
                       activeTab === TAB_IDS.favorites
-                        ? MarketplaceI18nKeys.NoFavoritesYet
-                        : MarketplaceI18nKeys.NA,
+                        ? QuickAppEditorI18nKeys.NoFavoritesYet
+                        : QuickAppEditorI18nKeys.NotAvailable,
                     )}
                     icon={<IconBulb size={48} stroke={0.5} />}
                   />
@@ -438,7 +438,7 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
                       isSelected={group.models.some((m) => m.id === value)}
                       isFavorite={group.models.some((m) => favoriteIds.has(m.id))}
                       currentModelId={value}
-                      versionPrefix={t(MarketplaceI18nKeys.VersionPrefixMarketplace)}
+                      versionPrefix={t(QuickAppEditorI18nKeys.VersionPrefix)}
                       onSelect={handleSelect}
                     />
                   )}

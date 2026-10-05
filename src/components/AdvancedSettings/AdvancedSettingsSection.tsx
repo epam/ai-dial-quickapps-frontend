@@ -1,7 +1,7 @@
 import { FC, memo } from 'react';
 import { Control, Controller } from 'react-hook-form';
 
-import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
@@ -20,10 +20,10 @@ const AdvancedSettingsSection: FC<AdvancedSettingsSectionProps> = ({
   isReadonly,
   tooltip,
 }) => {
-  const { t } = useTranslation(Translation.Marketplace);
+  const { t } = useTranslation(Translation.QuickAppEditor);
 
   return (
-    <FormCollapsibleSection name={t(MarketplaceI18nKeys.AdvancedSettings)}>
+    <FormCollapsibleSection name={t(QuickAppEditorI18nKeys.AdvancedSettings)}>
       <Controller
         control={control}
         name="timestamp"
@@ -32,7 +32,7 @@ const AdvancedSettingsSection: FC<AdvancedSettingsSectionProps> = ({
             isOn={field.value}
             handleSwitch={() => field.onChange(!field.value)}
             disabled={isReadonly}
-            additionalText={t(MarketplaceI18nKeys.TimeAwareness)}
+            additionalText={t(QuickAppEditorI18nKeys.TimeAwareness)}
             className="flex items-center gap-2"
             tooltip={tooltip}
           />

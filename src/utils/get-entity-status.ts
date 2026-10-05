@@ -115,7 +115,7 @@ export const getEntityStatusMessage = (
   }
 
   if (status.isNotFoundInCatalog) {
-    return t(CommonI18nKeys.NotAvailableEntityTypeRemove, { entityType: entityTypeLabel ?? '' });
+    return t(CommonI18nKeys.UnavailableEntityRemovalRequired, { entityType: entityTypeLabel ?? '' });
   }
 
   if (status.isLoggedOut) {
@@ -123,7 +123,7 @@ export const getEntityStatusMessage = (
     // exists in this simplified selector), so always use the "click on" copy.
     return isReadonly
       ? t(CommonI18nKeys.LoggedOutToolset)
-      : t(CommonI18nKeys.LoggedOutToolsetClickOn);
+      : t(CommonI18nKeys.LoggedOutToolsetClickHint);
   }
 
   const kind = getActiveStatusKind(status);

@@ -390,7 +390,7 @@ export const useDialFileManager = ({
         }
       })
       .catch(() => {
-        if (!cancelled) setError('dialFileManager.error');
+        if (!cancelled) setError(DialFileManagerI18nKeys.Error);
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -621,24 +621,24 @@ export const useDialFileManager = ({
   const onCreateFolderValidate = useCallback(
     (name: string, parentFolder: DialFile): string | null => {
       if (!name || name.trim() === '') {
-        return t('dialFileManager.folderNameEmpty');
+        return t(DialFileManagerI18nKeys.FolderNameEmpty);
       }
       if (/[/\\]/.test(name)) {
-        return t('dialFileManager.folderNameInvalidChars');
+        return t(DialFileManagerI18nKeys.FolderNameInvalidChars);
       }
       if (name.startsWith('.')) {
-        return t('dialFileManager.folderNameHidden');
+        return t(DialFileManagerI18nKeys.FolderNameHidden);
       }
       if (name === DIAL_HIDDEN_FOLDER_MARKER) {
-        return t('dialFileManager.folderNameReserved');
+        return t(DialFileManagerI18nKeys.FolderNameReserved);
       }
       if (name.length > 255) {
-        return t('dialFileManager.folderNameTooLong');
+        return t(DialFileManagerI18nKeys.FolderNameTooLong);
       }
       const siblings = parentFolder.items ?? [];
       const lowerName = name.toLowerCase();
       if (siblings.some((s) => s.name.toLowerCase() === lowerName)) {
-        return t('dialFileManager.folderConflict');
+        return t(DialFileManagerI18nKeys.FolderConflict);
       }
       return null;
     },

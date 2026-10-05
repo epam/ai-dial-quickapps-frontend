@@ -3,7 +3,7 @@ import { FC, FocusEvent } from 'react';
 
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
-import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { ConversationStarter } from '@/types/quick-apps';
 
 import classNames from 'classnames';
@@ -29,7 +29,7 @@ export const ConversationStartersList: FC<ConversationStartersListProps> = ({
   onBlur,
   disabled,
 }) => {
-  const { t } = useTranslation(Translation.Marketplace);
+  const { t } = useTranslation(Translation.QuickAppEditor);
 
   const handleChange = (index: number, field: keyof ConversationStarter, val: string) => {
     const updated = value.map((s, i) =>
@@ -63,14 +63,14 @@ export const ConversationStartersList: FC<ConversationStartersListProps> = ({
               value={item.title}
               onChange={(val) => handleChange(index, 'title', val ?? '')}
               containerClassName="flex-1"
-              placeholder={t(MarketplaceI18nKeys.ButtonTitleTravelTips) ?? ''}
+              placeholder={t(QuickAppEditorI18nKeys.ButtonTitleTravelTips) ?? ''}
               disabled={disabled}
             />
             <DialInput
               value={item.text}
               onChange={(val) => handleChange(index, 'text', val ?? '')}
               containerClassName="flex-[2]"
-              placeholder={t(MarketplaceI18nKeys.PromptToSendInChat) ?? ''}
+              placeholder={t(QuickAppEditorI18nKeys.PromptToSendInChat) ?? ''}
               disabled={disabled}
             />
             <DialGhostIconButton

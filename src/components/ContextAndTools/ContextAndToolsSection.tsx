@@ -1,7 +1,7 @@
 import { FC, memo } from 'react';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
 
-import { MarketplaceI18nKeys } from '@/constants/i18n';
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { useTranslation } from '@/hooks/useTranslation';
 import { AnyToolset, DialAppTransportType } from '@/types/quick-apps';
@@ -54,15 +54,15 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
   onDiscardJson,
   onConfigureAgent,
 }) => {
-  const { t } = useTranslation(Translation.Marketplace);
+  const { t } = useTranslation(Translation.QuickAppEditor);
 
   return (
     <FormCollapsibleSection
-      name={t(MarketplaceI18nKeys.ContextAndTools)}
-      description={t(MarketplaceI18nKeys.ContextAndToolsDescription)}
+      name={t(QuickAppEditorI18nKeys.ContextAndTools)}
+      description={t(QuickAppEditorI18nKeys.ContextAndToolsDescription)}
       openByDefault
     >
-      <DialFormItem label={t(MarketplaceI18nKeys.AgentsAndToolsets)}>
+      <DialFormItem label={t(QuickAppEditorI18nKeys.AgentsAndToolsets)}>
         <AgentsAndToolsetsField
           agentsAndToolsets={agentsAndToolsets}
           agentsAndToolsetsJson={agentsAndToolsetsJson}
@@ -80,8 +80,8 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
       </DialFormItem>
 
       <DialFormItem
-        label={t(MarketplaceI18nKeys.ContextFiles)}
-        description={t(MarketplaceI18nKeys.ContextFilesInfo)}
+        label={t(QuickAppEditorI18nKeys.ContextFiles)}
+        description={t(QuickAppEditorI18nKeys.ContextFilesInfo)}
       >
         <Controller
           control={control}
@@ -104,8 +104,8 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
 
       {isCodeInterpreterEnabled && (
         <DialFormItem
-          label={t(MarketplaceI18nKeys.CodeInterpreter)}
-          description={t(MarketplaceI18nKeys.CodeInterpreterInfo)}
+          label={t(QuickAppEditorI18nKeys.CodeInterpreter)}
+          description={t(QuickAppEditorI18nKeys.CodeInterpreterInfo)}
           className="!py-0"
         >
           <Controller
@@ -124,8 +124,8 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
       )}
 
       <DialFormItem
-        label={t(MarketplaceI18nKeys.FileTools)}
-        description={t(MarketplaceI18nKeys.FileToolsDescription)}
+        label={t(QuickAppEditorI18nKeys.FileTools)}
+        description={t(QuickAppEditorI18nKeys.FileToolsDescription)}
         className="!py-0"
       >
         <Controller
@@ -136,7 +136,7 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
               isOn={field.value}
               handleSwitch={() => field.onChange(!field.value)}
               disabled={isReadonly}
-              additionalText={t(MarketplaceI18nKeys.AllowTheAgentToAccessAppFiles)}
+              additionalText={t(QuickAppEditorI18nKeys.AllowTheAgentToAccessAppFiles)}
               className="flex items-center gap-2"
               tooltip={tooltip}
             />
@@ -146,8 +146,8 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
 
       {isAddAttachmentEnabled && (
         <DialFormItem
-          label={t(MarketplaceI18nKeys.AddAttachment)}
-          description={t(MarketplaceI18nKeys.AddAttachmentDescription)}
+          label={t(QuickAppEditorI18nKeys.AddAttachment)}
+          description={t(QuickAppEditorI18nKeys.AddAttachmentDescription)}
           className="!py-0"
         >
           <Controller
@@ -158,7 +158,7 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
                 isOn={field.value}
                 handleSwitch={() => field.onChange(!field.value)}
                 disabled={isReadonly}
-                additionalText={t(MarketplaceI18nKeys.AllowTheAgentToAttachFilesToTheResponse)}
+                additionalText={t(QuickAppEditorI18nKeys.AllowTheAgentToAttachFilesToTheResponse)}
                 className="flex items-center gap-2"
                 tooltip={tooltip}
               />
@@ -169,8 +169,8 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
 
       {isWebFetchEnabled && (
         <DialFormItem
-          label={t(MarketplaceI18nKeys.WebFetch)}
-          description={t(MarketplaceI18nKeys.WebFetchDescription)}
+          label={t(QuickAppEditorI18nKeys.WebFetch)}
+          description={t(QuickAppEditorI18nKeys.WebFetchDescription)}
           className="!py-0"
         >
           <Controller
@@ -181,7 +181,7 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
                 isOn={field.value}
                 handleSwitch={() => field.onChange(!field.value)}
                 disabled={isReadonly}
-                additionalText={t(MarketplaceI18nKeys.AllowTheAgentToFetchWebResources)}
+                additionalText={t(QuickAppEditorI18nKeys.AllowTheAgentToFetchWebResources)}
                 className="flex items-center gap-2"
                 tooltip={tooltip}
               />
