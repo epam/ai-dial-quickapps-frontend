@@ -88,6 +88,9 @@ describe('ModelConfigurationSection', () => {
     act(() => root.render(<TestForm />));
 
     expect(container.textContent).toContain('Configuration');
+    expect(container.querySelector('section[aria-labelledby="model-configuration-heading"]')?.className).toContain(
+      'px-8',
+    );
     expect(container.textContent).toContain('Model picker');
     expect(container.textContent).toContain('Temperature control');
     expect(container.textContent).toContain('Process files toggle');

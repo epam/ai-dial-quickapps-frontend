@@ -10,17 +10,17 @@ import { DialMarkdownEditorContainer } from '@/components/common/MarkdownEditor/
 
 import { DialFormItem } from '@epam/ai-dial-ui-kit';
 
-export interface OrchestratorSectionProps {
+export interface InstructionsSectionProps {
   control: Control<QuickApp2FormType>;
 }
 
-const OrchestratorSection: FC<OrchestratorSectionProps> = ({ control }) => {
+const InstructionsSection: FC<InstructionsSectionProps> = ({ control }) => {
   const { t } = useTranslation(Translation.Marketplace);
 
   return (
     <section
       aria-label={t(MarketplaceI18nKeys.InstructionsMarketplace)}
-      className="px-5 py-4"
+      className="rounded-[24px] bg-layer-0 p-8 shadow-sm"
     >
       <DialFormItem label={t(MarketplaceI18nKeys.InstructionsMarketplace)}>
         <Controller
@@ -39,4 +39,4 @@ const OrchestratorSection: FC<OrchestratorSectionProps> = ({ control }) => {
   );
 };
 
-export default memo(OrchestratorSection);
+export default memo(InstructionsSection);

@@ -40,7 +40,10 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
   }, [modelId, modelsMap]);
 
   return (
-    <section aria-labelledby="model-configuration-heading">
+    <section
+      aria-labelledby="model-configuration-heading"
+      className="px-8"
+    >
       <h2 id="model-configuration-heading" className="dial-small-semi-text">
         {t(MarketplaceI18nKeys.Configuration)}
       </h2>

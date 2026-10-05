@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { QuickApp2Form } from '@/form/quickApp2Form';
 
-import OrchestratorSection from '../OrchestratorSection';
+import InstructionsSection from '../InstructionsSection';
 
 vi.mock('@/hooks/useTranslation', () => ({
   useTranslation: () => ({ language: 'en', t: (key: string) => key }),
@@ -28,7 +28,7 @@ const TestForm = () => {
   const { control } = useForm<QuickApp2Form>({
     defaultValues: { instructions: 'Existing instructions' } as QuickApp2Form,
   });
-  return <OrchestratorSection control={control} />;
+  return <InstructionsSection control={control} />;
 };
 
 let root: Root;
@@ -46,7 +46,7 @@ afterEach(() => {
   container.remove();
 });
 
-describe('OrchestratorSection', () => {
+describe('InstructionsSection', () => {
   it('renders the instructions editor immediately in a standalone section', () => {
     act(() => root.render(<TestForm />));
 
@@ -55,6 +55,10 @@ describe('OrchestratorSection', () => {
     expect(container.textContent).not.toContain('Model');
     expect(container.textContent).not.toContain('Temperature');
     expect(container.textContent).not.toContain('Process files');
+    const instructionsSection = container.querySelector('section[aria-label="Instructions"]');
+    expect(instructionsSection?.className).toContain('rounded-[24px]');
+    expect(instructionsSection?.className).toContain('bg-layer-0');
+    expect(instructionsSection?.className).toContain('shadow-sm');
     expect(container.querySelector('[aria-label="Instructions editor"]')).toBeTruthy();
     expect(container.querySelector('[aria-expanded]')).toBeNull();
   });

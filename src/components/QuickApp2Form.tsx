@@ -29,7 +29,7 @@ import AdvancedSettingsSection from './AdvancedSettings/AdvancedSettingsSection'
 import AgentSkillsFormSection from './AgentSkills/AgentSkillsFormSection';
 import ContextAndToolsSection from './ContextAndTools/ContextAndToolsSection';
 import ConversationStartersSection from './ConversationStarters/ConversationStartersSection';
-import OrchestratorSection from './Orchestrator/OrchestratorSection';
+import InstructionsSection from './InstructionsSection/InstructionsSection';
 import ModelConfigurationSection from './Orchestrator/ModelConfigurationSection/ModelConfigurationSection';
 import UserAttachmentsSection from './UserAttachments/UserAttachmentsSection';
 
@@ -279,10 +279,10 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   return (
     <form
       onSubmit={handleSubmit((data) => onSave(data, allEntitiesMap, false))}
-      className="grid grid-cols-1 desktop:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]"
+      className="grid grid-cols-1 gap-4 p-4 desktop:grid-cols-[minmax(0,1fr)_minmax(280px,440px)] desktop:gap-x-12 desktop:px-8 desktop:py-7"
     >
       <div className="min-w-0">
-        <OrchestratorSection control={control} />
+        <InstructionsSection control={control} />
 
         <hr className="border-secondary" />
 

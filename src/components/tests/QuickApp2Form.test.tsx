@@ -22,7 +22,7 @@ vi.mock('@/context/DataContext', () => ({
     status: 'ready',
   }),
 }));
-vi.mock('@/components/Orchestrator/OrchestratorSection', () => ({
+vi.mock('@/components/InstructionsSection/InstructionsSection', () => ({
   default: () => <section aria-label="Instructions">Instructions editor</section>,
 }));
 vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationSection', () => ({
@@ -63,7 +63,9 @@ describe('QuickApp2Form layout', () => {
 
     const form = container.querySelector('form');
     expect(form?.className).toContain('grid-cols-1');
-    expect(form?.className).toContain('desktop:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]');
+    expect(form?.className).toContain(
+      'desktop:grid-cols-[minmax(0,1fr)_minmax(280px,440px)]',
+    );
     expect(container.querySelector('[aria-label="Instructions"]')).toBeTruthy();
     expect(container.querySelector('[aria-label="Orchestrator"]')).toBeNull();
     expect(container.querySelector('[aria-label="Configuration"]')).toBeTruthy();
