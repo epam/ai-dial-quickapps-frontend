@@ -73,6 +73,7 @@ export enum MarketplaceI18nKeys {
   ButtonTitleTravelTips = 'Button title (e.g., Travel tips)',
   PromptToSendInChat = 'Prompt to send in chat (e.g., Can you suggest some travel destinations?)',
   Orchestrator = 'Orchestrator',
+  Configuration = 'Configuration',
   OrchestratorDescription = 'The LLM that drives the agent: picks tools, calls them, and composes the final answer.',
   ContextAndTools = 'Context & Tools',
   ContextAndToolsDescription = 'Knowledge and capabilities available to the agent: context files, toolsets, and code execution.',
