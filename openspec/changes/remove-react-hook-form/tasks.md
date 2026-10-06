@@ -15,14 +15,14 @@ Slicing strategy: **risk-first, then vertical migration**. First characterize th
 
 ## 2. Implement and Test the RHF-Free Form Controller
 
-- [ ] 2.1 Create `src/hooks/use-quick-app2-form.ts` with reducer-backed values, a stable initial dirty baseline, typed semantic actions, Zod `safeParse` validation, project-owned error mapping, and submit gating; verify the new hook has unit tests and run `npm run lint` and `npm run typecheck`.
-  - **Verification:** Add and run `src/hooks/tests/use-quick-app2-form.test.ts`; cover initial values, field updates, dirty transitions, valid/invalid submit, nested Zod issue paths, and preservation of raw intermediate values.
+- [x] 2.1 Create `src/hooks/use-quick-app2-form.ts` with reducer-backed values, a stable initial dirty baseline, typed semantic actions, Zod `safeParse` validation, project-owned error mapping, and submit gating; verify the new hook has unit tests and run `npm run lint` and `npm run typecheck`.
+  - **Verification:** Add and run `src/hooks/tests/use-quick-app2-form.test.tsx`; cover initial values, field updates, dirty transitions, valid/invalid submit, nested Zod issue paths, and preservation of raw intermediate values.
 
-- [ ] 2.2 Implement controller actions for asynchronous model availability/resolution, feature-gated field cleanup, and model-ready timing without changing `EditorClient`'s host contract; verify async and feature-flag tests pass and run `npm run lint` and `npm run typecheck`.
-  - **Verification:** Extend `src/hooks/tests/use-quick-app2-form.test.ts` and `src/components/tests/QuickApp2Form.test.tsx`; assert saved model precedence, default/fallback model selection, validation intent for external updates, and disabled feature values.
+- [x] 2.2 Implement controller actions for asynchronous model availability/resolution, feature-gated field cleanup, and model-ready timing without changing `EditorClient`'s host contract; verify async and feature-flag tests pass and run `npm run lint` and `npm run typecheck`.
+  - **Verification:** Extend `src/hooks/tests/use-quick-app2-form.test.tsx` and `src/components/tests/QuickApp2Form.test.tsx`; assert saved model precedence, default/fallback model selection, validation intent for external updates, and disabled feature values.
 
-- [ ] 2.3 Implement semantic controller actions for agents/toolsets, JSON/simple-view transitions, starter arrays, file lists, and MIME-tag error/recovery state; verify reducer tests cover atomic updates, stable IDs, metadata, and rollback, and run `npm run lint` and `npm run typecheck`.
-  - **Verification:** Extend `src/hooks/tests/use-quick-app2-form.test.ts` and run the affected `ConversationStarters`, `ContextAndTools`, and `UserAttachments` tests; assert JSON errors, simple-view reconstruction, MIME remount/reset signaling, and array invariants.
+- [x] 2.3 Implement semantic controller actions for agents/toolsets, JSON/simple-view transitions, starter arrays, file lists, and MIME-tag error/recovery state; verify reducer tests cover atomic updates, stable IDs, metadata, and rollback, and run `npm run lint` and `npm run typecheck`.
+  - **Verification:** Extend `src/hooks/tests/use-quick-app2-form.test.tsx` and run the affected `ConversationStarters`, `ContextAndTools`, and `UserAttachments` tests; assert JSON errors, simple-view reconstruction, MIME remount/reset signaling, and array invariants.
 
 ## 3. Migrate the Editor Root and Scalar Sections
 
