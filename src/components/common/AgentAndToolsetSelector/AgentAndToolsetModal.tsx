@@ -70,14 +70,14 @@ const AgentAndToolsetCard: React.FC<AgentAndToolsetCardProps> = ({
       onClick={() => onToggle(item.id)}
       className={classNames(
         'relative box-border flex cursor-pointer flex-col gap-[14px] rounded-[16px] border p-[11px] md:p-[15px]',
-        'bg-layer-0 shadow-[0_1px_3px_rgba(0,0,0,0.04)]',
+        'bg-layer-raised shadow-xs',
         'transition-[transform,box-shadow] duration-[180ms] ease-out',
-        'hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.04)]',
+        'hover:-translate-y-0.5 hover:shadow-md',
         isError
           ? 'border-error'
           : isSelected
-            ? 'border-accent-primary'
-            : 'border-[rgba(0,0,0,0.07)]',
+            ? 'border-accent'
+            : 'border-tertiary',
       )}
     >
       <FavoriteStarButton isFavorite={isFavorite} />
@@ -88,7 +88,7 @@ const AgentAndToolsetCard: React.FC<AgentAndToolsetCardProps> = ({
           <span
             className={classNames(
               'dial-caption-text mb-2 font-semibold uppercase tracking-[0.06em]',
-              isModel ? 'text-warning' : isApplication ? 'text-success' : 'text-accent-primary',
+              isModel ? 'text-warning' : isApplication ? 'text-success' : 'text-accent',
             )}
           >
             {entityTypeLabel}
@@ -262,7 +262,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
         <div className="min-h-0 flex-1">
           {isLoading ? (
             <div className="flex h-40 items-center justify-center">
-              <div className="size-6 animate-spin rounded-full border-2 border-tertiary border-t-accent-primary" />
+              <div className="size-6 animate-spin rounded-full border-2 border-tertiary border-t-accent" />
             </div>
           ) : filteredItems.length === 0 ? (
             <DialNoDataContent

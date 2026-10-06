@@ -191,7 +191,7 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
           <div
             className={
               isFullscreen
-                ? 'fixed inset-0 z-50 flex flex-col gap-2 bg-layer-2 p-4'
+                ? 'fixed inset-0 z-50 flex flex-col gap-2 bg-layer-base p-4'
                 : 'flex flex-col gap-2'
             }
           >

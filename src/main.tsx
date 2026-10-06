@@ -2,7 +2,7 @@ import '@fontsource-variable/inter';
 // Relative path bypasses the package exports field (no "style" condition exported)
 import '../node_modules/@epam/ai-dial-ui-kit/dist/index.css';
 import '../node_modules/@epam/ai-dial-react-file-manager/dist/index.css';
-import './index.css';
+import './index.scss';
 import './monaco-setup';
 
 import { StrictMode } from 'react';

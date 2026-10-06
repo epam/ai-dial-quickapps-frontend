@@ -108,10 +108,10 @@ const ModelCard: FC<ModelCardProps> = ({
     <article
       className={classNames(
         'relative box-border flex cursor-pointer flex-col gap-[14px] rounded-[16px] border p-[11px] md:p-[15px] xl:p-[19px]',
-        'bg-layer-0 shadow-[0_1px_3px_rgba(0,0,0,0.04)]',
+        'bg-layer-raised shadow-xs',
         'transition-shadow duration-[180ms] ease-out',
-        'hover:shadow-[0_6px_16px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.04)]',
-        isSelected ? 'border-accent-primary' : 'border-[rgba(0,0,0,0.07)]',
+        'hover:shadow-md',
+        isSelected ? 'border-accent' : 'border-tertiary',
       )}
       onClick={() => onSelect(representativeId)}
     >
@@ -122,7 +122,7 @@ const ModelCard: FC<ModelCardProps> = ({
         <ModelIcon name={group.name} iconUrl={group.iconUrl} size={44} radius={12} />
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <span className="dial-caption-text mb-2 font-semibold uppercase tracking-[0.06em] text-accent-primary">
+          <span className="dial-caption-text mb-2 font-semibold uppercase tracking-[0.06em] text-accent">
             {group.type}
           </span>
           <span className="dial-body-semi-text min-w-0 truncate text-primary">{group.name}</span>
@@ -294,7 +294,7 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
       {/* Collapsed card */}
       <div
         className={classNames(
-          'flex items-center gap-3 rounded border bg-layer-3 px-4 py-3',
+          'flex items-center gap-3 rounded border bg-layer-sunken px-4 py-3',
           error ? 'border-error' : 'border-tertiary',
           disabled && 'opacity-50',
         )}
@@ -372,8 +372,8 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
       >
         <div className="flex h-[70vh] flex-col">
           {/* Sticky header: search + tabs */}
-          <div className="flex shrink-0 justify-between gap-3 border-b border-tertiary px-6 pb-3 pt-4 bg-layer-2">
-            <div className="flex-1 bg-layer-0">
+          <div className="flex shrink-0 justify-between gap-3 border-b border-tertiary px-6 pb-3 pt-4 bg-layer-base">
+            <div className="flex-1 bg-layer-raised">
               <DialSearch
                 value={search}
                 placeholder={t(QuickAppEditorI18nKeys.SearchPlaceholder)}
@@ -384,7 +384,7 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
           </div>
 
           {/* Scrollable grid: 1 column on small screens, 3×3 on large */}
-          <div className="flex min-h-0 flex-1 flex-col bg-layer-2 px-6 py-4">
+          <div className="flex min-h-0 flex-1 flex-col bg-layer-base px-6 py-4">
             {status === 'loading' || status === 'idle' ? (
               <div className="flex items-center justify-center py-16">
                 <DialSpinner
