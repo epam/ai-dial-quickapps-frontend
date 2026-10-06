@@ -45,6 +45,8 @@ context: |
   ## Commands
   - Dev:        `npm start` (port 4600, proxies /api/* to the QuickApps BFF on port 5001 —
     see README.md "Development" for how to run a backend alongside it)
+  - Deployment: the root Docker image defaults to port 5000; local Docker smoke runs explicitly
+    override the BFF to port 5001
   - Build:      `npm run build` (type-check + build)
   - Lint:       `npm run lint`
   - Typecheck:  `npm run typecheck`

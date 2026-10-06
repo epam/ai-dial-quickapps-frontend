@@ -38,11 +38,12 @@ in another terminal for a live-reloading frontend against a real backend.
 
 The root `Dockerfile` builds this app's static assets and layers them onto a published chat-api
 image (`CHAT_API_IMAGE` build arg — see the Dockerfile for the exact tag to pin). It isn't wired to
-an npm script; build and run it directly when you need a real deployable image:
+an npm script; build and run it directly when you need the deployable image. The deployment default
+is port `5000`:
 
 ```bash
 docker build --platform=linux/amd64 -t quickapps-frontend .   # image is amd64-only
-docker run --rm -p 5001:5001 --env-file .env -e PORT=5001 quickapps-frontend
+docker run --rm -p 5000:5000 --env-file .env -e PORT=5000 quickapps-frontend
 ```
 
 For faster local iteration, `npm run docker:run` (see `scripts/docker-run-dist.mjs`) skips the
@@ -50,8 +51,8 @@ full image build: it rebuilds `dist/`, pulls the published `ai-dial-chat-bff` im
 `ghcr.io/epam/ai-dial-chat-bff:development`, override with
 `CHAT_API_IMAGE=ghcr.io/epam/ai-dial-chat-bff:<tag> npm run docker:run`), and mounts `dist/` straight
 into it, reading env from `.env.docker` (copy `.env.template` to `.env.docker` and fill in values —
-see [Configuration](#configuration)). It publishes the QuickApps BFF on `http://localhost:5001`; the
-Vite dev server remains on `http://localhost:4600`.
+see [Configuration](#configuration)). The runner explicitly overrides the BFF to `PORT=5001` and
+publishes it on `http://localhost:5001`; the Vite dev server remains on `http://localhost:4600`.
 
 ## Test coverage
 
@@ -76,9 +77,9 @@ It reads this repo's own `.env.local` (create one if you don't have it — it's 
 - `CHAT_API_LOCAL_DIR` — absolute path to your local ai-dial-chat checkout, e.g.
   `CHAT_API_LOCAL_DIR=/c/projects/dial/ai-dial-chat`.
 - Every other variable chat-api itself needs at runtime (`PORT`, `DIAL_CORE_URL`, `AUTH_*`, ...,
-  same set `.env.template` documents) — these are passed straight through as chat-api's own env.
-  The launcher forces the QuickApps BFF to `PORT=5001`, keeping it separate from a Chat API instance
-  running on its default port.
+  same set `.env.template` documents for the deployment path) — these are passed straight through as
+  chat-api's own env. The launcher forces the QuickApps BFF to `PORT=5001`, keeping it separate from
+  a Chat API instance running on its default port.
 
 Then, in separate terminals:
 
@@ -103,7 +104,7 @@ of everything chat-api itself accepts, see
 
 | Variable     | Required | Default | Description                                                                                                                                                     |
 | ------------ | :------: | :-----: | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PORT`       |    No    | `5001`  | Port the QuickApps BFF listens on. The Vite development server remains on port `4600`.  |
+| `PORT`       |    No    | `5000`  | Default port for the deployable QuickApps BFF. Local Vite, local-checkout, and local-Docker workflows explicitly override it to `5001`; the Vite development server remains on port `4600`.  |
 | `API_PREFIX` |    No    |  `api`  | Path prefix for the API and health-check routes.                                                                                                                |
 
 ### DIAL core
