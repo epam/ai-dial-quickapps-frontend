@@ -41,7 +41,6 @@ const AgentSkillsFormSection: FC<AgentSkillsFormSectionProps> = ({
             value={field.value}
             onChange={field.onChange}
             readonly={isReadonly}
-            tooltip={tooltip}
             isSelectModalOpen={isSkillsModalOpen}
             onSelectModalOpenChange={setIsSkillsModalOpen}
           />

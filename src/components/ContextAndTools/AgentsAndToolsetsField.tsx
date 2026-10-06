@@ -43,8 +43,8 @@ interface AgentsAndToolsetsFieldProps {
   onConfigureAgent: (id: string, transport: DialAppTransportType) => void;
   readonly?: boolean;
   tooltip?: string;
-  isSelectModalOpen?: boolean;
-  onSelectModalOpenChange?: (isOpen: boolean) => void;
+  isSelectModalOpen: boolean;
+  onSelectModalOpenChange: (isOpen: boolean) => void;
   jsonError?: string;
 }
 
@@ -242,7 +242,6 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
           onChange={handleAgentsChange}
           readonly={readonly}
           allItemsMap={allItemsMap}
-          tooltip={tooltip}
           isSelectModalOpen={isSelectModalOpen}
           onSelectModalOpenChange={onSelectModalOpenChange}
           onItemClick={handleItemClick}
