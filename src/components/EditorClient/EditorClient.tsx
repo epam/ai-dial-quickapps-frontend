@@ -5,7 +5,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import type { MaybeLocalizedText } from '@/types/dial-entities';
 import { Translation } from '@/types/translation';
 import ForbiddenPage from '@/components/ForbiddenPage/ForbiddenPage';
-import LoadingScreen from '@/components/LoadingScreen/LoadingScreen';
+import FullScreenSpinner from '@/components/FullScreenSpinner/FullScreenSpinner';
 import { DataContextProvider } from '@/context/DataContext';
 import { buildQuickApp2Config } from '@/form/quickApp2Form';
 import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
@@ -322,7 +322,7 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
   }
 
   if (!appState) {
-    return <LoadingScreen />;
+    return <FullScreenSpinner />;
   }
 
   return (

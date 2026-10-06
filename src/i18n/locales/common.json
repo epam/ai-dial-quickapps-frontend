@@ -27,6 +27,7 @@
   "Should be an array": "Should be an array",
   "Should be a valid JSON": "Should be a valid JSON",
   "Remove file": "Remove file",
+  "Loading…": "Loading…",
   "dialFileManager": {
     "title": "DIAL file system",
     "attach": "Attach",

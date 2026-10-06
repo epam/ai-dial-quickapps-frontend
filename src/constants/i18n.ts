@@ -30,6 +30,7 @@ export enum CommonI18nKeys {
   LoggedInToolset = 'Logged in',
   ToolsetSignInFailed = 'Failed to update toolset credentials',
   RemoveFile = 'Remove file',
+  Loading = 'Loading…',
 }
 
 // quick-app-editor.json

@@ -21,6 +21,7 @@ import {
   DialSearch,
   DialTabs,
   PopupSize,
+  Spinner,
 } from '@epam/ai-dial-ui-kit';
 
 import { SkillChip } from './SkillChip';
@@ -146,7 +147,10 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
       footer={
         <div className="flex w-full justify-end gap-2 px-6 py-4">
           <DialNeutralButton label={t(CommonI18nKeys.Cancel)} onClick={onClose} />
-          <DialPrimaryButton label={t(QuickAppEditorI18nKeys.SelectAgentSkills)} onClick={handleConfirm} />
+          <DialPrimaryButton
+            label={t(QuickAppEditorI18nKeys.SelectAgentSkills)}
+            onClick={handleConfirm}
+          />
         </div>
       }
     >
@@ -171,7 +175,12 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
               </p>
               <div className="flex min-h-[34px] flex-wrap gap-1">
                 {selectedIds.map((id) => (
-                  <SkillChip key={id} id={id} item={skillsMap[id]} onRemove={handleRemoveSelected} />
+                  <SkillChip
+                    key={id}
+                    id={id}
+                    item={skillsMap[id]}
+                    onRemove={handleRemoveSelected}
+                  />
                 ))}
               </div>
             </>
@@ -184,9 +193,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
 
         <div className="min-h-0 flex-1">
           {isLoading ? (
-            <div className="flex h-40 items-center justify-center">
-              <div className="size-6 animate-spin rounded-full border-2 border-tertiary border-t-accent" />
-            </div>
+            <Spinner size={24} className="h-40" ariaLabel={t(CommonI18nKeys.Loading)} />
           ) : filteredItems.length === 0 ? (
             <DialNoDataContent
               title={t(

@@ -25,6 +25,7 @@ import {
   DialSearch,
   DialTabs,
   PopupSize,
+  Spinner,
 } from '@epam/ai-dial-ui-kit';
 
 import { AgentAndToolsetChip, type ChipEntity } from './AgentAndToolsetChip';
@@ -73,11 +74,7 @@ const AgentAndToolsetCard: React.FC<AgentAndToolsetCardProps> = ({
         'bg-layer-raised shadow-xs',
         'transition-[transform,box-shadow] duration-[180ms] ease-out',
         'hover:-translate-y-0.5 hover:shadow-md',
-        isError
-          ? 'border-error'
-          : isSelected
-            ? 'border-accent'
-            : 'border-tertiary',
+        isError ? 'border-error' : isSelected ? 'border-accent' : 'border-tertiary',
       )}
     >
       <FavoriteStarButton isFavorite={isFavorite} />
@@ -261,9 +258,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
 
         <div className="min-h-0 flex-1">
           {isLoading ? (
-            <div className="flex h-40 items-center justify-center">
-              <div className="size-6 animate-spin rounded-full border-2 border-tertiary border-t-accent" />
-            </div>
+            <Spinner size={24} className="h-40" ariaLabel={t(CommonI18nKeys.Loading)} />
           ) : filteredItems.length === 0 ? (
             <DialNoDataContent
               title={t(
