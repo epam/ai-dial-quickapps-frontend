@@ -120,7 +120,7 @@ describe('AddOnsSection', () => {
 
     expect(section?.className).toContain('mt-4');
     expect(section?.querySelector('h2')?.className).toContain('dial-medium-semi-text');
-    expect(rows?.className).toContain('gap-10');
+    expect(rows?.className).toContain('gap-7');
     expect(agentsTitle?.className).toContain('dial-small-semi-text');
     expect(section?.querySelector('p.dial-small-text')).toBeTruthy();
   });
