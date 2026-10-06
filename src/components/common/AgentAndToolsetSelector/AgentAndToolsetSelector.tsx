@@ -24,6 +24,9 @@ interface AgentAndToolsetSelectorProps {
   onItemClick?: (id: string) => void;
   onJsonSwitchClick?: () => void;
   onConfigureClick?: (item: ChipEntity) => void;
+  // When provided, the parent owns the modal state and renders the Add/JSON controls itself.
+  isSelectModalOpen?: boolean;
+  onSelectModalOpenChange?: (isOpen: boolean) => void;
 }
 
 export const AgentAndToolsetSelector: React.FC<AgentAndToolsetSelectorProps> = ({
@@ -37,15 +40,27 @@ export const AgentAndToolsetSelector: React.FC<AgentAndToolsetSelectorProps> = (
   onItemClick,
   onJsonSwitchClick,
   onConfigureClick,
+  isSelectModalOpen: isSelectModalOpenProp,
+  onSelectModalOpenChange,
 }) => {
   const { t } = useTranslation(Translation.Common);
   const searchParams = useSearchParams();
   const { settings } = useAppContext();
 
-  const [isSelectModalOpen, setSelectModalOpen] = useState(
+  const isControlled = isSelectModalOpenProp != null;
+  const [isSelectModalOpenState, setSelectModalOpenState] = useState(
     searchParams.get(AgentsAndToolsetsModalQueryParams.Modal) === '1',
   );
+  const isSelectModalOpen = isControlled ? isSelectModalOpenProp : isSelectModalOpenState;
   const [loginToolset, setLoginToolset] = useState<ChipEntity | null>(null);
+
+  const setSelectModalOpen = useCallback(
+    (isOpen: boolean) => {
+      if (!isControlled) setSelectModalOpenState(isOpen);
+      onSelectModalOpenChange?.(isOpen);
+    },
+    [isControlled, onSelectModalOpenChange],
+  );
 
   const handleOpenSelectModal = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -54,7 +69,7 @@ export const AgentAndToolsetSelector: React.FC<AgentAndToolsetSelectorProps> = (
 
   const handleCloseModal = useCallback(() => {
     setSelectModalOpen(false);
-  }, []);
+  }, [setSelectModalOpen]);
 
   const handleRemoveItem = useCallback(
     (idToRemove: string) => {
@@ -68,49 +83,51 @@ export const AgentAndToolsetSelector: React.FC<AgentAndToolsetSelectorProps> = (
       onChange(newIds);
       setSelectModalOpen(false);
     },
-    [onChange],
+    [onChange, setSelectModalOpen],
   );
 
   return (
     <div className="relative grow space-y-4">
       <div className="flex flex-col">
-        <div
-          className={mergeClasses(
-            'absolute end-0 top-[-29px] flex items-center',
-            addButtonClassName,
-          )}
-        >
-          <span>
-            <DialLinkButton
-              tooltipProps={{
-                tooltip: addBtnTooltip ?? tooltip ?? t(CommonI18nKeys.AddAgentsAndToolsets),
-              }}
-              disabled={readonly}
-              onClick={handleOpenSelectModal}
-              iconBefore={<IconPlus size={18} />}
-              label={t(CommonI18nKeys.Add)}
-            />
-          </span>
-          {!!onJsonSwitchClick && (
-            <>
-              <div className="ms-1 me-3 h-3 w-0 border-s border-primary" />
-              <span>
-                <ToggleSwitch
-                  isOn={false}
-                  handleSwitch={onJsonSwitchClick}
-                  disabled={readonly}
-                  additionalText={t(CommonI18nKeys.JSON)}
-                  className="flex w-fit items-center gap-2"
-                  tooltip={t(
-                    !readonly
-                      ? CommonI18nKeys.SwitchToJsonView
-                      : CommonI18nKeys.PublicAppCannotBeEdited,
-                  )}
-                />
-              </span>
-            </>
-          )}
-        </div>
+        {!isControlled && (
+          <div
+            className={mergeClasses(
+              'absolute end-0 top-[-29px] flex items-center',
+              addButtonClassName,
+            )}
+          >
+            <span>
+              <DialLinkButton
+                tooltipProps={{
+                  tooltip: addBtnTooltip ?? tooltip ?? t(CommonI18nKeys.AddAgentsAndToolsets),
+                }}
+                disabled={readonly}
+                onClick={handleOpenSelectModal}
+                iconBefore={<IconPlus size={18} />}
+                label={t(CommonI18nKeys.Add)}
+              />
+            </span>
+            {!!onJsonSwitchClick && (
+              <>
+                <div className="ms-1 me-3 h-3 w-0 border-s border-primary" />
+                <span>
+                  <ToggleSwitch
+                    isOn={false}
+                    handleSwitch={onJsonSwitchClick}
+                    disabled={readonly}
+                    additionalText={t(CommonI18nKeys.JSON)}
+                    className="flex w-fit items-center gap-2"
+                    tooltip={t(
+                      !readonly
+                        ? CommonI18nKeys.SwitchToJsonView
+                        : CommonI18nKeys.PublicAppCannotBeEdited,
+                    )}
+                  />
+                </span>
+              </>
+            )}
+          </div>
+        )}
         {value.length > 0 && (
           <div className="flex flex-wrap gap-1 rounded border border-primary p-2">
             {value.map((id) => (

@@ -1,4 +1,4 @@
-import { FC, memo } from 'react';
+import { FC, memo, useState } from 'react';
 import { Control, Controller } from 'react-hook-form';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
@@ -22,26 +22,32 @@ const AgentSkillsFormSection: FC<AgentSkillsFormSectionProps> = ({
   tooltip,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
+  const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
 
   return (
-    <AddOnRow
-      label={t(QuickAppEditorI18nKeys.Skills)}
-      description={t(QuickAppEditorI18nKeys.AgentSkillsDescription)}
-    >
-      <Controller
-        control={control}
-        name="agentSkills"
-        render={({ field }) => (
+    <Controller
+      control={control}
+      name="agentSkills"
+      render={({ field }) => (
+        <AddOnRow
+          label={t(QuickAppEditorI18nKeys.Skills)}
+          emptyDescription={t(QuickAppEditorI18nKeys.AgentSkillsDescription)}
+          isEmpty={!field.value?.length}
+          isAddDisabled={isReadonly}
+          addTooltip={tooltip ?? t(QuickAppEditorI18nKeys.AddAgentSkills)}
+          onAdd={() => setIsSkillsModalOpen(true)}
+        >
           <AgentSkillsField
             value={field.value}
             onChange={field.onChange}
             readonly={isReadonly}
             tooltip={tooltip}
-            addButtonClassName="!top-[-56px]"
+            isSelectModalOpen={isSkillsModalOpen}
+            onSelectModalOpenChange={setIsSkillsModalOpen}
           />
-        )}
-      />
-    </AddOnRow>
+        </AddOnRow>
+      )}
+    />
   );
 };
 

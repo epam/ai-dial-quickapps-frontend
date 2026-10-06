@@ -16,6 +16,9 @@ interface SkillsSelectorProps {
   readonly?: boolean;
   tooltip?: string;
   addButtonClassName?: string;
+  // When provided, the parent owns the modal state and renders the Add trigger itself.
+  isSelectModalOpen?: boolean;
+  onSelectModalOpenChange?: (isOpen: boolean) => void;
 }
 
 export const SkillsSelector: React.FC<SkillsSelectorProps> = ({
@@ -24,11 +27,23 @@ export const SkillsSelector: React.FC<SkillsSelectorProps> = ({
   readonly,
   tooltip,
   addButtonClassName,
+  isSelectModalOpen: isSelectModalOpenProp,
+  onSelectModalOpenChange,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
   const { skillsMap } = useDataContext();
 
-  const [isSelectModalOpen, setSelectModalOpen] = useState(false);
+  const isControlled = isSelectModalOpenProp != null;
+  const [isSelectModalOpenState, setSelectModalOpenState] = useState(false);
+  const isSelectModalOpen = isControlled ? isSelectModalOpenProp : isSelectModalOpenState;
+
+  const setSelectModalOpen = useCallback(
+    (isOpen: boolean) => {
+      if (!isControlled) setSelectModalOpenState(isOpen);
+      onSelectModalOpenChange?.(isOpen);
+    },
+    [isControlled, onSelectModalOpenChange],
+  );
 
   const handleOpenSelectModal = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -37,7 +52,7 @@ export const SkillsSelector: React.FC<SkillsSelectorProps> = ({
 
   const handleCloseModal = useCallback(() => {
     setSelectModalOpen(false);
-  }, []);
+  }, [setSelectModalOpen]);
 
   const handleRemoveItem = useCallback(
     (idToRemove: string) => {
@@ -51,26 +66,28 @@ export const SkillsSelector: React.FC<SkillsSelectorProps> = ({
       onChange(newIds);
       setSelectModalOpen(false);
     },
-    [onChange],
+    [onChange, setSelectModalOpen],
   );
 
   return (
     <div className="relative grow space-y-4">
       <div className="flex flex-col">
-        <div
-          className={mergeClasses(
-            'absolute end-0 top-[-29px] flex items-center',
-            addButtonClassName,
-          )}
-        >
-          <DialLinkButton
-            tooltipProps={{ tooltip: tooltip ?? t(QuickAppEditorI18nKeys.AddAgentSkills) }}
-            disabled={readonly}
-            onClick={handleOpenSelectModal}
-            iconBefore={<IconPlus size={18} />}
-            label={t(CommonI18nKeys.Add)}
-          />
-        </div>
+        {!isControlled && (
+          <div
+            className={mergeClasses(
+              'absolute end-0 top-[-29px] flex items-center',
+              addButtonClassName,
+            )}
+          >
+            <DialLinkButton
+              tooltipProps={{ tooltip: tooltip ?? t(QuickAppEditorI18nKeys.AddAgentSkills) }}
+              disabled={readonly}
+              onClick={handleOpenSelectModal}
+              iconBefore={<IconPlus size={18} />}
+              label={t(CommonI18nKeys.Add)}
+            />
+          </div>
+        )}
         {value.length > 0 && (
           <div className="flex flex-wrap gap-1 rounded border border-primary p-2">
             {value.map((id) => (

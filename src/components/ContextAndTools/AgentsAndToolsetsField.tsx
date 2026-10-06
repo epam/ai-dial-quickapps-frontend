@@ -43,7 +43,8 @@ interface AgentsAndToolsetsFieldProps {
   onConfigureAgent: (id: string, transport: DialAppTransportType) => void;
   readonly?: boolean;
   tooltip?: string;
-  addButtonClassName?: string;
+  isSelectModalOpen?: boolean;
+  onSelectModalOpenChange?: (isOpen: boolean) => void;
   jsonError?: string;
 }
 
@@ -59,7 +60,8 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
   onConfigureAgent,
   readonly,
   tooltip,
-  addButtonClassName,
+  isSelectModalOpen,
+  onSelectModalOpenChange,
   jsonError,
 }) => {
   const { t, language } = useTranslation(Translation.QuickAppEditor);
@@ -241,9 +243,9 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
           readonly={readonly}
           allItemsMap={allItemsMap}
           tooltip={tooltip}
-          addButtonClassName={addButtonClassName}
+          isSelectModalOpen={isSelectModalOpen}
+          onSelectModalOpenChange={onSelectModalOpenChange}
           onItemClick={handleItemClick}
-          onJsonSwitchClick={handleJsonSwitchClick}
           onConfigureClick={handleConfigureClick}
         />
       )}

@@ -16,9 +16,7 @@ vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => ({
 }));
 vi.mock('@/components/ContextAndTools/AgentsAndToolsetsField', () => ({
   AgentsAndToolsetsField: () => (
-    <section aria-label="Agents & Toolsets row">
-      <button type="button">Add Agents & Toolsets</button>
-    </section>
+    <section aria-label="Agents & Toolsets row" />
   ),
 }));
 
