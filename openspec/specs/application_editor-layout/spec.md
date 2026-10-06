@@ -52,6 +52,13 @@ The editor SHALL render the existing Instructions editor in a standalone, always
 - **AND** no `aria-expanded` control for Instructions or Orchestrator SHALL be exposed
 - **AND** the model selector, temperature control, and process-files control SHALL remain in Configuration
 
+#### Scenario: Instructions is marked as required
+- **WHEN** the Instructions section heading is rendered
+- **THEN** it SHALL display a visual required marker next to the heading text
+- **AND** the visual marker SHALL be hidden from assistive technology
+- **AND** assistive technology SHALL instead announce a required label translated through the `common` namespace key `(required)`
+- **AND** the marker SHALL be presentational only: it SHALL NOT add form validation, and an application with empty Instructions SHALL remain savable as before
+
 #### Scenario: Instructions value is edited
 - **WHEN** a user edits the Instructions editor
 - **THEN** the existing instructions form value SHALL be updated
@@ -131,6 +138,19 @@ The merged Agents & Toolsets row SHALL render the existing Agents & Toolsets con
 - **WHEN** a user removes the last selected agent or toolset
 - **THEN** the `agentsAndToolsets` form value SHALL become empty
 - **AND** the Agents & Toolsets content window SHALL be removed without changing unrelated context settings
+
+### Requirement: Editor sections share a card presentation
+The Instructions and Add-ons sections SHALL be rendered with the same card presentation: a raised rounded surface, a section-level heading, and consistent spacing between the heading and the section content. Each card SHALL be exposed as a section labelled by its translated heading. Spacing between cards in the primary content column SHALL come from the column layout rather than from an individual card's own margin.
+
+#### Scenario: Shared card appearance
+- **WHEN** Instructions and Add-ons are rendered in the primary editor column
+- **THEN** both SHALL use the same card surface, corner radius, elevation, padding, and heading typography
+- **AND** each section SHALL expose an accessible name equal to its translated heading
+
+#### Scenario: Card spacing comes from the column
+- **WHEN** the primary editor column renders its cards
+- **THEN** the gap between adjacent cards SHALL be uniform and defined by the column layout
+- **AND** omitting or reordering a card SHALL not leave a stray leading or trailing margin
 
 ### Requirement: Add-ons follows the target visual hierarchy
 The Add-ons card SHALL be visually separated from Instructions and SHALL use a larger section heading, smaller semibold row titles, and readable secondary descriptions with consistent vertical spacing between rows.
