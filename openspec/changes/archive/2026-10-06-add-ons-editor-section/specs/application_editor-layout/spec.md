@@ -1,10 +1,6 @@
-# Application Editor Layout Specification
+# Spec Delta
 
-## Purpose
-
-Defines the Quick App editor composition so primary instructions remain distinct from model and related configuration while preserving existing form behavior, saved values, and direction-aware presentation.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Responsive editor columns
 The editor SHALL present its primary content and Configuration areas as side-by-side columns when the available viewport supports the desktop layout, and SHALL stack those areas without horizontal overflow when it does not. The primary content column SHALL place the standalone Instructions section first, followed immediately by the Add-ons section, with the remaining existing settings sections after it.
@@ -27,36 +23,6 @@ The editor SHALL present its primary content and Configuration areas as side-by-
 - **AND** Add-ons headings, descriptions, and Add actions SHALL use logical start/end placement
 - **AND** directional layout affordances SHALL not remain incorrectly pinned to the left-to-right side
 
-### Requirement: Configuration contains existing model controls
-The Configuration area SHALL contain the existing model selector, temperature control when supported by the selected model, and process-files control when that feature is available, without changing their values or conditional visibility.
-
-#### Scenario: Existing model configuration is displayed
-- **WHEN** the editor loads an application with a resolved model
-- **THEN** Configuration SHALL display the same model selector and temperature control behavior currently provided by the editor
-- **AND** changing either control SHALL update the corresponding existing form value
-
-#### Scenario: Temperature is unsupported
-- **WHEN** the selected model does not support temperature
-- **THEN** Configuration SHALL omit the temperature control as it does currently
-
-#### Scenario: Process-files feature is unavailable
-- **WHEN** the selected model or environment does not make process-file handling available
-- **THEN** Configuration SHALL omit the process-files control as it does currently
-
-### Requirement: Instructions is standalone and always visible
-The editor SHALL render the existing Instructions editor in a standalone, always-visible section. The Instructions section SHALL NOT be wrapped in a collapsible Orchestrator control, and no empty Orchestrator wrapper SHALL be rendered.
-
-#### Scenario: Instructions is always available
-- **WHEN** the editor first renders
-- **THEN** the existing Instructions editor SHALL be displayed without activating a section control
-- **AND** no `aria-expanded` control for Instructions or Orchestrator SHALL be exposed
-- **AND** the model selector, temperature control, and process-files control SHALL remain in Configuration
-
-#### Scenario: Instructions value is edited
-- **WHEN** a user edits the Instructions editor
-- **THEN** the existing instructions form value SHALL be updated
-- **AND** the value SHALL continue to participate in the existing validation, dirty-state, and save serialization behavior
-
 ### Requirement: Presentation change preserves form contract
 The layout change SHALL preserve existing form state ownership, field names, conditional behavior, read-only behavior, and persistence without introducing new chat-api requests. Skills SHALL continue to use the existing `agentSkills` form value, and the merged Agents & Toolsets control SHALL continue to use the existing `agentsAndToolsets` form value.
 
@@ -74,6 +40,8 @@ The layout change SHALL preserve existing form state ownership, field names, con
 - **WHEN** an application loads with one or more skills or agents/toolsets already selected
 - **THEN** the corresponding Add-ons content window SHALL be visible
 - **AND** the selected chips and their existing remove/configuration behavior SHALL be preserved
+
+## ADDED Requirements
 
 ### Requirement: Add-ons section groups add-on controls
 The editor SHALL render an Add-ons section directly below Instructions. The section SHALL contain a Skills row and one merged Agents & Toolsets row, each retaining its existing add/select behavior and visible Add action.
@@ -150,3 +118,10 @@ The Add-ons card SHALL be visually separated from Instructions and SHALL use a l
 - **WHEN** multiple Add-ons rows are rendered without selected content windows
 - **THEN** each row SHALL have consistent vertical whitespace before the next row
 - **AND** Add actions SHALL remain aligned with their corresponding row titles
+
+## State, API, rendering, and direction constraints
+
+- State SHALL remain owned by the existing Quick App editor form (`agentSkills` and `agentsAndToolsets`); no new React context or persistent client-side store SHALL be introduced for section visibility.
+- This presentation change SHALL call no chat-api endpoint. Existing catalog loading and selection behavior remains unchanged; no new method, path, request payload, or response shape is required.
+- Components that are memoized today SHALL remain memoized unless a measured reason requires otherwise; derived visibility SHALL be computed from current form values without duplicating state, and callbacks passed to existing selectors SHALL remain stable where their current contracts require it.
+- New layout spacing/alignment SHALL use logical CSS/Tailwind direction utilities. Inherent directional icons SHALL mirror in RTL; the plus icon SHALL remain symmetric and unmirrored.

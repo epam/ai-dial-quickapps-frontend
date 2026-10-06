@@ -50,6 +50,8 @@ export enum QuickAppEditorI18nKeys {
   ButtonTitleTravelTips = 'Button title (e.g., Travel tips)',
   PromptToSendInChat = 'Prompt to send in chat (e.g., Can you suggest some travel destinations?)',
   Configuration = 'Configuration',
+  AddOns = 'Add-ons',
+  Skills = 'Skills',
   ContextAndTools = 'Context & Tools',
   ContextAndToolsDescription = 'Knowledge and capabilities available to the agent: context files, toolsets, and code execution.',
   ContextFiles = 'Context files',

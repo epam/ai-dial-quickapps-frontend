@@ -43,6 +43,7 @@ interface AgentsAndToolsetsFieldProps {
   onConfigureAgent: (id: string, transport: DialAppTransportType) => void;
   readonly?: boolean;
   tooltip?: string;
+  addButtonClassName?: string;
   jsonError?: string;
 }
 
@@ -58,6 +59,7 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
   onConfigureAgent,
   readonly,
   tooltip,
+  addButtonClassName,
   jsonError,
 }) => {
   const { t, language } = useTranslation(Translation.QuickAppEditor);
@@ -239,6 +241,7 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
           readonly={readonly}
           allItemsMap={allItemsMap}
           tooltip={tooltip}
+          addButtonClassName={addButtonClassName}
           onItemClick={handleItemClick}
           onJsonSwitchClick={handleJsonSwitchClick}
           onConfigureClick={handleConfigureClick}

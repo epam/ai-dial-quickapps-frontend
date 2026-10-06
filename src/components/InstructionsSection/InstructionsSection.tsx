@@ -8,8 +8,6 @@ import { Translation } from '@/types/translation';
 
 import { DialMarkdownEditorContainer } from '@/components/common/MarkdownEditor/MarkdownEditorContainer';
 
-import { DialFormItem } from '@epam/ai-dial-ui-kit';
-
 export interface InstructionsSectionProps {
   control: Control<QuickApp2FormType>;
 }
@@ -22,19 +20,20 @@ const InstructionsSection: FC<InstructionsSectionProps> = ({ control }) => {
       aria-label={t(QuickAppEditorI18nKeys.Instructions)}
       className="rounded-[24px] bg-layer-0 p-8 shadow-sm"
     >
-      <DialFormItem label={t(QuickAppEditorI18nKeys.Instructions)}>
-        <Controller
-          control={control}
-          name="instructions"
-          render={({ field }) => (
-            <DialMarkdownEditorContainer
-              value={field.value}
-              onChangeValue={field.onChange}
-              placeholder={t(QuickAppEditorI18nKeys.InstructionsPlaceholder)}
-            />
-          )}
-        />
-      </DialFormItem>
+      <h2 className="dial-medium-semi-text mb-4 text-primary">
+        {t(QuickAppEditorI18nKeys.Instructions)}
+      </h2>
+      <Controller
+        control={control}
+        name="instructions"
+        render={({ field }) => (
+          <DialMarkdownEditorContainer
+            value={field.value}
+            onChangeValue={field.onChange}
+            placeholder={t(QuickAppEditorI18nKeys.InstructionsPlaceholder)}
+          />
+        )}
+      />
     </section>
   );
 };

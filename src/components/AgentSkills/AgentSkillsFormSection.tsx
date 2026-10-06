@@ -6,7 +6,7 @@ import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
 
-import { FormCollapsibleSection } from '@/components/common/FormCollapsibleSection';
+import { AddOnRow } from '@/components/AddOns/AddOnRow';
 
 import { AgentSkillsField } from './AgentSkillsField';
 
@@ -24,8 +24,8 @@ const AgentSkillsFormSection: FC<AgentSkillsFormSectionProps> = ({
   const { t } = useTranslation(Translation.QuickAppEditor);
 
   return (
-    <FormCollapsibleSection
-      name={t(QuickAppEditorI18nKeys.AgentSkills)}
+    <AddOnRow
+      label={t(QuickAppEditorI18nKeys.Skills)}
       description={t(QuickAppEditorI18nKeys.AgentSkillsDescription)}
     >
       <Controller
@@ -37,10 +37,11 @@ const AgentSkillsFormSection: FC<AgentSkillsFormSectionProps> = ({
             onChange={field.onChange}
             readonly={isReadonly}
             tooltip={tooltip}
+            addButtonClassName="!top-[-56px]"
           />
         )}
       />
-    </FormCollapsibleSection>
+    </AddOnRow>
   );
 };
 
