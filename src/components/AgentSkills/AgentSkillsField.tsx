@@ -6,6 +6,7 @@ interface AgentSkillsFieldProps {
   onChange: (ids: string[]) => void;
   readonly?: boolean;
   tooltip?: string;
+  addButtonClassName?: string;
 }
 
 export const AgentSkillsField: FC<AgentSkillsFieldProps> = ({
@@ -13,8 +14,15 @@ export const AgentSkillsField: FC<AgentSkillsFieldProps> = ({
   onChange,
   readonly,
   tooltip,
+  addButtonClassName,
 }) => {
   return (
-    <SkillsSelector value={value} onChange={onChange} readonly={readonly} tooltip={tooltip} />
+    <SkillsSelector
+      value={value}
+      onChange={onChange}
+      readonly={readonly}
+      tooltip={tooltip}
+      addButtonClassName={addButtonClassName}
+    />
   );
 };

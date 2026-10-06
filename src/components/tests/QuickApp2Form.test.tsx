@@ -29,6 +29,14 @@ vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationS
   default: () => <aside aria-label="Configuration">Model Temperature Process files</aside>,
 }));
 vi.mock('@/components/ContextAndTools/ContextAndToolsSection', () => ({ default: () => null }));
+vi.mock('@/components/AddOns/AddOnsSection', () => ({
+  default: () => (
+    <section aria-label="Add-ons">
+      <button type="button">Add Skills</button>
+      <button type="button">Add Agents & Toolsets</button>
+    </section>
+  ),
+}));
 vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => ({ default: () => null }));
 vi.mock('@/components/UserAttachments/UserAttachmentsSection', () => ({ default: () => null }));
 vi.mock('@/components/ConversationStarters/ConversationStartersSection', () => ({ default: () => null }));
@@ -76,5 +84,29 @@ describe('QuickApp2Form layout', () => {
     expect(container.querySelector('[aria-label="Configuration"]')?.textContent).toBe(
       'Model Temperature Process files',
     );
+  });
+
+  it('places Add-ons immediately after Instructions and keeps its add actions visible', () => {
+    act(() => {
+      root.render(
+        <QuickApp2Form
+          onSave={vi.fn()}
+          onDirtyChange={vi.fn()}
+          onModelReady={vi.fn()}
+        />,
+      );
+    });
+
+    const primaryColumn = container.querySelector('form > div');
+    const sections = Array.from(primaryColumn?.querySelectorAll('section') ?? []);
+    const instructionIndex = sections.findIndex(
+      (section) => section.getAttribute('aria-label') === 'Instructions',
+    );
+    const addOnsIndex = sections.findIndex(
+      (section) => section.getAttribute('aria-label') === 'Add-ons',
+    );
+
+    expect(addOnsIndex).toBe(instructionIndex + 1);
+    expect(container.querySelector('section[aria-label="Add-ons"] button')).toBeTruthy();
   });
 });

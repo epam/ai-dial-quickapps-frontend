@@ -1,11 +1,11 @@
-import { IconLayoutGrid, IconPlus } from '@tabler/icons-react';
+import { IconPlus } from '@tabler/icons-react';
 import React, { MouseEvent, useCallback, useState } from 'react';
 
 import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
-import { DialLinkButton, DialNoDataContent } from '@epam/ai-dial-ui-kit';
+import { DialLinkButton, mergeClasses } from '@epam/ai-dial-ui-kit';
 
 import { SkillChip } from './SkillChip';
 import { SkillsModal } from './SkillsModal';
@@ -15,6 +15,7 @@ interface SkillsSelectorProps {
   onChange: (ids: string[]) => void;
   readonly?: boolean;
   tooltip?: string;
+  addButtonClassName?: string;
 }
 
 export const SkillsSelector: React.FC<SkillsSelectorProps> = ({
@@ -22,6 +23,7 @@ export const SkillsSelector: React.FC<SkillsSelectorProps> = ({
   onChange,
   readonly,
   tooltip,
+  addButtonClassName,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
   const { skillsMap } = useDataContext();
@@ -55,7 +57,12 @@ export const SkillsSelector: React.FC<SkillsSelectorProps> = ({
   return (
     <div className="relative grow space-y-4">
       <div className="flex flex-col">
-        <div className="absolute right-0 top-[-29px] flex items-center">
+        <div
+          className={mergeClasses(
+            'absolute end-0 top-[-29px] flex items-center',
+            addButtonClassName,
+          )}
+        >
           <DialLinkButton
             tooltipProps={{ tooltip: tooltip ?? t(QuickAppEditorI18nKeys.AddAgentSkills) }}
             disabled={readonly}
@@ -64,13 +71,7 @@ export const SkillsSelector: React.FC<SkillsSelectorProps> = ({
             label={t(CommonI18nKeys.Add)}
           />
         </div>
-        {!value.length ? (
-          <DialNoDataContent
-            title={t(QuickAppEditorI18nKeys.NoAgentSkillsAdded)}
-            icon={<IconLayoutGrid size={60} stroke={0.5} />}
-            containerClassName="rounded border border-primary p-4"
-          />
-        ) : (
+        {value.length > 0 && (
           <div className="flex flex-wrap gap-1 rounded border border-primary p-2">
             {value.map((id) => (
               <SkillChip

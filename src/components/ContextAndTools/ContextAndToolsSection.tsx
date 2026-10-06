@@ -1,10 +1,9 @@
 import { FC, memo } from 'react';
-import { Control, Controller, FieldErrors } from 'react-hook-form';
+import { Control, Controller } from 'react-hook-form';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { useTranslation } from '@/hooks/useTranslation';
-import { AnyToolset, DialAppTransportType } from '@/types/quick-apps';
 import { Translation } from '@/types/translation';
 import { decodeFileUrl } from '@/utils/decode-file-url';
 
@@ -12,47 +11,26 @@ import { FilesSelector } from '@/components/common/FilesSelector/FilesSelector';
 import { FormCollapsibleSection } from '@/components/common/FormCollapsibleSection';
 import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
 
-import { AgentsAndToolsetsField } from './AgentsAndToolsetsField';
 import { CodeInterpreterField } from './CodeInterpreterField';
 
 import { DialFormItem } from '@epam/ai-dial-ui-kit';
 
 export interface ContextAndToolsSectionProps {
   control: Control<QuickApp2FormType>;
-  errors: FieldErrors<QuickApp2FormType>;
   isReadonly: boolean;
   tooltip?: string;
   isCodeInterpreterEnabled: boolean;
   isWebFetchEnabled: boolean;
   isAddAttachmentEnabled: boolean;
-  agentsAndToolsets: QuickApp2FormType['agentsAndToolsets'];
-  agentsAndToolsetsJson: string;
-  isJsonView: boolean;
-  onAgentsChange: (ids: string[]) => void;
-  onJsonChange: (json: string) => void;
-  onSwitchToJsonView: () => void;
-  onSwitchToSimpleView: (toolsets: AnyToolset[]) => void;
-  onDiscardJson: () => void;
-  onConfigureAgent: (id: string, transport: DialAppTransportType) => void;
 }
 
 const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
   control,
-  errors,
   isReadonly,
   tooltip,
   isCodeInterpreterEnabled,
   isWebFetchEnabled,
   isAddAttachmentEnabled,
-  agentsAndToolsets,
-  agentsAndToolsetsJson,
-  isJsonView,
-  onAgentsChange,
-  onJsonChange,
-  onSwitchToJsonView,
-  onSwitchToSimpleView,
-  onDiscardJson,
-  onConfigureAgent,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
 
@@ -62,23 +40,6 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
       description={t(QuickAppEditorI18nKeys.ContextAndToolsDescription)}
       openByDefault
     >
-      <DialFormItem label={t(QuickAppEditorI18nKeys.AgentsAndToolsets)}>
-        <AgentsAndToolsetsField
-          agentsAndToolsets={agentsAndToolsets}
-          agentsAndToolsetsJson={agentsAndToolsetsJson}
-          isJsonView={isJsonView}
-          onAgentsChange={onAgentsChange}
-          onJsonChange={onJsonChange}
-          onSwitchToJsonView={onSwitchToJsonView}
-          onSwitchToSimpleView={onSwitchToSimpleView}
-          onDiscardJson={onDiscardJson}
-          onConfigureAgent={onConfigureAgent}
-          readonly={isReadonly}
-          tooltip={tooltip}
-          jsonError={errors.agentsAndToolsetsJson?.message}
-        />
-      </DialFormItem>
-
       <DialFormItem
         label={t(QuickAppEditorI18nKeys.ContextFiles)}
         description={t(QuickAppEditorI18nKeys.ContextFilesInfo)}

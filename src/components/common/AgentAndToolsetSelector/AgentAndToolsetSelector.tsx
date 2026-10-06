@@ -1,4 +1,4 @@
-import { IconLayoutGrid, IconPlus } from '@tabler/icons-react';
+import { IconPlus } from '@tabler/icons-react';
 import React, { MouseEvent, useCallback, useState } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import { useSearchParams } from '@/hooks/useSearchParams';
@@ -11,7 +11,7 @@ import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
 import { AgentAndToolsetChip, type ChipEntity } from './AgentAndToolsetChip';
 import { AgentAndToolsetModal } from './AgentAndToolsetModal';
 import { ToolsetLoginModal } from './ToolsetLoginModal';
-import { DialLinkButton, DialNoDataContent } from '@epam/ai-dial-ui-kit';
+import { DialLinkButton, mergeClasses } from '@epam/ai-dial-ui-kit';
 
 interface AgentAndToolsetSelectorProps {
   value: string[];
@@ -20,6 +20,7 @@ interface AgentAndToolsetSelectorProps {
   addBtnTooltip?: string;
   allItemsMap: Record<string, ChipEntity | undefined>;
   tooltip?: string;
+  addButtonClassName?: string;
   onItemClick?: (id: string) => void;
   onJsonSwitchClick?: () => void;
   onConfigureClick?: (item: ChipEntity) => void;
@@ -30,6 +31,7 @@ export const AgentAndToolsetSelector: React.FC<AgentAndToolsetSelectorProps> = (
   readonly,
   addBtnTooltip,
   tooltip,
+  addButtonClassName,
   allItemsMap,
   onChange,
   onItemClick,
@@ -72,7 +74,12 @@ export const AgentAndToolsetSelector: React.FC<AgentAndToolsetSelectorProps> = (
   return (
     <div className="relative grow space-y-4">
       <div className="flex flex-col">
-        <div className="absolute right-0 top-[-29px] flex items-center">
+        <div
+          className={mergeClasses(
+            'absolute end-0 top-[-29px] flex items-center',
+            addButtonClassName,
+          )}
+        >
           <span>
             <DialLinkButton
               tooltipProps={{
@@ -86,7 +93,7 @@ export const AgentAndToolsetSelector: React.FC<AgentAndToolsetSelectorProps> = (
           </span>
           {!!onJsonSwitchClick && (
             <>
-              <div className="ml-1 mr-3 h-3 w-0 border-l border-primary" />
+              <div className="ms-1 me-3 h-3 w-0 border-s border-primary" />
               <span>
                 <ToggleSwitch
                   isOn={false}
@@ -104,13 +111,7 @@ export const AgentAndToolsetSelector: React.FC<AgentAndToolsetSelectorProps> = (
             </>
           )}
         </div>
-        {!value.length ? (
-          <DialNoDataContent
-            title={t(CommonI18nKeys.NoAgentsAndToolsetsAdded)}
-            icon={<IconLayoutGrid size={60} stroke={0.5} />}
-            containerClassName="rounded border border-primary p-4"
-          />
-        ) : (
+        {value.length > 0 && (
           <div className="flex flex-wrap gap-1 rounded border border-primary p-2">
             {value.map((id) => (
               <AgentAndToolsetChip

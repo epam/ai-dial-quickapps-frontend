@@ -26,7 +26,7 @@ import { Translation } from '@/types/translation';
 import { DialAIEntityModel } from '@/utils/application';
 
 import AdvancedSettingsSection from './AdvancedSettings/AdvancedSettingsSection';
-import AgentSkillsFormSection from './AgentSkills/AgentSkillsFormSection';
+import AddOnsSection from './AddOns/AddOnsSection';
 import ContextAndToolsSection from './ContextAndTools/ContextAndToolsSection';
 import ConversationStartersSection from './ConversationStarters/ConversationStartersSection';
 import InstructionsSection from './InstructionsSection/InstructionsSection';
@@ -284,16 +284,11 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
       <div className="min-w-0">
         <InstructionsSection control={control} />
 
-        <hr className="border-secondary" />
-
-        <ContextAndToolsSection
+        <AddOnsSection
           control={control}
           errors={errors}
           isReadonly={isReadonly}
           tooltip={sharedTooltip}
-          isCodeInterpreterEnabled={!!settings.isCodeInterpreterEnabled}
-          isWebFetchEnabled={!!settings.isWebFetchEnabled}
-          isAddAttachmentEnabled={!!settings.isAddAttachmentEnabled}
           agentsAndToolsets={agentsAndToolsets}
           agentsAndToolsetsJson={agentsAndToolsetsJson}
           isJsonView={isJsonView}
@@ -307,7 +302,14 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
 
         <hr className="border-secondary" />
 
-        <AgentSkillsFormSection control={control} isReadonly={isReadonly} tooltip={sharedTooltip} />
+        <ContextAndToolsSection
+          control={control}
+          isReadonly={isReadonly}
+          tooltip={sharedTooltip}
+          isCodeInterpreterEnabled={!!settings.isCodeInterpreterEnabled}
+          isWebFetchEnabled={!!settings.isWebFetchEnabled}
+          isAddAttachmentEnabled={!!settings.isAddAttachmentEnabled}
+        />
 
         <hr className="border-secondary" />
 
