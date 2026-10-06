@@ -30,6 +30,10 @@ export enum CommonI18nKeys {
   LoggedInToolset = 'Logged in',
   ToolsetSignInFailed = 'Failed to update toolset credentials',
   RemoveFile = 'Remove file',
+  LoginScreenTitle = 'Log in to configure your QuickApp',
+  LoginScreenDescription = 'Set up instructions, add-ons and settings.',
+  LoginScreenAction = 'Log in',
+  LoginScreenWindowOpen = 'Log-in window is open…',
 }
 
 // quick-app-editor.json

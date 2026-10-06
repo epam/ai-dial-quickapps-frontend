@@ -27,6 +27,10 @@
   "Should be an array": "Should be an array",
   "Should be a valid JSON": "Should be a valid JSON",
   "Remove file": "Remove file",
+  "Log in to configure your QuickApp": "Log in to configure your QuickApp",
+  "Set up instructions, add-ons and settings.": "Set up instructions, add-ons and settings.",
+  "Log in": "Log in",
+  "Log-in window is open…": "Log-in window is open…",
   "dialFileManager": {
     "title": "DIAL file system",
     "attach": "Attach",

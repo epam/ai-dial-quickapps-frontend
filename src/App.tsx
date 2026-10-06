@@ -4,7 +4,7 @@ import { FC, memo, Suspense, useEffect, useRef, useState } from 'react';
 import AuthError from '@/components/AuthError/AuthError';
 import EditorClient from '@/components/EditorClient/EditorClient';
 import LoadingScreen from '@/components/LoadingScreen/LoadingScreen';
-import LoginPrompt from '@/components/LoginPrompt/LoginPrompt';
+import LoginScreen from '@/components/LoginScreen/LoginScreen';
 import { useAuthContext } from '@/context/AuthContext';
 import { useSearchParams } from '@/hooks/useSearchParams';
 import { AuthProviderInfo, AuthStatus } from '@/types/auth';
@@ -127,7 +127,7 @@ const HomePageContent: FC = () => {
     return <AuthError message={`Auth provider ${provider} is not configured for this app`} />;
   }
 
-  return <LoginPrompt provider={provider} />;
+  return <LoginScreen provider={provider} />;
 };
 
 const HomePage: FC = () => (

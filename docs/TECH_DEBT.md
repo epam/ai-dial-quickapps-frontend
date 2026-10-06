@@ -14,6 +14,9 @@
   `openspec/changes/` for tracking individual pieces of it as they're picked up.
 - [] react-hook-form usage - should get rid of it
 - [] need to review components, some seem to be unnecessary, e.g. AgentSkillsField just proxy SkillsSelectors
+- [] Auth screens other than the sign-in prompt - `ForbiddenPage` ("Access Denied" / "Sign out") and
+  `AuthError` still hardcode English strings and use 1.0 buttons. Move their copy to i18n and align
+  their look with the redesigned `LoginPrompt` (see the `redesign-login-prompt` change).
 - [] ...
 
 ## Documentation and behavior reconciliation backlog
