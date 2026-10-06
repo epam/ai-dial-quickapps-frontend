@@ -8,16 +8,13 @@ import { Translation } from '@/types/translation';
 
 import { FormCollapsibleSection } from '@/components/common/FormCollapsibleSection';
 
-import { DialTagInput } from '@epam/ai-dial-ui-kit';
-import { DialFormItem } from '@epam/ai-dial-ui-kit';
-import { DialInput } from '@epam/ai-dial-ui-kit';
+import { DialFormItem, NumberInput, TagInput } from '@epam/ai-dial-ui-kit';
 
 export interface UserAttachmentsSectionProps {
   control: Control<QuickApp2FormType>;
   errors: FieldErrors<QuickApp2FormType>;
   isReadonly: boolean;
   tooltip?: string;
-  attachmentTypesResetKey: number;
   onAttachmentTypesChange: (tags: string[], prevTags: string[]) => void;
 }
 
@@ -26,7 +23,6 @@ const UserAttachmentsSection: FC<UserAttachmentsSectionProps> = ({
   errors,
   isReadonly,
   tooltip,
-  attachmentTypesResetKey,
   onAttachmentTypesChange,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
@@ -44,14 +40,15 @@ const UserAttachmentsSection: FC<UserAttachmentsSectionProps> = ({
           control={control}
           name="inputAttachmentTypes"
           render={({ field }) => (
-            <DialTagInput
-              key={attachmentTypesResetKey}
-              initialTags={field.value}
+            <TagInput
+              value={field.value}
               onChange={(tags) => onAttachmentTypesChange(tags, field.value)}
               disabled={isReadonly}
               placeholder={t(QuickAppEditorI18nKeys.EnterAttachmentTypes)}
+              ariaLabel={t(QuickAppEditorI18nKeys.AttachmentTypes)}
+              tagListLabel={t(QuickAppEditorI18nKeys.AttachmentTypes)}
               invalid={!!errors.inputAttachmentTypes}
-              errorText={errors.inputAttachmentTypes?.message}
+              error={errors.inputAttachmentTypes?.message}
             />
           )}
         />
@@ -65,12 +62,12 @@ const UserAttachmentsSection: FC<UserAttachmentsSectionProps> = ({
           control={control}
           name="maxInputAttachments"
           render={({ field }) => (
-            <DialInput
+            <NumberInput
               value={field.value?.toString() ?? ''}
               onChange={(value) => {
                 field.onChange(value ? Number(value) : '');
               }}
-              type="number"
+              integer
               min={1}
               disabled={isReadonly}
               title={tooltip}

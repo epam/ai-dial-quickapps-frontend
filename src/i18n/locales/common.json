@@ -22,6 +22,10 @@
   "Organization": "Organization",
   "Details": "Details",
   "Remove file": "Remove file",
+  "(required)": "(required)",
+  "Show password": "Show password",
+  "Hide password": "Hide password",
+  "Clear search": "Clear search",
   "dialFileManager": {
     "title": "DIAL file system",
     "attach": "Attach",
