@@ -190,6 +190,11 @@ module.exports = {
       },
       animation: {
         fadeIn: 'fadeIn 100ms ease-in',
+        /*
+         * ui-kit's Spinner uses `animate-spin-steps`, which lives only in the
+         * ui-kit's own Tailwind config and is absent from its dist CSS.
+         */
+        'spin-steps': 'spin 0.75s steps(8, end) infinite',
       },
     },
   },
