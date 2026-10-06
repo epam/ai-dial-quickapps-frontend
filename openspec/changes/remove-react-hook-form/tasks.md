@@ -4,13 +4,13 @@ Slicing strategy: **risk-first, then vertical migration**. First characterize th
 
 ## 1. Characterize the Existing Form Contract
 
-- [ ] 1.1 Add focused tests for `QuickApp2Schema`, `getQuickApp2FormData`, and the existing form's observable validation behavior, covering valid data, invalid JSON-view data, unavailable/tool-unsupported models, and empty/invalid/valid `maxInputAttachments`; verify the relevant existing Vitest suites pass and run `npm run lint` and `npm run typecheck`.
+- [x] 1.1 Add focused tests for `QuickApp2Schema`, `getQuickApp2FormData`, and the existing form's observable validation behavior, covering valid data, invalid JSON-view data, unavailable/tool-unsupported models, and empty/invalid/valid `maxInputAttachments`; verify the relevant existing Vitest suites pass and run `npm run lint` and `npm run typecheck`.
   - **Verification:** Run the new schema/controller tests under `src/form/tests/` and the existing `src/components/tests/QuickApp2Form.test.tsx`; confirm Zod error paths and invalid submissions are captured without changing production code.
 
-- [ ] 1.2 Add characterization coverage for dirty state, ordinary submit, host-triggered save, clean/dirty autosave, `ignoreDirty`, read-only behavior, host reset, and asynchronous model resolution; verify the tests describe observable callbacks and host messages rather than RHF internals, and run `npm run lint` and `npm run typecheck`.
+- [x] 1.2 Add characterization coverage for dirty state, ordinary submit, host-triggered save, clean/dirty autosave, `ignoreDirty`, read-only behavior, host reset, and asynchronous model resolution; verify the tests describe observable callbacks and host messages rather than RHF internals, and run `npm run lint` and `npm run typecheck`.
   - **Verification:** Run `src/components/tests/QuickApp2Form.test.tsx` plus the new focused tests for `EditorClient`/form orchestration; confirm invalid submit never calls `onSave` and reset restores the initial baseline.
 
-- [ ] 1.3 Add characterization coverage for starter-row identity and trailing-blank behavior, agents/toolsets metadata preservation, JSON/simple-view conversion, file add/remove deduplication, invalid MIME-tag rollback, and controlled value propagation; verify the existing component tests and new focused tests pass, and run `npm run lint` and `npm run typecheck`.
+- [x] 1.3 Add characterization coverage for starter-row identity and trailing-blank behavior, agents/toolsets metadata preservation, JSON/simple-view conversion, file add/remove deduplication, invalid MIME-tag rollback, and controlled value propagation; verify the existing component tests and new focused tests pass, and run `npm run lint` and `npm run typecheck`.
   - **Verification:** Run the affected component tests for `ConversationStarters`, `ContextAndTools`, and `UserAttachments`; assert generated IDs and `[schema]:*` metadata are preserved.
 
 ## 2. Implement and Test the RHF-Free Form Controller
