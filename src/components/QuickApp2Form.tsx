@@ -290,7 +290,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   return (
     <form
       onSubmit={handleSubmit((data) => onSave(data, allEntitiesMap, false))}
-      className="grid grid-cols-1 gap-4 p-4 desktop:grid-cols-[minmax(0,1fr)_minmax(280px,440px)] desktop:gap-x-12 desktop:px-8 desktop:py-7"
+      className="grid grid-cols-1 gap-4 desktop:grid-cols-[minmax(0,1fr)_minmax(280px,440px)] desktop:gap-x-12"
     >
       <div className="min-w-0 flex flex-col min-h-0 gap-4">
         <InstructionsSection control={control} />
