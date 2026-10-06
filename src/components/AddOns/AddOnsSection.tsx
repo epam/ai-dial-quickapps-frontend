@@ -58,7 +58,7 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
       className="mt-4 rounded-[24px] bg-layer-raised p-8 shadow-sm"
     >
       <h2 className="dial-medium-semi-text">{t(QuickAppEditorI18nKeys.AddOns)}</h2>
-      <div className="mt-4 flex flex-col gap-10">
+      <div className="mt-4 flex flex-col gap-7">
         <AgentSkillsFormSection control={control} isReadonly={isReadonly} tooltip={tooltip} />
 
         <AddOnRow
