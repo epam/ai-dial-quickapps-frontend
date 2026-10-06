@@ -27,3 +27,7 @@
 
 - [x] 6.1 Update `src/components/AddOns/AddOnsSection.tsx` and `src/components/AgentSkills/AgentSkillsFormSection.tsx` to match the target visual hierarchy: add the gap between Instructions and Add-ons, use the section heading and row-title/body typography utilities shown in the design, increase consistent vertical spacing between rows, and keep Add actions aligned with their row titles without changing populated content-panel styles; verify the rendered class contract with `src/components/AddOns/tests/AddOnsSection.test.tsx`, then run `npm run lint` and `npm run typecheck`.
 - [x] 6.2 Extend `src/components/AddOns/tests/AddOnsSection.test.tsx` with assertions for card separation, row typography classes, and consistent row spacing; verify with `npm test -- src/components/AddOns/tests/AddOnsSection.test.tsx --coverage.enabled=false`, then run `npm run lint` and `npm run typecheck`.
+
+## 7. Correct Instructions title typography
+
+- [x] 7.1 Update `src/components/InstructionsSection/InstructionsSection.tsx` so the Instructions title uses the same section-level typography and primary text color as the target design; extend `src/components/InstructionsSection/tests/InstructionsSection.test.tsx` with the title class assertion, then run the focused Vitest test and `npm run typecheck`.

@@ -22,7 +22,10 @@ const InstructionsSection: FC<InstructionsSectionProps> = ({ control }) => {
       aria-label={t(QuickAppEditorI18nKeys.Instructions)}
       className="rounded-[24px] bg-layer-0 p-8 shadow-sm"
     >
-      <DialFormItem label={t(QuickAppEditorI18nKeys.Instructions)}>
+      <DialFormItem
+        label={t(QuickAppEditorI18nKeys.Instructions)}
+        labelClassName="dial-medium-semi-text !text-primary"
+      >
         <Controller
           control={control}
           name="instructions"
