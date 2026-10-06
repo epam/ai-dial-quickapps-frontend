@@ -18,8 +18,7 @@ export interface AddOnRowProps {
   isAddDisabled?: boolean;
   addTooltip?: string;
   children: ReactNode;
-  // Omit to hide the Add button.
-  onAdd?: () => void;
+  onAdd: () => void;
 }
 
 export const AddOnRow: FC<AddOnRowProps> = ({
@@ -35,25 +34,21 @@ export const AddOnRow: FC<AddOnRowProps> = ({
 
   const handleAdd = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    onAdd?.();
+    onAdd();
   };
 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-row items-center justify-between gap-2">
         <h3 className="dial-small-semi-text text-primary">{label}</h3>
-        <div className="flex items-center gap-3">
-          {onAdd && (
-            <NeutralButton
-              size={ElementSize.Small}
-              iconBefore={<IconPlus size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} />}
-              label={t(CommonI18nKeys.Add)}
-              disabled={isAddDisabled}
-              tooltipProps={addTooltip ? { tooltip: addTooltip } : undefined}
-              onClick={handleAdd}
-            />
-          )}
-        </div>
+        <NeutralButton
+          size={ElementSize.Small}
+          iconBefore={<IconPlus size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} />}
+          label={t(CommonI18nKeys.Add)}
+          disabled={isAddDisabled}
+          tooltipProps={addTooltip ? { tooltip: addTooltip } : undefined}
+          onClick={handleAdd}
+        />
       </div>
       {isEmpty && <p className="dial-small-text text-secondary">{emptyDescription}</p>}
       <div className="relative">{children}</div>

@@ -6,9 +6,6 @@
   "Attach": "Attach",
   "Add Agents and Toolsets": "Add Agents and Toolsets",
   "Add": "Add",
-  "JSON": "JSON",
-  "Switch to JSON view for Agents and Toolsets": "Switch to JSON view for Agents and Toolsets",
-  "This application is public and cannot be edited": "This application is public and cannot be edited",
   "The {{entityType}} is not available in the Catalog and was added via JSON.": "The {{entityType}} is not available in the Catalog and was added via JSON.",
   "The {{entityType}} is not available and needs to be removed.": "The {{entityType}} is not available and needs to be removed.",
   "Logged out toolset.": "Logged out toolset.",
@@ -24,8 +21,6 @@
   "Shared": "Shared",
   "Organization": "Organization",
   "Details": "Details",
-  "Should be an array": "Should be an array",
-  "Should be a valid JSON": "Should be a valid JSON",
   "Remove file": "Remove file",
   "dialFileManager": {
     "title": "DIAL file system",

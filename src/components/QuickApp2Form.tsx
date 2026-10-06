@@ -4,21 +4,18 @@ import { Resolver, useForm, useWatch } from 'react-hook-form';
 
 import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { ToolsetTypes } from '@/constants/quick-apps';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import {
   AgentOrToolsetSchemaKeys,
-  getAgentsAndToolsetsFormValue,
   getQuickApp2FormData,
-  getQuickApp2Toolsets,
   MIME_TYPE_REGEX,
   QuickApp2Schema,
   resolveDefaultModelId,
   type QuickApp2Form as QuickApp2FormType,
 } from '@/form/quickApp2Form';
 import { useTranslation } from '@/hooks/useTranslation';
-import { AnyToolset, DialAppTransportType } from '@/types/quick-apps';
+import { DialAppTransportType } from '@/types/quick-apps';
 import type { QuickApp2Config } from '@/types/quick-apps';
 import type { TriggerSaveGeneralPayload } from '@/types/editor-messages';
 import type { LocalizedText } from '@/types/dial-entities';
@@ -57,7 +54,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   onModelReady,
   readonly,
 }) => {
-  const { t, language } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation(Translation.QuickAppEditor);
   const { app, settings } = useAppContext();
   const { models, modelsMap, toolsetsMap, mcpAgentsMap, status } = useDataContext();
 
@@ -186,10 +183,8 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     return () => window.removeEventListener(DIAL_EDITOR_TRIGGER_SAVE_EVENT, handleTriggerSave);
   }, [handleSubmit, isDirty, isReadonly, onSave, allEntitiesMap]);
 
-  const isJsonView = watch('isJsonView');
   const starters = watch('starters');
   const agentsAndToolsets = watch('agentsAndToolsets');
-  const agentsAndToolsetsJson = watch('agentsAndToolsetsJson');
   const chatMessageInputDisabled = watch('chatMessageInputDisabled');
   const autoSubmit = watch('autoSubmit');
 
@@ -230,31 +225,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     [agentsAndToolsets, setValue],
   );
 
-  const handleSwitchToJsonView = useCallback(() => {
-    const toolsets = getQuickApp2Toolsets({
-      data: getValues(),
-      allEntitiesMap,
-      language,
-    });
-    setValue('agentsAndToolsetsJson', JSON.stringify(toolsets, null, 2));
-    setValue('isJsonView', true);
-  }, [allEntitiesMap, getValues, setValue, language]);
-
-  const handleSwitchToSimpleView = useCallback(
-    (toolsets: AnyToolset[]) => {
-      setValue(
-        'agentsAndToolsets',
-        getAgentsAndToolsetsFormValue(toolsets) as QuickApp2FormType['agentsAndToolsets'],
-      );
-      setValue(
-        'codeInterpreter',
-        toolsets.some((toolset) => toolset.type === ToolsetTypes.CodeInterpreter),
-      );
-      setValue('isJsonView', false);
-    },
-    [setValue],
-  );
-
   const handleAttachmentTypesChange = useCallback(
     (tags: string[], prevTags: string[]) => {
       const addedTags = tags.filter((tag) => !prevTags.includes(tag));
@@ -274,16 +244,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     [setError, clearErrors, setValue, t],
   );
 
-  const handleDiscardJson = useCallback(() => {
-    const toolsets = getQuickApp2Toolsets({
-      data: getValues(),
-      allEntitiesMap,
-      language,
-    });
-    setValue('agentsAndToolsetsJson', JSON.stringify(toolsets, null, 2));
-    setValue('isJsonView', false);
-  }, [allEntitiesMap, getValues, setValue, language]);
-
   return (
     <form
       onSubmit={handleSubmit((data) => onSave(data, allEntitiesMap, false))}
@@ -294,17 +254,10 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
 
         <AddOnsSection
           control={control}
-          errors={errors}
           isReadonly={isReadonly}
           tooltip={sharedTooltip}
           agentsAndToolsets={agentsAndToolsets}
-          agentsAndToolsetsJson={agentsAndToolsetsJson}
-          isJsonView={isJsonView}
           onAgentsChange={handleAgentsChange}
-          onJsonChange={(json: string) => setValue('agentsAndToolsetsJson', json)}
-          onSwitchToJsonView={handleSwitchToJsonView}
-          onSwitchToSimpleView={handleSwitchToSimpleView}
-          onDiscardJson={handleDiscardJson}
           onConfigureAgent={handleConfigureAgent}
         />
 
