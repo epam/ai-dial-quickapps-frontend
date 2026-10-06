@@ -114,7 +114,14 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
       settings.defaultModelId,
     );
     if (resolved) setValue('model', resolved, { shouldValidate: true });
-  }, [existingModelId, toolSupportingModelIds, availableModelIds, settings.defaultModelId, getValues, setValue]);
+  }, [
+    existingModelId,
+    toolSupportingModelIds,
+    availableModelIds,
+    settings.defaultModelId,
+    getValues,
+    setValue,
+  ]);
 
   // A model id can be set on the form before its details have loaded (e.g. an
   // existing app's saved model id is applied immediately). Only report ready
@@ -163,11 +170,13 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   useEffect(() => {
     const handleTriggerSave = (event: Event) => {
       const { isAutoSave, ignoreDirty, general } =
-        (event as CustomEvent<{
-          isAutoSave?: boolean;
-          ignoreDirty?: boolean;
-          general?: TriggerSaveGeneralPayload;
-        }>).detail ?? {};
+        (
+          event as CustomEvent<{
+            isAutoSave?: boolean;
+            ignoreDirty?: boolean;
+            general?: TriggerSaveGeneralPayload;
+          }>
+        ).detail ?? {};
       if (isReadonly) return;
       if (isAutoSave && !ignoreDirty && !isDirty) return;
       void handleSubmit((data) => onSave(data, allEntitiesMap, isAutoSave, general))();
@@ -187,7 +196,9 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   const hasStarters = starters.some((s) => s.title.trim() && s.text.trim());
   const startersSettingsTooltip =
     sharedTooltip ??
-    (!hasStarters ? t(QuickAppEditorI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings) : undefined);
+    (!hasStarters
+      ? t(QuickAppEditorI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings)
+      : undefined);
 
   const handleAgentsChange = useCallback(
     (ids: string[]) => {
@@ -281,7 +292,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
       onSubmit={handleSubmit((data) => onSave(data, allEntitiesMap, false))}
       className="grid grid-cols-1 gap-4 p-4 desktop:grid-cols-[minmax(0,1fr)_minmax(280px,440px)] desktop:gap-x-12 desktop:px-8 desktop:py-7"
     >
-      <div className="min-w-0">
+      <div className="min-w-0 flex flex-col min-h-0 gap-4">
         <InstructionsSection control={control} />
 
         <AddOnsSection
@@ -335,7 +346,11 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
 
         <hr className="border-secondary" />
 
-        <AdvancedSettingsSection control={control} isReadonly={isReadonly} tooltip={sharedTooltip} />
+        <AdvancedSettingsSection
+          control={control}
+          isReadonly={isReadonly}
+          tooltip={sharedTooltip}
+        />
       </div>
 
       <ModelConfigurationSection
