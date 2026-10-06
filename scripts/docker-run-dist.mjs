@@ -45,8 +45,9 @@ const result = spawnSync(
     '5001:5001',
     '--env-file',
     '.env.docker',
-    // Keep the mounted QuickApps BFF isolated from a separate Chat API instance,
-    // even if .env.docker was copied from an older template.
+    // Keep the local QuickApps BFF on 5001, isolated from a separate Chat API
+    // instance and from the deployable image's 5000 default, even if .env.docker
+    // was copied from an older template.
     '-e',
     'PORT=5001',
     '-v',

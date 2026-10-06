@@ -10,8 +10,8 @@
 //     e.g. CHAT_API_LOCAL_DIR=/c/projects/dial/ai-dial-chat
 // Every other variable in `.env.local` (PORT, DIAL_CORE_URL, AUTH_*, ...) is
 // passed straight through as chat-api's own runtime env, same set as
-// `.env.template` documents for the Docker path — set PORT=5001 there to
-// match `vite.config.ts`'s dev-server proxy target.
+// `.env.template` documents for the deployment path — the launcher overrides
+// PORT=5001 to match `vite.config.ts`'s dev-server proxy target.
 //
 // A plain Node script (invoked via `npm run chat-api:local`) rather than a
 // shell one-liner, so it works identically from bash, cmd, PowerShell or zsh
@@ -50,7 +50,7 @@ if (!fs.existsSync(envLocalPath)) {
   console.error(
     `[chat-api:local] ${envLocalPath} not found. Create it with at least:\n` +
       `  ${ENV_LOCAL_VAR}=/absolute/path/to/ai-dial-chat\n` +
-      'plus chat-api\'s own runtime vars (see .env.template) — PORT=5001 to match vite.config.ts.',
+      'plus chat-api\'s own runtime vars (see .env.template) — the launcher forces PORT=5001 to match vite.config.ts.',
   );
   process.exit(1);
 }

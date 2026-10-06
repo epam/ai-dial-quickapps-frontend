@@ -34,8 +34,9 @@ export default defineConfig({
   server: {
     port: 4600,
     proxy: {
-      // Points at the chat-api BFF this app runs behind. Start it locally
-      // via `npm run start:api:dev` (or `npm run docker:run`) — see README.md.
+      // Local development contract: the QuickApps BFF runs on 5001 while the
+      // deployable Docker image defaults to 5000. Start it locally via
+      // `npm run start:api:dev` (or `npm run docker:run`) — see README.md.
       '/api': {
         target: 'http://localhost:5001',
         changeOrigin: true,
