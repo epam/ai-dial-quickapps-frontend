@@ -34,6 +34,14 @@ export enum CommonI18nKeys {
   LoginScreenDescription = 'Set up instructions, add-ons and settings.',
   LoginScreenAction = 'Log in',
   LoginScreenWindowOpen = 'Log-in window is open…',
+  ForbiddenTitle = 'Access denied',
+  ForbiddenDescription = "You don't have permission to access this application.",
+  ForbiddenAction = 'Log out',
+  ForbiddenActionPending = 'Logging out…',
+  AuthErrorTitle = "Log-in isn't available",
+  AuthErrorNoProvider = 'No auth provider specified for this app',
+  AuthErrorProviderNotConfigured = 'Auth provider {{provider}} is not configured for this app',
+  Loading = 'Loading…',
 }
 
 // quick-app-editor.json

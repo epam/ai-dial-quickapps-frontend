@@ -7,7 +7,7 @@ import LoadingScreen from '@/components/LoadingScreen/LoadingScreen';
 import LoginScreen from '@/components/LoginScreen/LoginScreen';
 import { useAuthContext } from '@/context/AuthContext';
 import { useSearchParams } from '@/hooks/useSearchParams';
-import { AuthProviderInfo, AuthStatus } from '@/types/auth';
+import { AuthErrorReason, AuthProviderInfo, AuthStatus } from '@/types/auth';
 import { AppSettings } from '@/types/dial-entities';
 import { getAuthProviders } from '@/utils/auth-api';
 import { fetchAppSettings } from '@/utils/dialClient';
@@ -116,7 +116,7 @@ const HomePageContent: FC = () => {
   }
 
   if (provider == null) {
-    return <AuthError message="No auth provider specified for this app" />;
+    return <AuthError reason={AuthErrorReason.NoProvider} />;
   }
 
   if (providers == null) {
@@ -124,7 +124,7 @@ const HomePageContent: FC = () => {
   }
 
   if (!providers.some((p) => p.id === provider)) {
-    return <AuthError message={`Auth provider ${provider} is not configured for this app`} />;
+    return <AuthError reason={AuthErrorReason.ProviderNotConfigured} provider={provider} />;
   }
 
   return <LoginScreen provider={provider} />;

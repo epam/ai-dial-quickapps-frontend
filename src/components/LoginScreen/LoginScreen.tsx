@@ -1,6 +1,7 @@
 import { IconExternalLink, IconLock } from '@tabler/icons-react';
 import { FC, memo } from 'react';
 
+import AuthStateScreen from '@/components/common/AuthStateScreen/AuthStateScreen';
 import { CommonI18nKeys } from '@/constants/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -16,37 +17,28 @@ const LoginScreen: FC<LoginScreenProps> = ({ provider }) => {
   const { t } = useTranslation(Translation.Common);
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center px-4 text-center">
-      <span
-        aria-hidden
-        className="flex size-14 items-center justify-center rounded-full border border-secondary text-secondary"
-      >
-        <IconLock size={DIAL_ICON_SIZE.LG} stroke={DIAL_KIT_ICON_STROKE} />
-      </span>
-      <h1 className="dial-body-semi-text mt-4 text-primary">
-        {t(CommonI18nKeys.LoginScreenTitle)}
-      </h1>
-      <p className="dial-small-text mt-2 text-secondary">
-        {t(CommonI18nKeys.LoginScreenDescription)}
-      </p>
-
-      <NeutralButton
-        className="mt-4"
-        disabled={isWindowOpen}
-        onClick={openLoginWindow}
-        label={t(
-          isWindowOpen ? CommonI18nKeys.LoginScreenWindowOpen : CommonI18nKeys.LoginScreenAction,
-        )}
-        iconAfter={
-          <IconExternalLink
-            aria-hidden
-            size={DIAL_ICON_SIZE.MD}
-            stroke={DIAL_KIT_ICON_STROKE}
-            className="rtl:scale-x-[-1]"
-          />
-        }
-      />
-    </div>
+    <AuthStateScreen
+      icon={<IconLock size={DIAL_ICON_SIZE.LG} stroke={DIAL_KIT_ICON_STROKE} />}
+      title={t(CommonI18nKeys.LoginScreenTitle)}
+      description={t(CommonI18nKeys.LoginScreenDescription)}
+      action={
+        <NeutralButton
+          disabled={isWindowOpen}
+          onClick={openLoginWindow}
+          label={t(
+            isWindowOpen ? CommonI18nKeys.LoginScreenWindowOpen : CommonI18nKeys.LoginScreenAction,
+          )}
+          iconAfter={
+            <IconExternalLink
+              aria-hidden
+              size={DIAL_ICON_SIZE.MD}
+              stroke={DIAL_KIT_ICON_STROKE}
+              className="rtl:scale-x-[-1]"
+            />
+          }
+        />
+      }
+    />
   );
 };
 
