@@ -15,22 +15,6 @@ vi.mock('@/components/common/MarkdownEditor/MarkdownEditorContainer', () => ({
     <textarea aria-label="Instructions editor" placeholder={placeholder} />
   ),
 }));
-vi.mock('@epam/ai-dial-ui-kit', () => ({
-  DialFormItem: ({
-    label,
-    labelClassName,
-    children,
-  }: {
-    label: string;
-    labelClassName?: string;
-    children: React.ReactNode;
-  }) => (
-    <div>
-      <div className={labelClassName}>{label}</div>
-      {children}
-    </div>
-  ),
-}));
 
 const TestForm = () => {
   const { control } = useForm<QuickApp2Form>({
@@ -59,9 +43,7 @@ describe('InstructionsSection', () => {
     act(() => root.render(<TestForm />));
 
     expect(container.textContent).toContain('Instructions');
-    expect(container.querySelector('.dial-medium-semi-text')?.className).toContain(
-      '!text-primary',
-    );
+    expect(container.querySelector('.dial-medium-semi-text')?.className).toContain('text-primary');
     expect(container.textContent).not.toContain('Orchestrator');
     expect(container.textContent).not.toContain('Model');
     expect(container.textContent).not.toContain('Temperature');
