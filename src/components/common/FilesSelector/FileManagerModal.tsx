@@ -9,7 +9,6 @@ import {
   NOT_ALLOWED_SYMBOLS_REGEXP,
   NotificationVariant,
   PopupSize,
-  type TabItem,
 } from '@epam/ai-dial-ui-kit';
 
 import {
@@ -64,6 +63,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
       [DialFileManagerTabs.Shared]: t(DialFileManagerI18nKeys.TabShared),
       [DialFileManagerTabs.Organization]: t(DialFileManagerI18nKeys.TabOrganization),
       [DialFileManagerTabs.Review]: '',
+      [DialFileManagerTabs.All]: '',
     }),
     [t],
   );
@@ -76,13 +76,13 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
 
   const rootLabel = tabLabels[activeTab] || tabLabels[DialFileManagerTabs.MyFiles];
 
-  const tabs = useMemo<TabItem[] | undefined>(
+  // Only the three storage sections are offered: Review is not used here, and
+  // the combined All view would mix attachable and non-attachable roots.
+  const tabs = useMemo(
     () =>
-      allTabs
-        ?.filter((tab) => tab.id !== DialFileManagerTabs.Review)
-        // useDialFileManagerTabs returns TabModel[] (label: ReactNode), but the
-        // file manager toolbar expects TabItem[] (label: string).
-        .map((tab) => ({ id: tab.id, label: String(tab.label) })),
+      allTabs?.filter(
+        (tab) => tab.value !== DialFileManagerTabs.Review && tab.value !== DialFileManagerTabs.All,
+      ),
     [allTabs],
   );
 
@@ -277,15 +277,20 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
     [visibleColumns, dateLocale, dateOptions, actionLabels],
   );
 
-  const treeOptions = useMemo(() => ({ actionLabels }), [actionLabels]);
-
-  const toolbarOptions = useMemo(
+  const treeOptions = useMemo(
     () => ({
+      actionLabels,
+      header: t(DialFileManagerI18nKeys.FoldersPanelTitle),
       tabs,
       activeTab,
       onTabChange: handleTabChangeWithReset,
+    }),
+    [actionLabels, t, tabs, activeTab, handleTabChangeWithReset],
+  );
+
+  const toolbarOptions = useMemo(
+    () => ({
       showHiddenFilesToggle: true,
-      hiddenFilesSwitcherLabel: t(DialFileManagerI18nKeys.HiddenFiles),
       showHiddenFilesLabel: t(DialFileManagerI18nKeys.ShowHiddenFiles),
       hideHiddenFilesLabel: t(DialFileManagerI18nKeys.HideHiddenFiles),
       isNewButtonDisabled,
@@ -295,12 +300,14 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
         newFolder: { label: t(DialFileManagerI18nKeys.NewFolder) },
       },
     }),
-    [tabs, activeTab, handleTabChangeWithReset, t, isNewButtonDisabled, disabledNewButtonTooltip],
+    [t, isNewButtonDisabled, disabledNewButtonTooltip],
   );
 
   const bulkActionsToolbarOptions = useMemo(
     () => ({
+      // The bar renders the count itself as a badge; the label is only the wording.
       getSelectionLabel: (count: number) => t(DialFileManagerI18nKeys.ItemsSelected, { count }),
+      clearSelectionLabel: t(DialFileManagerI18nKeys.ClearSelection),
       actionLabels,
     }),
     [t, actionLabels],
@@ -337,6 +344,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
   const deleteConfirmationOptions = useMemo(
     () => ({
       cancelLabel: t(CommonI18nKeys.Cancel),
+      closeLabel: t(DialFileManagerI18nKeys.CloseDialog),
       confirmLabel: t(DialFileManagerI18nKeys.DeleteConfirmButton),
       titleRenderer: (names: string[]) =>
         names.length === 1
