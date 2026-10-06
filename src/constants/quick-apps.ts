@@ -24,7 +24,7 @@ export enum AgentsAndToolsetsModalQueryParams {
   SliderPrevActiveSlide = 'agentsAndToolsetsSliderPrevActiveSlide',
 }
 
-export const SKELETON_COLOR = '#D1DBEA';
+export const SKELETON_COLOR = 'var(--bg-control-neutral-active, #D1DBEA)';
 
 export const ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE: { type: 'lazy_on_demand' } | null = {
   type: 'lazy_on_demand',

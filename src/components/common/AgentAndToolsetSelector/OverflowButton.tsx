@@ -71,8 +71,8 @@ export const OverflowButton = <T,>({
         {...getReferenceProps()}
         className={classNames(
           'box-border flex h-[34px] shrink-0 items-center rounded border px-3 py-1.5 transition-colors',
-          'bg-accent-primary-alpha text-primary hover:border-accent-primary',
-          isOpen ? 'border-accent-primary' : 'border-secondary',
+          'bg-control-accent-alpha text-primary hover:border-accent',
+          isOpen ? 'border-accent' : 'border-secondary',
         )}
         label={`+${hiddenItems.length}`}
       />
@@ -82,7 +82,7 @@ export const OverflowButton = <T,>({
           ref={setFloatingRef}
           style={floatingStyles}
           {...getFloatingProps()}
-          className="z-50 mt-1.5 max-h-[324px] w-[294px] rounded-md border border-tertiary bg-layer-1 shadow-lg"
+          className="z-50 mt-1.5 max-h-[324px] w-[294px] rounded-md border border-tertiary bg-layer-raised shadow-lg"
         >
           <div className="flex max-h-80 flex-col gap-1 overflow-y-auto">
             {hiddenItems.map(({ id, data }) => (

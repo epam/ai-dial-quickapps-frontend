@@ -50,7 +50,7 @@ describe('InstructionsSection', () => {
     expect(container.textContent).not.toContain('Process files');
     const instructionsSection = container.querySelector('section[aria-label="Instructions"]');
     expect(instructionsSection?.className).toContain('rounded-[24px]');
-    expect(instructionsSection?.className).toContain('bg-layer-0');
+    expect(instructionsSection?.className).toContain('bg-layer-raised');
     expect(instructionsSection?.className).toContain('shadow-sm');
     expect(container.querySelector('[aria-label="Instructions editor"]')).toBeTruthy();
     expect(container.querySelector('[aria-expanded]')).toBeNull();

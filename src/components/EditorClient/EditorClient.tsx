@@ -72,7 +72,7 @@ const EditorInner = ({
   );
 
   return (
-    <div className="bg-layer-2">
+    <div className="bg-layer-base">
       <AppContextProvider value={appState}>
         <QuickApp2Form
           key={resetKey}
@@ -318,7 +318,7 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
   }
 
   if (error) {
-    return <div className="flex h-screen items-center justify-center text-red-500">{error}</div>;
+    return <div className="flex h-screen items-center justify-center text-error">{error}</div>;
   }
 
   if (!appState) {
