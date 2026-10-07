@@ -108,7 +108,7 @@ export interface AppSettings {
   isWebFetchEnabled?: boolean;
   isAddAttachmentEnabled?: boolean;
   theme?: string;
-  allowedOrigin?: string;
+  allowedOrigins?: string[];
   defaultModelId?: string;
   dialAdminHost?: string;
   dialChatHost?: string;

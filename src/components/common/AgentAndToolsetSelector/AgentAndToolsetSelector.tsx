@@ -68,7 +68,7 @@ export const AgentAndToolsetSelector: React.FC<AgentAndToolsetSelectorProps> = (
               onLoginToolset={setLoginToolset}
               onApplicationCredentials={
                 searchParams.get('applicationCredentials') === 'true'
-                  ? (item) => requestApplicationCredentials(item.id, settings.allowedOrigin)
+                  ? (item) => requestApplicationCredentials(item.id, settings.allowedOrigins)
                   : undefined
               }
             />

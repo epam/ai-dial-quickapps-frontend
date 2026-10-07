@@ -83,7 +83,7 @@ export const DialAppConfigurationModal: FC<DialAppConfigurationModalProps> = ({
             <NeutralButton
               className="min-h-11"
               label={t(QuickAppEditorI18nKeys.ApplicationCredentials)}
-              onClick={() => requestApplicationCredentials(agentId, settings.allowedOrigin)}
+              onClick={() => requestApplicationCredentials(agentId, settings.allowedOrigins)}
             />
           </div>
         )}
