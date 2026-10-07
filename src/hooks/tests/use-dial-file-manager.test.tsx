@@ -17,13 +17,8 @@ import {
   type UseDialFileManagerOptions,
   type UseDialFileManagerResult,
 } from '@/hooks/use-dial-file-manager';
-import {
-  createFolder,
-  deleteFiles,
-  listFiles,
-  listSharedFiles,
-  type ListFilesItem,
-} from '@/utils/dial-files-api';
+import { createFolder, deleteFiles, listFiles, listSharedFiles } from '@/utils/dial-files-api';
+import { FilesApiNodeType, type ListFilesItem } from '@/types/dial-files';
 
 vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({ t: (key: string) => key, language: 'en' }),
@@ -46,8 +41,13 @@ vi.mock('@/utils/file-download', () => ({
 }));
 
 const ROOT_ITEMS: ListFilesItem[] = [
-  { name: 'docs', path: 'files/mine/docs/', nodeType: 'FOLDER', bucket: 'mine' },
-  { name: 'notes.txt', path: 'files/mine/notes.txt', nodeType: 'ITEM', bucket: 'mine' },
+  { name: 'docs', path: 'files/mine/docs/', nodeType: FilesApiNodeType.Folder, bucket: 'mine' },
+  {
+    name: 'notes.txt',
+    path: 'files/mine/notes.txt',
+    nodeType: FilesApiNodeType.Item,
+    bucket: 'mine',
+  },
 ];
 
 let latest: UseDialFileManagerResult;
@@ -137,7 +137,7 @@ describe('useDialFileManager — listing', () => {
   it('opens a subfolder by its virtual path', async () => {
     await render();
     vi.mocked(listFiles).mockResolvedValueOnce({
-      items: [{ name: 'a.md', path: 'files/mine/docs/a.md', nodeType: 'ITEM' }],
+      items: [{ name: 'a.md', path: 'files/mine/docs/a.md', nodeType: FilesApiNodeType.Item }],
     });
 
     await act(async () => latest.onPathChange('/My files/docs'));
@@ -157,7 +157,12 @@ describe('useDialFileManager — listing', () => {
   it('shows the author column and shared roots in the Shared tab, read-only at the top', async () => {
     vi.mocked(listSharedFiles).mockResolvedValue({
       items: [
-        { name: 'Reports', path: 'files/owner/reports/', nodeType: 'FOLDER', bucket: 'owner' },
+        {
+          name: 'Reports',
+          path: 'files/owner/reports/',
+          nodeType: FilesApiNodeType.Folder,
+          bucket: 'owner',
+        },
       ],
     });
     await render({ activeTab: DialFileManagerTabs.Shared });
@@ -264,7 +269,7 @@ describe('useDialFileManager — mutations', () => {
     );
 
     expect(deleteFiles).toHaveBeenCalledWith([
-      { bucket: 'mine', path: 'docs/', name: 'docs', nodeType: 'FOLDER' },
+      { bucket: 'mine', path: 'docs/', name: 'docs', nodeType: FilesApiNodeType.Folder },
     ]);
     expect(onNotification).toHaveBeenCalledWith(
       expect.objectContaining({ variant: NotificationVariant.Success }),
