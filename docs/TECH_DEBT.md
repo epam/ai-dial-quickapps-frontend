@@ -105,6 +105,7 @@ Track these dimensions separately for every capability:
 | `application_credentials` | No | Yes | Partial | Planned |
 | `skills_catalog` | No | Yes | Partial | Planned |
 | `orchestrator_model-selection` | Yes | Yes | Partial | Planned |
+| `application_advanced-settings` | Yes | Yes | Partial | Planned |
 | `application_conversation-starters` | Yes | Yes | Partial | Planned |
 | `app-configuration` | No | Yes | Partial | Planned |
 | `theming` | No | Yes | Partial | Planned |
@@ -176,8 +177,8 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 ### Advanced settings
 
-- src/components/AdvancedSettings/**
-- Proposed: application_advanced-settings
+- src/components/Settings/** (the Advanced Settings popup; the old src/components/AdvancedSettings/** section was removed)
+- **Spec written** (`openspec/specs/application_advanced-settings`, from change `populate-advanced-settings-popup`): max attachments, Time awareness and Built-in file tools in the popup.
 
 ### Conversation starters
 
@@ -189,3 +190,4 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 - src/components/UserAttachments/**
 - Proposed: application_user-attachments
+- Only Attachment types remain here; max attachments moved to the Advanced Settings popup (`application_advanced-settings`).

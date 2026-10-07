@@ -11,12 +11,12 @@ import { QuickApp2ModelStatus as ModelStatus } from '@/types/quick-app-form';
 import type { TriggerSaveGeneralPayload } from '@/types/editor-messages';
 import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import type { QuickApp2Config } from '@/types/quick-apps';
+import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import type { LocalizedText } from '@/types/dial-entities';
 import { Translation } from '@/types/translation';
 import { useTranslation } from '@/hooks/useTranslation';
 import { DialAIEntityModel } from '@/utils/application';
 
-import AdvancedSettingsSection from './AdvancedSettings/AdvancedSettingsSection';
 import AddOnsSection from './AddOns/AddOnsSection';
 import InstructionsSection from './InstructionsSection/InstructionsSection';
 import ModelConfigurationSection from './Orchestrator/ModelConfigurationSection/ModelConfigurationSection';
@@ -169,6 +169,18 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     (legacyValues: Partial<QuickApp2FormValues>) => setValues(legacyValues),
     [setValues],
   );
+  const advancedSettings = useMemo<AdvancedSettingsValues>(
+    () => ({
+      maxInputAttachments: values.maxInputAttachments,
+      timestamp: values.timestamp,
+      fileTools: values.fileTools,
+    }),
+    [values.fileTools, values.maxInputAttachments, values.timestamp],
+  );
+  const handleAdvancedSettingsSave = useCallback(
+    (nextAdvancedSettings: AdvancedSettingsValues) => setValues(nextAdvancedSettings),
+    [setValues],
+  );
   const handleAttachmentTypesChange = useCallback(
     (tags: string[], previousTags: string[]) =>
       setAttachmentTypes(
@@ -215,15 +227,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
           onValuesChange={handleLegacyValuesChange}
           onAttachmentTypesChange={handleAttachmentTypesChange}
         />
-
-        <hr className="border-secondary" />
-
-        <AdvancedSettingsSection
-          value={values.timestamp}
-          onChange={(value) => setField('timestamp', value)}
-          isReadonly={isReadonly}
-          tooltip={sharedTooltip}
-        />
       </div>
 
       <ModelConfigurationSection
@@ -237,6 +240,8 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         isReadonly={isReadonly}
         tooltip={sharedTooltip}
         isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
+        advancedSettings={advancedSettings}
+        onAdvancedSettingsSave={handleAdvancedSettingsSave}
       />
     </form>
   );

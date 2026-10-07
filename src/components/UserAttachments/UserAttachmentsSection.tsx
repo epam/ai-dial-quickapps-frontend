@@ -8,13 +8,12 @@ import { Translation } from '@/types/translation';
 
 import { FormCollapsibleSection } from '@/components/common/FormCollapsibleSection';
 
-import { DialFormItem, NumberInput, TagInput } from '@epam/ai-dial-ui-kit';
+import { DialFormItem, TagInput } from '@epam/ai-dial-ui-kit';
 
 export interface UserAttachmentsSectionProps {
   control: Control<QuickApp2FormType>;
   errors: FieldErrors<QuickApp2FormType>;
   isReadonly: boolean;
-  tooltip?: string;
   onAttachmentTypesChange: (tags: string[], prevTags: string[]) => void;
 }
 
@@ -22,7 +21,6 @@ const UserAttachmentsSection: FC<UserAttachmentsSectionProps> = ({
   control,
   errors,
   isReadonly,
-  tooltip,
   onAttachmentTypesChange,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
@@ -49,30 +47,6 @@ const UserAttachmentsSection: FC<UserAttachmentsSectionProps> = ({
               tagListLabel={t(QuickAppEditorI18nKeys.AttachmentTypes)}
               invalid={!!errors.inputAttachmentTypes}
               error={errors.inputAttachmentTypes?.message}
-            />
-          )}
-        />
-      </DialFormItem>
-
-      <DialFormItem
-        label={t(QuickAppEditorI18nKeys.MaxAttachmentsNumber)}
-        error={errors.maxInputAttachments?.message as string | undefined}
-      >
-        <Controller
-          control={control}
-          name="maxInputAttachments"
-          render={({ field }) => (
-            <NumberInput
-              value={field.value?.toString() ?? ''}
-              onChange={(value) => {
-                field.onChange(value ? Number(value) : '');
-              }}
-              integer
-              min={1}
-              disabled={isReadonly}
-              title={tooltip}
-              placeholder={t(QuickAppEditorI18nKeys.EnterMaxAttachments)}
-              invalid={!!errors.maxInputAttachments}
             />
           )}
         />

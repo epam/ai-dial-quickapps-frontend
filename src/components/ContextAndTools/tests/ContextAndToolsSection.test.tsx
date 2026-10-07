@@ -10,8 +10,15 @@ vi.mock('@/hooks/useTranslation', () => ({
 }));
 
 vi.mock('@epam/ai-dial-ui-kit', () => ({
-  DialFormItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  Switch: () => null,
+  DialFormItem: ({ label, children }: { label: string; children: React.ReactNode }) => (
+    <div>
+      <span>{label}</span>
+      {children}
+    </div>
+  ),
+  Switch: ({ labelProps }: { labelProps: { label: string } }) => (
+    <button type="button" role="switch" aria-label={labelProps.label} />
+  ),
 }));
 
 vi.mock('@/components/common/FormCollapsibleSection', () => ({
@@ -46,7 +53,7 @@ vi.mock('@/components/common/FilesSelector/FilesSelector', () => ({
 
 import ContextAndToolsSection from '../ContextAndToolsSection';
 
-const FormHarness = () => {
+const FormHarness = ({ areFeaturesEnabled = false }: { areFeaturesEnabled?: boolean }) => {
   const { control } = useForm<QuickApp2Form>({
     defaultValues: {
       documentRelativeUrl: ['existing'],
@@ -57,9 +64,9 @@ const FormHarness = () => {
     <ContextAndToolsSection
       control={control}
       isReadonly={false}
-      isCodeInterpreterEnabled={false}
-      isWebFetchEnabled={false}
-      isAddAttachmentEnabled={false}
+      isCodeInterpreterEnabled={areFeaturesEnabled}
+      isWebFetchEnabled={areFeaturesEnabled}
+      isAddAttachmentEnabled={areFeaturesEnabled}
     />
   );
 };
@@ -100,5 +107,18 @@ describe('ContextAndToolsSection file selection', () => {
       );
     });
     expect(container.querySelector('[data-testid="files"]')?.textContent).toBe('new file');
+  });
+});
+
+describe('ContextAndToolsSection tools', () => {
+  it('keeps the feature-flagged tools and no longer renders File tools', () => {
+    act(() => root.render(<FormHarness areFeaturesEnabled />));
+
+    const switches = [...container.querySelectorAll('[role="switch"]')].map((item) => item.getAttribute('aria-label'));
+    expect(switches).toEqual([
+      'Allow the agent to attach files to the response',
+      'Allow the agent to fetch web resources',
+    ]);
+    expect(container.textContent).not.toContain('File tools');
   });
 });

@@ -2,6 +2,7 @@ import { FC, memo, useMemo } from 'react';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
+import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import type { QuickApp2FormErrors } from '@/types/quick-app-form';
 import { useTranslation } from '@/hooks/useTranslation';
 import { SectionRowVariant } from '@/types/section-row';
@@ -26,6 +27,8 @@ export interface ModelConfigurationSectionProps {
   isReadonly: boolean;
   tooltip?: string;
   isProcessLargeFilesAvailable: boolean;
+  advancedSettings: AdvancedSettingsValues;
+  onAdvancedSettingsSave: (values: AdvancedSettingsValues) => void;
 }
 
 const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
@@ -39,6 +42,8 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
   isReadonly,
   tooltip,
   isProcessLargeFilesAvailable,
+  advancedSettings,
+  onAdvancedSettingsSave,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
   const { modelsMap } = useDataContext();
@@ -105,7 +110,12 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
           </SectionRow>
         )}
 
-        <SettingsSection isReadonly={isReadonly} />
+        <SettingsSection
+          isReadonly={isReadonly}
+          advancedSettings={advancedSettings}
+          maxInputAttachmentsError={errors.maxInputAttachments}
+          onAdvancedSettingsSave={onAdvancedSettingsSave}
+        />
       </div>
     </section>
   );

@@ -6,6 +6,7 @@ import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import type { QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form';
 import type { QuickApp2Form } from '@/form/quickApp2Form';
+import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import type { TriggerSaveGeneralPayload } from '@/types/editor-messages';
 
 type FormSaveHandler = (
@@ -78,10 +79,27 @@ vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationS
   const ModelTestField = ({
     model,
     onModelChange,
+    advancedSettings,
+    onAdvancedSettingsSave,
   }: {
     model: string;
     onModelChange: (value: string) => void;
-  }) => <input aria-label="Model" value={model} onChange={(event) => onModelChange(event.target.value)} />;
+    advancedSettings: AdvancedSettingsValues;
+    onAdvancedSettingsSave: (values: AdvancedSettingsValues) => void;
+  }) => (
+    <div>
+      <input aria-label="Model" value={model} onChange={(event) => onModelChange(event.target.value)} />
+      <button
+        type="button"
+        onClick={() => onAdvancedSettingsSave({ ...advancedSettings, fileTools: true, maxInputAttachments: 5 })}
+      >
+        Save changed advanced settings
+      </button>
+      <button type="button" onClick={() => onAdvancedSettingsSave(advancedSettings)}>
+        Save unchanged advanced settings
+      </button>
+    </div>
+  );
 
   return { default: ModelTestField };
 });
@@ -118,12 +136,14 @@ vi.mock('@/components/UserAttachments/UserAttachmentsSection', () => ({ default:
 vi.mock('@/components/ConversationStarters/ConversationStartersSection', () => ({
   default: () => null,
 }));
-vi.mock('@/components/AdvancedSettings/AdvancedSettingsSection', () => ({ default: () => null }));
 
 import { QuickApp2Form as QuickApp2FormComponent } from '../QuickApp2Form';
 
 let root: Root;
 let container: HTMLDivElement;
+
+const getButtonByText = (text: string) =>
+  [...container.querySelectorAll('button')].find((button) => button.textContent === text) as HTMLButtonElement;
 
 const renderForm = (
   props: { onSave?: Mock<FormSaveHandler>; readonly?: boolean; key?: string } = {},
@@ -222,6 +242,28 @@ describe('QuickApp2Form observable behavior', () => {
 
     await dispatchInput(instructions, '');
     expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it('applies saved Advanced Settings to the form and marks it dirty', async () => {
+    const { onSave, onDirtyChange } = renderForm();
+
+    act(() => getButtonByText('Save changed advanced settings').click());
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+
+    await submitForm();
+    expect(onSave).toHaveBeenLastCalledWith(
+      expect.objectContaining({ fileTools: true, maxInputAttachments: 5, timestamp: true }),
+      expect.anything(),
+      false,
+      undefined,
+    );
+  });
+
+  it('keeps the form clean when Advanced Settings are saved unchanged', () => {
+    const { onDirtyChange } = renderForm();
+
+    act(() => getButtonByText('Save unchanged advanced settings').click());
+    expect(onDirtyChange).not.toHaveBeenCalledWith(true);
   });
 
   it('skips clean autosave, saves dirty autosave, and honors ignoreDirty', async () => {
