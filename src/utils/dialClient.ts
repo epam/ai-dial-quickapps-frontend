@@ -52,6 +52,9 @@ const CHAT_DEPLOYMENT_INTERFACE = ListDeploymentsInterfaceTypeEnum.Chat;
  */
 const MCP_DEPLOYMENT_INTERFACE = ListDeploymentsInterfaceTypeEnum.Mcp;
 
+/** chat-api client-config app id whose config QuickApps reads (default model, custom variables). */
+const CLIENT_CONFIG_APP_ID = 'chat-ui';
+
 /**
  * Encode each path segment individually, preserving '/' as a separator.
  *
@@ -297,7 +300,7 @@ const readCustomVariables = (value: unknown): CustomVariables => {
 
 export async function fetchAppSettings(): Promise<AppSettings> {
   try {
-    const res = await appConfigApi.getClientConfig({ appId: 'chat-ui' });
+    const res = await appConfigApi.getClientConfig({ appId: CLIENT_CONFIG_APP_ID });
     const custom = readCustomVariables(res.config.customVariables);
     return {
       isCodeInterpreterEnabled: custom.isCodeInterpreterEnabled === true,

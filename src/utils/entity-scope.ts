@@ -1,3 +1,4 @@
+import { MODEL_ROOTS, PUBLIC_BUCKET_SEGMENT } from '@/constants/dial-paths';
 import { type EntityScopeInfo, ResourceScope } from '@/types/resource-scope';
 
 /**
@@ -5,11 +6,6 @@ import { type EntityScopeInfo, ResourceScope } from '@/types/resource-scope';
  * (same convention as `isPublicToolsetId` in `@/utils/api`).
  */
 const BUCKETED_ROOTS = new Set(['toolsets', 'applications', 'skills']);
-
-/** Entity roots whose second segment is a publisher path, not a bucket (`model/openai/gpt-4o`). */
-const MODEL_ROOTS = new Set(['model', 'models']);
-
-const PUBLIC_BUCKET_SEGMENT = 'public';
 
 /** Minimum id segments (root + bucket + name) for an entity to be scope-classifiable. */
 const MIN_CLASSIFIABLE_SEGMENTS = 3;
@@ -23,10 +19,7 @@ const decodeSegment = (segment: string): string => {
   }
 };
 
-const classifyBucket = (
-  bucket: string,
-  userBucket?: string,
-): ResourceScope | undefined => {
+const classifyBucket = (bucket: string, userBucket?: string): ResourceScope | undefined => {
   if (bucket === PUBLIC_BUCKET_SEGMENT) return ResourceScope.Organization;
   // Without the user's bucket id a non-public bucket is indeterminate —
   // return undefined so the UI hides the scope line instead of guessing.
@@ -47,7 +40,10 @@ const classifyBucket = (
  * is `public` or the user's own bucket — anything else is a publisher path
  * (`model/openai/gpt-4o`) and classified as Organization.
  */
-export const getEntityScopeInfo = (id: string, userBucket?: string): EntityScopeInfo | undefined => {
+export const getEntityScopeInfo = (
+  id: string,
+  userBucket?: string,
+): EntityScopeInfo | undefined => {
   const parts = id.split('/').map(decodeSegment);
   if (parts.length < MIN_CLASSIFIABLE_SEGMENTS) return undefined;
 

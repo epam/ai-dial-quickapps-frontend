@@ -1,6 +1,7 @@
 import type { CatalogItem } from '@epam/ai-dial-catalog';
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 
+import { MODEL_ROOTS } from '@/constants/dial-paths';
 import type { DialModel } from '@/types/dial-entities';
 import { type EntityScopeInfo, ResourceScope } from '@/types/resource-scope';
 import { getCatalogFolder, getEntityScopeInfo } from '@/utils/entity-scope';
@@ -14,8 +15,6 @@ export interface MapModelToCatalogItemOptions {
   /** Already-translated scope labels — keeps this util free of i18n. */
   scopeLabels: Record<ResourceScope, string>;
 }
-
-const MODEL_ROOTS = new Set(['model', 'models']);
 
 /**
  * Configured models have no bucket segment — chat-api returns them as a bare
