@@ -49,6 +49,16 @@
     `SKILL.md` under `files/` (as ai-dial-chat's `resolveSkillManifestFileId` does) — today the
     Details tab shows its error state there;
   - optionally list a skill's bundled files in the Details tab (`ContentTab`'s file tree).
+- [] Add-ons: `AddOnsSection` opens the Agents & Toolsets modal when the URL has
+  `?agentsAndToolsetsModal=1` (`AgentsAndToolsetsModalQueryParams.Modal` in
+  `src/constants/quick-apps.ts`). Nothing in this repo sets that parameter, and no spec describes it.
+  Confirm whether a host still opens the modal this way. If one does, add the parameter to
+  `host-integration` and keep it as a single named constant instead of a one-member enum. If none
+  does, remove the parameter and the code that reads it.
+- [] Themes: `src/context/ThemeContext.tsx` loads themes with `chatApiFetch('/api/themes')`, but
+  `@epam/ai-dial-chat-api-client` has a typed `ThemesApi`. Decide whether to switch to it or keep
+  the raw call as a documented exception (see "API-layer exceptions and configuration keys" below).
+  Switching changes the endpoint, so it needs its own OpenSpec change.
 - [] ...
 
 ## Documentation and behavior reconciliation backlog
