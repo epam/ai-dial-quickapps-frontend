@@ -25,6 +25,7 @@ export enum CommonI18nKeys {
   LoggedInToolset = 'Logged in',
   ToolsetSignInFailed = 'Failed to update toolset credentials',
   RemoveFile = 'Remove file',
+  Loading = 'Loading…',
   Required = '(required)',
   ShowPassword = 'Show password',
   HidePassword = 'Hide password',

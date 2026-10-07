@@ -103,7 +103,7 @@ describe('ModelConfigurationSection', () => {
 
     expect(container.textContent).toContain('Configuration');
     expect(container.querySelector('section[aria-labelledby="model-configuration-heading"]')?.className).toContain(
-      'px-8',
+      'ps-8',
     );
     expect(container.textContent).toContain('Model picker');
     expect(container.textContent).toContain('Temperature control');
