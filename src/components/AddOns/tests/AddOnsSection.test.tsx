@@ -49,7 +49,8 @@ const renderSection = ({
   act(() => {
     root.render(
       <AddOnsSection
-        control={null as never}
+        agentSkills={[]}
+        onAgentSkillsChange={vi.fn()}
         isReadonly={isReadonly}
         agentsAndToolsets={agentsAndToolsets}
         onAgentsChange={vi.fn()}

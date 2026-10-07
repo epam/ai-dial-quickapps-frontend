@@ -1,9 +1,6 @@
-import React, { act } from 'react';
+import React, { act, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { useForm } from 'react-hook-form';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
-import type { QuickApp2Form } from '@/form/quickApp2Form';
 
 import InstructionsSection from '../InstructionsSection';
 
@@ -11,16 +8,27 @@ vi.mock('@/hooks/useTranslation', () => ({
   useTranslation: () => ({ language: 'en', t: (key: string) => key }),
 }));
 vi.mock('@/components/common/MarkdownEditor/MarkdownEditorContainer', () => ({
-  DialMarkdownEditorContainer: ({ placeholder }: { placeholder?: string }) => (
-    <textarea aria-label="Instructions editor" placeholder={placeholder} />
+  DialMarkdownEditorContainer: ({
+    value,
+    onChangeValue,
+    placeholder,
+  }: {
+    value: string;
+    onChangeValue: (value: string) => void;
+    placeholder?: string;
+  }) => (
+    <textarea
+      aria-label="Instructions editor"
+      placeholder={placeholder}
+      value={value}
+      onChange={(event) => onChangeValue(event.target.value)}
+    />
   ),
 }));
 
 const TestForm = () => {
-  const { control } = useForm<QuickApp2Form>({
-    defaultValues: { instructions: 'Existing instructions' } as QuickApp2Form,
-  });
-  return <InstructionsSection control={control} />;
+  const [value, setValue] = useState('Existing instructions');
+  return <InstructionsSection value={value} onChange={setValue} />;
 };
 
 let root: Root;
@@ -62,6 +70,14 @@ describe('InstructionsSection', () => {
   it('keeps the existing instructions value bound to the editor', () => {
     act(() => root.render(<TestForm />));
 
-    expect(container.querySelector('[aria-label="Instructions editor"]')).toBeTruthy();
+    const editor = container.querySelector('[aria-label="Instructions editor"]') as HTMLTextAreaElement;
+    expect(editor.value).toBe('Existing instructions');
+
+    act(() => {
+      editor.value = 'Changed instructions';
+      editor.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+
+    expect(editor.value).toBe('Changed instructions');
   });
 });
