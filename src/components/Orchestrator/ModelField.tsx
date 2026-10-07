@@ -2,13 +2,17 @@ import classNames from 'classnames';
 import { FC, useCallback, useMemo, useState } from 'react';
 
 import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { DialModel } from '@/types/dial-entities';
+import { SectionRowVariant } from '@/types/section-row';
 import { Translation } from '@/types/translation';
 import {
   DialLinkButton,
+  ElementSize,
+  EntityIdentity,
+  EntityType,
+  mergeClasses,
   Spinner,
   DialNoDataContent,
   DialPopup,
@@ -19,16 +23,19 @@ import {
   PopupSize,
   Search,
   SelectSize,
+  NeutralButton,
 } from '@epam/ai-dial-ui-kit';
 
+import { SectionRow } from '@/components/common/SectionRow/SectionRow';
 import FavoriteStarButton from '@/components/common/FavoriteStarButton/FavoriteStarButton';
 import { EntityScopeLine } from '@/components/common/EntityScopeLine/EntityScopeLine';
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
 import { TopicsLine } from '@/components/common/TopicsLine/TopicsLine';
 import { VirtualCardGrid } from '@/components/common/VirtualCardGrid/VirtualCardGrid';
-import { IconAlertCircleFilled, IconBulb, IconSearch } from '@tabler/icons-react';
+import { IconAlertCircleFilled, IconBulb, IconPencil, IconSearch } from '@tabler/icons-react';
 import { SKELETON_COLOR } from '@/constants/quick-apps';
 import { getEntityIdWithoutVersion, isHiddenDialFolderId } from '@/utils/api';
+import { resolveIconUrl } from '@/utils/resolve-icon-url';
 import { getLocalizedText } from '@/utils/get-localized-text';
 import { getUpdatedAtTimestamp } from '@/utils/get-updated-at-timestamp';
 
@@ -185,7 +192,6 @@ interface ModelFieldProps {
 export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, tooltip, error }) => {
   const { t, language } = useTranslation(Translation.QuickAppEditor);
   const { t: tCommon } = useTranslation(Translation.Common);
-  const { app } = useAppContext();
   const {
     modelsWithFavorites: models,
     favoriteIds,
@@ -193,9 +199,6 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
     error: dataError,
     refreshAll,
   } = useDataContext();
-  // The app being edited must not be selectable as its own orchestrator —
-  // that would make it call itself (recursion).
-  const currentAppEntityId = getEntityIdWithoutVersion(app.id);
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<ModelFieldTab>(TAB_IDS.catalog);
@@ -216,17 +219,14 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
     [models],
   );
 
-  // Only tool-supporting models/agents can be selected in the modal — others
-  // are hidden entirely rather than shown with an error after selection.
-  // The app being edited is excluded from the selectable set (recursion), but
-  // stays in `availableModels` so a previously saved value still shows its
-  // display name on the collapsed card.
+  // Only tool-supporting models can be selected in the modal — applications
+  // (agents, including the app being edited) and models without tools are
+  // hidden entirely rather than shown with an error after selection. They stay
+  // in `availableModels` so a previously saved value still shows its display
+  // name on the collapsed card.
   const selectableModels = useMemo(
-    () =>
-      availableModels.filter(
-        (m) => !!m.features?.tools && getEntityIdWithoutVersion(m.id) !== currentAppEntityId,
-      ),
-    [availableModels, currentAppEntityId],
+    () => availableModels.filter((m) => m.type === 'model' && !!m.features?.tools),
+    [availableModels],
   );
 
   const allGroups = useMemo(
@@ -239,15 +239,6 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
     ? getLocalizedText(selectedModel.name, language, selectedModel.id)
     : (value ?? t(QuickAppEditorI18nKeys.SelectModel));
   const isModelInfoLoading = (status === 'loading' || status === 'idle') && !selectedModel;
-
-  const selectedGroup = allGroups.find((g) => g.models.some((m) => m.id === value));
-  const hasVersions = (selectedGroup?.models.length ?? 0) > 1;
-  const cardVersionOptions = hasVersions
-    ? (selectedGroup?.models ?? []).map((m) => ({
-        value: m.id,
-        label: m.version ?? m.id,
-      }))
-    : [];
 
   const favoriteGroups = useMemo(
     () =>
@@ -290,80 +281,85 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
     setActiveTab(TAB_IDS.catalog);
   }, []);
 
-  return (
-    <div title={tooltip}>
-      {/* Collapsed card */}
-      <div
-        className={classNames(
-          'flex items-center gap-3 rounded border bg-layer-sunken px-4 py-3',
-          error ? 'border-error' : 'border-tertiary',
-          disabled && 'opacity-50',
-        )}
-      >
-        {isModelInfoLoading ? (
+  const renderCardContent = () => {
+    if (isModelInfoLoading) {
+      return (
+        <div className="flex items-center gap-2">
           <DialSkeleton
             variant={DialSkeletonVariant.Circular}
-            width={32}
-            height={32}
+            width={44}
+            height={44}
             color={SKELETON_COLOR}
           />
-        ) : (
-          <ModelIcon name={displayName} iconUrl={selectedModel?.iconUrl} size={32} radius={8} />
-        )}
-
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          {isModelInfoLoading ? (
+          <div className="flex min-w-0 flex-1 flex-col gap-2">
+            <DialSkeleton
+              variant={DialSkeletonVariant.Text}
+              width="30%"
+              height={12}
+              color={SKELETON_COLOR}
+            />
             <DialSkeleton
               variant={DialSkeletonVariant.Text}
               width="60%"
               height={16}
               color={SKELETON_COLOR}
             />
-          ) : (
-            <span
-              className={classNames(
-                'dial-small-semi-text truncate',
-                selectedModel ? 'text-primary' : 'text-secondary',
-              )}
-            >
-              {displayName}
-            </span>
-          )}
-
-          {(hasVersions || selectedModel?.version) && (
-            <div className="dial-tiny-text flex items-center gap-1">
-              <span className="shrink-0 text-secondary">
-                {t(QuickAppEditorI18nKeys.VersionPrefix)}
-              </span>
-              {hasVersions ? (
-                <div className="w-fit" onClick={(e) => e.stopPropagation()}>
-                  <DialSelect
-                    size={SelectSize.Sm}
-                    options={cardVersionOptions}
-                    value={value}
-                    customSelectedValue={selectedModel?.version ?? value}
-                    disabled={disabled}
-                    className={VERSION_SELECT_CLASS}
-                    listClassName="!w-fit"
-                    onChange={(v) => onChange(v as string)}
-                  />
-                </div>
-              ) : (
-                <span className="text-secondary">{selectedModel?.version}</span>
-              )}
-            </div>
-          )}
+          </div>
         </div>
+      );
+    }
 
-        <DialLinkButton
-          className="shrink-0"
+    if (!selectedModel) {
+      return (
+        <span className="dial-body-semi-text block truncate text-secondary">{displayName}</span>
+      );
+    }
+
+    return (
+      <EntityIdentity
+        item={{
+          type: EntityType.Model,
+          name: displayName,
+          version: selectedModel.version,
+          iconUrl: selectedModel.iconUrl ? resolveIconUrl(selectedModel.iconUrl) : undefined,
+        }}
+        labels={{ type: t(QuickAppEditorI18nKeys.Model) }}
+        hasFeaturedTag={false}
+        iconSize={44}
+        headingLevel={4}
+        nameClassName="dial-body-semi-text"
+      />
+    );
+  };
+
+  return (
+    <SectionRow
+      title={t(QuickAppEditorI18nKeys.DefaultModel)}
+      variant={SectionRowVariant.Caption}
+      action={
+        <NeutralButton
+          size={ElementSize.Small}
+          iconBefore={<IconPencil size={16} aria-hidden="true" />}
           label={t(QuickAppEditorI18nKeys.Change)}
           onClick={handleOpen}
           disabled={disabled || isModelInfoLoading}
+          tooltipProps={tooltip ? { tooltip } : undefined}
         />
-      </div>
+      }
+    >
+      <div title={tooltip}>
+        <div
+          className={mergeClasses(
+            'rounded-[16px] border bg-layer-raised p-3',
+            error ? 'border-error' : 'border-tertiary',
+            disabled && 'opacity-50',
+          )}
+        >
+          {renderCardContent()}
+        </div>
 
-      {error && <p className="dial-tiny-text mt-1 text-error">{error}</p>}
+        {error && <p className="dial-tiny-text mt-1 text-error">{error}</p>}
+      </div>
 
       <DialPopup
         open={isOpen}
@@ -450,6 +446,6 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
           </div>
         </div>
       </DialPopup>
-    </div>
+    </SectionRow>
   );
 };

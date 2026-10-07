@@ -99,7 +99,14 @@ describe('AddOnsSection', () => {
   it('disables the Agents & Toolsets Add action in read-only mode', () => {
     renderSection({ isReadonly: true });
 
-    expect(getAgentsAddButton()?.disabled).toBe(true);
+    // With a tooltip the kit marks a disabled button aria-disabled (not native
+    // `disabled`) so the tooltip still opens; either way it must not act.
+    const button = getAgentsAddButton();
+    expect(button?.disabled || button?.getAttribute('aria-disabled') === 'true').toBe(true);
+
+    act(() => button?.click());
+
+    expect(getByAriaLabel('Agents & Toolsets modal')).toBeUndefined();
   });
 
   it('does not render a JSON control in the Agents & Toolsets row header', () => {
