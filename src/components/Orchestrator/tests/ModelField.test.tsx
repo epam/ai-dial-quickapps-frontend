@@ -124,14 +124,6 @@ describe('ModelField', () => {
     expect(container.textContent).not.toContain('Featured');
   });
 
-  it('labels an application deployment as an agent', () => {
-    models = [{ ...gemini, type: 'application' }];
-    render();
-
-    expect(hasElementWithText('Agent')).toBe(true);
-    expect(hasElementWithText('Model')).toBe(false);
-  });
-
   it('shows only the selected version when the model has several', () => {
     models = [gemini, { ...gemini, id: 'models/gemini__2.0.0', version: '2.0.0' }];
     render();
@@ -214,6 +206,6 @@ describe('ModelField', () => {
     render({ value: 'applications/bucket/some-agent__1.0.0' });
 
     expect(container.querySelector('h4')?.textContent).toBe('Some agent');
-    expect(hasElementWithText('Agent')).toBe(true);
+    expect(hasElementWithText('Model')).toBe(true);
   });
 });

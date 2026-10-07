@@ -11,6 +11,7 @@ import {
   DialLinkButton,
   ElementSize,
   EntityIdentity,
+  EntityType,
   mergeClasses,
   Spinner,
   DialNoDataContent,
@@ -34,7 +35,6 @@ import { VirtualCardGrid } from '@/components/common/VirtualCardGrid/VirtualCard
 import { IconAlertCircleFilled, IconBulb, IconPencil, IconSearch } from '@tabler/icons-react';
 import { SKELETON_COLOR } from '@/constants/quick-apps';
 import { getEntityIdWithoutVersion, isHiddenDialFolderId } from '@/utils/api';
-import { getModelEntityType, getModelTypeI18nKey } from '@/utils/application';
 import { resolveIconUrl } from '@/utils/resolve-icon-url';
 import { getLocalizedText } from '@/utils/get-localized-text';
 import { getUpdatedAtTimestamp } from '@/utils/get-updated-at-timestamp';
@@ -318,12 +318,12 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
     return (
       <EntityIdentity
         item={{
-          type: getModelEntityType(selectedModel.type),
+          type: EntityType.Model,
           name: displayName,
           version: selectedModel.version,
           iconUrl: selectedModel.iconUrl ? resolveIconUrl(selectedModel.iconUrl) : undefined,
         }}
-        labels={{ type: t(getModelTypeI18nKey(selectedModel.type)) }}
+        labels={{ type: t(QuickAppEditorI18nKeys.Model) }}
         hasFeaturedTag={false}
         iconSize={44}
         headingLevel={4}
