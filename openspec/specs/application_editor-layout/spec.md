@@ -73,6 +73,12 @@ The editor SHALL render the existing Instructions editor in a standalone, always
 - **THEN** the existing instructions form value SHALL be updated
 - **AND** the value SHALL continue to participate in the existing validation, dirty-state, and save serialization behavior
 
+#### Scenario: Instructions editor has a fixed height
+- **WHEN** the Instructions editor is rendered outside fullscreen mode
+- **THEN** it SHALL keep its fixed height
+- **AND** it SHALL NOT render a drag handle for resizing that height
+- **AND** the editor's fullscreen toggle SHALL remain available
+
 ### Requirement: Presentation change preserves form contract
 The layout change SHALL preserve existing form state ownership, field names, conditional behavior, read-only behavior, and persistence without introducing new chat-api requests. Skills SHALL continue to use the existing `agentSkills` form value, and the merged Agents & Toolsets control SHALL continue to use the existing `agentsAndToolsets` form value.
 

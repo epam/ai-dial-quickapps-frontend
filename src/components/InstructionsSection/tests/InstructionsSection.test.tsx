@@ -79,7 +79,9 @@ describe('InstructionsSection', () => {
   it('keeps the existing instructions value bound to the editor', async () => {
     await act(async () => root.render(<TestForm />));
 
-    const editor = container.querySelector('[aria-label="Instructions editor"]') as HTMLTextAreaElement;
+    const editor = container.querySelector(
+      '[aria-label="Instructions editor"]',
+    ) as HTMLTextAreaElement;
     expect(editor.value).toBe('Existing instructions');
 
     act(() => {

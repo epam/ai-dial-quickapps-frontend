@@ -1,4 +1,6 @@
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { decodeApiUrl, isApplicationId, parseEntityApiKey, splitEntityId } from '@/utils/api';
+import type { DialAIEntityModel } from '@/types/dial-entities';
 import {
   DialAppToolset,
   DialDeploymentSimpleTool,
@@ -7,13 +9,6 @@ import {
 } from '@/types/quick-apps';
 
 import omit from 'lodash-es/omit';
-
-export interface DialAIEntityModel {
-  applicationTypeSchemaId?: string;
-  mcp?: boolean;
-  features?: { mcp?: boolean };
-  [key: string]: unknown;
-}
 
 const getQuickApp2Config = (entity: { applicationProperties?: unknown }): QuickApp2Config =>
   entity.applicationProperties as QuickApp2Config;
@@ -75,6 +70,13 @@ export const doesAgentSupportMcp = (entity?: DialAIEntityModel): boolean =>
 
 export const doesModelAllowTemperature = (model?: DialAIEntityModel): boolean =>
   !!(model as { features?: { temperature?: boolean } } | undefined)?.features?.temperature;
+
+// Half-step thresholds keep 0.3 / 0.7 (and float noise like 0.1 + 0.2) in the intended band.
+export const getTemperatureScaleLabelKey = (value: number): QuickAppEditorI18nKeys => {
+  if (value < 0.35) return QuickAppEditorI18nKeys.TemperaturePrecise;
+  if (value > 0.65) return QuickAppEditorI18nKeys.TemperatureCreative;
+  return QuickAppEditorI18nKeys.TemperatureNeutral;
+};
 
 export const isEntityIdPublic = (entity: { id: string }): boolean =>
   entity.id.startsWith('public/');

@@ -15,7 +15,7 @@ import { Translation } from '@/types/translation';
 import { postToHost, isOriginAllowed } from '@/utils/allowed-origins';
 import { isPublicToolsetId } from '@/utils/api';
 import { toolsetsApi } from '@/utils/chat-api-client';
-import { encodeDialPath } from '@/utils/dialClient';
+import { encodeDialPath } from '@/utils/dial-client';
 import { getLocalizedText } from '@/utils/get-localized-text';
 import {
   DialNeutralButton,
@@ -37,7 +37,7 @@ interface ToolsetLoginModalProps {
   onClose: () => void;
 }
 
-/** Public toolsets are signed in per-user, private ones per-workspace — mirrors dialClient.ts's mapAuthSettings. */
+/** Public toolsets are signed in per-user, private ones per-workspace — mirrors dial-client.ts's mapAuthSettings. */
 const credentialsLevelFor = (toolsetId: string): ToolsetLoginBodyDtoCredentialsLevelEnum =>
   isPublicToolsetId(toolsetId)
     ? ToolsetLoginBodyDtoCredentialsLevelEnum.User

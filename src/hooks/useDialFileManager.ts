@@ -21,7 +21,7 @@ import { DIAL_HIDDEN_FOLDER_MARKER } from '@/constants/dial-files';
 import { DialFileManagerI18nKeys } from '@/constants/i18n';
 import type { FileUploadBatchState, FileUploadEntry } from '@/types/file-manager';
 import { FileUploadStatus } from '@/types/file-manager';
-import type { ListFilesItem } from '@/utils/dial-files-api';
+import { FilesApiNodeType, type ListFilesItem } from '@/types/dial-files';
 import {
   createFolder,
   deleteFiles,
@@ -183,7 +183,7 @@ const buildFromCache = (
   if (flat == null) return [];
 
   return flat.map((item): DialFile => {
-    const isFolder = item.nodeType === 'FOLDER';
+    const isFolder = item.nodeType === FilesApiNodeType.Folder;
     const name = safeDecodeURI(item.name);
     const virtualPath = isFolder ? `${virtualBasePath}/${name}/` : `${virtualBasePath}/${name}`;
 
@@ -233,7 +233,7 @@ const mergeCreatedFolderIntoCache = (
     name: created.name,
     path: created.path,
     folderId: created.folderId,
-    nodeType: 'FOLDER',
+    nodeType: FilesApiNodeType.Folder,
     bucket: created.bucket,
     parentPath: created.parentPath ?? undefined,
     url: created.path,
@@ -676,7 +676,7 @@ export const useDialFileManager = ({
               path: resolveDialFileApiPath(f, f.bucket ?? bucket, rootLabel),
               name: f.name,
               nodeType:
-                f.nodeType === DialFileNodeType.FOLDER ? ('FOLDER' as const) : ('ITEM' as const),
+                f.nodeType === DialFileNodeType.FOLDER ? FilesApiNodeType.Folder : FilesApiNodeType.Item,
             }));
             const response = await downloadArchive(archiveItems);
             await triggerBrowserDownload(response, filename, destination);
@@ -720,7 +720,7 @@ export const useDialFileManager = ({
             bucket: itemBucket,
             path: itemPath,
             name,
-            nodeType: (isFolder ? 'FOLDER' : 'ITEM') as 'ITEM' | 'FOLDER',
+            nodeType: isFolder ? FilesApiNodeType.Folder : FilesApiNodeType.Item,
           };
         });
 
@@ -781,12 +781,12 @@ export const useDialFileManager = ({
         }
 
         const deletedFolderPaths = dtos
-          .filter((d) => d.nodeType === 'FOLDER')
+          .filter((d) => d.nodeType === FilesApiNodeType.Folder)
           .map((d) => (d.path.endsWith('/') ? d.path : `${d.path}/`));
 
         const affectedFolderKeys = new Set<string>(
           dtos.map((d) => {
-            if (d.nodeType === 'FOLDER') {
+            if (d.nodeType === FilesApiNodeType.Folder) {
               return d.path.endsWith('/') ? d.path : `${d.path}/`;
             }
             const lastSlash = d.path.lastIndexOf('/');
@@ -883,7 +883,7 @@ export const useDialFileManager = ({
                 ? destinationPath
                 : `${destinationPath}/`
               : destinationPath.replace(/\/$/, ''),
-            nodeType: (isFolder ? 'FOLDER' : 'ITEM') as 'ITEM' | 'FOLDER',
+            nodeType: isFolder ? FilesApiNodeType.Folder : FilesApiNodeType.Item,
             name,
           };
         });
@@ -908,7 +908,7 @@ export const useDialFileManager = ({
 
           const renamedFolderDto = dtos.find(
             (dto) =>
-              dto.nodeType === 'FOLDER' &&
+              dto.nodeType === FilesApiNodeType.Folder &&
               results.some((result) => result.success && result.sourcePath === dto.sourcePath),
           );
           if (renamedFolderDto != null) {

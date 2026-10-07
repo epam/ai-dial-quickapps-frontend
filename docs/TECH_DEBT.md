@@ -1,8 +1,8 @@
 ## List of known pending improvements:
 
 - [x] Use typescript-sdk for call to Core instead of hardcoded endpoints
-- [x] Add OpenSpec and start using SDD. `openspec/` is initialised (see `openspec/config.yaml`, `AGENTS.md`'s "Spec-driven development" section) and new work now starts from a spec change. Coverage of old functionality is still in progress — only `host-integration` and `auth` are written so far; see the candidates list below for what's left.
-- [] Test coverage - `@vitest/coverage-v8` is wired up (`vitest.config.ts`), enforced by `npm test`
+- [x] Add OpenSpec and start using SDD. `openspec/` is initialised (see `openspec/config.yaml`, `AGENTS.md`'s "Spec-driven development" section) and new work now starts from a spec change. Coverage of old functionality is still in progress — see the coverage matrix below for which capabilities have a spec and the candidates list for what's left.
+- [ ] Test coverage - `@vitest/coverage-v8` is wired up (`vitest.config.ts`), enforced by `npm test`
   (now runs with `--coverage`, so it fails the build below threshold — use `npm run test:watch` for
   a plain watch-mode run without coverage) across all of `src/**/*.{ts,tsx}`. The thresholds are
   set to the real baseline as of 2026-09-30 (~15% statements, ~7% branches, ~5% functions, ~16%
@@ -12,11 +12,13 @@
   at all. Once the auto-updated numbers get close to 70%, raise the long-term target itself (this
   item) accordingly. Closing the gap is still open work; see `openspec/specs/` /
   `openspec/changes/` for tracking individual pieces of it as they're picked up.
-- [] react-hook-form usage - should get rid of it
-- [] need to review components, some seem to be unnecessary, e.g. AgentSkillsField just proxy SkillsSelectors
+- [ ] react-hook-form usage - should get rid of it. In progress in change `remove-react-hook-form`:
+  the root form and the scalar sections already run on `useQuickApp2Form`; `ContextAndToolsSection`
+  and `QuickApp2FormLegacyFields` still use RHF, and the dependency removal (tasks 5.x) is open.
+- [ ] need to review components, some seem to be unnecessary, e.g. AgentSkillsField just proxy SkillsSelectors
 - [x] Extract the model picker popup out of `components/Orchestrator/ModelField.tsx` into its own
   component — now `components/Orchestrator/ModelCatalogModal` (see the `redesign-model-picker-catalog-list` change).
-- [] Model picker upstream asks to ai-dial-chat `libs/catalog` / `libs/chat-shared` (from the
+- [ ] Model picker upstream asks to ai-dial-chat `libs/catalog` / `libs/chat-shared` (from the
   `redesign-model-picker-catalog-list` change):
   - a `Toolbar` prop to hide the grid/list toggle, so the picker can use `Toolbar` instead of its own heading row;
   - Enter/Space row activation in `ListView` (then drop `hooks/useGridRowKeyboardSelect.ts`);
@@ -28,19 +30,19 @@
 - [x] Auth screens other than the sign-in prompt - `ForbiddenPage` and `AuthError` now share
   `LoginScreen`'s layout (`components/common/AuthStateScreen`), use 2.0 buttons and take all copy from
   `common` i18n keys (see the `redesign-auth-state-screens` change).
-- [] Conversation starters: a starter with only a title or only a prompt is saved to
+- [ ] Conversation starters: a starter with only a title or only a prompt is saved to
   `conversation_starters`, but it does not enable the starters settings (that needs both). Needs a
   product decision — either require both fields to save a starter, or enable the settings for any
   non-blank starter (see the `application_conversation-starters` spec, "Partially filled starter").
-- [] Conversation starters: `useQuickApp2Form` still exposes `updateStarter` / `removeStarter`, which
+- [ ] Conversation starters: `useQuickApp2Form` still exposes `updateStarter` / `removeStarter`, which
   only the hook's own tests use since the starters modal edits a local draft
   (`redesign-conversation-starters`). Remove them together with those tests.
-- [] Add-ons: the same mock as the starters redesign splits Agents & Toolsets into separate Toolsets
+- [ ] Add-ons: the same mock as the starters redesign splits Agents & Toolsets into separate Toolsets
   and Agents rows and adds a Knowledge base row. Needs its own OpenSpec change.
-- [] ui-kit: `DialDraggableItem` imports a private bundled copy of react-dnd whose `DndProvider` the
+- [ ] ui-kit: `DialDraggableItem` imports a private bundled copy of react-dnd whose `DndProvider` the
   kit does not export, and it has no keyboard support, so consumers can't use it. Ask the kit for an
   exported, keyboard-accessible sortable list; the starters modal uses `@dnd-kit/sortable` meanwhile.
-- [] ...
+- [ ] ...
 
 ## Documentation and behavior reconciliation backlog
 
@@ -61,7 +63,7 @@ documentation correction.
   state rather than refetching from the API.
 - [ ] **Stale General fields on auto-save** — a save without a `general` payload (auto-save)
   rebuilds `name`/`description`/`iconUrl`/`topics` from the load-time `_rawForSave` snapshot
-  (`src/utils/dialClient.ts` `fetchDialApp`), which is never refreshed after a save. A dirty
+  (`src/utils/dial-client.ts` `fetchDialApp`), which is never refreshed after a save. A dirty
   auto-save after a host Metadata edit can therefore revert those fields. `display_version` is
   already excluded (see change `fix-quickapp-display-version-save`).
 - [ ] **Origin validation defaults** — decide and document behavior while runtime settings are
@@ -75,9 +77,9 @@ documentation correction.
   local-only or an accepted deployment policy.
 - [ ] **Coverage status and target** — use one consistent description of the ratcheting
   baseline, tested scope, and long-term 70% goal; do not describe 70% as the current gate.
-- [ ] **Post-migration source map** — refresh the candidate paths below so they point to the
-  current `src/` tree rather than deleted `src/app/api/**` routes, and mark historical paths
-  as such.
+- [x] **Post-migration source map** — the candidate paths below point to the current `src/`
+  tree; the deleted `src/app/api/**` routes are replaced by the chat-api client wrappers that
+  took their place.
 - [ ] **API-layer exceptions and configuration keys** — document the deliberate raw wrappers
   for auth, themes, and file transfer, and add all runtime custom flags to the configuration
   documentation and eventual `app-configuration` spec.
@@ -107,6 +109,9 @@ Track these dimensions separately for every capability:
 | `host-integration` | Yes | Partial | Partial | Reconcile |
 | `auth` | Yes | Partial | Partial | Reconcile |
 | `application_editing` | Partial | Yes | Partial | Planned |
+| `application_editor-layout` | Yes | Yes | Partial | Planned |
+| `application_user-attachments` | Yes | Yes | Partial | Planned |
+| `deployment_docker-image` | Yes | Yes | No | Planned |
 | `context-files` | No | Yes | Partial | Planned |
 | `toolsets_selection` | No | Yes | Partial | Planned |
 | `toolsets_login` | No | Yes | Partial | Planned |
@@ -142,19 +147,20 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 ### Toolsets — selection + host-mediated login/logout
 
-- src/app/api/dial-toolsets/{signin,signout}, components/common/AgentAndToolsetSelector/**, utils/apply-toolset-login-result.ts, ties to
-  host-integration's RequestToolsetLogin/RequestToolsetLogout
+- `fetchDialToolsets` in utils/dial-client.ts, `toolsetsApi` in utils/chat-api-client.ts, components/common/AgentAndToolsetSelector/**
+  (incl. ToolsetLoginModal.tsx), utils/apply-toolset-auth-result.ts, ties to host-integration's
+  RequestToolsetLogin/RequestToolsetLogout
 - Two real sub-concerns: selecting/configuring a toolset vs. the login/logout round-trip with the host
 - Proposed: toolsets_selection, toolsets_login (this is the domain your original naming example already named)
 
 ### Skills
 
-- src/app/api/dial-skills/catalog, src/components/AgentSkills/**
+- `fetchDialSkills` in src/utils/dial-client.ts, src/components/AgentSkills/**, src/components/common/SkillsSelector/**
 - Proposed: skills_catalog (standalone slug skills also defensible if no sibling ever appears)
 
 ### Orchestrator / model selection
 
-- src/components/Orchestrator/**, src/app/api/dial-deployments, ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE in constants/quick-apps.ts
+- src/components/Orchestrator/**, `fetchDialModels` in src/utils/dial-client.ts, ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE in constants/quick-apps.ts
 - Proposed: orchestrator_model-selection
 - **Spec written** (`openspec/specs/orchestrator_model-selection`, from archived change `redesign-default-model-card`); it covers the Default model block
   (selected-model card and the Change action) and, from change `redesign-model-picker-catalog-list`, the
@@ -163,13 +169,13 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 ### Context files (file manager)
 
-- src/app/api/dial-files/** (list, upload, download, rename, delete, create-folder, list-shared), hooks/useDialFileManager.ts,
-  utils/dial-files-api.ts, dial-file-path.ts, file-download.ts, file-name.ts, decode-file-url.ts, safe-decode-uri.ts
+- utils/dial-files-api.ts (list, upload, download, rename, delete, create-folder, list-shared), hooks/useDialFileManager.ts,
+  components/common/FilesSelector/**, types/dial-files.ts, dial-file-path.ts, file-download.ts, file-name.ts, decode-file-url.ts, safe-decode-uri.ts
 - Standalone top-level concept, no sibling domain → context-files
 
 ### Theming
 
-- src/app/api/themes, src/app/api/themes/image, context/ThemeContext.tsx, utils/apply-theme-colors.ts, resolve-icon-url.ts, ties to
+- context/ThemeContext.tsx (fetches chat-api's `/api/themes` via utils/chat-api-fetch.ts), utils/apply-theme-colors.ts, resolve-icon-url.ts, ties to
   host-integration's theme query param
 - Standalone → theming
 
@@ -180,7 +186,7 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 ### Feature flags / runtime config
 
-- utils/user-config.ts, src/app/api/settings, src/app/api/session
+- utils/user-config.ts, `fetchAppSettings` in utils/dial-client.ts, utils/auth-api.ts (session / current user)
 - Standalone → app-configuration (name's debatable — open to a better slug)
 
 ### Advanced settings

@@ -17,7 +17,7 @@ import { chatApiFetch } from '@/utils/chat-api-fetch';
 // One shared Configuration for every typed chat-api domain call: routes
 // every request through chatApiFetch (CSRF header + credentials), and fires
 // the existing reload-once-then-sign-out loop breaker on any 401 — same
-// behavior `dialClient`/`dial-files-api` used to apply by hand on every call.
+// behavior `dial-client`/`dial-files-api` used to apply by hand on every call.
 // Deliberately not used for `/api/v1/auth/me` itself (see `auth-api.ts`):
 // a 401 there means "not logged in", not "token expired".
 const configuration = new Configuration({

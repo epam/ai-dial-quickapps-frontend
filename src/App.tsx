@@ -10,7 +10,7 @@ import { useSearchParams } from '@/hooks/useSearchParams';
 import { AuthErrorReason, AuthProviderInfo, AuthStatus } from '@/types/auth';
 import { AppSettings } from '@/types/dial-entities';
 import { getAuthProviders } from '@/utils/auth-api';
-import { fetchAppSettings } from '@/utils/dialClient';
+import { fetchAppSettings } from '@/utils/dial-client';
 
 const HomePageContent: FC = () => {
   const searchParams = useSearchParams();
