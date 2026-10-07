@@ -9,12 +9,10 @@ export interface SectionRowProps {
   action?: ReactNode;
   description?: string;
   variant?: SectionRowVariant;
-  className?: string;
   children?: ReactNode;
 }
 
 interface SectionRowStyles {
-  root: string;
   header: string;
   title: string;
   description: string;
@@ -23,14 +21,12 @@ interface SectionRowStyles {
 
 const VARIANT_STYLES: Record<SectionRowVariant, SectionRowStyles> = {
   [SectionRowVariant.Row]: {
-    root: 'flex flex-col gap-2',
     header: 'gap-2',
     title: 'dial-small-semi-text text-primary',
     description: 'dial-small-text text-secondary',
     content: 'relative',
   },
   [SectionRowVariant.Caption]: {
-    root: '',
     header: 'gap-4',
     title: 'dial-caption-lead-semi-text text-secondary',
     description: 'dial-tiny-text text-secondary',
@@ -43,14 +39,13 @@ export const SectionRow: FC<SectionRowProps> = ({
   action,
   description,
   variant = SectionRowVariant.Row,
-  className,
   children,
 }) => {
   const headingId = useId();
   const styles = VARIANT_STYLES[variant];
 
   return (
-    <section aria-labelledby={headingId} className={mergeClasses(styles.root, className)}>
+    <section aria-labelledby={headingId} className="flex flex-col gap-3">
       <div className={mergeClasses('flex items-center justify-between', styles.header)}>
         <h3 id={headingId} className={styles.title}>
           {title}
