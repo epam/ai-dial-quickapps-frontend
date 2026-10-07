@@ -28,6 +28,10 @@
 - [x] Auth screens other than the sign-in prompt - `ForbiddenPage` and `AuthError` now share
   `LoginScreen`'s layout (`components/common/AuthStateScreen`), use 2.0 buttons and take all copy from
   `common` i18n keys (see the `redesign-auth-state-screens` change).
+- [] Conversation starters: a starter with only a title or only a prompt is saved to
+  `conversation_starters`, but it does not enable the starters settings (that needs both). Needs a
+  product decision — either require both fields to save a starter, or enable the settings for any
+  non-blank starter (see the `application_conversation-starters` spec, "Partially filled starter").
 - [] ...
 
 ## Documentation and behavior reconciliation backlog
@@ -101,6 +105,7 @@ Track these dimensions separately for every capability:
 | `application_credentials` | No | Yes | Partial | Planned |
 | `skills_catalog` | No | Yes | Partial | Planned |
 | `orchestrator_model-selection` | Yes | Yes | Partial | Planned |
+| `application_conversation-starters` | Yes | Yes | Partial | Planned |
 | `app-configuration` | No | Yes | Partial | Planned |
 | `theming` | No | Yes | Partial | Planned |
 | `i18n` | No | Yes | Partial | Planned |
@@ -144,8 +149,8 @@ Update this matrix as each capability is explored, specified, tested, and checke
 - Proposed: orchestrator_model-selection
 - **Spec written** (`openspec/specs/orchestrator_model-selection`, from archived change `redesign-default-model-card`); it covers the Default model block
   (selected-model card and the Change action) and, from change `redesign-model-picker-catalog-list`, the
-  model picker popup (catalog list, search, From filter, sort, Add/Cancel). Temperature and
-  process-files behaviour are not specified yet.
+  model picker popup (catalog list, search, From filter, sort, Add/Cancel), and, from change
+  `specify-configuration-controls-and-starters`, the Temperature and Process files controls.
 
 ### Context files (file manager)
 
@@ -177,7 +182,8 @@ Update this matrix as each capability is explored, specified, tested, and checke
 ### Conversation starters
 
 - src/components/ConversationStarters/**
-- Proposed: application_conversation-starters
+- **Spec written** (`openspec/specs/application_conversation-starters`, from change
+  `specify-configuration-controls-and-starters`).
 
 ### User attachments
 
