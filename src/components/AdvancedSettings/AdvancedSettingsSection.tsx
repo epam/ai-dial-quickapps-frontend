@@ -1,8 +1,6 @@
 import { FC, memo } from 'react';
-import { Control, Controller } from 'react-hook-form';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
 
@@ -10,13 +8,15 @@ import { FormCollapsibleSection } from '@/components/common/FormCollapsibleSecti
 import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
 
 export interface AdvancedSettingsSectionProps {
-  control: Control<QuickApp2FormType>;
+  value: boolean;
+  onChange: (value: boolean) => void;
   isReadonly: boolean;
   tooltip?: string;
 }
 
 const AdvancedSettingsSection: FC<AdvancedSettingsSectionProps> = ({
-  control,
+  value,
+  onChange,
   isReadonly,
   tooltip,
 }) => {
@@ -24,19 +24,13 @@ const AdvancedSettingsSection: FC<AdvancedSettingsSectionProps> = ({
 
   return (
     <FormCollapsibleSection name={t(QuickAppEditorI18nKeys.AdvancedSettings)}>
-      <Controller
-        control={control}
-        name="timestamp"
-        render={({ field }) => (
-          <ToggleSwitch
-            isOn={field.value}
-            handleSwitch={() => field.onChange(!field.value)}
-            disabled={isReadonly}
-            additionalText={t(QuickAppEditorI18nKeys.TimeAwareness)}
-            className="flex items-center gap-2"
-            tooltip={tooltip}
-          />
-        )}
+      <ToggleSwitch
+        isOn={value}
+        handleSwitch={() => onChange(!value)}
+        disabled={isReadonly}
+        additionalText={t(QuickAppEditorI18nKeys.TimeAwareness)}
+        className="flex items-center gap-2"
+        tooltip={tooltip}
       />
     </FormCollapsibleSection>
   );

@@ -14,6 +14,8 @@
   `openspec/changes/` for tracking individual pieces of it as they're picked up.
 - [] react-hook-form usage - should get rid of it
 - [] need to review components, some seem to be unnecessary, e.g. AgentSkillsField just proxy SkillsSelectors
+- [] Extract the model picker popup out of `components/Orchestrator/ModelField.tsx` into its own
+  component; the file mixes the Default model block with the whole picker (~450 lines).
 - [x] Auth screens other than the sign-in prompt - `ForbiddenPage` and `AuthError` now share
   `LoginScreen`'s layout (`components/common/AuthStateScreen`), use 2.0 buttons and take all copy from
   `common` i18n keys (see the `redesign-auth-state-screens` change).
@@ -89,7 +91,7 @@ Track these dimensions separately for every capability:
 | `toolsets_login` | No | Yes | Partial | Planned |
 | `application_credentials` | No | Yes | Partial | Planned |
 | `skills_catalog` | No | Yes | Partial | Planned |
-| `orchestrator_model-selection` | No | Yes | Partial | Planned |
+| `orchestrator_model-selection` | Yes | Yes | Partial | Planned |
 | `app-configuration` | No | Yes | Partial | Planned |
 | `theming` | No | Yes | Partial | Planned |
 | `i18n` | No | Yes | Partial | Planned |
@@ -131,6 +133,9 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 - src/components/Orchestrator/**, src/app/api/dial-deployments, ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE in constants/quick-apps.ts
 - Proposed: orchestrator_model-selection
+- **Spec written** (`openspec/specs/orchestrator_model-selection`, from archived change `redesign-default-model-card`); it covers the Default model block
+  (selected-model card and the Change action). The picker popup, temperature and process-files
+  behaviour are not specified yet.
 
 ### Context files (file manager)
 

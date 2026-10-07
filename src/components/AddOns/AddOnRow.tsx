@@ -7,6 +7,7 @@ import {
 import { IconPlus } from '@tabler/icons-react';
 import { FC, MouseEvent, ReactNode } from 'react';
 
+import { SectionRow } from '@/components/common/SectionRow/SectionRow';
 import { CommonI18nKeys } from '@/constants/i18n';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
@@ -38,9 +39,10 @@ export const AddOnRow: FC<AddOnRowProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-row items-center justify-between gap-2">
-        <h3 className="dial-small-semi-text text-primary">{label}</h3>
+    <SectionRow
+      title={label}
+      description={isEmpty ? emptyDescription : undefined}
+      action={
         <NeutralButton
           size={ElementSize.Small}
           iconBefore={<IconPlus size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} />}
@@ -49,9 +51,9 @@ export const AddOnRow: FC<AddOnRowProps> = ({
           tooltipProps={addTooltip ? { tooltip: addTooltip } : undefined}
           onClick={handleAdd}
         />
-      </div>
-      {isEmpty && <p className="dial-small-text text-secondary">{emptyDescription}</p>}
-      <div className="relative">{children}</div>
-    </div>
+      }
+    >
+      {children}
+    </SectionRow>
   );
 };

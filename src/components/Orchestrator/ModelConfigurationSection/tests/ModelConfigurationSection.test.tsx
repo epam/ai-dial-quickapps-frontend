@@ -1,9 +1,6 @@
-import React, { act } from 'react';
+import React, { act, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { useForm } from 'react-hook-form';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
-import type { QuickApp2Form } from '@/form/quickApp2Form';
 
 import ModelConfigurationSection from '../ModelConfigurationSection';
 
@@ -16,19 +13,36 @@ vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({ modelsMap }),
 }));
 vi.mock('@/utils/application', () => ({
-  doesModelAllowTemperature: (model: { allowTemperature?: boolean }) => model.allowTemperature !== false,
+  doesModelAllowTemperature: (model: { allowTemperature?: boolean }) =>
+    model.allowTemperature !== false,
 }));
 vi.mock('../../ModelField', () => ({
-  ModelField: ({ disabled }: { disabled?: boolean }) => (
-    <button type="button" disabled={disabled}>
+  ModelField: ({
+    value,
+    onChange,
+    disabled,
+  }: {
+    value: string;
+    onChange: (value: string) => void;
+    disabled?: boolean;
+  }) => (
+    <button type="button" disabled={disabled} onClick={() => onChange(value)}>
       Model picker
     </button>
   ),
 }));
 vi.mock('@/components/common/Temperature', () => ({
-  TemperatureSlider: ({ disabled }: { disabled?: boolean }) => (
-    <button type="button" disabled={disabled}>
-      Temperature control
+  TemperatureSlider: ({
+    temperature,
+    onChangeTemperature,
+    disabled,
+  }: {
+    temperature: number;
+    onChangeTemperature: (value: number) => void;
+    disabled?: boolean;
+  }) => (
+    <button type="button" disabled={disabled} onClick={() => onChangeTemperature(0.8)}>
+      Temperature control {temperature}
     </button>
   ),
 }));
@@ -54,17 +68,18 @@ vi.mock('@epam/ai-dial-ui-kit', () => ({
 }));
 
 const TestForm = ({ isReadonly = false }: { isReadonly?: boolean }) => {
-  const { control } = useForm<QuickApp2Form>({
-    defaultValues: {
-      model: 'model-id',
-      temperature: 0.5,
-      processLargeFiles: false,
-    } as QuickApp2Form,
-  });
+  const [model, setModel] = useState('model-id');
+  const [temperature, setTemperature] = useState(0.5);
+  const [processLargeFiles, setProcessLargeFiles] = useState(false);
 
   return (
     <ModelConfigurationSection
-      control={control}
+      model={model}
+      onModelChange={setModel}
+      temperature={temperature}
+      onTemperatureChange={setTemperature}
+      processLargeFiles={processLargeFiles}
+      onProcessLargeFilesChange={setProcessLargeFiles}
       errors={{}}
       isReadonly={isReadonly}
       isProcessLargeFilesAvailable
@@ -93,9 +108,9 @@ describe('ModelConfigurationSection', () => {
     act(() => root.render(<TestForm />));
 
     expect(container.textContent).toContain('Configuration');
-    expect(container.querySelector('section[aria-labelledby="model-configuration-heading"]')?.className).toContain(
-      'ps-8',
-    );
+    expect(
+      container.querySelector('section[aria-labelledby="model-configuration-heading"]')?.className,
+    ).toContain('px-8');
     expect(container.textContent).toContain('Model picker');
     expect(container.textContent).toContain('Temperature control');
     expect(container.textContent).toContain('Process files toggle');
@@ -107,6 +122,14 @@ describe('ModelConfigurationSection', () => {
     const settings = container.querySelector('[data-testid="settings-section"]');
     expect(settings?.getAttribute('data-readonly')).toBe('true');
     expect(settings?.previousElementSibling?.textContent).toContain('Process files toggle');
+  });
+
+  it('renders the model picker without a separate "Model" form label', () => {
+    act(() => root.render(<TestForm />));
+
+    const labels = [...container.querySelectorAll('div')].map((el) => el.textContent);
+    expect(labels).not.toContain('Model');
+    expect(container.textContent).toContain('Model picker');
   });
 
   it('omits temperature when the selected model does not support it', () => {
