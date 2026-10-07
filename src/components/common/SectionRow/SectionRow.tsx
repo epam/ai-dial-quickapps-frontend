@@ -34,7 +34,7 @@ const VARIANT_STYLES: Record<SectionRowVariant, SectionRowStyles> = {
   },
   [SectionRowVariant.Setting]: {
     header: 'gap-4',
-    title: 'dial-tiny-lead-semi-text text-primary',
+    title: 'dial-tiny-semi-text text-primary',
     description: 'dial-tiny-text text-secondary',
     content: '',
   },
