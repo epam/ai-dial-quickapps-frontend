@@ -23,7 +23,8 @@ vi.mock('@/hooks/useTranslation', () => ({
   useTranslation: () => ({ language: 'en', t: (key: string) => key }),
 }));
 vi.mock('@epam/ai-dial-ui-kit', () => ({
-  ButtonVariant: { Primary: 'primary' },
+  ButtonAppearance: { Link: 'link' },
+  ButtonVariant: { Primary: 'primary', Neutral: 'neutral' },
   PopupSize: { Sm: 'sm' },
   Popup: ({ open, header, closeAriaLabel, children, onClose, additionalButtons, mainButtons }: MockPopupProps) =>
     open ? (
