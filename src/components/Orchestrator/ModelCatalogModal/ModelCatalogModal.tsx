@@ -192,11 +192,14 @@ export const ModelCatalogModal: FC<ModelCatalogModalProps> = ({ value, onConfirm
       // this wrapper is the scroll container and the column header sticks to
       // its top. The catalog marks the selected row with a 2px border that
       // pushes the row content in and sits on the table edge (ag-grid rows have
-      // a fixed width); a 1px inset ring draws the same accent without either.
-      // Targets the CSS-module class by its stable prefix until the catalog
-      // exposes the border width (see docs/TECH_DEBT.md).
+      // a fixed width); a 1px inset outline draws the same accent without either.
+      // An outline (not an inset shadow) so the cells can't paint over its
+      // bottom edge, and z-index so the next row can't either.
+      // Targets the CSS-module class by its stable name until the catalog
+      // exposes the border width (see docs/TECH_DEBT.md). No underscores in
+      // the selector: Tailwind turns `_` into a space in arbitrary variants.
       <div
-        className="min-h-0 flex-1 overflow-y-auto [&_[class*='_selectedRow_']]:!border-0 [&_[class*='_selectedRow_']]:shadow-[inset_0_0_0_1px_var(--stroke-accent)]"
+        className="min-h-0 flex-1 overflow-y-auto [&_[class*='selectedRow']]:z-[1] [&_[class*='selectedRow']]:!border-0 [&_[class*='selectedRow']]:!outline [&_[class*='selectedRow']]:!outline-1 [&_[class*='selectedRow']]:!-outline-offset-1 [&_[class*='selectedRow']]:!outline-accent"
         onKeyDown={handleListKeyDown}
       >
         <ListView
