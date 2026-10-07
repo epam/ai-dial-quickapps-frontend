@@ -9,6 +9,22 @@ export enum DialDeploymentToolsetToolTypes {
   DialDeploymentSimple = 'dial-deployment-simple',
 }
 
+export enum DialDeploymentToolsetName {
+  Default = 'dial-deployment-tool-set',
+}
+
+export enum CodeInterpreterTemplate {
+  PyInterpreter = 'py_interpreter',
+}
+
+export enum SkillRefType {
+  DialSkill = 'dial-skill',
+}
+
+export enum TimestampInjectionStrategy {
+  ToolCall = 'tool_call',
+}
+
 export interface OrchestratorAttachmentStrategy {
   type: 'lazy_on_demand';
 }
@@ -46,7 +62,7 @@ export interface DialDeploymentSimpleTool {
 }
 
 export interface DialDeploymentToolset {
-  name: 'dial-deployment-tool-set';
+  name: DialDeploymentToolsetName.Default;
   type: ToolsetTypes.DialDeployment;
   tools: DialDeploymentSimpleTool[];
 }
@@ -73,7 +89,7 @@ export interface MCPToolset {
 }
 
 export interface CodeInterpreterToolset {
-  template_name: 'py_interpreter';
+  template_name: CodeInterpreterTemplate.PyInterpreter;
   type: ToolsetTypes.CodeInterpreter;
 }
 
@@ -102,7 +118,7 @@ export interface ConversationStarters {
 }
 
 export interface DialSkillRef {
-  type: 'dial-skill';
+  type: SkillRefType.DialSkill;
   url: string;
 }
 
@@ -129,7 +145,7 @@ export interface QuickApp2Config {
   skills?: DialSkillRef[];
   features?: {
     timestamp?: {
-      injection_strategy: 'tool_call';
+      injection_strategy: TimestampInjectionStrategy.ToolCall;
     } | null;
     dial_files?: object | null;
     representation_tooling?: RepresentationToolingFeature | null;
@@ -154,7 +170,7 @@ export function isMcpToolset(toolset: AnyToolset): toolset is MCPToolset {
 export function isCodeInterpreterToolset(toolset: AnyToolset): toolset is CodeInterpreterToolset {
   return (
     toolset.type === ToolsetTypes.CodeInterpreter &&
-    (toolset as CodeInterpreterToolset).template_name === 'py_interpreter'
+    (toolset as CodeInterpreterToolset).template_name === CodeInterpreterTemplate.PyInterpreter
   );
 }
 

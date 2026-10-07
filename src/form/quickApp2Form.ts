@@ -21,15 +21,19 @@ import type { LocalizedText } from '@/types/dial-entities';
 import { getLocalizedText } from '@/utils/get-localized-text';
 import {
   AnyToolset,
+  CodeInterpreterTemplate,
   CodeInterpreterToolset,
   DialAppToolset,
   DialAppTransportType,
   DialDeploymentSimpleTool,
   DialDeploymentToolset,
+  DialDeploymentToolsetName,
   DialDeploymentToolsetToolTypes,
   DialSkillRef,
   MCPToolset,
   QuickApp2Config,
+  SkillRefType,
+  TimestampInjectionStrategy,
   ToolsetTypes,
   UnknownToolset,
   isDialAppToolset,
@@ -43,7 +47,7 @@ import omit from 'lodash-es/omit';
 import sortBy from 'lodash-es/sortBy';
 import { nanoid } from 'nanoid';
 
-export const DEFAULT_TEMPERATURE = 1;
+const DEFAULT_TEMPERATURE = 1;
 
 export enum AgentOrToolsetSchemaKeys {
   id = '[schema]:id',
@@ -242,7 +246,7 @@ export const getQuickApp2FormData = (
     toolSupportingModelIds,
     availableModelIds,
     agentSkills: (appProperties?.skills ?? [])
-      .filter((s): s is DialSkillRef => s.type === 'dial-skill')
+      .filter((s): s is DialSkillRef => s.type === SkillRefType.DialSkill)
       .map((s) => decodeApiUrl(s.url)),
     timestamp,
     processLargeFiles,
@@ -273,11 +277,13 @@ export const buildQuickApp2Config = ({
     .map(({ title, text }) => ({ title, text }));
 
   const skills = data.agentSkills.map((url) => ({
-    type: 'dial-skill' as const,
+    type: SkillRefType.DialSkill,
     url,
   }));
 
-  const timestampFeature = data.timestamp ? { injection_strategy: 'tool_call' as const } : null;
+  const timestampFeature = data.timestamp
+    ? { injection_strategy: TimestampInjectionStrategy.ToolCall }
+    : null;
   const model = allEntitiesMap[data.model];
   const supportsAttachments = !!(model?.inputAttachmentTypes as string[] | undefined)?.length;
 
@@ -286,7 +292,9 @@ export const buildQuickApp2Config = ({
       ...existingConfig?.orchestrator,
       deployment: {
         deployment_id: data.model,
-        parameters: doesModelAllowTemperature(model) ? { temperature: data.temperature } : undefined,
+        parameters: doesModelAllowTemperature(model)
+          ? { temperature: data.temperature }
+          : undefined,
       },
       system_prompt: {
         type: 'custom',
@@ -294,9 +302,7 @@ export const buildQuickApp2Config = ({
         content: data.instructions,
       },
       ...(supportsAttachments && {
-        attachment_strategy: data.processLargeFiles
-          ? ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE
-          : null,
+        attachment_strategy: data.processLargeFiles ? ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE : null,
       }),
     },
     contexts: data.documentRelativeUrl.map((url) => ({
@@ -415,7 +421,7 @@ export const getQuickApp2Toolsets = ({
     ...dialMCPToolsets,
     ...dialAppToolsets,
     {
-      name: 'dial-deployment-tool-set',
+      name: DialDeploymentToolsetName.Default,
       type: ToolsetTypes.DialDeployment,
       tools: [...dialDeploymentsToolsets],
     } as DialDeploymentToolset,
@@ -423,7 +429,7 @@ export const getQuickApp2Toolsets = ({
     ...(data.codeInterpreter
       ? [
           {
-            template_name: 'py_interpreter',
+            template_name: CodeInterpreterTemplate.PyInterpreter,
             type: ToolsetTypes.CodeInterpreter,
           } as CodeInterpreterToolset,
         ]
