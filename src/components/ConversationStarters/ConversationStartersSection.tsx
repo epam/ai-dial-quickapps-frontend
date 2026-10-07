@@ -7,20 +7,17 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
 
 import { FormCollapsibleSection } from '@/components/common/FormCollapsibleSection';
-import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
 
 import { ConversationStartersList } from './ConversationStartersField';
 import { StartersBehaviourRadioGroup } from './StartersBehaviourRadioGroup';
 
-import { DialFormItem, Input } from '@epam/ai-dial-ui-kit';
+import { DialFormItem, Input, Switch } from '@epam/ai-dial-ui-kit';
 
 export interface ConversationStartersSectionProps {
   control: Control<QuickApp2FormType>;
   isReadonly: boolean;
   hasStarters: boolean;
   startersSettingsTooltip?: string;
-  autoSubmit: boolean;
-  chatMessageInputDisabled: boolean;
 }
 
 const ConversationStartersSection: FC<ConversationStartersSectionProps> = ({
@@ -28,8 +25,6 @@ const ConversationStartersSection: FC<ConversationStartersSectionProps> = ({
   isReadonly,
   hasStarters,
   startersSettingsTooltip,
-  autoSubmit,
-  chatMessageInputDisabled,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
 
@@ -104,17 +99,15 @@ const ConversationStartersSection: FC<ConversationStartersSectionProps> = ({
               <p className="dial-small-text font-medium">
                 {t(QuickAppEditorI18nKeys.DisableChatInput)}
               </p>
-              <ToggleSwitch
+              <Switch
                 isOn={field.value}
-                handleSwitch={() => field.onChange(!field.value)}
+                onChange={field.onChange}
                 disabled={isReadonly || !hasStarters}
-                additionalText={t(QuickAppEditorI18nKeys.DisableChatInputSoUsersCanOnlyUseStarters)}
-                tooltip={startersSettingsTooltip}
-                warning={
-                  !autoSubmit && chatMessageInputDisabled
-                    ? t(QuickAppEditorI18nKeys.PayAttentionTheUserWontBeAbleToEdit)
-                    : undefined
-                }
+                labelProps={{
+                  label: t(QuickAppEditorI18nKeys.DisableChatInputSoUsersCanOnlyUseStarters),
+                  caption: startersSettingsTooltip,
+                }}
+                className="relative"
               />
             </div>
           )}

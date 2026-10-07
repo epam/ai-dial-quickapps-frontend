@@ -1,4 +1,4 @@
-import React, { act, useState } from 'react';
+import { act, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -16,8 +16,8 @@ vi.mock('@/utils/application', () => ({
   doesModelAllowTemperature: (model: { allowTemperature?: boolean }) =>
     model.allowTemperature !== false,
 }));
-vi.mock('../../ModelField', () => ({
-  ModelField: ({
+vi.mock('@/components/Orchestrator/DefaultModelBlock/DefaultModelBlock', () => ({
+  DefaultModelBlock: ({
     value,
     onChange,
     disabled,
@@ -31,24 +31,33 @@ vi.mock('../../ModelField', () => ({
     </button>
   ),
 }));
-vi.mock('@/components/common/Temperature', () => ({
-  TemperatureSlider: ({
-    temperature,
-    onChangeTemperature,
+vi.mock('@epam/ai-dial-ui-kit', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@epam/ai-dial-ui-kit')>()),
+  Slider: ({
+    value,
+    onChange,
     disabled,
+    labels,
+    'aria-label': ariaLabel,
   }: {
-    temperature: number;
-    onChangeTemperature: (value: number) => void;
+    value: number;
+    onChange: (value: number) => void;
     disabled?: boolean;
+    labels: string[];
+    'aria-label': string;
   }) => (
-    <button type="button" disabled={disabled} onClick={() => onChangeTemperature(0.8)}>
-      Temperature control {temperature}
+    <button type="button" aria-label={ariaLabel} disabled={disabled} onClick={() => onChange(0.8)}>
+      Temperature control {value} {labels.join(' / ')}
     </button>
   ),
-}));
-vi.mock('@/components/common/ToggleSwitch/ToggleSwitch', () => ({
-  ToggleSwitch: ({ disabled }: { disabled?: boolean }) => (
-    <button type="button" disabled={disabled}>
+  Switch: ({
+    disabled,
+    labelProps,
+  }: {
+    disabled?: boolean;
+    labelProps: { label: string; caption?: string };
+  }) => (
+    <button type="button" disabled={disabled} data-caption={labelProps.caption}>
       Process files toggle
     </button>
   ),
@@ -58,16 +67,8 @@ vi.mock('@/components/Settings/SettingsSection', () => ({
     <div data-testid="settings-section" data-readonly={String(isReadonly)} />
   ),
 }));
-vi.mock('@epam/ai-dial-ui-kit', () => ({
-  DialFormItem: ({ label, children }: { label: string; children: React.ReactNode }) => (
-    <div>
-      <div>{label}</div>
-      {children}
-    </div>
-  ),
-}));
 
-const TestForm = ({ isReadonly = false }: { isReadonly?: boolean }) => {
+const TestForm = ({ isReadonly = false, tooltip }: { isReadonly?: boolean; tooltip?: string }) => {
   const [model, setModel] = useState('model-id');
   const [temperature, setTemperature] = useState(0.5);
   const [processLargeFiles, setProcessLargeFiles] = useState(false);
@@ -82,6 +83,7 @@ const TestForm = ({ isReadonly = false }: { isReadonly?: boolean }) => {
       onProcessLargeFilesChange={setProcessLargeFiles}
       errors={{}}
       isReadonly={isReadonly}
+      tooltip={tooltip}
       isProcessLargeFilesAvailable
     />
   );
@@ -130,6 +132,44 @@ describe('ModelConfigurationSection', () => {
     const labels = [...container.querySelectorAll('div')].map((el) => el.textContent);
     expect(labels).not.toContain('Model');
     expect(container.textContent).toContain('Model picker');
+  });
+
+  it('shows temperature and process files as caption sections with their descriptions', () => {
+    act(() => root.render(<TestForm />));
+
+    const headings = [...container.querySelectorAll('h3')].map((heading) => heading.textContent);
+    expect(headings).toEqual(['Temperature', 'Process files']);
+    expect(container.textContent).toContain(
+      'Higher values will make the output more random, while lower values will make it more focused and deterministic.',
+    );
+    expect(container.textContent).toContain('Allows the orchestrator to handle attachments');
+  });
+
+  it('names the temperature slider and labels its scale through i18n', () => {
+    act(() => root.render(<TestForm />));
+
+    const slider = container.querySelector('button[aria-label="Temperature"]');
+    expect(slider?.textContent).toBe('Temperature control 0.5 Precise / Neutral / Creative');
+  });
+
+  it('reports a temperature change', () => {
+    act(() => root.render(<TestForm />));
+
+    act(() =>
+      container.querySelector<HTMLButtonElement>('button[aria-label="Temperature"]')?.click(),
+    );
+
+    expect(container.textContent).toContain('Temperature control 0.8');
+  });
+
+  it('shows the read-only hint in the switch info button', () => {
+    act(() => root.render(<TestForm isReadonly tooltip="Shared apps are read-only" />));
+
+    expect(
+      [...container.querySelectorAll('button')]
+        .find((button) => button.textContent === 'Process files toggle')
+        ?.getAttribute('data-caption'),
+    ).toBe('Shared apps are read-only');
   });
 
   it('omits temperature when the selected model does not support it', () => {

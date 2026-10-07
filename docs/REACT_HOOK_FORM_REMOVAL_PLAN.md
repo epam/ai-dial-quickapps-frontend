@@ -1,6 +1,6 @@
 # React Hook Form Removal Plan
 
-**Status:** Planning only. No production code has been changed.
+**Status:** In progress, paused after task 3 (see [Status](#status-paused) below).
 
 **OpenSpec change:** [`openspec/changes/remove-react-hook-form/`](../openspec/changes/remove-react-hook-form/)
 
@@ -21,7 +21,7 @@ This is an internal form-engine replacement, not a UI redesign. The migration mu
 
 ### Form owner
 
-`src/components/QuickApp2Form.tsx` is the only form owner. It currently uses:
+`src/components/QuickApp2Form.tsx` is the only form owner. It is now backed by the `useQuickApp2Form` controller (`src/hooks/use-quick-app2-form.ts`) and no longer imports RHF. The list below records the pre-migration RHF surface, which the controller replaces:
 
 - `zodResolver(QuickApp2Schema)`.
 - `useForm` with `defaultValues` and `mode: 'onChange'`.
@@ -34,7 +34,7 @@ This is an internal form-engine replacement, not a UI redesign. The migration mu
 - `formState.errors` for field/section errors.
 - `formState.isDirty` for host dirty notifications and autosave gating.
 
-Important behavior in this file:
+Important behavior in this file (line numbers refer to the pre-migration version):
 
 - `:98-152` updates model lists, resolves asynchronous defaults, clears feature-disabled values, reports model readiness, and forwards dirty state.
 - `:163-178` handles `DIAL_EDITOR_TRIGGER_SAVE_EVENT`, read-only state, autosave dirty gating, and invalid-submit suppression.
@@ -44,17 +44,15 @@ Important behavior in this file:
 
 ### RHF-controlled sections
 
-The following components import RHF types/components and contain active `Controller` instances:
+The following components still import RHF types/components and contain active `Controller` instances. They are rendered through the temporary `src/components/QuickApp2FormLegacyFields/` wrapper:
 
-- `src/components/AdvancedSettings/AdvancedSettingsSection.tsx` — `timestamp`.
-- `src/components/AgentSkills/AgentSkillsFormSection.tsx` — `agentSkills`.
-- `src/components/ContextAndTools/ContextAndToolsSection.tsx` — document files, code interpreter, file tools, add attachment, and web fetch; also consumes JSON errors.
+- `src/components/ContextAndTools/ContextAndToolsSection.tsx` — document files, code interpreter, file tools, add attachment, and web fetch.
 - `src/components/ConversationStarters/ConversationStartersSection.tsx` — starters, intro text, auto-submit, and chat-input-disabled state; forwards container blur.
-- `src/components/InstructionsSection/InstructionsSection.tsx` — instructions rich-text editor.
 - `src/components/UserAttachments/UserAttachmentsSection.tsx` — attachment MIME types and maximum attachment count.
-- `src/components/Orchestrator/ModelConfigurationSection/ModelConfigurationSection.tsx` — model, temperature, and process-large-files state.
 
-There are approximately 17 active `Controller` instances. The sections are already mostly controlled components, so they can be migrated to typed `value`/`onChange`/`onBlur`/`error` adapters.
+There are 11 active `Controller` instances. The sections are already mostly controlled components, so they can be migrated to typed `value`/`onChange`/`onBlur`/`error` adapters.
+
+Already migrated to value props (no RHF imports): `AdvancedSettingsSection`, `InstructionsSection`, `AgentSkillsFormSection`, `AddOnsSection` (agent skills and agents/toolsets), and everything under `src/components/Orchestrator/` (`ModelConfigurationSection`, `DefaultModelBlock`, `ModelCatalogModal`, `SelectedModelCard`).
 
 ### RHF-only helper
 
@@ -63,8 +61,9 @@ There are approximately 17 active `Controller` instances. The sections are alrea
 
 ### Tests using RHF
 
-- `src/components/InstructionsSection/tests/InstructionsSection.test.tsx` creates `useForm` only to provide `control`.
-- `src/components/Orchestrator/ModelConfigurationSection/tests/ModelConfigurationSection.test.tsx` does the same.
+- `src/components/ContextAndTools/tests/ContextAndToolsSection.test.tsx` imports RHF to provide `control`.
+- `src/components/QuickApp2FormLegacyFields/tests/QuickApp2FormLegacyFields.test.tsx` covers the temporary wrapper and goes away with it (task 5.1).
+- `InstructionsSection` and `ModelConfigurationSection` tests no longer create `useForm`.
 - `src/components/tests/QuickApp2Form.test.tsx` renders the real form owner and will need updates when its state/controller contract changes, although it does not directly import RHF today.
 
 ### RHF-independent code to preserve

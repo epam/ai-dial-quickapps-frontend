@@ -10,17 +10,17 @@ vi.mock('@/hooks/useTranslation', () => ({
 vi.mock('@/components/common/FormCollapsibleSection', () => ({
   FormCollapsibleSection: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
 }));
-vi.mock('@/components/common/ToggleSwitch/ToggleSwitch', () => ({
-  ToggleSwitch: ({
+vi.mock('@epam/ai-dial-ui-kit', () => ({
+  Switch: ({
     isOn,
-    handleSwitch,
+    onChange,
     disabled,
   }: {
     isOn: boolean;
-    handleSwitch: () => void;
+    onChange: (value: boolean) => void;
     disabled?: boolean;
   }) => (
-    <button type="button" disabled={disabled} onClick={handleSwitch}>
+    <button type="button" disabled={disabled} onClick={() => onChange(!isOn)}>
       {String(isOn)}
     </button>
   ),

@@ -3,7 +3,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useAppContext } from '@/context/AppContext';
-import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
+import { Switch } from '@epam/ai-dial-ui-kit';
 
 interface CodeInterpreterFieldProps {
   value: boolean;
@@ -24,13 +24,15 @@ export const CodeInterpreterField: FC<CodeInterpreterFieldProps> = ({
   if (!settings.isCodeInterpreterEnabled) return null;
 
   return (
-    <ToggleSwitch
+    <Switch
       isOn={value}
-      handleSwitch={() => onChange(!value)}
+      onChange={onChange}
       disabled={disabled}
-      additionalText={t(QuickAppEditorI18nKeys.UseToExecuteCustomPythonCode)}
-      className="flex items-center gap-2"
-      tooltip={tooltip}
+      labelProps={{
+        label: t(QuickAppEditorI18nKeys.UseToExecuteCustomPythonCode),
+        caption: tooltip,
+      }}
+      className="relative"
     />
   );
 };

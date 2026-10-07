@@ -26,9 +26,7 @@ vi.mock('@/components/ContextAndTools/ContextAndToolsSection', () => {
 });
 
 vi.mock('@/components/ConversationStarters/ConversationStartersSection', () => ({
-  default: ({ autoSubmit }: { autoSubmit: boolean }) => (
-    <output data-testid="auto-submit">{String(autoSubmit)}</output>
-  ),
+  default: () => null,
 }));
 
 vi.mock('@/components/UserAttachments/UserAttachmentsSection', () => ({
@@ -59,7 +57,9 @@ const Harness = ({ errors = {} }: { errors?: Record<string, string | undefined> 
         isWebFetchEnabled={false}
         isAddAttachmentEnabled={false}
         startersSettingsTooltip="starter tooltip"
-        onValuesChange={(changedValues) => setValues((current) => ({ ...current, ...changedValues }))}
+        onValuesChange={(changedValues) =>
+          setValues((current) => ({ ...current, ...changedValues }))
+        }
         onAttachmentTypesChange={vi.fn()}
       />
     </>
@@ -91,9 +91,9 @@ describe('QuickApp2FormLegacyFields', () => {
     );
 
     await act(async () => {
-      container.querySelector('[data-testid="change-document"]')?.dispatchEvent(
-        new MouseEvent('click', { bubbles: true }),
-      );
+      container
+        .querySelector('[data-testid="change-document"]')
+        ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       await Promise.resolve();
     });
     expect(container.querySelector('[data-testid="document-value"]')?.textContent).toBe(
@@ -101,9 +101,9 @@ describe('QuickApp2FormLegacyFields', () => {
     );
 
     act(() => {
-      container.querySelector('[data-testid="external-document"]')?.dispatchEvent(
-        new MouseEvent('click', { bubbles: true }),
-      );
+      container
+        .querySelector('[data-testid="external-document"]')
+        ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
     expect(container.querySelector('[data-testid="document-value"]')?.textContent).toBe('external');
   });

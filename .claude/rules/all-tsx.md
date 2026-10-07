@@ -31,6 +31,23 @@ className={mergeClasses(nameClassName, styles.nameText)}
 1. **Look for a UI kit component** — check if a suitable `Dial*` component exists for your use case using the MCP tools below.
 2. **Use raw elements only as last resort** — if and only if no UI kit component meets the requirements, use native HTML (and document why).
 
+## Icon size and stroke
+
+Every icon (`@tabler/icons-react` or similar) must take its size from the UI kit's `DIAL_ICON_SIZE` enum and its stroke from `DIAL_KIT_ICON_STROKE`, both imported from `@epam/ai-dial-ui-kit`. Never pass raw numbers to `size`, `stroke` or `strokeWidth`.
+
+```tsx
+import { DIAL_ICON_SIZE, DIAL_KIT_ICON_STROKE } from '@epam/ai-dial-ui-kit';
+
+// Correct
+<IconPencil size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} aria-hidden="true" />
+
+// Wrong
+<IconPencil size={16} stroke={1.5} />
+<IconFolder size={14} strokeWidth={1.5} />
+```
+
+`DIAL_ICON_SIZE` values: `SM` = 16, `MD` = 20, `LG` = 24.
+
 ## Semantic HTML
 
 Use semantic HTML elements (`button`, `nav`, `main`, `section`) before reaching for `div`/`span`.

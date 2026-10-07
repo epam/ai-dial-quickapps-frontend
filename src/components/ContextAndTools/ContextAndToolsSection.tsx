@@ -9,11 +9,10 @@ import { decodeFileUrl } from '@/utils/decode-file-url';
 
 import { FilesSelector } from '@/components/common/FilesSelector/FilesSelector';
 import { FormCollapsibleSection } from '@/components/common/FormCollapsibleSection';
-import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
 
 import { CodeInterpreterField } from './CodeInterpreterField';
 
-import { DialFormItem } from '@epam/ai-dial-ui-kit';
+import { DialFormItem, Switch } from '@epam/ai-dial-ui-kit';
 
 export interface ContextAndToolsSectionProps {
   control: Control<QuickApp2FormType>;
@@ -93,13 +92,15 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
           control={control}
           name="fileTools"
           render={({ field }) => (
-            <ToggleSwitch
+            <Switch
               isOn={field.value}
-              handleSwitch={() => field.onChange(!field.value)}
+              onChange={field.onChange}
               disabled={isReadonly}
-              additionalText={t(QuickAppEditorI18nKeys.AllowTheAgentToAccessAppFiles)}
-              className="flex items-center gap-2"
-              tooltip={tooltip}
+              labelProps={{
+                label: t(QuickAppEditorI18nKeys.AllowTheAgentToAccessAppFiles),
+                caption: tooltip,
+              }}
+              className="relative"
             />
           )}
         />
@@ -115,13 +116,15 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
             control={control}
             name="addAttachment"
             render={({ field }) => (
-              <ToggleSwitch
+              <Switch
                 isOn={field.value}
-                handleSwitch={() => field.onChange(!field.value)}
+                onChange={field.onChange}
                 disabled={isReadonly}
-                additionalText={t(QuickAppEditorI18nKeys.AllowTheAgentToAttachFilesToTheResponse)}
-                className="flex items-center gap-2"
-                tooltip={tooltip}
+                labelProps={{
+                  label: t(QuickAppEditorI18nKeys.AllowTheAgentToAttachFilesToTheResponse),
+                  caption: tooltip,
+                }}
+                className="relative"
               />
             )}
           />
@@ -138,13 +141,15 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
             control={control}
             name="webFetch"
             render={({ field }) => (
-              <ToggleSwitch
+              <Switch
                 isOn={field.value}
-                handleSwitch={() => field.onChange(!field.value)}
+                onChange={field.onChange}
                 disabled={isReadonly}
-                additionalText={t(QuickAppEditorI18nKeys.AllowTheAgentToFetchWebResources)}
-                className="flex items-center gap-2"
-                tooltip={tooltip}
+                labelProps={{
+                  label: t(QuickAppEditorI18nKeys.AllowTheAgentToFetchWebResources),
+                  caption: tooltip,
+                }}
+                className="relative"
               />
             )}
           />

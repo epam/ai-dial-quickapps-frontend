@@ -25,13 +25,7 @@ vi.mock('@epam/ai-dial-ui-kit', () => ({
       onChange={(event) => onChange(event.target.value)}
     />
   ),
-  DialGhostIconButton: ({
-    onClick,
-    disabled,
-  }: {
-    onClick: () => void;
-    disabled?: boolean;
-  }) => (
+  DialGhostIconButton: ({ onClick, disabled }: { onClick: () => void; disabled?: boolean }) => (
     <button type="button" data-testid="remove-starter" onClick={onClick} disabled={disabled} />
   ),
 }));
@@ -63,12 +57,19 @@ describe('ConversationStartersList', () => {
     const titleInput = container.querySelector('[data-testid="starter-input"]') as HTMLInputElement;
     act(() => {
       titleInput.dispatchEvent(new Event('input', { bubbles: true }));
-      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(titleInput, 'Travel');
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(
+        titleInput,
+        'Travel',
+      );
       titleInput.dispatchEvent(new Event('change', { bubbles: true }));
     });
 
     expect(onChange).toHaveBeenCalledTimes(1);
-    const nextValue = onChange.mock.calls[0][0] as Array<{ id: string; title: string; text: string }>;
+    const nextValue = onChange.mock.calls[0][0] as Array<{
+      id: string;
+      title: string;
+      text: string;
+    }>;
     expect(nextValue).toHaveLength(2);
     expect(nextValue[0]).toMatchObject({ id: 'starter-1', title: 'Travel', text: '' });
     expect(nextValue[1]).toMatchObject({ title: '', text: '' });
