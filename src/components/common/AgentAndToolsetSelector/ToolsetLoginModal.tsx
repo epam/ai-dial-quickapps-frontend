@@ -12,6 +12,7 @@ import {
   ToolsetAuthResultPayload,
 } from '@/types/editor-messages';
 import { Translation } from '@/types/translation';
+import { postToHost, isOriginAllowed } from '@/utils/allowed-origins';
 import { isPublicToolsetId } from '@/utils/api';
 import { toolsetsApi } from '@/utils/chat-api-client';
 import { encodeDialPath } from '@/utils/dialClient';
@@ -105,30 +106,26 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
   const handleOAuthLogin = useCallback(() => {
     setError(undefined);
     setIsLoggingIn(true);
-    const allowedOrigin = settings.allowedOrigin || '*';
-    window.parent.postMessage(
+    postToHost(
       { type: OutboundMessageType.RequestToolsetLogin, toolsetId: toolset.id },
-      allowedOrigin,
+      settings.allowedOrigins,
     );
-  }, [settings.allowedOrigin, toolset.id]);
+  }, [settings.allowedOrigins, toolset.id]);
 
   const handleOAuthLogout = useCallback(() => {
     setError(undefined);
     setIsLoggingOut(true);
-    const allowedOrigin = settings.allowedOrigin || '*';
-    window.parent.postMessage(
+    postToHost(
       { type: OutboundMessageType.RequestToolsetLogout, toolsetId: toolset.id },
-      allowedOrigin,
+      settings.allowedOrigins,
     );
-  }, [settings.allowedOrigin, toolset.id]);
+  }, [settings.allowedOrigins, toolset.id]);
 
   useEffect(() => {
     if (!isOAuth) return;
 
-    const allowedOrigin = settings.allowedOrigin;
-
     const handleMessage = (event: MessageEvent) => {
-      if (allowedOrigin && allowedOrigin !== '*' && event.origin !== allowedOrigin) return;
+      if (!isOriginAllowed(event.origin, settings.allowedOrigins)) return;
 
       const msg = event.data as { type?: string } & Partial<ToolsetAuthResultPayload>;
       const isLoginResult = msg?.type === InboundMessageType.ToolsetLoginResult;
@@ -155,7 +152,7 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [isOAuth, settings.allowedOrigin, toolset.id, applyToolsetAuthResult, onClose, t]);
+  }, [isOAuth, settings.allowedOrigins, toolset.id, applyToolsetAuthResult, onClose, t]);
 
   return (
     <DialPopup

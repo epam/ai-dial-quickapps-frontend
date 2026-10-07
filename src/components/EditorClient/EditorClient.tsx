@@ -10,6 +10,7 @@ import { DataContextProvider } from '@/context/DataContext';
 import { buildQuickApp2Config } from '@/form/quickApp2Form';
 import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { QuickApp2Config } from '@/types/quick-apps';
+import { isOriginAllowed, postToHost } from '@/utils/allowed-origins';
 import { ForbiddenError } from '@/utils/forbidden-error';
 import { decodeDialPath, fetchAppSettings, fetchDialApp, saveDialApp } from '@/utils/dialClient';
 import { buildLocalizedText } from '@/utils/get-localized-text';
@@ -23,13 +24,6 @@ import {
   OutboundMessageType,
   TriggerSaveGeneralPayload,
 } from '@/types/editor-messages';
-
-const postToParent = (msg: object, allowedOrigin: string) => {
-  window.parent.postMessage(msg, allowedOrigin === '*' ? '*' : allowedOrigin);
-};
-
-const isAllowedOrigin = (origin: string, allowedOrigin: string): boolean =>
-  allowedOrigin === '*' || origin === allowedOrigin;
 
 const dispatchTriggerSave = (detail: {
   isAutoSave: boolean;
@@ -104,14 +98,15 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
   const isDirtyRef = useRef(false);
   const isInitializedRef = useRef(false);
   const hasSavedOnceRef = useRef(false);
-  const allowedOriginRef = useRef('*');
+  // Empty until settings load — treated as "any origin", so READY reaches the host before then.
+  const allowedOriginsRef = useRef<string[]>([]);
 
   useEffect(() => {
     hasSavedOnceRef.current = hasSavedOnce;
   }, [hasSavedOnce]);
 
   useEffect(() => {
-    postToParent({ type: OutboundMessageType.Ready }, allowedOriginRef.current);
+    postToHost({ type: OutboundMessageType.Ready }, allowedOriginsRef.current);
 
     let cancelled = false;
     const rawAppId = new URLSearchParams(window.location.search).get('id');
@@ -121,10 +116,7 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
       Promise.all([fetchDialApp(appId), fetchAppSettings()])
         .then(([app, settings]) => {
           if (cancelled) return;
-          // `||`, not `??` — an explicitly-empty allowedOrigin (unset in
-          // CUSTOM_CLIENT_VARIABLES) must fall back to '*' the same as
-          // undefined, or postMessage's target-origin validation breaks.
-          allowedOriginRef.current = settings.allowedOrigin || '*';
+          allowedOriginsRef.current = settings.allowedOrigins ?? [];
           setAppState({
             app: app ?? {
               id: appId,
@@ -148,7 +140,7 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
     }
 
     const handleMessage = (event: MessageEvent) => {
-      if (!isAllowedOrigin(event.origin, allowedOriginRef.current)) return;
+      if (!isOriginAllowed(event.origin, allowedOriginsRef.current)) return;
       const msg = event.data as InboundMessage;
       if (!msg?.type) return;
 
@@ -195,12 +187,12 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
     const el = formRef.current;
     if (!el) return;
     const ro = new ResizeObserver(() => {
-      postToParent(
+      postToHost(
         {
           type: OutboundMessageType.HeightChange,
           payload: { height: el.scrollHeight },
         },
-        allowedOriginRef.current,
+        allowedOriginsRef.current,
       );
     });
     ro.observe(el);
@@ -281,25 +273,25 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
         const updatedApp = await saveDialApp(appWithFormValues, newConfig, effectiveGeneral);
         setHasSavedOnce(true);
         if (isAutoSave) {
-          postToParent({ type: OutboundMessageType.AutoSaveComplete }, allowedOriginRef.current);
+          postToHost({ type: OutboundMessageType.AutoSaveComplete }, allowedOriginsRef.current);
         } else {
-          postToParent(
+          postToHost(
             {
               type: OutboundMessageType.SaveSuccess,
               payload: { updatedApp },
               hasChanges,
             },
-            allowedOriginRef.current,
+            allowedOriginsRef.current,
           );
         }
       } catch (err) {
         const error = err instanceof Error ? err.message : 'Save failed';
-        postToParent(
+        postToHost(
           {
             type: OutboundMessageType.SaveError,
             payload: { error },
           },
-          allowedOriginRef.current,
+          allowedOriginsRef.current,
         );
       }
     },
@@ -309,12 +301,12 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
   const handleDirtyChange = useCallback((isDirty: boolean) => {
     if (isDirtyRef.current !== isDirty) {
       isDirtyRef.current = isDirty;
-      postToParent(
+      postToHost(
         {
           type: OutboundMessageType.DirtyState,
           payload: { isDirty },
         },
-        allowedOriginRef.current,
+        allowedOriginsRef.current,
       );
     }
   }, []);
