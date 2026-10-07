@@ -5,7 +5,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
 
 import { FormCollapsibleSection } from '@/components/common/FormCollapsibleSection';
-import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
+
+import { Switch } from '@epam/ai-dial-ui-kit';
 
 export interface AdvancedSettingsSectionProps {
   value: boolean;
@@ -24,13 +25,12 @@ const AdvancedSettingsSection: FC<AdvancedSettingsSectionProps> = ({
 
   return (
     <FormCollapsibleSection name={t(QuickAppEditorI18nKeys.AdvancedSettings)}>
-      <ToggleSwitch
+      <Switch
         isOn={value}
-        handleSwitch={() => onChange(!value)}
+        onChange={onChange}
         disabled={isReadonly}
-        additionalText={t(QuickAppEditorI18nKeys.TimeAwareness)}
-        className="flex items-center gap-2"
-        tooltip={tooltip}
+        labelProps={{ label: t(QuickAppEditorI18nKeys.TimeAwareness), caption: tooltip }}
+        className="relative"
       />
     </FormCollapsibleSection>
   );

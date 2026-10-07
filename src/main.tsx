@@ -1,6 +1,8 @@
 import '@fontsource-variable/inter';
 import '@epam/ai-dial-ui-kit/styles.css';
 import '@epam/ai-dial-react-file-manager/styles.css';
+import '@epam/ai-dial-chat-shared/styles.css';
+import '@epam/ai-dial-catalog/styles.css';
 import './index.scss';
 import './monaco-setup';
 

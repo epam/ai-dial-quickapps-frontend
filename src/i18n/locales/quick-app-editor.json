@@ -3,5 +3,21 @@
   "Configuration": "Configuration",
   "Add-ons": "Add-ons",
   "Skills": "Skills",
-  "Default model": "Default model"
+  "Default model": "Default model",
+  "Models catalog": "Models catalog",
+  "Search models…": "Search models…",
+  "Sort": "Sort",
+  "Recently updated": "Recently updated",
+  "Newest": "Newest",
+  "Name A-Z": "Name A-Z",
+  "From": "From",
+  "My": "My",
+  "Topics": "Topics",
+  "Clear": "Clear",
+  "Apply": "Apply",
+  "Higher values will make the output more random, while lower values will make it more focused and deterministic.": "Higher values will make the output more random, while lower values will make it more focused and deterministic.",
+  "Precise": "Precise",
+  "Neutral": "Neutral",
+  "Creative": "Creative",
+  "Change model": "Change model"
 }

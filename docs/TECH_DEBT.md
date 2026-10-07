@@ -14,8 +14,17 @@
   `openspec/changes/` for tracking individual pieces of it as they're picked up.
 - [] react-hook-form usage - should get rid of it
 - [] need to review components, some seem to be unnecessary, e.g. AgentSkillsField just proxy SkillsSelectors
-- [] Extract the model picker popup out of `components/Orchestrator/ModelField.tsx` into its own
-  component; the file mixes the Default model block with the whole picker (~450 lines).
+- [x] Extract the model picker popup out of `components/Orchestrator/ModelField.tsx` into its own
+  component — now `components/Orchestrator/ModelCatalogModal` (see the `redesign-model-picker-catalog-list` change).
+- [] Model picker upstream asks to ai-dial-chat `libs/catalog` / `libs/chat-shared` (from the
+  `redesign-model-picker-catalog-list` change):
+  - a `Toolbar` prop to hide the grid/list toggle, so the picker can use `Toolbar` instead of its own heading row;
+  - Enter/Space row activation in `ListView` (then drop `hooks/useGridRowKeyboardSelect.ts`);
+  - `enableRtl` in `ListView` — its ag-grid columns do not follow `dir="rtl"` today;
+  - a label override for `EntityTypeLabel`, so the Type cell can be localised;
+  - a thinner (or configurable) selected-row border in `ListView` — its 2px border shifts the row
+    content, so `ModelCatalogModal` overrides it via the `_selectedRow_` class prefix; drop that
+    override once fixed.
 - [x] Auth screens other than the sign-in prompt - `ForbiddenPage` and `AuthError` now share
   `LoginScreen`'s layout (`components/common/AuthStateScreen`), use 2.0 buttons and take all copy from
   `common` i18n keys (see the `redesign-auth-state-screens` change).
@@ -134,8 +143,9 @@ Update this matrix as each capability is explored, specified, tested, and checke
 - src/components/Orchestrator/**, src/app/api/dial-deployments, ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE in constants/quick-apps.ts
 - Proposed: orchestrator_model-selection
 - **Spec written** (`openspec/specs/orchestrator_model-selection`, from archived change `redesign-default-model-card`); it covers the Default model block
-  (selected-model card and the Change action). The picker popup, temperature and process-files
-  behaviour are not specified yet.
+  (selected-model card and the Change action) and, from change `redesign-model-picker-catalog-list`, the
+  model picker popup (catalog list, search, From filter, sort, Add/Cancel). Temperature and
+  process-files behaviour are not specified yet.
 
 ### Context files (file manager)
 

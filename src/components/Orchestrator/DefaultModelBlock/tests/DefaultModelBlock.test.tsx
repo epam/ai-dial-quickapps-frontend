@@ -1,10 +1,10 @@
-import { act, type ReactNode } from 'react';
+import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { DialModel } from '@/types/dial-entities';
 
-import { ModelField } from '../ModelField';
+import { DefaultModelBlock } from '../DefaultModelBlock';
 
 let models: DialModel[] = [];
 let status: 'idle' | 'loading' | 'ready' | 'error' = 'ready';
@@ -12,49 +12,30 @@ let status: 'idle' | 'loading' | 'ready' | 'error' = 'ready';
 vi.mock('@/hooks/useTranslation', () => ({
   useTranslation: () => ({ language: 'en', t: (key: string) => key }),
 }));
-vi.mock('@/context/AppContext', () => ({
-  useAppContext: () => ({ app: { id: 'applications/bucket/my-app__1.0.0' } }),
-}));
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({
-    modelsWithFavorites: models,
-    favoriteIds: new Set<string>(),
+    modelsMap: Object.fromEntries(models.map((model) => [model.id, model])),
     status,
-    error: null,
-    refreshAll: vi.fn(),
   }),
 }));
-// Virtualisation renders nothing without layout in jsdom; list the entity keys instead.
-vi.mock('@/components/common/VirtualCardGrid/VirtualCardGrid', () => ({
-  VirtualCardGrid: <T,>({ items, getKey }: { items: T[]; getKey: (item: T) => string }) => (
-    <ul aria-label="Model cards">
-      {items.map((item) => (
-        <li key={getKey(item)}>{getKey(item)}</li>
-      ))}
-    </ul>
+// The picker has its own tests; here it only has to open with the current
+// value and report a confirmed id or a close.
+vi.mock('@/components/Orchestrator/ModelCatalogModal/ModelCatalogModal', () => ({
+  ModelCatalogModal: ({
+    value,
+    onConfirm,
+    onClose,
+  }: {
+    value: string;
+    onConfirm: (id: string) => void;
+    onClose: () => void;
+  }) => (
+    <div role="dialog" aria-label="Model picker" data-value={value}>
+      <button onClick={() => onConfirm('models/gpt__2.0.0')}>Confirm picker</button>
+      <button onClick={onClose}>Close picker</button>
+    </div>
   ),
 }));
-vi.mock('@epam/ai-dial-ui-kit', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@epam/ai-dial-ui-kit')>();
-  return {
-    ...actual,
-    DialPopup: ({
-      open,
-      header,
-      children,
-    }: {
-      open: boolean;
-      header: ReactNode;
-      children: ReactNode;
-    }) =>
-      open ? (
-        <div role="dialog">
-          <h2>{header}</h2>
-          {children}
-        </div>
-      ) : null,
-  };
-});
 
 const gemini: DialModel = {
   id: 'models/gemini__1.0.3',
@@ -68,11 +49,18 @@ const gemini: DialModel = {
 let root: Root;
 let container: HTMLDivElement;
 
-const render = (props: Partial<Parameters<typeof ModelField>[0]> = {}) =>
-  act(() => root.render(<ModelField value={gemini.id} onChange={vi.fn()} {...props} />));
+const render = (props: Partial<Parameters<typeof DefaultModelBlock>[0]> = {}) =>
+  act(() => root.render(<DefaultModelBlock value={gemini.id} onChange={vi.fn()} {...props} />));
 
-const getChangeButton = () =>
-  [...container.querySelectorAll('button')].find((button) => button.textContent === 'Change');
+const getButton = (text: string) =>
+  [...container.querySelectorAll('button')].find((button) => button.textContent === text);
+
+const getPicker = () => container.querySelector('[role="dialog"]');
+
+const getChangeButton = () => getButton('Change');
+
+// The picker is lazy-loaded; let the import settle before asserting on it.
+const openPicker = () => act(async () => getChangeButton()?.click());
 
 const hasElementWithText = (text: string) =>
   [...container.querySelectorAll('span, div')].some((el) => el.textContent === text);
@@ -84,15 +72,6 @@ const getSectionName = () => {
 
 beforeEach(() => {
   (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
-  // The picker's search and tabs measure themselves; jsdom has no ResizeObserver.
-  vi.stubGlobal(
-    'ResizeObserver',
-    class {
-      observe() {}
-      unobserve() {}
-      disconnect() {}
-    },
-  );
   models = [gemini];
   status = 'ready';
   container = document.createElement('div');
@@ -103,10 +82,9 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.unmount());
   container.remove();
-  vi.unstubAllGlobals();
 });
 
-describe('ModelField', () => {
+describe('DefaultModelBlock', () => {
   it('is a "Default model" section with the Change button in it', () => {
     render();
 
@@ -133,13 +111,35 @@ describe('ModelField', () => {
     expect(container.querySelector('[role="combobox"]')).toBeNull();
   });
 
-  it('opens the model picker when Change is clicked', () => {
+  it('opens the model picker with the current value when Change is clicked', async () => {
     render();
-    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(getPicker()).toBeNull();
 
-    act(() => getChangeButton()?.click());
+    await openPicker();
 
-    expect(container.querySelector('[role="dialog"] h2')?.textContent).toBe('Select model');
+    expect(getPicker()?.getAttribute('data-value')).toBe(gemini.id);
+  });
+
+  it('sets the model confirmed in the picker and closes it', async () => {
+    const onChange = vi.fn();
+    render({ onChange });
+    await openPicker();
+
+    act(() => getButton('Confirm picker')?.click());
+
+    expect(onChange).toHaveBeenCalledWith('models/gpt__2.0.0');
+    expect(getPicker()).toBeNull();
+  });
+
+  it('keeps the model when the picker is closed without confirming', async () => {
+    const onChange = vi.fn();
+    render({ onChange });
+    await openPicker();
+
+    act(() => getButton('Close picker')?.click());
+
+    expect(onChange).not.toHaveBeenCalled();
+    expect(getPicker()).toBeNull();
   });
 
   it('disables Change when the field is disabled', () => {
@@ -147,7 +147,7 @@ describe('ModelField', () => {
 
     expect(getChangeButton()?.disabled).toBe(true);
     act(() => getChangeButton()?.click());
-    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(getPicker()).toBeNull();
   });
 
   it('disables Change and hides the name while models are loading', () => {
@@ -171,27 +171,6 @@ describe('ModelField', () => {
     expect(container.textContent).toContain('models/removed-model');
     expect(container.querySelector('h4')).toBeNull();
     expect(hasElementWithText('Model')).toBe(false);
-  });
-
-  it('offers only tool-supporting models in the picker, not applications', () => {
-    models = [
-      gemini,
-      { ...gemini, id: 'models/no-tools__1.0.0', name: 'No tools', features: {} },
-      {
-        ...gemini,
-        id: 'applications/bucket/some-agent__1.0.0',
-        name: 'Some agent',
-        type: 'application',
-      },
-    ];
-    render();
-
-    act(() => getChangeButton()?.click());
-
-    const cards = [...container.querySelectorAll('[aria-label="Model cards"] li')].map(
-      (item) => item.textContent,
-    );
-    expect(cards).toEqual(['models/gemini']);
   });
 
   it('still shows a saved application on the card', () => {

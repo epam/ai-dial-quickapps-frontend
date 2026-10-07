@@ -3,11 +3,10 @@ import { type PreviewType } from '@uiw/react-md-editor';
 import { lazy, type FC, type ReactNode, Suspense, useCallback, useState } from 'react';
 
 import { Label } from '@/components/common/Forms/Label';
-import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
 import { useThemeContext } from '@/context/ThemeContext';
 import { ThemeId } from '@/types/theme';
 
-import { LazyDialJsonEditor, LazyMarkdownEditor } from '@epam/ai-dial-ui-kit';
+import { LazyDialJsonEditor, LazyMarkdownEditor, Switch } from '@epam/ai-dial-ui-kit';
 
 export enum EditorThemes {
   dark = 'dark',
@@ -78,10 +77,11 @@ export const DialMarkdownEditorContainer: FC<DialMarkdownEditorContainerProps> =
           <div className="flex flex-1 items-center justify-end gap-2">
             {headerContent}
             {showSwitcher && (
-              <ToggleSwitch
+              <Switch
                 isOn={isJSONContentMode}
-                handleSwitch={handleToggleSwitch}
-                additionalText={switcherLabel as string}
+                onChange={handleToggleSwitch}
+                labelProps={{ label: switcherLabel }}
+                className="relative"
               />
             )}
           </div>

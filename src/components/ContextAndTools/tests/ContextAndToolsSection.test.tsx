@@ -11,14 +11,11 @@ vi.mock('@/hooks/useTranslation', () => ({
 
 vi.mock('@epam/ai-dial-ui-kit', () => ({
   DialFormItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Switch: () => null,
 }));
 
 vi.mock('@/components/common/FormCollapsibleSection', () => ({
   FormCollapsibleSection: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
-}));
-
-vi.mock('@/components/common/ToggleSwitch/ToggleSwitch', () => ({
-  ToggleSwitch: () => null,
 }));
 
 vi.mock('../AgentsAndToolsetsField', () => ({

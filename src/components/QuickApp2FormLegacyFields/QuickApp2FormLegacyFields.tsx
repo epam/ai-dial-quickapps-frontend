@@ -136,8 +136,6 @@ const QuickApp2FormLegacyFields: FC<QuickApp2FormLegacyFieldsProps> = ({
         isReadonly={isReadonly}
         hasStarters={hasStarters}
         startersSettingsTooltip={startersSettingsTooltip}
-        autoSubmit={values.autoSubmit}
-        chatMessageInputDisabled={values.chatMessageInputDisabled}
       />
     </>
   );

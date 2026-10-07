@@ -4,15 +4,15 @@ import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
 import type { QuickApp2FormErrors } from '@/types/quick-app-form';
 import { useTranslation } from '@/hooks/useTranslation';
+import { SectionRowVariant } from '@/types/section-row';
 import { Translation } from '@/types/translation';
 import { doesModelAllowTemperature } from '@/utils/application';
 
-import { TemperatureSlider } from '@/components/common/Temperature';
-import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
+import { SectionRow } from '@/components/common/SectionRow/SectionRow';
 
-import { ModelField } from '../ModelField';
+import { DefaultModelBlock } from '@/components/Orchestrator/DefaultModelBlock/DefaultModelBlock';
 
-import { DialFormItem } from '@epam/ai-dial-ui-kit';
+import { Slider, Switch } from '@epam/ai-dial-ui-kit';
 
 export interface ModelConfigurationSectionProps {
   model: string;
@@ -53,7 +53,7 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
         {t(QuickAppEditorI18nKeys.Configuration)}
       </h2>
       <div className="mt-3 flex flex-col gap-3">
-        <ModelField
+        <DefaultModelBlock
           value={model}
           onChange={onModelChange}
           disabled={isReadonly}
@@ -62,31 +62,46 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
         />
 
         {showTemperatureSlider && (
-          <DialFormItem label={t(QuickAppEditorI18nKeys.Temperature)}>
-            <TemperatureSlider
-              temperature={temperature}
-              onChangeTemperature={onTemperatureChange}
+          <SectionRow
+            title={t(QuickAppEditorI18nKeys.Temperature)}
+            description={t(QuickAppEditorI18nKeys.TemperatureDescription)}
+            variant={SectionRowVariant.Caption}
+          >
+            <Slider
+              aria-label={t(QuickAppEditorI18nKeys.Temperature)}
+              value={temperature}
+              min={0}
+              max={1}
+              step={0.1}
               disabled={isReadonly}
-              tooltip={tooltip}
+              showValue
+              labels={[
+                t(QuickAppEditorI18nKeys.TemperaturePrecise),
+                t(QuickAppEditorI18nKeys.TemperatureNeutral),
+                t(QuickAppEditorI18nKeys.TemperatureCreative),
+              ]}
+              onChange={onTemperatureChange}
             />
-          </DialFormItem>
+          </SectionRow>
         )}
 
         {isProcessLargeFilesAvailable && (
-          <DialFormItem
-            label={t(QuickAppEditorI18nKeys.ProcessFiles)}
+          <SectionRow
+            title={t(QuickAppEditorI18nKeys.ProcessFiles)}
             description={t(QuickAppEditorI18nKeys.ProcessFilesDescription)}
-            className="!py-0"
+            variant={SectionRowVariant.Caption}
           >
-            <ToggleSwitch
+            <Switch
               isOn={processLargeFiles}
-              handleSwitch={() => onProcessLargeFilesChange(!processLargeFiles)}
+              onChange={onProcessLargeFilesChange}
               disabled={isReadonly}
-              additionalText={t(QuickAppEditorI18nKeys.AllowOrchestratorToProcessFiles)}
-              className="flex items-center gap-2"
-              tooltip={tooltip}
+              labelProps={{
+                label: t(QuickAppEditorI18nKeys.AllowOrchestratorToProcessFiles),
+                caption: tooltip,
+              }}
+              className="relative"
             />
-          </DialFormItem>
+          </SectionRow>
         )}
       </div>
     </section>
