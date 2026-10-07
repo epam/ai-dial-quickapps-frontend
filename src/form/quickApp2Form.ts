@@ -38,12 +38,14 @@ import {
   TimestampInjectionStrategy,
   ToolsetTypes,
   UnknownToolset,
+} from '@/types/quick-apps';
+import {
   isDialAppToolset,
   isDialDeploymentSimpleTool,
   isDialDeploymentToolset,
   isMcpToolset,
   isUnknownToolset,
-} from '@/types/quick-apps';
+} from '@/utils/toolset-guards';
 
 import omit from 'lodash-es/omit';
 import sortBy from 'lodash-es/sortBy';
@@ -51,20 +53,20 @@ import { nanoid } from 'nanoid';
 
 const DEFAULT_TEMPERATURE = 1;
 
-export enum AgentOrToolsetSchemaKeys {
+export enum AddOnSchemaKeys {
   id = '[schema]:id',
   tool = '[schema]:tool',
   isDialDeploymentTool = '[schema]:isDialDeploymentTool',
   name = '[schema]:name',
 }
 
-const AgentOrToolsetSchema = z.object({
-  [AgentOrToolsetSchemaKeys.id]: z.string(),
-  [AgentOrToolsetSchemaKeys.tool]: z.record(z.string(), z.any()).optional(),
-  [AgentOrToolsetSchemaKeys.isDialDeploymentTool]: z.boolean().optional(),
+const AddOnSchema = z.object({
+  [AddOnSchemaKeys.id]: z.string(),
+  [AddOnSchemaKeys.tool]: z.record(z.string(), z.any()).optional(),
+  [AddOnSchemaKeys.isDialDeploymentTool]: z.boolean().optional(),
 });
 
-type AgentOrToolsetFormType = z.infer<typeof AgentOrToolsetSchema>;
+export type AddOnEntry = z.infer<typeof AddOnSchema>;
 
 const AttachmentTypesSchema = z.array(z.string());
 export const MaxInputAttachmentsSchema = z.preprocess(
@@ -81,7 +83,7 @@ export const QuickApp2Schema = z
     temperature: z.number(),
     documentRelativeUrl: z.array(z.string()),
     model: z.string(),
-    agentsAndToolsets: z.array(AgentOrToolsetSchema),
+    addOns: z.array(AddOnSchema),
     codeInterpreter: z.boolean(),
     // Form-only: drives the Attachments switch and is never sent to chat-api.
     attachmentsEnabled: z.boolean(),
@@ -136,7 +138,7 @@ export const QuickApp2Schema = z
 
 export type QuickApp2Form = z.infer<typeof QuickApp2Schema>;
 
-export const getAgentsAndToolsetsFormValue = (tools?: AnyToolset[]): AgentOrToolsetFormType[] => {
+export const getAddOnsFormValue = (tools?: AnyToolset[]): AddOnEntry[] => {
   const deploymentTools = tools?.filter(isDialDeploymentToolset)?.flatMap((t) => t.tools) ?? [];
   const mcpToolsets = (tools?.filter(isMcpToolset) ?? []).map(migrateMCPToolsetIdName);
   const dialAppToolsets = tools?.filter(isDialAppToolset) ?? [];
@@ -144,17 +146,17 @@ export const getAgentsAndToolsetsFormValue = (tools?: AnyToolset[]): AgentOrTool
 
   const markedDeploymentTools = deploymentTools.map((item) => ({
     ...item,
-    [AgentOrToolsetSchemaKeys.name]: getQuickAppItemNameFromConfig(item),
-    [AgentOrToolsetSchemaKeys.isDialDeploymentTool]: true,
+    [AddOnSchemaKeys.name]: getQuickAppItemNameFromConfig(item),
+    [AddOnSchemaKeys.isDialDeploymentTool]: true,
   }));
   const allItems = [...mcpToolsets, ...unknownToolsets, ...dialAppToolsets].map((item) => ({
     ...item,
-    [AgentOrToolsetSchemaKeys.name]: getQuickAppItemNameFromConfig(item as MCPToolset),
+    [AddOnSchemaKeys.name]: getQuickAppItemNameFromConfig(item as MCPToolset),
   }));
 
   const sortedItems = sortBy(
     [...markedDeploymentTools, ...allItems],
-    [(item) => item[AgentOrToolsetSchemaKeys.name].toLowerCase()],
+    [(item) => item[AddOnSchemaKeys.name].toLowerCase()],
   );
 
   return sortedItems.map((item) => {
@@ -163,13 +165,11 @@ export const getAgentsAndToolsetsFormValue = (tools?: AnyToolset[]): AgentOrTool
         ? undefined
         : (item as DialDeploymentSimpleTool).deployment_id;
     return {
-      [AgentOrToolsetSchemaKeys.id]: id
-        ? decodeApiUrl(id)
-        : (item[AgentOrToolsetSchemaKeys.name] ?? 'unknown'),
-      [AgentOrToolsetSchemaKeys.tool]: item,
-      [AgentOrToolsetSchemaKeys.isDialDeploymentTool]:
-        AgentOrToolsetSchemaKeys.isDialDeploymentTool in item
-          ? (item[AgentOrToolsetSchemaKeys.isDialDeploymentTool] as boolean)
+      [AddOnSchemaKeys.id]: id ? decodeApiUrl(id) : (item[AddOnSchemaKeys.name] ?? 'unknown'),
+      [AddOnSchemaKeys.tool]: item,
+      [AddOnSchemaKeys.isDialDeploymentTool]:
+        AddOnSchemaKeys.isDialDeploymentTool in item
+          ? (item[AddOnSchemaKeys.isDialDeploymentTool] as boolean)
           : false,
     };
   });
@@ -227,7 +227,7 @@ export const getQuickApp2FormData = (
     instructions: appProperties?.orchestrator?.system_prompt?.content ?? '',
     temperature:
       appProperties?.orchestrator?.deployment?.parameters?.temperature ?? DEFAULT_TEMPERATURE,
-    agentsAndToolsets: getAgentsAndToolsetsFormValue(appProperties?.tool_sets),
+    addOns: getAddOnsFormValue(appProperties?.tool_sets),
     codeInterpreter:
       appProperties?.tool_sets?.some((toolset) => toolset.type === ToolsetTypes.CodeInterpreter) ??
       false,
@@ -344,39 +344,33 @@ export const getQuickApp2Toolsets = ({
   language: string;
 }): AnyToolset[] => {
   const { dialDeploymentsToolsets, dialMCPToolsets, otherToolsets, dialAppToolsets } =
-    data.agentsAndToolsets.reduce<{
+    data.addOns.reduce<{
       dialDeploymentsToolsets: DialDeploymentSimpleTool[];
       dialMCPToolsets: MCPToolset[];
       dialAppToolsets: DialAppToolset[];
       otherToolsets: UnknownToolset[];
     }>(
-      (acc, agentAndToolset) => {
-        const entity = allEntitiesMap[agentAndToolset[AgentOrToolsetSchemaKeys.id]];
-        const toolData = omit(
-          agentAndToolset[AgentOrToolsetSchemaKeys.tool] ?? {},
-          Object.values(AgentOrToolsetSchemaKeys),
-        );
+      (acc, addOn) => {
+        const entity = allEntitiesMap[addOn[AddOnSchemaKeys.id]];
+        const toolData = omit(addOn[AddOnSchemaKeys.tool] ?? {}, Object.values(AddOnSchemaKeys));
 
         if (!entity) {
-          if (isApplicationId(agentAndToolset[AgentOrToolsetSchemaKeys.id])) {
+          if (isApplicationId(addOn[AddOnSchemaKeys.id])) {
             acc.dialAppToolsets.push({
               ...toolData,
               name: getQuickAppItemNameFromConfig(toolData as DialAppToolset),
               type: ToolsetTypes.DialApp,
-              deployment_id: encodeApiUrl(agentAndToolset[AgentOrToolsetSchemaKeys.id]),
+              deployment_id: encodeApiUrl(addOn[AddOnSchemaKeys.id]),
             });
-          } else if (isToolsetId(agentAndToolset[AgentOrToolsetSchemaKeys.id])) {
+          } else if (isToolsetId(addOn[AddOnSchemaKeys.id])) {
             acc.dialMCPToolsets.push({
               ...toolData,
-              deployment_id: encodeApiUrl(agentAndToolset[AgentOrToolsetSchemaKeys.id]),
+              deployment_id: encodeApiUrl(addOn[AddOnSchemaKeys.id]),
               type: ToolsetTypes.DialMcp,
             });
-          } else if (
-            agentAndToolset[AgentOrToolsetSchemaKeys.tool] &&
-            agentAndToolset[AgentOrToolsetSchemaKeys.isDialDeploymentTool]
-          ) {
+          } else if (addOn[AddOnSchemaKeys.tool] && addOn[AddOnSchemaKeys.isDialDeploymentTool]) {
             acc.dialDeploymentsToolsets.push(toolData as DialDeploymentSimpleTool);
-          } else if (agentAndToolset[AgentOrToolsetSchemaKeys.tool]) {
+          } else if (addOn[AddOnSchemaKeys.tool]) {
             acc.otherToolsets.push(toolData);
           }
           return acc;

@@ -23,7 +23,7 @@ export interface MapModelToCatalogItemOptions {
  * everyone, which is what Organization means — the same way the DIAL chat
  * catalog files configured applications under its public folder.
  */
-const getModelScopeInfo = (id: string, userBucket?: string): EntityScopeInfo | undefined => {
+export const getModelScopeInfo = (id: string, userBucket?: string): EntityScopeInfo | undefined => {
   const scopeInfo = getEntityScopeInfo(id, userBucket);
   if (scopeInfo != null) return scopeInfo;
 

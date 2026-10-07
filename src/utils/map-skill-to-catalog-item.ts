@@ -4,7 +4,7 @@ import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import type { DialSkill } from '@/types/dial-entities';
 import { ResourceScope } from '@/types/resource-scope';
 import { getCatalogFolder, getEntityScopeInfo } from '@/utils/entity-scope';
-import { getUpdatedAtTimestamp } from '@/utils/get-updated-at-timestamp';
+import { formatUpdatedAtDate, getUpdatedAtTimestamp } from '@/utils/get-updated-at-timestamp';
 
 export interface MapSkillToCatalogItemOptions {
   userBucket?: string;
@@ -60,12 +60,6 @@ export interface SkillOverviewRow {
 
 const FOLDER_SEPARATOR = ' / ';
 
-const formatUpdatedAt = (updatedAt: DialSkill['updatedAt'], language: string): string => {
-  const timestamp = getUpdatedAtTimestamp(updatedAt);
-  if (timestamp <= 0) return '';
-  return new Intl.DateTimeFormat(language, { dateStyle: 'medium' }).format(timestamp);
-};
-
 /** Label/value rows of a skill's Overview tab; rows without a value are left out. */
 export const getSkillOverviewRows = (
   skill: DialSkill,
@@ -75,7 +69,7 @@ export const getSkillOverviewRows = (
   const rows: SkillOverviewRow[] = [
     { label: labels.author, value: skill.author ?? '' },
     { label: labels.folder, value: folder.join(FOLDER_SEPARATOR) },
-    { label: labels.updated, value: formatUpdatedAt(skill.updatedAt, language) },
+    { label: labels.updated, value: formatUpdatedAtDate(skill.updatedAt, language) },
     { label: labels.version, value: skill.version ?? '' },
   ];
   return rows.filter((row) => row.value !== '');

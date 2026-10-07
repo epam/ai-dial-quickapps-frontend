@@ -36,8 +36,18 @@
 - [] Conversation starters: `useQuickApp2Form` still exposes `updateStarter` / `removeStarter`, which
   only the hook's own tests use since the starters modal edits a local draft
   (`redesign-conversation-starters`). Remove them together with those tests.
-- [] Add-ons: the same mock as the starters redesign splits Agents & Toolsets into separate Toolsets
-  and Agents rows and adds a Knowledge base row. Needs its own OpenSpec change.
+- [] Add-ons: the same mock as the starters redesign adds a Knowledge base row. Needs its own
+  OpenSpec change. (The Toolsets / Agents split is done in `split-agents-and-toolsets`.)
+- [] Toolsets / Agents follow-ups (from the `split-agents-and-toolsets` change):
+  - chat-api ask: tool descriptions and input schemas in the deployment details
+    (`ToolsetDetailsDto` carries names only), so the Tools tab could show more than names;
+  - move `AddSkillsModal` onto the shared `components/common/AddOnCatalogModal` that the Add
+    toolset / Add agent pickers use, and drop its duplicated list/filter/sort code;
+  - write a `toolsets_login` spec for the host round-trip (`REQUEST_TOOLSET_LOGIN` /
+    `TOOLSET_LOGIN_RESULT`); `toolsets_selection` only specifies the popup's Log in entry point.
+  - rename the i18n keys Skills, Toolsets and Agents share (`SkillDetails`, `RemoveSkill`, `SelectSkill`,
+    `SkillOverviewTab`, `SkillFolder`, `SkillUpdated`, `SkillVersion`, `RemoveSkillFromApp`) to generic
+    names, and update `skills_catalog`, `toolsets_selection` and `agents_selection` with them.
 - [] ui-kit: `DialDraggableItem` imports a private bundled copy of react-dnd whose `DndProvider` the
   kit does not export, and it has no keyboard support, so consumers can't use it. Ask the kit for an
   exported, keyboard-accessible sortable list; the starters modal uses `@dnd-kit/sortable` meanwhile.
@@ -49,9 +59,12 @@
     `SKILL.md` under `files/` (as ai-dial-chat's `resolveSkillManifestFileId` does) — today the
     Details tab shows its error state there;
   - optionally list a skill's bundled files in the Details tab (`ContentTab`'s file tree).
-- [] Add-ons: `AddOnsSection` opens the Agents & Toolsets modal when the URL has
-  `?agentsAndToolsetsModal=1` (`AgentsAndToolsetsModalQueryParams.Modal` in
-  `src/constants/quick-apps.ts`). Nothing in this repo sets that parameter, and no spec describes it.
+- [] Add-ons: `AgentsFormSection` opens the Add agent picker when the URL has
+  `?agentsAndToolsetsModal=1` (`AddOnsModalQueryParams.Modal` in
+  `src/constants/quick-apps.ts`; it opened the merged Agents & Toolsets modal before
+  `split-agents-and-toolsets`). Nothing in this repo sets that parameter, and no spec other than
+  `agents_selection` describes it — confirm with the host owners whether it should open Add agent or
+  Add toolset.
   Confirm whether a host still opens the modal this way. If one does, add the parameter to
   `host-integration` and keep it as a single named constant instead of a one-member enum. If none
   does, remove the parameter and the code that reads it.
@@ -59,6 +72,23 @@
   `@epam/ai-dial-chat-api-client` has a typed `ThemesApi`. Decide whether to switch to it or keep
   the raw call as a documented exception (see "API-layer exceptions and configuration keys" below).
   Switching changes the endpoint, so it needs its own OpenSpec change.
+- [] `src/types` follow-ups (left over from the constants/types clean-up):
+  - one `LoadStatus` enum (`idle`/`loading`/`ready`/`error`) in `src/types/load-status.ts`, replacing
+    three copies of that set: the string union `status` in `src/context/DataContext.tsx`,
+    `QuickApp2ModelStatus` (`src/types/quick-app-form.ts`) and `ManifestStatus`
+    (`src/types/skill-manifest.ts`). Then drop the string → enum `switch` in
+    `src/components/QuickApp2Form.tsx`;
+  - a `DialEntityType` enum for the `type` discriminant (`'model' | 'application' | 'toolset' |
+    'skill'`) on `DialModel`, `DialToolset` and `DialSkill` (`src/types/dial-entities.ts`). This
+    replaces the literal comparisons in `src/utils/get-add-on-kind.ts`,
+    `src/utils/map-agent-to-catalog-item.ts`, `ModelCatalogModal.tsx` and `src/form/quickApp2Form.ts`
+    (`split-agents-and-toolsets` replaced `components/common/AgentAndToolsetSelector/*`);
+  - rename the host-protocol `LocaleTextEntryDto` (`src/types/editor-messages.ts`), for example to
+    `HostLocaleTextEntry`, so it is not confused with chat-api's DTO of the same name, which
+    `src/utils/dialClient.ts` casts it to;
+  - `src/types/quick-app-form.ts` imports `QuickApp2Form` from `@/form/quickApp2Form`, so types depend
+    on the form layer. This resolves itself when zod is removed (`remove-react-hook-form`): define
+    the form values interface in `src/types/` directly.
 - [] ...
 
 ## Documentation and behavior reconciliation backlog
@@ -127,7 +157,8 @@ Track these dimensions separately for every capability:
 | `auth` | Yes | Partial | Partial | Reconcile |
 | `application_editing` | Partial | Yes | Partial | Planned |
 | `context-files` | No | Yes | Partial | Planned |
-| `toolsets_selection` | No | Yes | Partial | Planned |
+| `toolsets_selection` | Yes | Yes | Partial | Planned |
+| `agents_selection` | Yes | Yes | Partial | Planned |
 | `toolsets_login` | No | Yes | Partial | Planned |
 | `application_credentials` | No | Yes | Partial | Planned |
 | `skills_catalog` | Yes | Yes | Partial | Planned |
@@ -161,10 +192,17 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 ### Toolsets — selection + host-mediated login/logout
 
-- src/app/api/dial-toolsets/{signin,signout}, components/common/AgentAndToolsetSelector/**, utils/apply-toolset-login-result.ts, ties to
-  host-integration's RequestToolsetLogin/RequestToolsetLogout
+- src/components/Toolsets/** (row, Add toolset picker, details popup with Tools and Log in),
+  src/utils/get-add-on-kind.ts, src/utils/map-toolset-to-catalog-item.ts,
+  src/utils/dialClient.ts (`fetchToolsetToolNames`), src/utils/apply-toolset-auth-result.ts, ties to
+  host-integration's RequestToolsetLogin/RequestToolsetLogout. (Historical: the
+  `src/app/api/dial-toolsets/{signin,signout}` routes and `components/common/AgentAndToolsetSelector/**`
+  are gone.)
 - Two real sub-concerns: selecting/configuring a toolset vs. the login/logout round-trip with the host
 - Proposed: toolsets_selection, toolsets_login (this is the domain your original naming example already named)
+- **Spec written** (`openspec/specs/toolsets_selection`, from archived change `split-agents-and-toolsets`) and its sibling
+  `agents_selection` (src/components/Agents/**, src/utils/map-agent-to-catalog-item.ts). The
+  `toolsets_login` host round-trip is still unspecified.
 
 ### Skills
 

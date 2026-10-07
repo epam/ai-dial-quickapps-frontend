@@ -1,10 +1,8 @@
 {
-  "No Agents & Toolsets added": "No Agents & Toolsets added",
   "No context files added": "No context files added",
   "Cancel": "Cancel",
   "Confirm": "Confirm",
   "Attach": "Attach",
-  "Add Agents and Toolsets": "Add Agents and Toolsets",
   "Add": "Add",
   "The {{entityType}} is not available in the Catalog and was added via JSON.": "The {{entityType}} is not available in the Catalog and was added via JSON.",
   "The {{entityType}} is not available and needs to be removed.": "The {{entityType}} is not available and needs to be removed.",
@@ -16,7 +14,6 @@
   "Redeploying app.": "Redeploying app.",
   "agent": "agent",
   "toolset": "toolset",
-  "model": "model",
   "Personal": "Personal",
   "Shared": "Shared",
   "Organization": "Organization",

@@ -147,11 +147,13 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   useEffect(() => {
     const handleTriggerSave = (event: Event) => {
       const { isAutoSave, ignoreDirty, general } =
-        (event as CustomEvent<{
-          isAutoSave?: boolean;
-          ignoreDirty?: boolean;
-          general?: TriggerSaveGeneralPayload;
-        }>).detail ?? {};
+        (
+          event as CustomEvent<{
+            isAutoSave?: boolean;
+            ignoreDirty?: boolean;
+            general?: TriggerSaveGeneralPayload;
+          }>
+        ).detail ?? {};
       if (isReadonly) return;
       if (isAutoSave && !ignoreDirty && !isDirty) return;
       handleSubmitForm(!!isAutoSave, general);
@@ -224,7 +226,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
           onAgentSkillsChange={(value) => setField('agentSkills', value)}
           isReadonly={isReadonly}
           tooltip={sharedTooltip}
-          agentsAndToolsets={values.agentsAndToolsets}
+          addOns={values.addOns}
           onAgentsChange={setAgentIds}
           onConfigureAgent={configureAgent}
           conversationStarters={conversationStarters}

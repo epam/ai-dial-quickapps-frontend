@@ -92,15 +92,3 @@ export enum MIMEType {
   /** Ogg audio. */
   OGG = 'audio/ogg',
 }
-
-/** Well-known file extension constants used as fallback when a MIME type is unavailable. */
-export enum FileExtension {
-  /** PDF document. */
-  PDF = 'pdf',
-  /** Markdown document (`.md`). */
-  Markdown = 'md',
-  /** Markdown document, alternate extension (`.markdown`). */
-  MarkdownAlt = 'markdown',
-  /** JSON document. */
-  JSON = 'json',
-}

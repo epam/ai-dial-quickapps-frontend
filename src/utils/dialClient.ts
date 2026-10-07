@@ -488,6 +488,25 @@ export const fetchSkillManifest = async (
   return blob.text();
 };
 
+/**
+ * The names of the tools a toolset exposes: its allow-list when it restricts
+ * them, otherwise every tool the MCP server reports (an empty allow-list
+ * means all tools are permitted). chat-api returns names only.
+ */
+export const fetchToolsetToolNames = async (
+  toolsetId: string,
+  signal?: AbortSignal,
+): Promise<string[]> => {
+  // Re-encode to chat-api's canonical id form — see encodeDialPath's comment.
+  const details = await deploymentsApi.getDeploymentDetails(
+    { deployment: encodeDialPath(toolsetId) },
+    { signal },
+  );
+  const allowedTools = details.toolsetDetails?.allowedTools;
+  if (allowedTools?.length) return allowedTools;
+  return details.toolsetDetails?.allToolNames ?? [];
+};
+
 /** chat-api's own controller already does the personal+public+shared aggregation this app used to replicate against Core directly. */
 export async function fetchDialSkills(): Promise<DialSkill[]> {
   const res = await skillsApi.listCatalogSkills();

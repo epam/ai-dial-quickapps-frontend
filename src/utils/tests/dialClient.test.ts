@@ -2,12 +2,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { DialSkill } from '@/types/dial-entities';
 
-import { fetchSkillManifest, mapCoreToDialSkill } from '../dialClient';
+import { fetchSkillManifest, fetchToolsetToolNames, mapCoreToDialSkill } from '../dialClient';
 
-const { downloadSkillFile } = vi.hoisted(() => ({ downloadSkillFile: vi.fn() }));
+const { downloadSkillFile, getDeploymentDetails } = vi.hoisted(() => ({
+  downloadSkillFile: vi.fn(),
+  getDeploymentDetails: vi.fn(),
+}));
 
 vi.mock('@/utils/chat-api-client', () => ({
   skillsApi: { downloadSkillFile },
+  deploymentsApi: { getDeploymentDetails },
 }));
 
 const makeSkill = (overrides: Partial<DialSkill> = {}): DialSkill => ({
@@ -70,5 +74,49 @@ describe('fetchSkillManifest', () => {
       { bucket: 'b', path: 'p/q', filePath: 'SKILL.md' },
       { signal: undefined },
     );
+  });
+});
+
+describe('fetchToolsetToolNames', () => {
+  beforeEach(() => {
+    getDeploymentDetails.mockReset();
+  });
+
+  it('requests the details by the canonical (encoded) toolset id', async () => {
+    getDeploymentDetails.mockResolvedValue({ id: 'x', type: 'toolset', toolsetDetails: {} });
+    const signal = new AbortController().signal;
+
+    await fetchToolsetToolNames('toolsets/public/my tools', signal);
+
+    expect(getDeploymentDetails).toHaveBeenCalledWith(
+      { deployment: 'toolsets/public/my%20tools' },
+      { signal },
+    );
+  });
+
+  it('returns every tool the server reports when there is no allow-list', async () => {
+    getDeploymentDetails.mockResolvedValue({
+      id: 'x',
+      type: 'toolset',
+      toolsetDetails: { allowedTools: [], allToolNames: ['a', 'b'] },
+    });
+
+    await expect(fetchToolsetToolNames('toolsets/public/figma')).resolves.toEqual(['a', 'b']);
+  });
+
+  it('returns the allow-list when the toolset restricts its tools', async () => {
+    getDeploymentDetails.mockResolvedValue({
+      id: 'x',
+      type: 'toolset',
+      toolsetDetails: { allowedTools: ['b'], allToolNames: ['a', 'b'] },
+    });
+
+    await expect(fetchToolsetToolNames('toolsets/public/figma')).resolves.toEqual(['b']);
+  });
+
+  it('returns no names when the details carry none', async () => {
+    getDeploymentDetails.mockResolvedValue({ id: 'x', type: 'toolset' });
+
+    await expect(fetchToolsetToolNames('toolsets/public/figma')).resolves.toEqual([]);
   });
 });

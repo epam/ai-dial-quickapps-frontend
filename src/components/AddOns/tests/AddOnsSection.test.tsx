@@ -3,31 +3,75 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { AddOnSchemaKeys } from '@/form/quickApp2Form';
+import type { DialModel, DialToolset } from '@/types/dial-entities';
 
 import { AddOnsSection } from '../AddOnsSection';
+
+const { searchParams } = vi.hoisted(() => ({ searchParams: new Map<string, string>() }));
+
+const FIGMA: DialToolset = {
+  id: 'toolsets/public/figma',
+  reference: 'toolsets/public/figma',
+  name: 'Figma',
+  type: 'toolset',
+};
+const RESEARCH: DialModel = {
+  id: 'applications/public/research',
+  reference: 'applications/public/research',
+  name: 'Research',
+  type: 'application',
+};
 
 vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({ t: (key: string) => key, language: 'en' }),
 }));
 vi.mock('@/hooks/use-search-params', () => ({
-  useSearchParams: () => ({ get: () => null }),
+  useSearchParams: () => ({ get: (key: string) => searchParams.get(key) ?? null }),
+}));
+vi.mock('@/hooks/use-add-on-entity-map', () => ({
+  useAddOnEntityMap: () => ({ [FIGMA.id]: FIGMA, [RESEARCH.id]: RESEARCH }),
 }));
 vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => ({
-  default: () => (
-    <section aria-label="Skills row">
-      <button type="button">Add Skills</button>
-    </section>
-  ),
-}));
-vi.mock('@/components/ContextAndTools/AgentsAndToolsetsField', () => ({
-  AgentsAndToolsetsField: ({ isSelectModalOpen }: { isSelectModalOpen: boolean }) => (
-    <section aria-label="Agents & Toolsets row">
-      {isSelectModalOpen && <div role="dialog" aria-label="Agents & Toolsets modal" />}
-    </section>
-  ),
+  default: () => <section aria-label="Skills row" />,
 }));
 vi.mock('@/components/ConversationStarters/ConversationStartersRow', () => ({
   default: () => <section aria-label="Conversation starters row" />,
+}));
+
+interface ListStubProps {
+  ids: string[];
+  allIds: string[];
+  onChange: (allIds: string[]) => void;
+}
+
+vi.mock('@/components/Toolsets/ToolsetsList/ToolsetsList', () => ({
+  default: ({ ids, allIds, onChange }: ListStubProps) => (
+    <ul aria-label="Toolsets list">
+      {ids.map((id) => (
+        <li key={id}>
+          <button type="button" onClick={() => onChange(allIds.filter((x) => x !== id))}>
+            Remove {id}
+          </button>
+        </li>
+      ))}
+    </ul>
+  ),
+}));
+vi.mock('@/components/Agents/AgentsList/AgentsList', () => ({
+  default: ({ ids }: ListStubProps) => (
+    <ul aria-label="Agents list">
+      {ids.map((id) => (
+        <li key={id}>{id}</li>
+      ))}
+    </ul>
+  ),
+}));
+vi.mock('@/components/Toolsets/AddToolsetsModal/AddToolsetsModal', () => ({
+  AddToolsetsModal: () => <div role="dialog" aria-label="Add toolset" />,
+}));
+vi.mock('@/components/Agents/AddAgentsModal/AddAgentsModal', () => ({
+  AddAgentsModal: () => <div role="dialog" aria-label="Add agent" />,
 }));
 
 let root: Root;
@@ -35,6 +79,7 @@ let container: HTMLDivElement;
 
 beforeEach(() => {
   (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
+  searchParams.clear();
   container = document.createElement('div');
   document.body.append(container);
   root = createRoot(container);
@@ -45,18 +90,21 @@ afterEach(() => {
   container.remove();
 });
 
-const renderSection = ({
-  agentsAndToolsets = [] as never[],
+const entry = (id: string) => ({ [AddOnSchemaKeys.id]: id });
+
+const renderSection = async ({
+  ids = [] as string[],
   isReadonly = false,
-}: { agentsAndToolsets?: never[]; isReadonly?: boolean } = {}) => {
-  act(() => {
+  onAgentsChange = vi.fn(),
+}: { ids?: string[]; isReadonly?: boolean; onAgentsChange?: (ids: string[]) => void } = {}) => {
+  await act(async () => {
     root.render(
       <AddOnsSection
         agentSkills={[]}
         onAgentSkillsChange={vi.fn()}
         isReadonly={isReadonly}
-        agentsAndToolsets={agentsAndToolsets}
-        onAgentsChange={vi.fn()}
+        addOns={ids.map(entry)}
+        onAgentsChange={onAgentsChange}
         onConfigureAgent={vi.fn()}
         conversationStarters={{
           starters: [],
@@ -66,6 +114,8 @@ const renderSection = ({
         onConversationStartersSave={vi.fn()}
       />,
     );
+    // Let the lazily loaded pickers resolve.
+    await new Promise((resolve) => setTimeout(resolve, 0));
   });
 };
 
@@ -74,86 +124,108 @@ const getByAriaLabel = (label: string) =>
     (element) => element.getAttribute('aria-label') === label,
   );
 
-const getAgentsAddButton = () =>
-  [...container.querySelectorAll('button')].find((button) => button.textContent === 'Add');
+const getHeadings = () => [...container.querySelectorAll('h3')].map((h) => h.textContent);
+
+const getAddButtons = () =>
+  [...container.querySelectorAll('button')].filter((button) => button.textContent === 'Add');
+
+const clickAndWait = async (element?: Element) => {
+  await act(async () => {
+    (element as HTMLElement | undefined)?.click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+};
 
 describe('AddOnsSection', () => {
-  it('renders the Add-ons heading and both add-on rows without collapsible controls', () => {
-    renderSection();
+  it('renders Skills, Toolsets, Agents and Conversation starters in that order', async () => {
+    await renderSection();
 
     expect(container.querySelector('section[aria-label="Add-ons"]')).toBeTruthy();
-    expect(container.querySelector('[aria-label="Skills row"]')).toBeTruthy();
-    expect(getByAriaLabel('Agents & Toolsets row')).toBeTruthy();
+    expect(getHeadings()).toEqual([QuickAppEditorI18nKeys.Toolsets, QuickAppEditorI18nKeys.Agents]);
+
+    const order = [
+      getByAriaLabel('Skills row'),
+      container.querySelector('h3'),
+      container.querySelectorAll('h3')[1],
+      getByAriaLabel('Conversation starters row'),
+    ];
+    for (let i = 1; i < order.length; i += 1) {
+      expect(
+        order[i - 1]!.compareDocumentPosition(order[i]!) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    }
     expect(container.querySelector('[aria-expanded]')).toBeNull();
   });
 
-  it('renders the Conversation starters row after the other add-on rows', () => {
-    renderSection();
+  it('shows each empty row its own description', async () => {
+    await renderSection();
 
-    const rows = [...container.querySelectorAll('section[aria-label$="row"]')].map((row) =>
-      row.getAttribute('aria-label'),
+    expect(container.textContent).toContain(QuickAppEditorI18nKeys.ToolsetsDescription);
+    expect(container.textContent).toContain(QuickAppEditorI18nKeys.AgentsDescription);
+  });
+
+  it('splits the entries between the Toolsets and Agents rows', async () => {
+    await renderSection({ ids: [RESEARCH.id, FIGMA.id, 'toolsets/public/old', 'gpt-x'] });
+
+    expect(getByAriaLabel('Toolsets list')?.textContent).toBe(
+      `Remove ${FIGMA.id}Remove toolsets/public/old`,
     );
-    expect(rows).toEqual(['Skills row', 'Agents & Toolsets row', 'Conversation starters row']);
+    expect(getByAriaLabel('Agents list')?.textContent).toBe(`${RESEARCH.id}gpt-x`);
+    // A populated row hides its description; the other one keeps it.
+    await renderSection({ ids: [FIGMA.id] });
+    expect(container.textContent).not.toContain(QuickAppEditorI18nKeys.ToolsetsDescription);
+    expect(container.textContent).toContain(QuickAppEditorI18nKeys.AgentsDescription);
   });
 
-  it('keeps translated Add actions keyboard reachable', () => {
-    renderSection();
+  it('hands back the full id list when a toolset is removed', async () => {
+    const onAgentsChange = vi.fn();
+    await renderSection({ ids: [RESEARCH.id, FIGMA.id], onAgentsChange });
 
-    const addButtons = [...container.querySelectorAll('button')];
-    expect(addButtons).toHaveLength(2);
-    expect(addButtons.every((button) => !button.disabled && button.tabIndex >= 0)).toBe(true);
+    await clickAndWait(
+      [...container.querySelectorAll('button')].find((b) => b.textContent === `Remove ${FIGMA.id}`),
+    );
+
+    expect(onAgentsChange).toHaveBeenCalledWith([RESEARCH.id]);
   });
 
-  it('opens the Agents & Toolsets selection modal from the row header Add action', () => {
-    renderSection();
+  it('opens Add toolset and Add agent from their row headers', async () => {
+    await renderSection();
+    const [toolsetsAdd, agentsAdd] = getAddButtons();
 
+    await clickAndWait(toolsetsAdd);
+    expect(getByAriaLabel('Add toolset')).toBeTruthy();
+
+    await clickAndWait(agentsAdd);
+    expect(getByAriaLabel('Add agent')).toBeTruthy();
+  });
+
+  it('opens Add agent on load from the agentsAndToolsetsModal deep link', async () => {
+    searchParams.set('agentsAndToolsetsModal', '1');
+    await renderSection();
+
+    expect(getByAriaLabel('Add agent')).toBeTruthy();
+    expect(getByAriaLabel('Add toolset')).toBeUndefined();
+  });
+
+  it('keeps both pickers closed in a read-only application, even with the deep link', async () => {
+    searchParams.set('agentsAndToolsetsModal', '1');
+    await renderSection({ isReadonly: true });
+
+    const buttons = getAddButtons();
+    expect(buttons).toHaveLength(2);
+    for (const button of buttons) {
+      // With a tooltip the kit marks a disabled button aria-disabled (not native
+      // `disabled`) so the tooltip still opens; either way it must not act.
+      expect(button.disabled || button.getAttribute('aria-disabled') === 'true').toBe(true);
+      await clickAndWait(button);
+    }
     expect(container.querySelector('[role="dialog"]')).toBeNull();
-
-    act(() => getAgentsAddButton()?.click());
-
-    expect(getByAriaLabel('Agents & Toolsets modal')).toBeTruthy();
   });
 
-  it('disables the Agents & Toolsets Add action in read-only mode', () => {
-    renderSection({ isReadonly: true });
-
-    // With a tooltip the kit marks a disabled button aria-disabled (not native
-    // `disabled`) so the tooltip still opens; either way it must not act.
-    const button = getAgentsAddButton();
-    expect(button?.disabled || button?.getAttribute('aria-disabled') === 'true').toBe(true);
-
-    act(() => button?.click());
-
-    expect(getByAriaLabel('Agents & Toolsets modal')).toBeUndefined();
-  });
-
-  it('does not render a JSON control in the Agents & Toolsets row header', () => {
-    renderSection({ agentsAndToolsets: [{ id: 'toolset-1' }] as never[] });
+  it('does not render a JSON control for toolsets or agents', async () => {
+    await renderSection({ ids: [FIGMA.id, RESEARCH.id] });
 
     expect(container.textContent).not.toContain('JSON');
     expect(container.querySelector('[role="switch"]')).toBeNull();
-  });
-
-  it('matches the target card spacing and typography hierarchy', () => {
-    renderSection();
-
-    const section = container.querySelector('section[aria-label="Add-ons"]');
-    const rows = section?.querySelector('div.gap-7');
-    const agentsTitle = [...(section?.querySelectorAll('h3') ?? [])].find(
-      (heading) => heading.textContent === 'Agents & Toolsets',
-    );
-
-    expect(section?.querySelector('h2 > span')?.className).toContain('dial-h3-text');
-    expect(rows?.className).toContain('gap-7');
-    expect(agentsTitle?.className).toContain('dial-small-semi-text');
-  });
-
-  it('shows the Agents & Toolsets description only while the row is empty', () => {
-    renderSection();
-    expect(container.textContent).toContain(QuickAppEditorI18nKeys.ContextAndToolsDescription);
-
-    renderSection({ agentsAndToolsets: [{ id: 'toolset-1' }] as never[] });
-    expect(container.textContent).not.toContain(QuickAppEditorI18nKeys.ContextAndToolsDescription);
-    expect(getByAriaLabel('Agents & Toolsets row')).toBeTruthy();
   });
 });

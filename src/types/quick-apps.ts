@@ -54,15 +54,6 @@ export enum ToolsetTransportType {
   SSE = 'SSE',
 }
 
-export interface QuickAppConfig {
-  instructions: string;
-  model: string;
-  temperature: number;
-  web_api_toolset: object;
-  mcp_toolset?: object;
-  document_relative_url?: string[];
-}
-
 export interface FileContext {
   url: string;
   type: ContextType.File;
@@ -163,38 +154,4 @@ export interface QuickApp2Config {
     representation_tooling?: RepresentationToolingFeature | null;
     web_fetch?: WebFetchFeature | null;
   };
-}
-
-export function isDialDeploymentToolset(toolset: AnyToolset): toolset is DialDeploymentToolset {
-  return toolset.type === ToolsetTypes.DialDeployment;
-}
-
-export function isDialDeploymentSimpleTool(tool: {
-  type?: unknown;
-}): tool is DialDeploymentSimpleTool {
-  return tool.type === DialDeploymentToolsetToolTypes.DialDeploymentSimple;
-}
-
-export function isMcpToolset(toolset: AnyToolset): toolset is MCPToolset {
-  return toolset.type === ToolsetTypes.DialMcp;
-}
-
-export function isCodeInterpreterToolset(toolset: AnyToolset): toolset is CodeInterpreterToolset {
-  return (
-    toolset.type === ToolsetTypes.CodeInterpreter &&
-    (toolset as CodeInterpreterToolset).template_name === CodeInterpreterTemplate.PyInterpreter
-  );
-}
-
-export function isDialAppToolset(toolset: AnyToolset): toolset is DialAppToolset {
-  return toolset.type === ToolsetTypes.DialApp;
-}
-
-export function isUnknownToolset(toolset: AnyToolset): toolset is UnknownToolset {
-  return (
-    !isDialDeploymentToolset(toolset) &&
-    !isMcpToolset(toolset) &&
-    !isCodeInterpreterToolset(toolset) &&
-    !isDialAppToolset(toolset)
-  );
 }

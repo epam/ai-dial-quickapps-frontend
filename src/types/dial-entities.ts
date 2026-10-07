@@ -102,12 +102,10 @@ export interface DialApp {
 }
 
 export interface AppSettings {
-  isPublishingEnabled?: boolean;
   dialCoreExternalUrl?: string;
   isCodeInterpreterEnabled?: boolean;
   isWebFetchEnabled?: boolean;
   isAddAttachmentEnabled?: boolean;
-  theme?: string;
   allowedOrigins?: string[];
   defaultModelId?: string;
   dialAdminHost?: string;
