@@ -9,8 +9,10 @@ const backgroundsColors = {
   warning: 'var(--bg-warning, #FAF0CF)', // yellow-100
   info: 'var(--bg-info, #E1EAF9)', // blue-100
   success: 'var(--bg-success, #DBF1EB)', // green-100
-  // Per design the popup overlay is the base layer colour, not the dimmed grey-1000 alpha-30 scrim.
-  backdrop: 'var(--bg-layer-base, #F5F7FA)', // grey-100
+  // Per design the popup overlay is the base layer colour at 80% opacity, not the dimmed
+  // grey-1000 alpha-30 scrim. The alpha lives in the token because Tailwind 3 can't apply
+  // `/80` opacity modifiers to `var()` colours.
+  backdrop: 'color-mix(in srgb, var(--bg-layer-base, #F5F7FA) 80%, transparent)', // grey-100 alpha-80
 };
 
 const shadowColors = {

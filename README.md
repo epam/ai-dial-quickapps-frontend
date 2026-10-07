@@ -20,19 +20,19 @@ in another terminal for a live-reloading frontend against a real backend.
 
 ## Commands
 
-| Command                 | Description                                                                       |
-| ------------------------ | ---------------------------------------------------------------------------------- |
-| `npm start`              | Start the Vite dev server (hot-reloading frontend only — see above for the backend) |
-| `npm run start:api:dev`  | Run chat-api from a local checkout instead of a Docker image (see below)          |
-| `npm run build`          | Type-check and build                                                              |
-| `npm run preview`        | Preview the production build locally                                              |
-| `npm run lint`           | Run ESLint                                                                        |
-| `npm test`               | Run the test suite with coverage (fails below the 70% threshold — see [Test coverage](#test-coverage)) |
-| `npm run test:watch`     | Run the test suite in watch mode, without coverage                               |
-| `npm run typecheck`      | Type-check only (no build)                                                        |
-| `npm run format`         | Format the repo with Prettier                                                     |
-| `npm run format:check`   | Check formatting without writing changes                                          |
-| `npm run docker:run`     | Rebuild `dist/` and run it mounted into the published chat-api image (see below)  |
+| Command                 | Description                                                                                            |
+| ----------------------- | ------------------------------------------------------------------------------------------------------ |
+| `npm start`             | Start the Vite dev server (hot-reloading frontend only — see above for the backend)                    |
+| `npm run start:api:dev` | Run chat-api from a local checkout instead of a Docker image (see below)                               |
+| `npm run build`         | Type-check and build                                                                                   |
+| `npm run preview`       | Preview the production build locally                                                                   |
+| `npm run lint`          | Run ESLint                                                                                             |
+| `npm test`              | Run the test suite with coverage (fails below the 70% threshold — see [Test coverage](#test-coverage)) |
+| `npm run test:watch`    | Run the test suite in watch mode, without coverage                                                     |
+| `npm run typecheck`     | Type-check only (no build)                                                                             |
+| `npm run format`        | Format the repo with Prettier                                                                          |
+| `npm run format:check`  | Check formatting without writing changes                                                               |
+| `npm run docker:run`    | Rebuild `dist/` and run it mounted into the published chat-api image (see below)                       |
 
 ## Docker
 
@@ -102,21 +102,21 @@ of everything chat-api itself accepts, see
 
 ### Server
 
-| Variable     | Required | Default | Description                                                                                                                                                     |
-| ------------ | :------: | :-----: | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PORT`       |    No    | `5000`  | Default port for the deployable QuickApps BFF. Local Vite, local-checkout, and local-Docker workflows explicitly override it to `5001`; the Vite development server remains on port `4600`.  |
-| `API_PREFIX` |    No    |  `api`  | Path prefix for the API and health-check routes.                                                                                                                |
+| Variable     | Required | Default | Description                                                                                                                                                                                 |
+| ------------ | :------: | :-----: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PORT`       |    No    | `5000`  | Default port for the deployable QuickApps BFF. Local Vite, local-checkout, and local-Docker workflows explicitly override it to `5001`; the Vite development server remains on port `4600`. |
+| `API_PREFIX` |    No    |  `api`  | Path prefix for the API and health-check routes.                                                                                                                                            |
 
 ### DIAL core
 
 | Variable        | Required | Description                                                     |
-| --------------- | :------: | ----------------------------------------------------------------- |
+| --------------- | :------: | --------------------------------------------------------------- |
 | `DIAL_CORE_URL` |   Yes    | Base URL of the DIAL Core API, e.g. `https://core.example.com`. |
 
 ### Auth: session
 
 | Variable                       | Required | Description                                                                                                                                                                          |
-| ------------------------------- | :------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ------------------------------ | :------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `AUTH_SESSION_SECRET`          |   Yes    | 64 hex characters, used to sign/encrypt the session cookie. Generate with e.g. `openssl rand -hex 32`.                                                                               |
 | `AUTH_SESSION_PREV_SECRET`     |    No    | Previous session secret, for zero-downtime rotation — sessions signed with either secret are accepted while both are set.                                                            |
 | `AUTH_CALLBACK_BASE_URL`       |   Yes    | This app's own origin, e.g. `https://quickapps.example.com`. The popup sign-in's `callbackUrl` must be on this origin.                                                               |
@@ -165,7 +165,7 @@ concrete example — see chat-api's own documentation for every supported provid
 variable names.
 
 | Variable                  | Required | Description                                                                                                                                                                                                                |
-| -------------------------- | :------: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ------------------------- | :------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `AUTH_KEYCLOAK_HOST`      |    †     | Keycloak realm base URL, e.g. `https://keycloak.example.com/realms/dial`.                                                                                                                                                  |
 | `AUTH_KEYCLOAK_CLIENT_ID` |    †     | OAuth client id registered for this app in that realm.                                                                                                                                                                     |
 | `AUTH_KEYCLOAK_SECRET`    |    †     | That client's secret. **Never commit a real value** — this is the one variable in this table you should treat as sensitive and set out-of-band (e.g. `docker run -e`, a secrets manager), not in a checked-in `.env` file. |
@@ -177,27 +177,27 @@ as that client's redirect URI.
 ### Themes
 
 | Variable            | Required | Default | Description                                                                                                     |
-| -------------------- | :------: | ------- | ------------------------------------------------------------------------------------------------------------------ |
+| ------------------- | :------: | ------- | --------------------------------------------------------------------------------------------------------------- |
 | `THEMES_CONFIG_URL` |    No    | —       | Base URL for DIAL themes; chat-api appends `/config.json` itself. Falls back to CSS variable defaults if unset. |
 
 ### Iframe embedding
 
-| Variable                 | Required | Default | Description                                                                                                                                                                                                     |
-| ------------------------- | :------: | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ALLOWED_IFRAME_ORIGINS` |    No    | none    | Space-separated list of origins allowed to embed this app in an `<iframe>` (CSP `frame-ancestors`). Set to the exact admin/chat origin(s) in production.                                                        |
-| `OVERLAY_ENABLED`        |    No    | unset   | Leave unset unless the session cookie needs `SameSite=None` for a specific embedding scenario — turning it on is chat's own overlay-runtime flag, not a QuickApps-specific toggle.                             |
+| Variable                 | Required | Default | Description                                                                                                                                                                        |
+| ------------------------ | :------: | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ALLOWED_IFRAME_ORIGINS` |    No    | none    | Space-separated list of origins allowed to embed this app in an `<iframe>` (CSP `frame-ancestors`). Set to the exact admin/chat origin(s) in production.                           |
+| `OVERLAY_ENABLED`        |    No    | unset   | Leave unset unless the session cookie needs `SameSite=None` for a specific embedding scenario — turning it on is chat's own overlay-runtime flag, not a QuickApps-specific toggle. |
 
 ### Content Security Policy
 
 | Variable                  | Required | Default       | Description                                                                                                                                                             |
-| -------------------------- | :------: | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ------------------------- | :------: | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CSP_MODE`                |    No    | `report-only` | Set to `enforce` only after confirming `report-only` produces no violation reports for this deployment — see [Content Security Policy](#content-security-policy) below. |
 | `ALLOWED_CONNECT_ORIGINS` |    No    | none          | Additional origins the page may `fetch`/`XHR` to, beyond its own. Leave empty — this app only ever calls its own origin.                                                |
 
 ### Default model
 
 | Variable             | Required | Description                                                                                                                               |
-| --------------------- | :------: | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| -------------------- | :------: | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `DEFAULT_DEPLOYMENT` |    No    | Deployment id pre-selected in the form when no model is stored in the app config. Returned to the client as `config.defaultDeploymentId`. |
 
 ### QuickApps-specific settings
@@ -207,14 +207,14 @@ These don't map onto a native chat-api concept, so they travel inside `CUSTOM_CL
 (`src/utils/dialClient.ts`'s `fetchAppSettings`). Keys map 1:1 onto `AppSettings`
 (`src/types/dial-entities.ts`):
 
-| Key               | Required | Description                                                                                                                                                                                        |
-| ------------------ | :------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `allowedOrigin`   |    No    | Origin allowed to send/receive `postMessage` events with the editor iframe. Set to the exact `ai-dial-chat`/admin origin in production; `*` accepts any origin — unsafe outside local dev.         |
-| `dialAdminHost`   |    No    | Origin of the admin host this app is embedded in. Default target for `@epam/ai-dial-chat-visualizer-connector`.                                                                                    |
-| `dialChatHost`    |    No    | Origin of the `ai-dial-chat` host. Used instead of `dialAdminHost` when the app detects it's embedded directly inside chat (`document.location.ancestorOrigins[0]` matches this value).            |
-| `applicationName` |    No    | Visualizer name; must match the `title` configured for this app in `ai-dial-chat`'s visualizer settings. Required (with at least one of the hosts above) for the visualizer connector to activate. |
+| Key               | Required | Description                                                                                                                                                                                                                                                    |
+| ----------------- | :------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `allowedOrigin`   |    No    | Origin(s) allowed to send/receive `postMessage` events with the editor iframe: one origin, a comma-separated list, or a JSON array. Set to the exact `ai-dial-chat`/admin origins in production; `*` (or unset) accepts any origin — unsafe outside local dev. |
+| `dialAdminHost`   |    No    | Origin of the admin host this app is embedded in. Default target for `@epam/ai-dial-chat-visualizer-connector`.                                                                                                                                                |
+| `dialChatHost`    |    No    | Origin of the `ai-dial-chat` host. Used instead of `dialAdminHost` when the app detects it's embedded directly inside chat (`document.location.ancestorOrigins[0]` matches this value).                                                                        |
+| `applicationName` |    No    | Visualizer name; must match the `title` configured for this app in `ai-dial-chat`'s visualizer settings. Required (with at least one of the hosts above) for the visualizer connector to activate.                                                             |
 
-Example: `CUSTOM_CLIENT_VARIABLES={"allowedOrigin":"https://chat.example.com","dialAdminHost":"https://admin.example.com","applicationName":"QuickApps"}`
+Example: `CUSTOM_CLIENT_VARIABLES={"allowedOrigin":"https://chat.example.com,https://admin.example.com","dialAdminHost":"https://admin.example.com","applicationName":"QuickApps"}`
 
 ### OpenTelemetry
 
@@ -266,7 +266,7 @@ document.querySelector('iframe').contentWindow.postMessage({ type: 'TRIGGER_SAVE
 **Host → iframe**
 
 | Message type        | Payload                                                                                     | Description                                                                                                                                                                                                                                                              |
-| -------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `TRIGGER_SAVE`      | `{ general?: { name: string; description?: string; iconUrl?: string; topics?: string[] } }` | Triggers a manual save. `general` carries the host's current General-step fields for an existing app so they're merged into this single save instead of a separate host-side write; omitted for Preview or for an app created in this session. Never includes `version`. |
 | `TRIGGER_AUTO_SAVE` | `{ ignoreDirty?: boolean }`                                                                 | Triggers an auto-save                                                                                                                                                                                                                                                    |
 | `RESET`             | —                                                                                           | Resets the form to the last saved state                                                                                                                                                                                                                                  |
@@ -276,7 +276,7 @@ In addition to host-triggered `TRIGGER_AUTO_SAVE` messages, the editor auto-save
 **Iframe → host**
 
 | Message type         | Payload                                 | Description                                                                                                   |
-| --------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| -------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | `READY`              | —                                       | Editor mounted; host should send `INIT`                                                                       |
 | `DIRTY_STATE`        | `{ isDirty: boolean }`                  | Form dirty state changed                                                                                      |
 | `SAVE_SUCCESS`       | `{ updatedApp }`, `hasChanges: boolean` | Save completed successfully; `hasChanges` is `true` if any user-editable field changed versus a no-op re-save |
