@@ -388,6 +388,10 @@ export async function saveDialApp(
       description,
       iconUrl: general ? general.iconUrl : (rawForSave.iconUrl as string | undefined),
       topics: general ? general.topics : (rawForSave.topics as string[] | undefined),
+      // Host-supplied only — never fall back to the load-time `_rawForSave`
+      // snapshot, which goes stale after the first save. Omitted means chat-api
+      // leaves the stored displayVersion unchanged.
+      version: general?.display_version?.trim() || undefined,
       inputAttachmentTypes: app.inputAttachmentTypes as string[] | undefined,
       maxInputAttachments: app.maxInputAttachments as number | undefined,
       applicationProperties: encodeApplicationPropertiesForApi(applicationProperties) as object,

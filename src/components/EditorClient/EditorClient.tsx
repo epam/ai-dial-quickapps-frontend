@@ -234,6 +234,12 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
           description: rawForSave.description as MaybeLocalizedText,
           iconUrl: rawForSave.iconUrl as string | undefined,
           topics: rawForSave.topics as string[] | undefined,
+        };
+        // The load-time display_version is only a diff baseline: carrying it into
+        // the save would let a `general`-less save (auto-save) revert a version
+        // the host changed earlier in this session.
+        const storedGeneral: StoredGeneralFields = {
+          ...generalForSave,
           display_version: rawForSave.displayVersion as string | undefined,
         };
         // `general.name`/`general.description` only carry the primary-locale
@@ -270,7 +276,7 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
           existingConfig,
           newConfig,
           normalizedGeneral,
-          generalForSave,
+          storedGeneral,
         );
         const updatedApp = await saveDialApp(appWithFormValues, newConfig, effectiveGeneral);
         setHasSavedOnce(true);
