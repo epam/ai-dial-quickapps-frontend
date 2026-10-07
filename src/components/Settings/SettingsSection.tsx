@@ -21,6 +21,7 @@ const SettingsSection: FC<SettingsSectionProps> = ({ isReadonly }) => {
   const handleClose = useCallback(() => setIsPopupOpen(false), []);
 
   return (
+    // TODO: use the shared Section component instead of a raw <section>
     <section aria-labelledby="settings-heading" className="flex items-center justify-between gap-3 text-start">
       <h3 id="settings-heading" className="dial-small-semi-text">
         {t(QuickAppEditorI18nKeys.Settings)}
