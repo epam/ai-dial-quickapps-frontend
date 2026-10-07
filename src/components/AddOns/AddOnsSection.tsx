@@ -1,9 +1,8 @@
 import { FC, memo, useState } from 'react';
-import { Control } from 'react-hook-form';
 
 import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { AgentsAndToolsetsModalQueryParams } from '@/constants/quick-apps';
-import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
+import type { QuickApp2FormValues } from '@/types/quick-app-form';
 import { useSearchParams } from '@/hooks/useSearchParams';
 import { useTranslation } from '@/hooks/useTranslation';
 import { DialAppTransportType } from '@/types/quick-apps';
@@ -15,16 +14,18 @@ import { AgentsAndToolsetsField } from '@/components/ContextAndTools/AgentsAndTo
 import { Section } from '@/components/common/Section/Section';
 
 export interface AddOnsSectionProps {
-  control: Control<QuickApp2FormType>;
+  agentSkills: QuickApp2FormValues['agentSkills'];
+  onAgentSkillsChange: (value: QuickApp2FormValues['agentSkills']) => void;
   isReadonly: boolean;
   tooltip?: string;
-  agentsAndToolsets: QuickApp2FormType['agentsAndToolsets'];
+  agentsAndToolsets: QuickApp2FormValues['agentsAndToolsets'];
   onAgentsChange: (ids: string[]) => void;
   onConfigureAgent: (id: string, transport: DialAppTransportType) => void;
 }
 
 export const AddOnsSection: FC<AddOnsSectionProps> = ({
-  control,
+  agentSkills,
+  onAgentSkillsChange,
   isReadonly,
   tooltip,
   agentsAndToolsets,
@@ -42,7 +43,12 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
   return (
     <Section title={t(QuickAppEditorI18nKeys.AddOns)}>
       <div className="flex flex-col gap-7">
-        <AgentSkillsFormSection control={control} isReadonly={isReadonly} tooltip={tooltip} />
+        <AgentSkillsFormSection
+          value={agentSkills}
+          onChange={onAgentSkillsChange}
+          isReadonly={isReadonly}
+          tooltip={tooltip}
+        />
 
         <AddOnRow
           label={t(QuickAppEditorI18nKeys.AgentsAndToolsets)}
