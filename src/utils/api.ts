@@ -1,4 +1,4 @@
-import { DIAL_HIDDEN_FOLDER_MARKER } from '@/constants/dial-files';
+import { DIAL_HIDDEN_FOLDER_MARKER } from '@/constants/dial-paths';
 
 const PATH_KEY_SEPARATOR = '__';
 

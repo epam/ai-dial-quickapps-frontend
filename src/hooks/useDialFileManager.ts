@@ -17,7 +17,7 @@ import {
   FileManagerColumnKey,
 } from '@epam/ai-dial-react-file-manager';
 
-import { DIAL_HIDDEN_FOLDER_MARKER } from '@/constants/dial-files';
+import { DIAL_HIDDEN_FOLDER_MARKER } from '@/constants/dial-paths';
 import { DialFileManagerI18nKeys } from '@/constants/i18n';
 import type { FileUploadBatchState, FileUploadEntry } from '@/types/file-manager';
 import { FileUploadStatus } from '@/types/file-manager';

@@ -3,11 +3,8 @@ import { z } from 'zod';
 z.config({ jitless: true });
 
 import {
-  DEFAULT_QUICK_APPS_MODEL,
-  DialDeploymentToolsetToolTypes,
   ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE,
   REPRESENTATION_TOOLING_FEATURE_VALUE,
-  ToolsetTypes,
   WEB_FETCH_FEATURE_VALUE,
 } from '@/constants/quick-apps';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
@@ -29,9 +26,11 @@ import {
   DialAppTransportType,
   DialDeploymentSimpleTool,
   DialDeploymentToolset,
+  DialDeploymentToolsetToolTypes,
   DialSkillRef,
   MCPToolset,
   QuickApp2Config,
+  ToolsetTypes,
   UnknownToolset,
   isDialAppToolset,
   isDialDeploymentSimpleTool,
@@ -174,10 +173,10 @@ export const resolveDefaultModelId = (
   existingModelId?: string,
   toolSupportingModelIds?: string[],
   availableModelIds?: string[],
-  defaultModelId: string = DEFAULT_QUICK_APPS_MODEL,
+  defaultModelId?: string,
 ): string => {
   if (existingModelId) return existingModelId;
-  if (availableModelIds?.includes(defaultModelId)) return defaultModelId;
+  if (defaultModelId && availableModelIds?.includes(defaultModelId)) return defaultModelId;
   return toolSupportingModelIds?.[0] ?? '';
 };
 
@@ -189,7 +188,7 @@ export const getQuickApp2FormData = (
   },
   toolSupportingModelIds?: string[],
   availableModelIds?: string[],
-  defaultModelId: string = DEFAULT_QUICK_APPS_MODEL,
+  defaultModelId?: string,
 ): QuickApp2Form => {
   const appProperties = app?.applicationProperties as QuickApp2Config | undefined;
   const inputAttachmentTypes = (app?.inputAttachmentTypes as string[] | undefined) ?? [];

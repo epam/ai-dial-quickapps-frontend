@@ -200,6 +200,8 @@ as that client's redirect URI.
 | -------------------- | :------: | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `DEFAULT_DEPLOYMENT` |    No    | Deployment id pre-selected in the form when no model is stored in the app config. Returned to the client as `config.defaultDeploymentId`. |
 
+If `DEFAULT_DEPLOYMENT` is not set, or names a deployment the user can't see, the editor pre-selects the first model that supports tools. If there is none, the model stays empty and the form asks the user to pick one.
+
 ### QuickApps-specific settings
 
 These don't map onto a native chat-api concept, so they travel inside `CUSTOM_CLIENT_VARIABLES`

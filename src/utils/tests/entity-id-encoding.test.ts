@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ToolsetTypes } from '@/constants/quick-apps';
 import {
   AgentOrToolsetSchemaKeys,
   buildQuickApp2Config,
   getQuickApp2FormData,
 } from '@/form/quickApp2Form';
+import { ToolsetTypes } from '@/types/quick-apps';
 
 import { fetchDialModels, fetchDialToolsets } from '../dialClient';
 

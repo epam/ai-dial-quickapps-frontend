@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { ToolsetTypes } from '@/constants/quick-apps';
 import {
   AgentOrToolsetSchemaKeys,
   buildQuickApp2Config,
@@ -10,9 +9,10 @@ import {
   getQuickApp2FormData,
   getQuickApp2Toolsets,
   isValidMaxInputAttachments,
+  resolveDefaultModelId,
   type QuickApp2Form,
 } from '@/form/quickApp2Form';
-import type { AnyToolset } from '@/types/quick-apps';
+import { type AnyToolset, ToolsetTypes } from '@/types/quick-apps';
 
 const createForm = (overrides: Partial<QuickApp2Form> = {}): QuickApp2Form => ({
   instructions: '',
@@ -97,9 +97,7 @@ describe('QuickApp2Schema', () => {
     const validResult = QuickApp2Schema.safeParse(
       createForm({ maxInputAttachments: '3' as unknown as number }),
     );
-    const invalidResult = QuickApp2Schema.safeParse(
-      createForm({ maxInputAttachments: 0 }),
-    );
+    const invalidResult = QuickApp2Schema.safeParse(createForm({ maxInputAttachments: 0 }));
 
     expect(validResult.success).toBe(true);
     if (validResult.success) {
@@ -123,14 +121,53 @@ describe('QuickApp2Schema', () => {
   });
 
   it.each([
-    ['enabled with a type', { attachmentsEnabled: true, inputAttachmentTypes: ['application/pdf'] }],
+    [
+      'enabled with a type',
+      { attachmentsEnabled: true, inputAttachmentTypes: ['application/pdf'] },
+    ],
     ['disabled without types', { attachmentsEnabled: false, inputAttachmentTypes: [] }],
   ])('accepts attachments %s', (_label, overrides) => {
     expect(QuickApp2Schema.safeParse(createForm(overrides)).success).toBe(true);
   });
 });
 
+describe('resolveDefaultModelId', () => {
+  it('pre-selects the configured default when it is among the loaded deployments', () => {
+    expect(
+      resolveDefaultModelId(undefined, ['model-1', 'model-2'], ['model-1', 'model-2'], 'model-2'),
+    ).toBe('model-2');
+  });
+
+  it('pre-selects the first tool-supporting model when no default is configured, even if gpt-4o exists', () => {
+    expect(resolveDefaultModelId(undefined, ['model-1', 'gpt-4o'], ['gpt-4o', 'model-1'])).toBe(
+      'model-1',
+    );
+  });
+
+  it('falls back to the first tool-supporting model when the configured default is not loaded', () => {
+    expect(resolveDefaultModelId(undefined, ['model-1'], ['model-1'], 'missing-model')).toBe(
+      'model-1',
+    );
+  });
+
+  it('leaves the model empty when there is no usable model', () => {
+    expect(resolveDefaultModelId(undefined, [], ['model-without-tools'], 'missing-model')).toBe('');
+  });
+
+  it('keeps the stored model', () => {
+    expect(
+      resolveDefaultModelId('model-3', ['model-1', 'model-2'], ['model-1', 'model-2'], 'model-2'),
+    ).toBe('model-3');
+  });
+});
+
 describe('getQuickApp2FormData', () => {
+  it('pre-selects the first tool-supporting model when no default model is configured', () => {
+    const data = getQuickApp2FormData(undefined, ['model-1', 'gpt-4o'], ['gpt-4o', 'model-1']);
+
+    expect(data.model).toBe('model-1');
+  });
+
   it('creates a valid empty-app form with a trailing blank starter', () => {
     const data = getQuickApp2FormData(undefined, ['model-1'], ['model-1'], 'model-1');
 

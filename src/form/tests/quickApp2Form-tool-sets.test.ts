@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { DialDeploymentToolsetToolTypes, ToolsetTypes } from '@/constants/quick-apps';
 import { buildQuickApp2Config, getQuickApp2FormData } from '@/form/quickApp2Form';
-import { AnyToolset, QuickApp2Config } from '@/types/quick-apps';
+import {
+  AnyToolset,
+  DialDeploymentToolsetToolTypes,
+  QuickApp2Config,
+  ToolsetTypes,
+} from '@/types/quick-apps';
 
 const MODEL_ID = 'gpt-4o';
 

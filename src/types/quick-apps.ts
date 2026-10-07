@@ -1,10 +1,25 @@
-import {
-  DialDeploymentToolsetToolTypes,
-  ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE,
-  REPRESENTATION_TOOLING_FEATURE_VALUE,
-  ToolsetTypes,
-  WEB_FETCH_FEATURE_VALUE,
-} from '@/constants/quick-apps';
+export enum ToolsetTypes {
+  DialMcp = 'dial-mcp',
+  DialApp = 'dial-app',
+  DialDeployment = 'dial-deployment',
+  CodeInterpreter = 'predefined',
+}
+
+export enum DialDeploymentToolsetToolTypes {
+  DialDeploymentSimple = 'dial-deployment-simple',
+}
+
+export interface OrchestratorAttachmentStrategy {
+  type: 'lazy_on_demand';
+}
+
+export interface RepresentationToolingFeature {
+  add_attachment: true;
+}
+
+export interface WebFetchFeature {
+  enabled: boolean;
+}
 
 export enum ToolsetTransportType {
   HTTP = 'HTTP',
@@ -104,7 +119,7 @@ export interface QuickApp2Config {
       variables: object;
       content: string;
     };
-    attachment_strategy?: typeof ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE;
+    attachment_strategy?: OrchestratorAttachmentStrategy | null;
   };
   contexts: FileContext[];
   tool_sets: AnyToolset[];
@@ -117,8 +132,8 @@ export interface QuickApp2Config {
       injection_strategy: 'tool_call';
     } | null;
     dial_files?: object | null;
-    representation_tooling?: typeof REPRESENTATION_TOOLING_FEATURE_VALUE;
-    web_fetch?: typeof WEB_FETCH_FEATURE_VALUE;
+    representation_tooling?: RepresentationToolingFeature | null;
+    web_fetch?: WebFetchFeature | null;
   };
 }
 
