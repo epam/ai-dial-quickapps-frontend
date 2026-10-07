@@ -161,7 +161,7 @@ describe('AttachmentsSection', () => {
     const field = getField() as HTMLElement;
     expect(field.getAttribute('aria-required')).toBe('true');
     expect(field.dataset.placeholder).toBe('Enter attachment types');
-    expect(field.dataset.caption).toContain('Choose from suggested MIME types');
+    expect(field.dataset.caption).toBeUndefined();
     expect(field.dataset.tagListLabel).toBe('Attachment types');
     expect(field.dataset.removeLabel).toBe('Remove image/png');
     expect(JSON.parse(field.dataset.firstSuggestion ?? '{}')).toEqual({

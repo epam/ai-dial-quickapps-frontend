@@ -52,7 +52,6 @@ export enum QuickAppEditorI18nKeys {
   AttachmentTypes = 'Attachment types',
   Attachments = 'Attachments',
   AttachmentsDescription = 'Lets end users upload files during a conversation. Useful for sharing documents, images, or data the agent needs to process.',
-  AttachmentTypesCaption = 'Choose from suggested MIME types or add a new one using <type>/<subtype>.',
   AttachmentTypesRequired = 'Select at least one attachment type',
   RemoveAttachmentType = 'Remove {{type}}',
   IntroText = 'Intro text',

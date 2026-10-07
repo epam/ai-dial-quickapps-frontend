@@ -40,7 +40,7 @@ Turning the switch off SHALL set `attachmentsEnabled` to `false` and `inputAttac
 - **THEN** the Attachment types field SHALL show no tags
 
 ### Requirement: Attachment types is a MIME tag input with suggestions
-The Attachment types field SHALL be a text input that holds the entered MIME types as removable tags, matching the attachment-types input of the DIAL admin app. It SHALL be labelled `quickAppEditor.AttachmentTypes` ("Attachment types") with a required marker. While it holds no tags it SHALL show the placeholder `quickAppEditor.EnterAttachmentTypes` ("Enter attachment types"). While there is no error it SHALL show the caption `quickAppEditor.AttachmentTypesCaption` ("Choose from suggested MIME types or add a new one using <type>/<subtype>.").
+The Attachment types field SHALL be a text input that holds the entered MIME types as removable tags, matching the attachment-types input of the DIAL admin app. It SHALL be labelled `quickAppEditor.AttachmentTypes` ("Attachment types") with a required marker. While it holds no tags it SHALL show the placeholder `quickAppEditor.EnterAttachmentTypes` ("Enter attachment types"). It SHALL NOT show a caption below the field.
 
 Each tag SHALL be labelled with its raw MIME string, in the order the types were added. The form value `inputAttachmentTypes` SHALL be exactly the list of tags. Saved values SHALL be shown as tags unchanged, whether or not they appear in the suggestion list.
 
@@ -122,7 +122,7 @@ Suggestion behaviour:
 - **AND** saving without changes SHALL send both values, and the form SHALL NOT be dirty
 
 ### Requirement: Empty selection is a form validation error that blocks save
-The Quick App form schema (`QuickApp2Schema`) SHALL report an error on the path `inputAttachmentTypes` with the message key `quickAppEditor.AttachmentTypesRequired` ("Select at least one attachment type") when `attachmentsEnabled` is `true` and `inputAttachmentTypes` is empty. The field SHALL be marked invalid and SHALL show the translated message in place of the caption, associated with the field for assistive technology. While this error exists, the editor's save (manual and host-triggered auto-save) SHALL NOT call chat-api, exactly as for any other invalid form value. The error SHALL clear as soon as a type is added or the switch is turned off.
+The Quick App form schema (`QuickApp2Schema`) SHALL report an error on the path `inputAttachmentTypes` with the message key `quickAppEditor.AttachmentTypesRequired` ("Select at least one attachment type") when `attachmentsEnabled` is `true` and `inputAttachmentTypes` is empty. The field SHALL be marked invalid and SHALL show the translated message below the field, associated with the field for assistive technology. While this error exists, the editor's save (manual and host-triggered auto-save) SHALL NOT call chat-api, exactly as for any other invalid form value. The error SHALL clear as soon as a type is added or the switch is turned off.
 
 #### Scenario: Enabled with nothing added
 - **WHEN** the user turns the switch on and adds nothing

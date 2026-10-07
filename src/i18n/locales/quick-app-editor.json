@@ -36,6 +36,5 @@
   "Lets end users upload files during a conversation. Useful for sharing documents, images, or data the agent needs to process.": "Lets end users upload files during a conversation. Useful for sharing documents, images, or data the agent needs to process.",
   "Select at least one attachment type": "Select at least one attachment type",
   "Enter attachment types": "Enter attachment types",
-  "Choose from suggested MIME types or add a new one using <type>/<subtype>.": "Choose from suggested MIME types or add a new one using <type>/<subtype>.",
   "Remove {{type}}": "Remove {{type}}"
 }

@@ -57,7 +57,6 @@ const AttachmentsSection: FC<AttachmentsSectionProps> = ({
           onChange={onChange}
           labelProps={{ label: t(QuickAppEditorI18nKeys.AttachmentTypes), required: true }}
           placeholder={t(QuickAppEditorI18nKeys.EnterAttachmentTypes)}
-          caption={t(QuickAppEditorI18nKeys.AttachmentTypesCaption)}
           error={error ? t(error) : undefined}
           invalid={!!error}
           disabled={isReadonly}
