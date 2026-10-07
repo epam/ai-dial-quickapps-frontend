@@ -2,7 +2,6 @@ import classNames from 'classnames';
 import { FC, useCallback, useMemo, useState } from 'react';
 
 import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { DialModel } from '@/types/dial-entities';
@@ -193,7 +192,6 @@ interface ModelFieldProps {
 export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, tooltip, error }) => {
   const { t, language } = useTranslation(Translation.QuickAppEditor);
   const { t: tCommon } = useTranslation(Translation.Common);
-  const { app } = useAppContext();
   const {
     modelsWithFavorites: models,
     favoriteIds,
@@ -201,9 +199,6 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
     error: dataError,
     refreshAll,
   } = useDataContext();
-  // The app being edited must not be selectable as its own orchestrator —
-  // that would make it call itself (recursion).
-  const currentAppEntityId = getEntityIdWithoutVersion(app.id);
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<ModelFieldTab>(TAB_IDS.catalog);
@@ -224,17 +219,14 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
     [models],
   );
 
-  // Only tool-supporting models/agents can be selected in the modal — others
-  // are hidden entirely rather than shown with an error after selection.
-  // The app being edited is excluded from the selectable set (recursion), but
-  // stays in `availableModels` so a previously saved value still shows its
-  // display name on the collapsed card.
+  // Only tool-supporting models can be selected in the modal — applications
+  // (agents, including the app being edited) and models without tools are
+  // hidden entirely rather than shown with an error after selection. They stay
+  // in `availableModels` so a previously saved value still shows its display
+  // name on the collapsed card.
   const selectableModels = useMemo(
-    () =>
-      availableModels.filter(
-        (m) => !!m.features?.tools && getEntityIdWithoutVersion(m.id) !== currentAppEntityId,
-      ),
-    [availableModels, currentAppEntityId],
+    () => availableModels.filter((m) => m.type === 'model' && !!m.features?.tools),
+    [availableModels],
   );
 
   const allGroups = useMemo(

@@ -25,6 +25,22 @@ This change introduces no chat-api endpoint. Models continue to come from the ex
 - **THEN** the **Change** button SHALL be disabled and SHALL NOT open the picker
 - **AND** the shared-application tooltip (`quickAppEditor` key `CannotChangeSharedApp`) SHALL remain available on the block
 
+### Requirement: Picker offers only models
+
+The model picker opened by **Change** SHALL list only deployments of `type: 'model'` that support tools (`features.tools`). Applications (agents), including the application being edited, SHALL NOT be listed, in either the Favorites or the Catalog tab. A previously saved value that is an application SHALL remain displayed on the selected-model card.
+
+#### Scenario: Applications are not offered
+
+- **WHEN** the loaded deployments include tool-supporting models, models without tools, and applications
+- **AND** the user opens the picker
+- **THEN** only the tool-supporting models SHALL be listed
+
+#### Scenario: Saved application is still shown
+
+- **WHEN** the `model` form value is an application deployment id
+- **THEN** the selected-model card SHALL show that application with the `Agent` type label
+- **AND** the user SHALL be able to replace it only with a model from the picker
+
 ### Requirement: Selected-model card uses the shared entity header
 
 The selected-model card SHALL render its identity row with `@epam/ai-dial-ui-kit`'s `EntityIdentity`, so the editor and the DIAL chat catalog present entities the same way. The name SHALL be a heading one level below the block caption. The featured chip SHALL NOT be shown.

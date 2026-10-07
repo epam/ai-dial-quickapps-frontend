@@ -108,6 +108,10 @@ Per the module-boundary rule, the component file gets no helpers. Both helpers g
 
 Both use a `switch`.
 
+### D5a. Picker lists only models
+
+The picker's selectable set is `type === 'model' && features.tools`. Applications are no longer offered as orchestrators. This also makes the old recursion guard (excluding the app being edited) redundant, so it is removed together with the `useAppContext` read. The full `availableModels` list (models and applications) still feeds the selected-model card, so an existing app whose orchestrator is an application keeps rendering it until the user picks a model.
+
 ### D6. Removing the inline version select
 
 The following become dead code and are deleted: `cardVersionOptions`, `hasVersions`, the inline `DialSelect`, and the `VersionPrefix` usage in the collapsed card.

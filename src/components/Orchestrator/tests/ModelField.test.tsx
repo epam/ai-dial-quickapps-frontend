@@ -24,13 +24,35 @@ vi.mock('@/context/DataContext', () => ({
     refreshAll: vi.fn(),
   }),
 }));
+// Virtualisation renders nothing without layout in jsdom; list the entity keys instead.
+vi.mock('@/components/common/VirtualCardGrid/VirtualCardGrid', () => ({
+  VirtualCardGrid: <T,>({ items, getKey }: { items: T[]; getKey: (item: T) => string }) => (
+    <ul aria-label="Model cards">
+      {items.map((item) => (
+        <li key={getKey(item)}>{getKey(item)}</li>
+      ))}
+    </ul>
+  ),
+}));
 vi.mock('@epam/ai-dial-ui-kit', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@epam/ai-dial-ui-kit')>();
   return {
     ...actual,
-    // The picker content is out of scope here; only whether it opens matters.
-    DialPopup: ({ open, header }: { open: boolean; header: ReactNode }) =>
-      open ? <div role="dialog">{header}</div> : null,
+    DialPopup: ({
+      open,
+      header,
+      children,
+    }: {
+      open: boolean;
+      header: ReactNode;
+      children: ReactNode;
+    }) =>
+      open ? (
+        <div role="dialog">
+          <h2>{header}</h2>
+          {children}
+        </div>
+      ) : null,
   };
 });
 
@@ -62,6 +84,15 @@ const getSectionName = () => {
 
 beforeEach(() => {
   (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
+  // The picker's search and tabs measure themselves; jsdom has no ResizeObserver.
+  vi.stubGlobal(
+    'ResizeObserver',
+    class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
+  );
   models = [gemini];
   status = 'ready';
   container = document.createElement('div');
@@ -72,6 +103,7 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.unmount());
   container.remove();
+  vi.unstubAllGlobals();
 });
 
 describe('ModelField', () => {
@@ -115,7 +147,7 @@ describe('ModelField', () => {
 
     act(() => getChangeButton()?.click());
 
-    expect(container.querySelector('[role="dialog"]')?.textContent).toBe('Select model');
+    expect(container.querySelector('[role="dialog"] h2')?.textContent).toBe('Select model');
   });
 
   it('disables Change when the field is disabled', () => {
@@ -147,5 +179,41 @@ describe('ModelField', () => {
     expect(container.textContent).toContain('models/removed-model');
     expect(container.querySelector('h4')).toBeNull();
     expect(hasElementWithText('Model')).toBe(false);
+  });
+
+  it('offers only tool-supporting models in the picker, not applications', () => {
+    models = [
+      gemini,
+      { ...gemini, id: 'models/no-tools__1.0.0', name: 'No tools', features: {} },
+      {
+        ...gemini,
+        id: 'applications/bucket/some-agent__1.0.0',
+        name: 'Some agent',
+        type: 'application',
+      },
+    ];
+    render();
+
+    act(() => getChangeButton()?.click());
+
+    const cards = [...container.querySelectorAll('[aria-label="Model cards"] li')].map(
+      (item) => item.textContent,
+    );
+    expect(cards).toEqual(['models/gemini']);
+  });
+
+  it('still shows a saved application on the card', () => {
+    models = [
+      {
+        ...gemini,
+        id: 'applications/bucket/some-agent__1.0.0',
+        name: 'Some agent',
+        type: 'application',
+      },
+    ];
+    render({ value: 'applications/bucket/some-agent__1.0.0' });
+
+    expect(container.querySelector('h4')?.textContent).toBe('Some agent');
+    expect(hasElementWithText('Agent')).toBe(true);
   });
 });

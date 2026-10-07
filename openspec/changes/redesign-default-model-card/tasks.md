@@ -89,6 +89,9 @@ Tests use the repo's existing `react-dom/client` `createRoot` + `act` harness (s
   - An unknown id renders as the name, with no label.
   - **Verification:** `npx vitest run src/components/Orchestrator/tests/ModelField.test.tsx`, then the full `npm test` once this slice is complete.
 
+- [x] 2.8 Restrict the picker in `src/components/Orchestrator/ModelField.tsx` to `type: 'model'` deployments with `features.tools`; drop the now-redundant "exclude the app being edited" check and the `useAppContext` read. Extend `src/components/Orchestrator/tests/ModelField.test.tsx`: the picker lists only tool-supporting models, and a saved application still shows on the card.
+  - **Verification:** `npx vitest run src/components/Orchestrator/tests/ModelField.test.tsx`, `npm run lint`, `npm run typecheck`.
+
 ## 3. i18n, RTL and specs
 
 - [x] 3.1 Add `DefaultModel = 'Default model'` and `Agent = 'Agent'` to `QuickAppEditorI18nKeys` in `src/constants/i18n.ts`, and the matching entries to `src/i18n/locales/quick-app-editor.json`, the only registered locale (`en`).
