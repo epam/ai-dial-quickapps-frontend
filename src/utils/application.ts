@@ -15,7 +15,7 @@ export interface DialAIEntityModel {
   [key: string]: unknown;
 }
 
-export const getQuickApp2Config = (entity: { applicationProperties?: unknown }): QuickApp2Config =>
+const getQuickApp2Config = (entity: { applicationProperties?: unknown }): QuickApp2Config =>
   entity.applicationProperties as QuickApp2Config;
 
 export const getQuick2AppDocumentUrl = (entity?: { applicationProperties?: unknown }) =>
@@ -79,21 +79,5 @@ export const doesModelAllowTemperature = (model?: DialAIEntityModel): boolean =>
 export const isEntityIdPublic = (entity: { id: string }): boolean =>
   entity.id.startsWith('public/');
 
-export const getEntityDisplayName = (
-  id: string,
-  allEntitiesMap: Record<string, { name?: string } | undefined>,
-): string => {
-  const entity = allEntitiesMap[id];
-  if (entity?.name) return entity.name;
-  const parts = id.split('/');
-  return decodeURIComponent(parts[parts.length - 1]);
-};
-
 export const isDialAiEntityModel = (entity: { type?: string }): boolean =>
   entity?.type === 'application' || entity?.type === 'model';
-
-export const isToolsetEntityModel = (entity: { type?: string }): boolean =>
-  entity?.type === 'toolset';
-
-export const getSharedTooltip = (context: string): string =>
-  `Cannot change the ${context} of a shared application.`;
