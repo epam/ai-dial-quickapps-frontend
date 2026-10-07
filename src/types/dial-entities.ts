@@ -41,6 +41,14 @@ export enum ToolsetCredentialsLevel {
   User = 'USER',
 }
 
+/** The loosely typed entity shape the form helpers read model/agent capabilities from. */
+export interface DialAIEntityModel {
+  applicationTypeSchemaId?: string;
+  mcp?: boolean;
+  features?: { mcp?: boolean };
+  [key: string]: unknown;
+}
+
 export interface DialModel {
   id: string;
   reference: string;

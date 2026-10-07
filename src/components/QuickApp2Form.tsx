@@ -13,10 +13,9 @@ import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import type { QuickApp2Config } from '@/types/quick-apps';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
-import type { LocalizedText } from '@/types/dial-entities';
+import type { DialAIEntityModel, LocalizedText } from '@/types/dial-entities';
 import { Translation } from '@/types/translation';
 import { useTranslation } from '@/hooks/useTranslation';
-import { DialAIEntityModel } from '@/utils/application';
 
 import AddOnsSection from './AddOns/AddOnsSection';
 import InstructionsSection from './InstructionsSection/InstructionsSection';

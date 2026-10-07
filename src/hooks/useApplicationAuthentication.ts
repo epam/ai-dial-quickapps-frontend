@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchApplicationRequiresAuthentication } from '@/utils/dialClient';
+import { fetchApplicationRequiresAuthentication } from '@/utils/dial-client';
 
 /** Load only selected applications, keeping the host's retry form available on failure. */
 export const useApplicationAuthentication = (appId?: string): boolean => {

@@ -39,7 +39,7 @@ as SaveError.
 
 The state lives in `EditorClient` (`src/components/EditorClient/EditorClient.tsx`),
 which receives `general` from the TriggerSave message and passes it to `saveDialApp`
-(`src/utils/dialClient.ts`). No new context or hook is introduced. There is no UI change,
+(`src/utils/dial-client.ts`). No new context or hook is introduced. There is no UI change,
 so there are no i18n, RTL, accessibility or memoisation requirements.
 
 Example. The host posts:

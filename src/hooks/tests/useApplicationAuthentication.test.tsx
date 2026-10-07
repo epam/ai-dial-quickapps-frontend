@@ -2,9 +2,9 @@ import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useApplicationAuthentication } from '../useApplicationAuthentication';
-import { fetchApplicationRequiresAuthentication } from '@/utils/dialClient';
+import { fetchApplicationRequiresAuthentication } from '@/utils/dial-client';
 
-vi.mock('@/utils/dialClient', () => ({ fetchApplicationRequiresAuthentication: vi.fn() }));
+vi.mock('@/utils/dial-client', () => ({ fetchApplicationRequiresAuthentication: vi.fn() }));
 const fetchAuthentication = vi.mocked(fetchApplicationRequiresAuthentication);
 const Probe = ({ appId }: { appId?: string }) => (
   <output>{String(useApplicationAuthentication(appId))}</output>
