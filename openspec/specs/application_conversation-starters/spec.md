@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Defines the Quick App editor's conversation starters: the Conversation starters row in the Add-ons card (a read-only list with Add/Manage and a hover remove button per starter), the Set up conversation starters modal that edits a local draft (sortable starter rows with a 30-character label limit, the intro message, "Require a starter to start a new chat" and "When starter is selected"), how the settings are gated on a complete starter and on the read-only state, and how the values load from and save to `application_properties.conversation_starters`. State is the editor form state (`useQuickApp2Form`); no chat-api endpoint of its own.
+Defines the Quick App editor's Conversation starters add-on: the Add-ons row that summarises the saved starters (with a hover remove button per starter), and the Set up conversation starters modal that edits them — the starters list (with reordering and label length), the starters settings (intro message, require a starter, starter behaviour), how those settings are gated on a complete starter, and how the values load from and save to `application_properties.conversation_starters`. State is the editor form state (`useQuickApp2Form`), with the modal holding a local draft until Save; no chat-api endpoint of its own.
 
 ## Requirements
 
@@ -71,6 +71,31 @@ On open, the modal SHALL seed a local draft from the current form values `starte
 - **WHEN** the user opens the modal and activates Save without editing
 - **THEN** the form SHALL remain clean
 
+### Requirement: Starters list
+
+The modal's starters list SHALL show one row per draft starter. Each row SHALL have, in order: a drag handle, a title input (placeholder `ButtonLabel`), a prompt input (placeholder `PromptToSendInChat`, "Prompt to send in chat"), and a delete button with a trash icon. Rows SHALL be shown on a raised card surface. The list SHALL always end with one blank row.
+
+#### Scenario: New application
+
+- **WHEN** the modal opens for an application with no saved starters
+- **THEN** the list SHALL show a single blank row
+
+#### Scenario: Typing into the last row
+
+- **WHEN** the user types into the title or prompt of the last row
+- **THEN** a new blank row SHALL be appended below it
+
+#### Scenario: Leading whitespace
+
+- **WHEN** the first character typed into an empty title or prompt is whitespace
+- **THEN** it SHALL be discarded
+
+#### Scenario: Deleting a starter
+
+- **WHEN** the user activates the delete button of a row that is not the last
+- **THEN** that row SHALL be removed from the draft
+- **AND** the last (blank) row's delete button SHALL be visible but disabled
+
 ### Requirement: Reordering starters
 
 Each non-trailing starter row SHALL have a drag handle at its start. The user SHALL be able to reorder starters with a pointer (dragging the handle) and with the keyboard. The trailing blank row SHALL show a disabled handle and SHALL NOT be draggable or accept a drop; it SHALL always stay last.
@@ -121,43 +146,6 @@ The starter title input SHALL accept at most 30 characters. While the title is n
 - **WHEN** an application is loaded with a 42-character starter title
 - **THEN** the modal SHALL show the full title with the counter `42/30` in error styling
 - **AND** saving without editing it SHALL keep all 42 characters
-
-### Requirement: Conversation starters localization and accessibility
-
-Every user-visible string of the row and modal SHALL be translated through the `quickAppEditor` namespace (except `Add`, from `common`). No visible label SHALL be hardcoded.
-
-#### Scenario: Keyboard and screen-reader access
-
-- **WHEN** a keyboard user reaches the Conversation starters row
-- **THEN** Add or Manage SHALL be a keyboard-reachable button
-- **AND** the open modal SHALL expose a dialog role named by `SetUpConversationStarters`, with focus managed by the kit `Popup`
-- **AND** each row's handle SHALL be a focusable button named by `ReorderStarter` (with the starter's title interpolated, falling back to its position), each delete button SHALL be named by `DeleteStarter`, and the title and prompt inputs SHALL have accessible names from `ButtonLabel` and `PromptToSendInChat`
-- **AND** the Settings heading SHALL be a heading element, and the radio options SHALL form a radio group named by `WhenStarterIsSelected`
-
-### Requirement: Starters list
-
-The modal's starters list SHALL show one row per draft starter. Each row SHALL have, in order: a drag handle, a title input (placeholder `ButtonLabel`), a prompt input (placeholder `PromptToSendInChat`, "Prompt to send in chat"), and a delete button with a trash icon. Rows SHALL be shown on a raised card surface. The list SHALL always end with one blank row.
-
-#### Scenario: New application
-
-- **WHEN** the modal opens for an application with no saved starters
-- **THEN** the list SHALL show a single blank row
-
-#### Scenario: Typing into the last row
-
-- **WHEN** the user types into the title or prompt of the last row
-- **THEN** a new blank row SHALL be appended below it
-
-#### Scenario: Leading whitespace
-
-- **WHEN** the first character typed into an empty title or prompt is whitespace
-- **THEN** it SHALL be discarded
-
-#### Scenario: Deleting a starter
-
-- **WHEN** the user activates the delete button of a row that is not the last
-- **THEN** that row SHALL be removed from the draft
-- **AND** the last (blank) row's delete button SHALL be visible but disabled
 
 ### Requirement: Starters settings gating
 
@@ -235,6 +223,18 @@ On save, the starters form values SHALL be written to `application_properties.co
 
 - **WHEN** every starter row is blank
 - **THEN** `conversation_starters` SHALL be saved as `null`
+
+### Requirement: Conversation starters localization and accessibility
+
+Every user-visible string of the row and modal SHALL be translated through the `quickAppEditor` namespace (except `Add`, from `common`). No visible label SHALL be hardcoded.
+
+#### Scenario: Keyboard and screen-reader access
+
+- **WHEN** a keyboard user reaches the Conversation starters row
+- **THEN** Add or Manage SHALL be a keyboard-reachable button
+- **AND** the open modal SHALL expose a dialog role named by `SetUpConversationStarters`, with focus managed by the kit `Popup`
+- **AND** each row's handle SHALL be a focusable button named by `ReorderStarter` (with the starter's title interpolated, falling back to its position), each delete button SHALL be named by `DeleteStarter`, and the title and prompt inputs SHALL have accessible names from `ButtonLabel` and `PromptToSendInChat`
+- **AND** the Settings heading SHALL be a heading element, and the radio options SHALL form a radio group named by `WhenStarterIsSelected`
 
 ### Requirement: Conversation starters direction support
 

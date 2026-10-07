@@ -20,7 +20,7 @@ const emptyUserConfig = (): UserConfig =>
   toUserConfig({ version: CURRENT_USER_CONFIG_VERSION } as GeneratedUserConfigDto);
 
 /** Reads and normalizes the per-user config — a native, session-scoped chat-api endpoint (no bucket lookup needed). */
-export const getUserConfig = async (): Promise<UserConfig> => {
+const getUserConfig = async (): Promise<UserConfig> => {
   try {
     const dto = await userConfigApi.getUserConfig();
     return toUserConfig(dto);

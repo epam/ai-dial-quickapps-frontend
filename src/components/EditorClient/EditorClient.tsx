@@ -12,7 +12,7 @@ import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { QuickApp2Config } from '@/types/quick-apps';
 import { isOriginAllowed, postToHost } from '@/utils/allowed-origins';
 import { ForbiddenError } from '@/utils/forbidden-error';
-import { decodeDialPath, fetchAppSettings, fetchDialApp, saveDialApp } from '@/utils/dialClient';
+import { decodeDialPath, fetchAppSettings, fetchDialApp, saveDialApp } from '@/utils/dial-client';
 import { buildLocalizedText } from '@/utils/get-localized-text';
 import { hasQuickAppChanges, type StoredGeneralFields } from '@/utils/has-quick-app-changes';
 import { QuickApp2Form, type QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form';

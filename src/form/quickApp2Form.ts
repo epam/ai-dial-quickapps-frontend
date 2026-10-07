@@ -17,10 +17,9 @@ import {
   getQuick2AppDocumentUrl,
   getQuickAppItemNameFromConfig,
   migrateMCPToolsetIdName,
-  type DialAIEntityModel,
 } from '@/utils/application';
 import { decodeApiUrl, encodeApiUrl, isApplicationId, isToolsetId } from '@/utils/api';
-import type { LocalizedText } from '@/types/dial-entities';
+import type { DialAIEntityModel, LocalizedText } from '@/types/dial-entities';
 import { getLocalizedText } from '@/utils/get-localized-text';
 import {
   AnyToolset,

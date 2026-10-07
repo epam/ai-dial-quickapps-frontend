@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { DialApp } from '@/types/dial-entities';
 
-import { saveDialApp } from '../dialClient';
+import { saveDialApp } from '@/utils/dial-client';
 
 const { updateApplication } = vi.hoisted(() => ({
   updateApplication: vi.fn(),

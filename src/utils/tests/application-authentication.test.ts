@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { fetchApplicationRequiresAuthentication } from '../dialClient';
+import { fetchApplicationRequiresAuthentication } from '@/utils/dial-client';
 
 const { listExternalServices } = vi.hoisted(() => ({
   listExternalServices: vi.fn(),

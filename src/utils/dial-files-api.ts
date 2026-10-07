@@ -7,6 +7,18 @@ import {
   UploadFileUploadModeEnum,
 } from '@epam/ai-dial-chat-api-client';
 
+import {
+  type ArchiveItemDto,
+  type CreateFolderResponse,
+  type DeleteFilesResponse,
+  type DeleteItemDto,
+  type FileUploadResponse,
+  FilesApiNodeType,
+  type ListFilesItem,
+  type ListFilesResponse,
+  type RenameFilesResponse,
+  type RenameItemDto,
+} from '@/types/dial-files';
 import { chatApiFetch, getCsrfToken } from '@/utils/chat-api-fetch';
 import { filesApi } from '@/utils/chat-api-client';
 import {
@@ -14,130 +26,63 @@ import {
   handleUnauthorizedResponse,
 } from '@/utils/handle-unauthorized-response';
 
-export interface ListFilesItem {
-  name: string;
-  path: string;
-  url?: string;
-  nodeType: 'ITEM' | 'FOLDER';
-  bucket?: string;
-  folderId?: string;
-  parentPath?: string;
-  contentType?: string;
-  contentLength?: number;
-  updatedAt?: string;
-  author?: string;
-  resourceType?: string;
-  permissions?: string[];
-}
-
-export interface ListFilesResponse {
-  items: ListFilesItem[];
-  permissions?: string[];
-}
-
-export interface CreateFolderResponse {
-  name: string;
-  path: string;
-  folderId: string;
-  bucket?: string;
-  parentPath?: string;
-}
-
-export interface DeleteItemDto {
-  bucket: string;
-  path: string;
-  name: string;
-  nodeType: 'ITEM' | 'FOLDER';
-}
-
-export interface DeleteFilesResponse {
-  results: Array<{ path: string; success: boolean }>;
-}
-
-export interface RenameItemDto {
-  bucket: string;
-  sourcePath: string;
-  destinationPath: string;
-  nodeType: 'ITEM' | 'FOLDER';
-  name: string;
-}
-
-export interface RenameFilesResponse {
-  results: Array<{ sourcePath: string; success: boolean }>;
-}
-
-export interface ArchiveItemDto {
-  bucket: string;
-  path: string;
-  name: string;
-  nodeType: 'ITEM' | 'FOLDER';
-}
-
-export interface FileUploadResponse {
-  name: string;
-  path: string;
-  bucket: string;
-}
-
 /**
  * chat-api's `ListFilesItemDto` already carries `folderId`, camelCase fields
  * and a synthesized `path` — the only real gaps vs. this app's `ListFilesItem`
  * are the lowercase `nodeType` enum and `updatedAt` being epoch ms rather
  * than an ISO string.
  */
-function normalizeFileItem(item: ListFilesItemDto): ListFilesItem {
-  return {
-    name: item.name,
-    path: item.path,
-    url: item.url,
-    nodeType: item.nodeType === 'folder' ? 'FOLDER' : 'ITEM',
-    bucket: item.bucket,
-    folderId: item.folderId,
-    parentPath: item.parentPath,
-    contentType: item.contentType,
-    contentLength: item.contentLength,
-    updatedAt: item.updatedAt != null ? new Date(item.updatedAt).toISOString() : undefined,
-    permissions: item.permissions,
-    author: item.author,
-    resourceType: item.resourceType,
-  };
-}
+const normalizeFileItem = (item: ListFilesItemDto): ListFilesItem => ({
+  name: item.name,
+  path: item.path,
+  url: item.url,
+  nodeType: item.nodeType === 'folder' ? FilesApiNodeType.Folder : FilesApiNodeType.Item,
+  bucket: item.bucket,
+  folderId: item.folderId,
+  parentPath: item.parentPath,
+  contentType: item.contentType,
+  contentLength: item.contentLength,
+  updatedAt: item.updatedAt != null ? new Date(item.updatedAt).toISOString() : undefined,
+  permissions: item.permissions,
+  author: item.author,
+  resourceType: item.resourceType,
+});
 
-export async function listFiles(params: {
+export const listFiles = async (params: {
   bucket: string;
   path?: string;
   permissions?: boolean;
   recursive?: boolean;
-}): Promise<ListFilesResponse> {
+}): Promise<ListFilesResponse> => {
   const { bucket, path, permissions, recursive } = params;
   if (!bucket) return { items: [] };
 
   const data = await filesApi.listFiles({ bucket, path, permissions, recursive, limit: 1000 });
   return { items: data.items.map(normalizeFileItem), permissions: data.permissions };
-}
+};
 
-export async function listPublicFiles(params?: { path?: string }): Promise<ListFilesResponse> {
+export const listPublicFiles = async (params?: { path?: string }): Promise<ListFilesResponse> => {
   const data = await filesApi.listPublicFiles({ path: params?.path, limit: 1000 });
   return { items: data.items.map(normalizeFileItem) };
-}
+};
 
-export async function listSharedFiles(): Promise<ListFilesResponse> {
+export const listSharedFiles = async (): Promise<ListFilesResponse> => {
   const data = await filesApi.listSharedFiles();
   return { items: data.items.map(normalizeFileItem) };
-}
+};
 
-export async function createFolder(params: {
+export const createFolder = async (params: {
   bucket: string;
   parentPath?: string;
   name: string;
-}): Promise<CreateFolderResponse> {
+}): Promise<CreateFolderResponse> => {
   const data: CreateFolderResponseDto = await filesApi.createFolder({
     createFolderDto: params,
   });
   return data;
-}
+};
 
-export async function deleteFiles(items: DeleteItemDto[]): Promise<DeleteFilesResponse> {
+export const deleteFiles = async (items: DeleteItemDto[]): Promise<DeleteFilesResponse> => {
   const data: DeleteFilesResponseDto = await filesApi.deleteFiles({
     deleteFilesDto: {
       items: items.map(({ bucket, path, name, nodeType }) => ({
@@ -145,14 +90,16 @@ export async function deleteFiles(items: DeleteItemDto[]): Promise<DeleteFilesRe
         path,
         name,
         nodeType:
-          nodeType === 'FOLDER' ? DeleteItemDtoNodeTypeEnum.Folder : DeleteItemDtoNodeTypeEnum.Item,
+          nodeType === FilesApiNodeType.Folder
+            ? DeleteItemDtoNodeTypeEnum.Folder
+            : DeleteItemDtoNodeTypeEnum.Item,
       })),
     },
   });
   return { results: data.results.map(({ path, success }) => ({ path, success })) };
-}
+};
 
-export async function renameFiles(items: RenameItemDto[]): Promise<RenameFilesResponse> {
+export const renameFiles = async (items: RenameItemDto[]): Promise<RenameFilesResponse> => {
   const data = await filesApi.renameFiles({
     renameFilesDto: {
       items: items.map(({ bucket, sourcePath, destinationPath, name, nodeType }) => ({
@@ -161,19 +108,21 @@ export async function renameFiles(items: RenameItemDto[]): Promise<RenameFilesRe
         destinationPath,
         name,
         nodeType:
-          nodeType === 'FOLDER' ? RenameItemDtoNodeTypeEnum.Folder : RenameItemDtoNodeTypeEnum.Item,
+          nodeType === FilesApiNodeType.Folder
+            ? RenameItemDtoNodeTypeEnum.Folder
+            : RenameItemDtoNodeTypeEnum.Item,
       })),
     },
   });
   return {
     results: data.results.map(({ sourcePath, success }) => ({ sourcePath, success })),
   };
-}
+};
 
 // Hand-written (not routed through the generated FilesApi, whose
 // `downloadFile()` resolves a `Blob`) — callers need the raw streaming
 // `Response` to drive `triggerBrowserDownload`.
-export async function downloadFile(bucket: string, path: string): Promise<Response> {
+export const downloadFile = async (bucket: string, path: string): Promise<Response> => {
   const qs = new URLSearchParams({ bucket, path });
   const res = await chatApiFetch(`/api/v1/files/download?${qs}`);
   if (!res.ok) {
@@ -183,22 +132,22 @@ export async function downloadFile(bucket: string, path: string): Promise<Respon
     throw new Error(`Download failed: ${res.status}`);
   }
   return res;
-}
+};
 
-export async function downloadArchive(items: ArchiveItemDto[]): Promise<Response> {
-  if (items.length === 1 && items[0].nodeType === 'ITEM') {
+export const downloadArchive = async (items: ArchiveItemDto[]): Promise<Response> => {
+  if (items.length === 1 && items[0].nodeType === FilesApiNodeType.Item) {
     return downloadFile(items[0].bucket, items[0].path);
   }
   // chat-api does expose a real archive-download endpoint
   // (FilesApi.downloadArchive) — using it for multi-item downloads is a
   // deliberate future enhancement, not required by this migration.
   throw new Error('Multi-file archive download is not supported');
-}
+};
 
 // Kept hand-written rather than routed through the generated client: the
 // `XMLHttpRequest` progress path is a hard requirement of the file manager
 // UI that a generated OpenAPI client doesn't support.
-export async function uploadFile(
+export const uploadFile = async (
   bucket: string,
   path: string,
   file: File,
@@ -207,7 +156,7 @@ export async function uploadFile(
     uploadMode?: 'overwrite' | 'create-only';
     onProgress?: (percent: number) => void;
   },
-): Promise<FileUploadResponse> {
+): Promise<FileUploadResponse> => {
   const { signal, onProgress } = options ?? {};
   // chat-api defaults `uploadMode` to 'overwrite' when omitted — always send
   // an explicit value so this app's create-only-by-default semantics survive.
@@ -264,4 +213,4 @@ export async function uploadFile(
 
   const name = path.split('/').pop() ?? file.name;
   return { name, path: `files/${bucket}/${path}`, bucket };
-}
+};
