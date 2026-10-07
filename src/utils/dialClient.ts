@@ -28,6 +28,7 @@ import {
   skillsApi,
   toolsetsApi,
 } from '@/utils/chat-api-client';
+import { parseAllowedOrigins } from '@/utils/allowed-origins';
 import { chatApiFetch } from '@/utils/chat-api-fetch';
 import { isHiddenPath } from '@/utils/dial-file-path';
 import { ForbiddenError } from '@/utils/forbidden-error';
@@ -266,7 +267,7 @@ function encodeApplicationPropertiesForApi(properties: unknown): unknown {
 }
 
 interface CustomVariables {
-  allowedOrigin?: string;
+  allowedOrigins: string[];
   dialAdminHost?: string;
   dialChatHost?: string;
   applicationName?: string;
@@ -276,14 +277,14 @@ interface CustomVariables {
 }
 
 const readCustomVariables = (value: unknown): CustomVariables => {
-  if (value == null || typeof value !== 'object') return {};
+  if (value == null || typeof value !== 'object') return { allowedOrigins: [] };
   const record = value as Record<string, unknown>;
   const asString = (key: string): string | undefined =>
     typeof record[key] === 'string' ? (record[key] as string) : undefined;
   const asBoolean = (key: string): boolean | undefined =>
     typeof record[key] === 'boolean' ? (record[key] as boolean) : undefined;
   return {
-    allowedOrigin: asString('allowedOrigin'),
+    allowedOrigins: parseAllowedOrigins(record.allowedOrigin),
     dialAdminHost: asString('dialAdminHost'),
     dialChatHost: asString('dialChatHost'),
     applicationName: asString('applicationName'),
@@ -303,7 +304,7 @@ export async function fetchAppSettings(): Promise<AppSettings> {
       isAddAttachmentEnabled: custom.isAddAttachmentEnabled === true,
       dialCoreExternalUrl: res.config.dialCoreExternalUrl ?? undefined,
       defaultModelId: res.config.defaultDeploymentId ?? undefined,
-      allowedOrigin: custom.allowedOrigin,
+      allowedOrigins: custom.allowedOrigins,
       dialAdminHost: custom.dialAdminHost,
       dialChatHost: custom.dialChatHost,
       applicationName: custom.applicationName,

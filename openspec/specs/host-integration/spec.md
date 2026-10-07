@@ -164,19 +164,26 @@ validation") regardless of its type:
 ### Requirement: Origin validation
 
 QuickApps SHALL validate the origin of every inbound message against a configured
-allowed-origin value before acting on it, and SHALL target outbound messages at that
-same allowed-origin value (or a resolved host origin, per "Host origin resolution")
-rather than broadcasting unconditionally to any origin.
+list of one or more allowed origins before acting on it, and SHALL target outbound
+messages only at those allowed origins (or a resolved host origin, per "Host origin
+resolution") rather than broadcasting unconditionally to any origin.
 
-#### Scenario: Allowed origin is configured as a specific origin
+#### Scenario: Allowed origins are configured as specific origins
 
-- **WHEN** an allowed-origin value other than the wildcard is configured, and an
-  inbound message's origin does not match it exactly
+- **WHEN** one or more allowed origins other than the wildcard are configured, and an
+  inbound message's origin does not exactly match any of them
 - **THEN** QuickApps SHALL discard the message without acting on it
 
-#### Scenario: Allowed origin is configured as the wildcard
+#### Scenario: Several allowed origins are configured
 
-- **WHEN** the allowed-origin value is configured as the wildcard (`*`)
+- **WHEN** more than one specific allowed origin is configured
+- **THEN** QuickApps SHALL accept inbound messages from any of them, and SHALL address
+  each outbound message to every configured origin individually, so that only the
+  embedding host whose origin matches receives it
+
+#### Scenario: Allowed origin is configured as the wildcard or not configured
+
+- **WHEN** the allowed origins include the wildcard (`*`), or none are configured
 - **THEN** QuickApps SHALL accept inbound messages regardless of origin, and SHALL
   target outbound messages using the wildcard as well
 
