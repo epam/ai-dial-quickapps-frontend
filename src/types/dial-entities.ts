@@ -121,6 +121,12 @@ export interface DialSkill {
   name: string;
   type: 'skill';
   description?: string;
+  /** DIAL Core bucket and bucket-relative path, used to address the skill's files. */
+  bucket?: string;
+  path?: string;
+  /** Not in chat-api's skill metadata yet; set only when the listing supplies it. */
+  version?: string;
+  tags?: string[];
   updatedAt?: string | number;
   author?: string;
   isMy?: boolean;

@@ -74,3 +74,14 @@ export const getEntityScopeInfo = (id: string, userBucket?: string): EntityScope
 
   return undefined;
 };
+
+/**
+ * Catalog folder path of an entity: its scope label followed by its folder
+ * segments (e.g. `['Organization', 'folder1']`), or empty when the scope is
+ * unknown. Shared by the catalog list mappers and the skill Overview so the
+ * Folder column and the Overview row never disagree.
+ */
+export const getCatalogFolder = (
+  scopeInfo: EntityScopeInfo | undefined,
+  scopeLabels: Record<ResourceScope, string>,
+): string[] => (scopeInfo ? [scopeLabels[scopeInfo.scope], ...scopeInfo.folderPath] : []);

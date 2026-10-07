@@ -13,7 +13,8 @@
   item) accordingly. Closing the gap is still open work; see `openspec/specs/` /
   `openspec/changes/` for tracking individual pieces of it as they're picked up.
 - [] react-hook-form usage - should get rid of it
-- [] need to review components, some seem to be unnecessary, e.g. AgentSkillsField just proxy SkillsSelectors
+- [] need to review components, some seem to be unnecessary. (`AgentSkillsField` → `SkillsSelector` proxy is gone:
+  removed in the `redesign-skills-selection` change.)
 - [x] Extract the model picker popup out of `components/Orchestrator/ModelField.tsx` into its own
   component — now `components/Orchestrator/ModelCatalogModal` (see the `redesign-model-picker-catalog-list` change).
 - [] Model picker upstream asks to ai-dial-chat `libs/catalog` / `libs/chat-shared` (from the
@@ -40,6 +41,14 @@
 - [] ui-kit: `DialDraggableItem` imports a private bundled copy of react-dnd whose `DndProvider` the
   kit does not export, and it has no keyboard support, so consumers can't use it. Ask the kit for an
   exported, keyboard-accessible sortable list; the starters modal uses `@dnd-kit/sortable` meanwhile.
+- [] Skills follow-ups (from the `redesign-skills-selection` change):
+  - chat-api ask: `version` and `tags` on `SkillMetadataItemDto`. The editor already shows them
+    when present (`mapCoreToDialSkill` in `src/utils/dialClient.ts`); until then skills have no
+    version and the Add skill popup's Tags column and From topics stay empty;
+  - resolve the manifest path through `skillsApi.listSkillFiles` for DIAL Core versions that store
+    `SKILL.md` under `files/` (as ai-dial-chat's `resolveSkillManifestFileId` does) — today the
+    Details tab shows its error state there;
+  - optionally list a skill's bundled files in the Details tab (`ContentTab`'s file tree).
 - [] ...
 
 ## Documentation and behavior reconciliation backlog
@@ -111,7 +120,7 @@ Track these dimensions separately for every capability:
 | `toolsets_selection` | No | Yes | Partial | Planned |
 | `toolsets_login` | No | Yes | Partial | Planned |
 | `application_credentials` | No | Yes | Partial | Planned |
-| `skills_catalog` | No | Yes | Partial | Planned |
+| `skills_catalog` | In change | Yes | Partial | Planned |
 | `orchestrator_model-selection` | Yes | Yes | Partial | Planned |
 | `application_advanced-settings` | Yes | Yes | Partial | Planned |
 | `application_conversation-starters` | Yes | Yes | Partial | Planned |
@@ -149,8 +158,10 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 ### Skills
 
-- src/app/api/dial-skills/catalog, src/components/AgentSkills/**
+- src/utils/dialClient.ts (`fetchDialSkills`, `fetchSkillManifest`), src/components/AgentSkills/**, src/components/Skills/**
 - Proposed: skills_catalog (standalone slug skills also defensible if no sibling ever appears)
+- **Spec drafted** in change `redesign-skills-selection` (attached skills list, skill details popup with
+  Delete, Add skill popup); it moves to `openspec/specs/skills_catalog` when the change is archived.
 
 ### Orchestrator / model selection
 
