@@ -87,7 +87,7 @@ const getErrorPath = (path: PropertyKey[]): string =>
     return result ? `${result}.${key}` : key;
   }, '');
 
-export const getQuickApp2FormErrors = (value: unknown): QuickApp2FormErrors => {
+const getQuickApp2FormErrors = (value: unknown): QuickApp2FormErrors => {
   const result = QuickApp2Schema.safeParse(value);
   if (result.success) return {};
 

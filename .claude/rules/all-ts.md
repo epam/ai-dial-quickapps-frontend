@@ -12,6 +12,7 @@ alwaysApply: false
 - Use the `void` operator before Promise-returning calls only for intentional fire-and-forget work where errors are handled internally.
 - Prefer `value == null` over `value === null || value === undefined`, and `value != null` over `value !== null && value !== undefined`, unless you must distinguish `null` from `undefined` explicitly.
 - Utility/helper files must be named in kebab-case after their primary export (e.g. `encode-api-url.ts`) and must not use the `.utils` suffix.
+- Hook files in `src/hooks/` are kebab-case too, named after the hook (`useDialFileManager` → `use-dial-file-manager.ts`); their tests are `tests/<same-name>.test.tsx`.
 
 ## Component folder structure
 

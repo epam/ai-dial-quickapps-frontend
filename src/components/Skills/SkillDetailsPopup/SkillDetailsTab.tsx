@@ -4,7 +4,7 @@ import { FC } from 'react';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useSkillManifest } from '@/hooks/use-skill-manifest';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import type { DialSkill } from '@/types/dial-entities';
 import { ManifestStatus } from '@/types/skill-manifest';
 import { Translation } from '@/types/translation';

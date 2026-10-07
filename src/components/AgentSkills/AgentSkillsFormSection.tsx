@@ -2,7 +2,7 @@ import { FC, lazy, memo, Suspense, useCallback, useState } from 'react';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import type { QuickApp2FormValues } from '@/types/quick-app-form';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import { Translation } from '@/types/translation';
 
 import { AddOnRow } from '@/components/AddOns/AddOnRow';

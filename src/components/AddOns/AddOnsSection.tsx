@@ -4,8 +4,8 @@ import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { AgentsAndToolsetsModalQueryParams } from '@/constants/quick-apps';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
 import type { QuickApp2FormValues } from '@/types/quick-app-form';
-import { useSearchParams } from '@/hooks/useSearchParams';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useSearchParams } from '@/hooks/use-search-params';
+import { useTranslation } from '@/hooks/use-translation';
 import { DialAppTransportType } from '@/types/quick-apps';
 import { Translation } from '@/types/translation';
 

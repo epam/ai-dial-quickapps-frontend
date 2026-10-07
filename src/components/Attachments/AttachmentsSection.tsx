@@ -2,7 +2,7 @@ import { FC, memo, useCallback, useId } from 'react';
 
 import { ATTACHMENT_TYPE_SUGGESTIONS } from '@/constants/attachment-types';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import { SectionRowVariant } from '@/types/section-row';
 import { Translation } from '@/types/translation';
 

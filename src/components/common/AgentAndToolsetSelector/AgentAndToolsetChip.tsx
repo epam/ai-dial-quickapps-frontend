@@ -8,8 +8,8 @@ import { getEntityNameFromId, getVersionFromId, isToolsetId } from '@/utils/api'
 import { doesAgentSupportMcp, isDialAiEntityModel } from '@/utils/application';
 import { getEntityStatus } from '@/utils/get-entity-status';
 import { getLocalizedText } from '@/utils/get-localized-text';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useApplicationAuthentication } from '@/hooks/useApplicationAuthentication';
+import { useTranslation } from '@/hooks/use-translation';
+import { useApplicationAuthentication } from '@/hooks/use-application-authentication';
 
 import { ChipTooltipContent } from './ChipTooltipContent';
 

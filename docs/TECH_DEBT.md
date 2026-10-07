@@ -20,7 +20,7 @@
 - [] Model picker upstream asks to ai-dial-chat `libs/catalog` / `libs/chat-shared` (from the
   `redesign-model-picker-catalog-list` change):
   - a `Toolbar` prop to hide the grid/list toggle, so the picker can use `Toolbar` instead of its own heading row;
-  - Enter/Space row activation in `ListView` (then drop `hooks/useGridRowKeyboardSelect.ts`);
+  - Enter/Space row activation in `ListView` (then drop `hooks/use-grid-row-keyboard-select.ts`);
   - `enableRtl` in `ListView` — its ag-grid columns do not follow `dir="rtl"` today;
   - a label override for `EntityTypeLabel`, so the Type cell can be localised;
   - a thinner (or configurable) selected-row border in `ListView` — its 2px border shifts the row
@@ -184,7 +184,7 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 ### Context files (file manager)
 
-- src/app/api/dial-files/** (list, upload, download, rename, delete, create-folder, list-shared), hooks/useDialFileManager.ts,
+- src/app/api/dial-files/** (list, upload, download, rename, delete, create-folder, list-shared), hooks/use-dial-file-manager.ts,
   utils/dial-files-api.ts, dial-file-path.ts, file-download.ts, file-name.ts, decode-file-url.ts, safe-decode-uri.ts
 - Standalone top-level concept, no sibling domain → context-files
 
@@ -196,7 +196,7 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 ### i18n
 
-- src/i18n/**, I18nProvider.tsx, hooks/useTranslation.ts, utils/get-localized-text.ts
+- src/i18n/**, I18nProvider.tsx, hooks/use-translation.ts, utils/get-localized-text.ts
 - Standalone → i18n
 
 ### Feature flags / runtime config

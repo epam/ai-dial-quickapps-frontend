@@ -19,8 +19,8 @@ import {
 
 import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
-import { useGridRowKeyboardSelect } from '@/hooks/useGridRowKeyboardSelect';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useGridRowKeyboardSelect } from '@/hooks/use-grid-row-keyboard-select';
+import { useTranslation } from '@/hooks/use-translation';
 import { ResourceScope } from '@/types/resource-scope';
 import { Translation } from '@/types/translation';
 import { isHiddenDialFolderId } from '@/utils/api';

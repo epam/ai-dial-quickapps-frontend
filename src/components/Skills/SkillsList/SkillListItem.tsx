@@ -9,7 +9,7 @@ import { IconTrash } from '@tabler/icons-react';
 import { FC } from 'react';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import { Translation } from '@/types/translation';
 
 const AVATAR_SIZE = 36;

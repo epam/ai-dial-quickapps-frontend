@@ -12,7 +12,7 @@ interface MockButtonProps {
   onClick?: () => void;
 }
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({ language: 'en', t: (key: string) => key }),
 }));
 interface MockPopupProps {

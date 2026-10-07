@@ -2,7 +2,7 @@ import { FC, useMemo } from 'react';
 
 import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import type { DialSkill } from '@/types/dial-entities';
 import { ResourceScope } from '@/types/resource-scope';
 import { Translation } from '@/types/translation';

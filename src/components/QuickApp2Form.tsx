@@ -15,7 +15,7 @@ import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
 import type { LocalizedText } from '@/types/dial-entities';
 import { Translation } from '@/types/translation';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import { DialAIEntityModel } from '@/utils/application';
 
 import AddOnsSection from './AddOns/AddOnsSection';

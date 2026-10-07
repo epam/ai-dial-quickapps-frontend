@@ -13,7 +13,7 @@ let skills: DialSkill[] = [];
 let status: 'idle' | 'loading' | 'ready' | 'error' = 'ready';
 const refreshAll = vi.fn();
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({
     language: 'en',
     t: (key: string, options?: Record<string, string>) =>

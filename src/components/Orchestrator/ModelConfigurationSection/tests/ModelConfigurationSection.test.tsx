@@ -6,7 +6,7 @@ import ModelConfigurationSection from '../ModelConfigurationSection';
 
 let modelsMap: Record<string, { allowTemperature?: boolean }> = {};
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({ language: 'en', t: (key: string) => key }),
 }));
 vi.mock('@/context/DataContext', () => ({

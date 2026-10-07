@@ -8,7 +8,7 @@ import { AuthErrorReason } from '@/types/auth';
 import AuthError from '../AuthError';
 
 // Mimics i18next's `{{name}}` interpolation so the provider id is observable in the output.
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({
     language: 'en',
     t: (key: string, options?: Record<string, unknown>) =>

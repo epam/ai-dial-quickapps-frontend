@@ -3,10 +3,10 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AgentAndToolsetChip } from '../AgentAndToolsetChip';
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({ language: 'en', t: (key: string) => key }),
 }));
-vi.mock('@/hooks/useApplicationAuthentication', () => ({
+vi.mock('@/hooks/use-application-authentication', () => ({
   useApplicationAuthentication: (appId?: string) => !!appId,
 }));
 vi.mock('../ChipTooltipContent', () => ({ ChipTooltipContent: () => null }));

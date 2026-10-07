@@ -1,14 +1,14 @@
 import { FC, useState } from 'react';
 
 import { useAppContext } from '@/context/AppContext';
-import { useApplicationAuthentication } from '@/hooks/useApplicationAuthentication';
-import { useSearchParams } from '@/hooks/useSearchParams';
+import { useApplicationAuthentication } from '@/hooks/use-application-authentication';
+import { useSearchParams } from '@/hooks/use-search-params';
 import { requestApplicationCredentials } from '@/utils/request-application-credentials';
 import { NeutralButton } from '@epam/ai-dial-ui-kit';
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import { DialAppTransportType } from '@/types/quick-apps';
 import { Translation } from '@/types/translation';
 import { getLocalizedText } from '@/utils/get-localized-text';

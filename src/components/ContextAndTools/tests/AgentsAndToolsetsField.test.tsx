@@ -6,7 +6,7 @@ import { AgentOrToolsetSchemaKeys } from '@/form/quickApp2Form';
 
 import { AgentsAndToolsetsField } from '../AgentsAndToolsetsField';
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({ t: (key: string) => key, language: 'en' }),
 }));
 vi.mock('@/context/DataContext', () => ({

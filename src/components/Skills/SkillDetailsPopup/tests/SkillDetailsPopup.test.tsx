@@ -10,7 +10,7 @@ const { fetchSkillManifest } = vi.hoisted(() => ({ fetchSkillManifest: vi.fn() }
 
 vi.mock('@/utils/dialClient', () => ({ fetchSkillManifest }));
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({ language: 'en-US', t: (key: string) => key }),
 }));
 

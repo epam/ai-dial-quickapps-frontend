@@ -10,7 +10,7 @@ import {
 } from '@epam/ai-dial-ui-kit';
 
 import { CommonI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import { Translation } from '@/types/translation';
 import { decodeApiUrl } from '@/utils/api';
 import { getFileDirectoryPath } from '@/utils/dial-file-path';

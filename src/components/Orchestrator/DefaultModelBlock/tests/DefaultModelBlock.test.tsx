@@ -9,7 +9,7 @@ import { DefaultModelBlock } from '../DefaultModelBlock';
 let models: DialModel[] = [];
 let status: 'idle' | 'loading' | 'ready' | 'error' = 'ready';
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({ language: 'en', t: (key: string) => key }),
 }));
 vi.mock('@/context/DataContext', () => ({

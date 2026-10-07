@@ -21,7 +21,7 @@ const SKILLS_MAP: Record<string, DialSkill> = {
   'skills/public/user-research': makeSkill('skills/public/user-research', 'User Research'),
 };
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({
     language: 'en',
     t: (key: string, options?: Record<string, string>) =>

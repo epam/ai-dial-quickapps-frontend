@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import { Translation } from '@/types/translation';
 import { CommonI18nKeys } from '@/constants/i18n';
 import { isToolsetId } from '@/utils/api';

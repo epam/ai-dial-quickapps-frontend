@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useAppContext } from '@/context/AppContext';
-import { useSearchParams } from '@/hooks/useSearchParams';
+import { useSearchParams } from '@/hooks/use-search-params';
 import { requestApplicationCredentials } from '@/utils/request-application-credentials';
 import { AgentAndToolsetChip, type ChipEntity } from './AgentAndToolsetChip';
 import { AgentAndToolsetModal } from './AgentAndToolsetModal';

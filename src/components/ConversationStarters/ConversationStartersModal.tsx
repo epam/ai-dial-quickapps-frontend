@@ -26,7 +26,7 @@ import {
 import { FC, memo, useCallback, useMemo, useRef, useState } from 'react';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import {
   StarterSelectionBehavior,
   type ConversationStartersValues,

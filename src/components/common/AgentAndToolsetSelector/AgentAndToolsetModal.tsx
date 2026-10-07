@@ -11,7 +11,7 @@ import { VirtualCardGrid } from '@/components/common/VirtualCardGrid/VirtualCard
 import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import { Translation } from '@/types/translation';
 import { getEntityIdWithoutVersion, isHiddenDialFolderId } from '@/utils/api';
 import { getEntityStatus } from '@/utils/get-entity-status';

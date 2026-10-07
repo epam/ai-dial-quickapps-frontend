@@ -4,7 +4,7 @@ import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import type { QuickApp2FormErrors } from '@/types/quick-app-form';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import { SectionRowVariant } from '@/types/section-row';
 import { Translation } from '@/types/translation';
 import { doesModelAllowTemperature } from '@/utils/application';

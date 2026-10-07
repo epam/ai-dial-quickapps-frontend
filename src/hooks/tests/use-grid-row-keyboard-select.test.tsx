@@ -2,7 +2,7 @@ import { act, type FC } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useGridRowKeyboardSelect } from '@/hooks/useGridRowKeyboardSelect';
+import { useGridRowKeyboardSelect } from '@/hooks/use-grid-row-keyboard-select';
 
 interface GridProps {
   onSelect: (rowId: string) => void;

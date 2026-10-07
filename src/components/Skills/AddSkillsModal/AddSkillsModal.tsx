@@ -26,7 +26,7 @@ import {
 
 import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import { ResourceScope } from '@/types/resource-scope';
 import { Translation } from '@/types/translation';
 import { isHiddenDialFolderId } from '@/utils/api';

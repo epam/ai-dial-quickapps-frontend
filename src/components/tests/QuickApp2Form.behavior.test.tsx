@@ -53,7 +53,7 @@ const testContext = vi.hoisted(() => {
   };
 });
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({ language: 'en', t: (key: string) => key }),
 }));
 

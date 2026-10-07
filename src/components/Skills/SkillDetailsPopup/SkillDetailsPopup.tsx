@@ -14,7 +14,7 @@ import { IconTrash } from '@tabler/icons-react';
 import { FC, useCallback, useMemo, useState } from 'react';
 
 import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import type { DialSkill } from '@/types/dial-entities';
 import { SkillDetailsTabId } from '@/types/skill-details';
 import { Translation } from '@/types/translation';

@@ -9,7 +9,7 @@ import { FC, MouseEvent, ReactNode } from 'react';
 
 import { SectionRow } from '@/components/common/SectionRow/SectionRow';
 import { CommonI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import { Translation } from '@/types/translation';
 
 export interface AddOnRowProps {

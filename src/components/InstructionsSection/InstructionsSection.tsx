@@ -2,7 +2,7 @@ import { FC, lazy, memo, Suspense } from 'react';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useThemeContext } from '@/context/ThemeContext';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import { ThemeId } from '@/types/theme';
 import { Translation } from '@/types/translation';
 
