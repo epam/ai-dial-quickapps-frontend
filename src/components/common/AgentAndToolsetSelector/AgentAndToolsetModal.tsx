@@ -22,9 +22,10 @@ import {
   DialNoDataContent,
   DialPopup,
   DialPrimaryButton,
-  DialSearch,
   DialTabs,
   PopupSize,
+  Search,
+  Spinner,
 } from '@epam/ai-dial-ui-kit';
 
 import { AgentAndToolsetChip, type ChipEntity } from './AgentAndToolsetChip';
@@ -126,6 +127,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
   onConfirm,
 }) => {
   const { t, language } = useTranslation(Translation.QuickAppEditor);
+  const { t: tCommon } = useTranslation(Translation.Common);
   const { app } = useAppContext();
   const {
     modelsWithFavorites: models,
@@ -224,10 +226,11 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
       <div className="flex h-[calc(100dvh-14rem)] flex-col gap-3 px-6 py-4 desktop:h-[calc(100vh-12rem)]">
         <div className="flex shrink-0 justify-between gap-3">
           <div className="flex-1">
-            <DialSearch
+            <Search
               placeholder={t(QuickAppEditorI18nKeys.SearchPlaceholder)}
               value={search}
-              onChange={setSearch}
+              onChange={(value) => setSearch(value ?? '')}
+              clearLabel={tCommon(CommonI18nKeys.ClearSearch)}
               autoFocus
             />
           </div>
@@ -262,7 +265,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
         <div className="min-h-0 flex-1">
           {isLoading ? (
             <div className="flex h-40 items-center justify-center">
-              <div className="size-6 animate-spin rounded-full border-2 border-tertiary border-t-accent" />
+              <Spinner size={24} fullWidth={false} />
             </div>
           ) : filteredItems.length === 0 ? (
             <DialNoDataContent

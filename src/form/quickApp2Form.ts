@@ -78,8 +78,6 @@ export const QuickApp2Schema = z
     codeInterpreter: z.boolean(),
     inputAttachmentTypes: AttachmentTypesSchema,
     maxInputAttachments: MaxInputAttachmentsSchema,
-    isJsonView: z.boolean(),
-    agentsAndToolsetsJson: z.string(),
     introText: z.string().optional(),
     chatMessageInputDisabled: z.boolean(),
     autoSubmit: z.boolean(),
@@ -100,25 +98,6 @@ export const QuickApp2Schema = z
     webFetch: z.boolean(),
   })
   .superRefine((data, ctx) => {
-    if (data.isJsonView) {
-      try {
-        const parsed: unknown[] = JSON.parse(data.agentsAndToolsetsJson);
-        if (!Array.isArray(parsed)) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['agentsAndToolsetsJson'],
-            message: 'Should be an array',
-          });
-        }
-      } catch {
-        ctx.addIssue({
-          code: 'custom',
-          path: ['agentsAndToolsetsJson'],
-          message: 'Should be a valid JSON',
-        });
-      }
-    }
-
     const modelExists = !data.availableModelIds || data.availableModelIds.includes(data.model);
     if (!modelExists) {
       ctx.addIssue({
@@ -236,7 +215,6 @@ export const getQuickApp2FormData = (
       false,
     inputAttachmentTypes: (app?.inputAttachmentTypes as string[] | undefined) ?? [],
     maxInputAttachments: app?.maxInputAttachments as number | undefined,
-    agentsAndToolsetsJson: JSON.stringify(appProperties?.tool_sets ?? [], null, 2),
     introText: appProperties?.conversation_starters?.intro_text,
     chatMessageInputDisabled:
       appProperties?.conversation_starters?.chat_message_input_disabled ?? false,
@@ -248,7 +226,6 @@ export const getQuickApp2FormData = (
       })),
       { id: nanoid(), title: '', text: '' },
     ],
-    isJsonView: false,
     toolSupportingModelIds,
     availableModelIds,
     agentSkills: (appProperties?.skills ?? [])
@@ -260,25 +237,6 @@ export const getQuickApp2FormData = (
     addAttachment,
     webFetch,
   };
-};
-
-const getJsonViewToolsets = (data: QuickApp2Form): AnyToolset[] => {
-  const parsed = JSON.parse(data.agentsAndToolsetsJson) as AnyToolset[];
-  const withoutCodeInterpreter = parsed.filter(
-    (toolset) => toolset.type !== ToolsetTypes.CodeInterpreter,
-  );
-
-  return [
-    ...withoutCodeInterpreter,
-    ...(data.codeInterpreter
-      ? [
-          {
-            template_name: 'py_interpreter',
-            type: ToolsetTypes.CodeInterpreter,
-          } as CodeInterpreterToolset,
-        ]
-      : []),
-  ];
 };
 
 export const buildQuickApp2Config = ({
@@ -295,9 +253,7 @@ export const buildQuickApp2Config = ({
   existingConfig?: QuickApp2Config;
   language: string;
 }): QuickApp2Config => {
-  const toolSets = data.isJsonView
-    ? getJsonViewToolsets(data)
-    : getQuickApp2Toolsets({ allEntitiesMap, data, language });
+  const toolSets = getQuickApp2Toolsets({ allEntitiesMap, data, language });
 
   const starters = data.starters
     .filter((s) => s.title.trim() || s.text.trim())

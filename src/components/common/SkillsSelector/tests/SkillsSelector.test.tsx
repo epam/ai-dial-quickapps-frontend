@@ -4,9 +4,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SkillsSelector } from '../SkillsSelector';
 
-vi.mock('@/hooks/useTranslation', () => ({
-  useTranslation: () => ({ t: (key: string) => key, language: 'en' }),
-}));
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({ skillsMap: { 'skill-1': { id: 'skill-1', name: 'Skill 1' } } }),
 }));
@@ -22,21 +19,13 @@ vi.mock('../SkillChip', () => ({
     </div>
   ),
 }));
-vi.mock('../SkillsModal', () => ({ SkillsModal: () => null }));
-vi.mock('@epam/ai-dial-ui-kit', () => ({
-  mergeClasses: (...values: Array<string | undefined>) => values.filter(Boolean).join(' '),
-  DialLinkButton: ({
-    disabled,
-    label,
-    onClick,
-  }: {
-    disabled?: boolean;
-    label: string;
-    onClick: () => void;
-  }) => (
-    <button type="button" disabled={disabled} onClick={onClick}>
-      {label}
-    </button>
+vi.mock('../SkillsModal', () => ({
+  SkillsModal: ({ onConfirm }: { onConfirm: (ids: string[]) => void }) => (
+    <div data-testid="skills-modal">
+      <button type="button" onClick={() => onConfirm(['skill-1', 'skill-2'])}>
+        Confirm
+      </button>
+    </div>
   ),
 }));
 
@@ -55,31 +44,44 @@ afterEach(() => {
   container.remove();
 });
 
-const renderSelector = (value: string[], onChange = vi.fn(), readonly = false) => {
+const renderSelector = ({
+  value = [] as string[],
+  readonly = false,
+  isSelectModalOpen = false,
+  onChange = vi.fn(),
+  onSelectModalOpenChange = vi.fn(),
+} = {}) => {
   act(() => {
-    root.render(<SkillsSelector value={value} onChange={onChange} readonly={readonly} />);
+    root.render(
+      <SkillsSelector
+        value={value}
+        onChange={onChange}
+        readonly={readonly}
+        isSelectModalOpen={isSelectModalOpen}
+        onSelectModalOpenChange={onSelectModalOpenChange}
+      />,
+    );
   });
-  return onChange;
+  return { onChange, onSelectModalOpenChange };
 };
 
 describe('SkillsSelector', () => {
-  it('keeps Add visible and hides the empty content window', () => {
-    renderSelector([]);
+  it('renders nothing when no skills are selected', () => {
+    renderSelector();
 
-    expect(container.querySelector('button')).toBeTruthy();
     expect(container.querySelector('[data-testid="skill-chip"]')).toBeNull();
-    expect(container.textContent).not.toContain('NoAgentSkillsAdded');
+    expect(container.querySelector('.rounded.border')).toBeNull();
   });
 
-  it('renders the existing chip panel when a skill is selected', () => {
-    renderSelector(['skill-1']);
+  it('renders the chip panel when a skill is selected', () => {
+    renderSelector({ value: ['skill-1'] });
 
     expect(container.querySelector('[data-testid="skill-chip"]')).toBeTruthy();
     expect(container.querySelector('.rounded.border')).toBeTruthy();
   });
 
   it('updates the form value when the last skill is removed', () => {
-    const onChange = renderSelector(['skill-1']);
+    const { onChange } = renderSelector({ value: ['skill-1'] });
     const removeButton = [...container.querySelectorAll('button')].find(
       (button) => button.textContent === 'Remove',
     );
@@ -89,10 +91,22 @@ describe('SkillsSelector', () => {
     expect(onChange).toHaveBeenCalledWith([]);
   });
 
-  it('disables Add and hides chip removal in read-only mode', () => {
-    renderSelector(['skill-1'], vi.fn(), true);
+  it('hides chip removal and the modal in read-only mode', () => {
+    renderSelector({ value: ['skill-1'], readonly: true, isSelectModalOpen: true });
 
-    expect(container.querySelector('button')?.disabled).toBe(true);
     expect(container.textContent).not.toContain('Remove');
+    expect(container.querySelector('[data-testid="skills-modal"]')).toBeNull();
+  });
+
+  it('applies the selection and closes the modal on confirm', () => {
+    const { onChange, onSelectModalOpenChange } = renderSelector({ isSelectModalOpen: true });
+    const confirmButton = [...container.querySelectorAll('button')].find(
+      (button) => button.textContent === 'Confirm',
+    );
+
+    act(() => confirmButton?.click());
+
+    expect(onChange).toHaveBeenCalledWith(['skill-1', 'skill-2']);
+    expect(onSelectModalOpenChange).toHaveBeenCalledWith(false);
   });
 });
