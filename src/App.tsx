@@ -3,7 +3,7 @@ import { FC, memo, Suspense, useEffect, useRef, useState } from 'react';
 
 import AuthError from '@/components/AuthError/AuthError';
 import EditorClient from '@/components/EditorClient/EditorClient';
-import LoadingScreen from '@/components/LoadingScreen/LoadingScreen';
+import FullScreenSpinner from '@/components/FullScreenSpinner/FullScreenSpinner';
 import LoginPrompt from '@/components/LoginPrompt/LoginPrompt';
 import { useAuthContext } from '@/context/AuthContext';
 import { useSearchParams } from '@/hooks/useSearchParams';
@@ -108,7 +108,7 @@ const HomePageContent: FC = () => {
   const hasProviderMismatch = Boolean(user?.providerId && provider && user.providerId !== provider);
 
   if (status === AuthStatus.Loading || hasProviderMismatch) {
-    return <LoadingScreen />;
+    return <FullScreenSpinner />;
   }
 
   if (status === AuthStatus.Authenticated) {
@@ -120,7 +120,7 @@ const HomePageContent: FC = () => {
   }
 
   if (providers == null) {
-    return <LoadingScreen />;
+    return <FullScreenSpinner />;
   }
 
   if (!providers.some((p) => p.id === provider)) {

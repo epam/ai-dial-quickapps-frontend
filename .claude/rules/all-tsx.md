@@ -31,18 +31,6 @@ className={mergeClasses(nameClassName, styles.nameText)}
 1. **Look for a UI kit component** — check if a suitable `Dial*` component exists for your use case using the MCP tools below.
 2. **Use raw elements only as last resort** — if and only if no UI kit component meets the requirements, use native HTML (and document why).
 
-### Spinner / loader
-
-**Never** use `DialLoader`. Use `DialSpinner` from `@epam/ai-dial-ui-kit` instead.
-
-```tsx
-// Correct
-import { DialSpinner } from '@epam/ai-dial-ui-kit';
-
-// Wrong
-import { DialLoader } from '@epam/ai-dial-ui-kit';
-```
-
 ## Semantic HTML
 
 Use semantic HTML elements (`button`, `nav`, `main`, `section`) before reaching for `div`/`span`.

@@ -74,11 +74,7 @@ const AgentAndToolsetCard: React.FC<AgentAndToolsetCardProps> = ({
         'bg-layer-raised shadow-xs',
         'transition-[transform,box-shadow] duration-[180ms] ease-out',
         'hover:-translate-y-0.5 hover:shadow-md',
-        isError
-          ? 'border-error'
-          : isSelected
-            ? 'border-accent'
-            : 'border-tertiary',
+        isError ? 'border-error' : isSelected ? 'border-accent' : 'border-tertiary',
       )}
     >
       <FavoriteStarButton isFavorite={isFavorite} />
@@ -264,9 +260,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
 
         <div className="min-h-0 flex-1">
           {isLoading ? (
-            <div className="flex h-40 items-center justify-center">
-              <Spinner size={24} fullWidth={false} />
-            </div>
+            <Spinner size={24} className="h-40" ariaLabel={t(CommonI18nKeys.Loading)} />
           ) : filteredItems.length === 0 ? (
             <DialNoDataContent
               title={t(
