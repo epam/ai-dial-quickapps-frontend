@@ -26,7 +26,10 @@ export const ToggleSwitch: FC<ToggleSwitchProps> = ({
   const switchId = useId();
 
   const inner = (
-    <div className={classNames('flex items-center gap-2', className)}>
+    // `relative` anchors the ui-kit Switch's `sr-only` (position: absolute) checkbox here.
+    // Without it the checkbox is positioned against the iframe's viewport, and focusing it
+    // on click scrolls the `overflow-hidden` html/body to bring it into view.
+    <div className={classNames('relative flex items-center gap-2', className)}>
       <Switch
         id={switchId}
         isOn={isOn}
