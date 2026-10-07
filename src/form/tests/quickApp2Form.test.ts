@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { ToolsetTypes } from '@/constants/quick-apps';
 import {
   AgentOrToolsetSchemaKeys,
+  buildQuickApp2Config,
   QuickApp2Schema,
   getAgentsAndToolsetsFormValue,
   getQuickApp2FormData,
@@ -181,5 +182,161 @@ describe('getQuickApp2FormData', () => {
 
     expect(data.inputAttachmentTypes).toEqual(['image/png']);
     expect(data.maxInputAttachments).toBe(4);
+  });
+});
+
+type EntitiesMap = Parameters<typeof buildQuickApp2Config>[0]['allEntitiesMap'];
+
+const buildConfig = (
+  overrides: Partial<QuickApp2Form> = {},
+  model: Record<string, unknown> = {},
+  existingConfig?: Parameters<typeof buildQuickApp2Config>[0]['existingConfig'],
+) =>
+  buildQuickApp2Config({
+    data: createForm(overrides),
+    allEntitiesMap: { 'model-1': { id: 'model-1', ...model } } as unknown as EntitiesMap,
+    existingConfig,
+    language: 'en',
+  });
+
+describe('orchestrator temperature and process files', () => {
+  it('defaults the temperature to 1 and process files to off for a new app', () => {
+    const data = getQuickApp2FormData(undefined, ['model-1'], ['model-1'], 'model-1');
+
+    expect(data.temperature).toBe(1);
+    expect(data.processLargeFiles).toBe(false);
+  });
+
+  it('loads the temperature and turns process files on when an attachment strategy is saved', () => {
+    const data = getQuickApp2FormData(
+      {
+        applicationProperties: {
+          orchestrator: {
+            deployment: { deployment_id: 'model-1', parameters: { temperature: 0.3 } },
+            attachment_strategy: { type: 'lazy_on_demand' },
+          },
+        },
+      },
+      ['model-1'],
+      ['model-1'],
+    );
+
+    expect(data.temperature).toBe(0.3);
+    expect(data.processLargeFiles).toBe(true);
+  });
+
+  it('saves the temperature only for a model that supports it', () => {
+    expect(
+      buildConfig({ temperature: 0.3 }, { features: { temperature: true } }).orchestrator
+        ?.deployment?.parameters,
+    ).toEqual({ temperature: 0.3 });
+    expect(
+      buildConfig({ temperature: 0.3 }, { features: {} }).orchestrator?.deployment?.parameters,
+    ).toBeUndefined();
+  });
+
+  it('saves the lazy attachment strategy or null for a model that accepts attachments', () => {
+    const model = { inputAttachmentTypes: ['image/png'] };
+
+    expect(
+      buildConfig({ processLargeFiles: true }, model).orchestrator?.attachment_strategy,
+    ).toEqual({ type: 'lazy_on_demand' });
+    expect(
+      buildConfig({ processLargeFiles: false }, model).orchestrator?.attachment_strategy,
+    ).toBeNull();
+  });
+
+  it('keeps the loaded attachment strategy for a model that does not accept attachments', () => {
+    const existingConfig = {
+      orchestrator: { attachment_strategy: { type: 'lazy_on_demand' } },
+    } as Parameters<typeof buildQuickApp2Config>[0]['existingConfig'];
+
+    expect(
+      buildConfig({ processLargeFiles: false }, {}, existingConfig).orchestrator
+        ?.attachment_strategy,
+    ).toEqual({ type: 'lazy_on_demand' });
+  });
+});
+
+describe('conversation starters', () => {
+  it('defaults to immediate send, an enabled chat input and no intro text', () => {
+    const data = getQuickApp2FormData(undefined, ['model-1'], ['model-1'], 'model-1');
+
+    expect(data.autoSubmit).toBe(true);
+    expect(data.chatMessageInputDisabled).toBe(false);
+    expect(data.introText).toBeUndefined();
+  });
+
+  it('loads saved starters followed by a blank row', () => {
+    const data = getQuickApp2FormData(
+      {
+        applicationProperties: {
+          conversation_starters: {
+            intro_text: 'Hi!',
+            auto_submit: false,
+            chat_message_input_disabled: true,
+            starters: [{ title: 'Travel tips', text: 'Suggest destinations' }],
+          },
+        },
+      },
+      ['model-1'],
+      ['model-1'],
+    );
+
+    expect(data.introText).toBe('Hi!');
+    expect(data.autoSubmit).toBe(false);
+    expect(data.chatMessageInputDisabled).toBe(true);
+    expect(data.starters.map(({ title, text }) => ({ title, text }))).toEqual([
+      { title: 'Travel tips', text: 'Suggest destinations' },
+      { title: '', text: '' },
+    ]);
+  });
+
+  it('saves the starters settings and drops blank rows', () => {
+    expect(
+      buildConfig({
+        introText: 'Hi!',
+        autoSubmit: false,
+        chatMessageInputDisabled: true,
+        starters: [
+          { id: '1', title: 'Travel tips', text: 'Suggest destinations' },
+          { id: '2', title: '', text: '' },
+        ],
+      }).conversation_starters,
+    ).toEqual({
+      intro_text: 'Hi!',
+      chat_message_input_disabled: true,
+      auto_submit: false,
+      starters: [{ title: 'Travel tips', text: 'Suggest destinations' }],
+    });
+  });
+
+  it('still saves a partially filled starter', () => {
+    expect(
+      buildConfig({
+        starters: [
+          { id: '1', title: 'Travel tips', text: '' },
+          { id: '2', title: '', text: 'Suggest destinations' },
+        ],
+      }).conversation_starters?.starters,
+    ).toEqual([
+      { title: 'Travel tips', text: '' },
+      { title: '', text: 'Suggest destinations' },
+    ]);
+  });
+
+  it('omits empty intro text', () => {
+    expect(
+      buildConfig({
+        introText: '',
+        starters: [{ id: '1', title: 'Travel tips', text: 'Suggest destinations' }],
+      }).conversation_starters?.intro_text,
+    ).toBeUndefined();
+  });
+
+  it('saves null when every starter row is blank', () => {
+    expect(
+      buildConfig({ starters: [{ id: '1', title: ' ', text: '' }] }).conversation_starters,
+    ).toBeNull();
   });
 });

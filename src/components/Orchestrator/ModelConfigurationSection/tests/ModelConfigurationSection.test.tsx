@@ -68,7 +68,17 @@ vi.mock('@/components/Settings/SettingsSection', () => ({
   ),
 }));
 
-const TestForm = ({ isReadonly = false, tooltip }: { isReadonly?: boolean; tooltip?: string }) => {
+interface TestFormProps {
+  isReadonly?: boolean;
+  tooltip?: string;
+  isProcessLargeFilesAvailable?: boolean;
+}
+
+const TestForm = ({
+  isReadonly = false,
+  tooltip,
+  isProcessLargeFilesAvailable = true,
+}: TestFormProps) => {
   const [model, setModel] = useState('model-id');
   const [temperature, setTemperature] = useState(0.5);
   const [processLargeFiles, setProcessLargeFiles] = useState(false);
@@ -84,7 +94,7 @@ const TestForm = ({ isReadonly = false, tooltip }: { isReadonly?: boolean; toolt
       errors={{}}
       isReadonly={isReadonly}
       tooltip={tooltip}
-      isProcessLargeFilesAvailable
+      isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
     />
   );
 };
@@ -179,6 +189,30 @@ describe('ModelConfigurationSection', () => {
 
     expect(container.textContent).not.toContain('Temperature control');
     expect(container.textContent).toContain('Model picker');
+  });
+
+  it('omits process files when the selected model does not accept attachments', () => {
+    act(() => root.render(<TestForm isProcessLargeFilesAvailable={false} />));
+
+    expect(container.textContent).not.toContain('Process files');
+    expect(container.textContent).toContain('Temperature control');
+  });
+
+  it('shows temperature while the selected model is not loaded', () => {
+    modelsMap = {};
+
+    act(() => root.render(<TestForm />));
+
+    expect(container.querySelector('button[aria-label="Temperature"]')).not.toBeNull();
+  });
+
+  it('disables the temperature slider without a hint in read-only mode', () => {
+    act(() => root.render(<TestForm isReadonly tooltip="Shared apps are read-only" />));
+
+    const slider = container.querySelector<HTMLButtonElement>('button[aria-label="Temperature"]');
+    expect(slider?.disabled).toBe(true);
+    expect(slider?.closest('[title]')).toBeNull();
+    expect(slider?.closest('section')?.textContent).not.toContain('Shared apps are read-only');
   });
 
   it('preserves read-only behavior for moved controls', () => {

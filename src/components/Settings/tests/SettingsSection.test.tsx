@@ -26,7 +26,10 @@ vi.mock('../AdvancedSettingsPopup', () => ({
 vi.mock('@epam/ai-dial-ui-kit', () => ({
   ButtonAppearance: { Link: 'link' },
   ButtonVariant: { Primary: 'primary' },
+  DIAL_ICON_SIZE: { SM: 16 },
+  DIAL_KIT_ICON_STROKE: 1.5,
   ElementSize: { Small: 'small' },
+  mergeClasses: (...classes: Array<string | undefined>) => classes.filter(Boolean).join(' '),
   Button: ({ label, disabled, onClick }: MockButtonProps) => (
     <button type="button" disabled={disabled} onClick={onClick}>
       {label}
@@ -85,10 +88,9 @@ describe('SettingsSection', () => {
     document.documentElement.setAttribute('dir', 'rtl');
     act(() => root.render(<SettingsSection isReadonly={false} />));
 
-    const section = container.querySelector('section') as HTMLElement;
-    expect(section.className).toContain('justify-between');
-    expect(section.className).toContain('text-start');
-    expect(section.className).not.toMatch(/(^|\s)(ml|mr|pl|pr|left|right|text-left|text-right)-/);
+    const header = container.querySelector('h3')?.parentElement as HTMLElement;
+    expect(header.className).toContain('justify-between');
+    expect(container.innerHTML).not.toMatch(/class="[^"]*\b(ml|mr|pl|pr|left|right|text-left|text-right)-/);
     expect(container.innerHTML).not.toContain('scale-x-[-1]');
   });
 });

@@ -26,7 +26,9 @@ vi.mock('@/components/ContextAndTools/ContextAndToolsSection', () => {
 });
 
 vi.mock('@/components/ConversationStarters/ConversationStartersSection', () => ({
-  default: () => null,
+  default: ({ hasStarters }: { hasStarters: boolean }) => (
+    <output data-testid="has-starters">{String(hasStarters)}</output>
+  ),
 }));
 
 vi.mock('@/components/UserAttachments/UserAttachmentsSection', () => ({
@@ -39,8 +41,15 @@ import QuickApp2FormLegacyFields from '../QuickApp2FormLegacyFields';
 
 const initialValues = getQuickApp2FormData(undefined, ['model-1'], ['model-1'], 'model-1');
 
-const Harness = ({ errors = {} }: { errors?: Record<string, string | undefined> }) => {
-  const [values, setValues] = useState<QuickApp2FormValues>(initialValues);
+interface HarnessProps {
+  errors?: Record<string, string | undefined>;
+  starters?: QuickApp2FormValues['starters'];
+}
+
+const Harness = ({ errors = {}, starters }: HarnessProps) => {
+  const [values, setValues] = useState<QuickApp2FormValues>(
+    starters ? { ...initialValues, starters } : initialValues,
+  );
 
   return (
     <>
@@ -107,4 +116,22 @@ describe('QuickApp2FormLegacyFields', () => {
     });
     expect(container.querySelector('[data-testid="document-value"]')?.textContent).toBe('external');
   });
+
+  it.each([
+    ['no starter', [{ id: '1', title: '', text: '' }], 'false'],
+    ['a title-only starter', [{ id: '1', title: 'Travel tips', text: ' ' }], 'false'],
+    ['a prompt-only starter', [{ id: '1', title: '', text: 'Suggest destinations' }], 'false'],
+    [
+      'a complete starter',
+      [{ id: '1', title: 'Travel tips', text: 'Suggest destinations' }],
+      'true',
+    ],
+  ])(
+    'enables the starters settings only for a complete starter: %s',
+    (_label, starters, expected) => {
+      act(() => root.render(<Harness starters={starters} />));
+
+      expect(container.querySelector('[data-testid="has-starters"]')?.textContent).toBe(expected);
+    },
+  );
 });
