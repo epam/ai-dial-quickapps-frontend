@@ -328,16 +328,18 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
   return (
     <AppContextProvider value={appState}>
       <DataContextProvider>
-        <div ref={formRef}>
-          <Suspense>
-            <EditorInner
-              appState={appState}
-              onSave={handleSave}
-              onDirtyChange={handleDirtyChange}
-              onModelReady={onReadyToSave}
-              resetKey={resetKey}
-            />
-          </Suspense>
+        <div className="h-full overflow-y-auto">
+          <div ref={formRef}>
+            <Suspense>
+              <EditorInner
+                appState={appState}
+                onSave={handleSave}
+                onDirtyChange={handleDirtyChange}
+                onModelReady={onReadyToSave}
+                resetKey={resetKey}
+              />
+            </Suspense>
+          </div>
         </div>
       </DataContextProvider>
     </AppContextProvider>

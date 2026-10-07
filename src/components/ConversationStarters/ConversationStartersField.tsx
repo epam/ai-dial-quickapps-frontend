@@ -7,7 +7,7 @@ import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { ConversationStarter } from '@/types/quick-apps';
 
 import classNames from 'classnames';
-import { DialGhostIconButton, DialInput } from '@epam/ai-dial-ui-kit';
+import { DialGhostIconButton, Input } from '@epam/ai-dial-ui-kit';
 import { nanoid } from 'nanoid';
 
 const createEmptyStarter = () => ({ id: nanoid(), title: '', text: '' });
@@ -59,14 +59,14 @@ export const ConversationStartersList: FC<ConversationStartersListProps> = ({
 
         return (
           <div key={item.id} className="flex items-center gap-2">
-            <DialInput
+            <Input
               value={item.title}
               onChange={(val) => handleChange(index, 'title', val ?? '')}
               containerClassName="flex-1"
               placeholder={t(QuickAppEditorI18nKeys.ButtonTitleTravelTips) ?? ''}
               disabled={disabled}
             />
-            <DialInput
+            <Input
               value={item.text}
               onChange={(val) => handleChange(index, 'text', val ?? '')}
               containerClassName="flex-[2]"

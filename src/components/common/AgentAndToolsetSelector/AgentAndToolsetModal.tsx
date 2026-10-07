@@ -22,9 +22,9 @@ import {
   DialNoDataContent,
   DialPopup,
   DialPrimaryButton,
-  DialSearch,
   DialTabs,
   PopupSize,
+  Search,
   Spinner,
 } from '@epam/ai-dial-ui-kit';
 
@@ -123,6 +123,7 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
   onConfirm,
 }) => {
   const { t, language } = useTranslation(Translation.QuickAppEditor);
+  const { t: tCommon } = useTranslation(Translation.Common);
   const { app } = useAppContext();
   const {
     modelsWithFavorites: models,
@@ -221,10 +222,11 @@ export const AgentAndToolsetModal: React.FC<AgentAndToolsetModalProps> = ({
       <div className="flex h-[calc(100dvh-14rem)] flex-col gap-3 px-6 py-4 desktop:h-[calc(100vh-12rem)]">
         <div className="flex shrink-0 justify-between gap-3">
           <div className="flex-1">
-            <DialSearch
+            <Search
               placeholder={t(QuickAppEditorI18nKeys.SearchPlaceholder)}
               value={search}
-              onChange={setSearch}
+              onChange={(value) => setSearch(value ?? '')}
+              clearLabel={tCommon(CommonI18nKeys.ClearSearch)}
               autoFocus
             />
           </div>
