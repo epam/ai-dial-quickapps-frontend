@@ -2,5 +2,10 @@
   "Application credentials": "Application credentials",
   "Configuration": "Configuration",
   "Add-ons": "Add-ons",
-  "Skills": "Skills"
+  "Skills": "Skills",
+  "Settings": "Settings",
+  "Advanced": "Advanced",
+  "Close": "Close",
+  "Save": "Save",
+  "Close advanced settings": "Close advanced settings"
 }
