@@ -12,7 +12,7 @@ import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
 import { ConversationStartersList } from './ConversationStartersField';
 import { StartersBehaviourRadioGroup } from './StartersBehaviourRadioGroup';
 
-import { DialFormItem, DialInput } from '@epam/ai-dial-ui-kit';
+import { DialFormItem, Input } from '@epam/ai-dial-ui-kit';
 
 export interface ConversationStartersSectionProps {
   control: Control<QuickApp2FormType>;
@@ -66,7 +66,7 @@ const ConversationStartersSection: FC<ConversationStartersSectionProps> = ({
           control={control}
           name="introText"
           render={({ field }) => (
-            <DialInput
+            <Input
               labelProps={{
                 label: t(QuickAppEditorI18nKeys.IntroText),
                 caption: t(QuickAppEditorI18nKeys.OptionalTextShownAboveTheStarters),

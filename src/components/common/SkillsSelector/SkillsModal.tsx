@@ -18,9 +18,10 @@ import {
   DialNoDataContent,
   DialPopup,
   DialPrimaryButton,
-  DialSearch,
   DialTabs,
   PopupSize,
+  Search,
+  Spinner,
 } from '@epam/ai-dial-ui-kit';
 
 import { SkillChip } from './SkillChip';
@@ -75,6 +76,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
   onConfirm,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t: tCommon } = useTranslation(Translation.Common);
   const { skillsWithFavorites: skills, skillsMap, favoriteIds, status } = useDataContext();
   const isLoading = status === 'loading' || status === 'idle';
 
@@ -153,10 +155,11 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
       <div className="flex h-[calc(100dvh-14rem)] flex-col gap-3 px-6 py-4 desktop:h-[calc(100vh-12rem)]">
         <div className="flex shrink-0 justify-between gap-3">
           <div className="flex-1">
-            <DialSearch
+            <Search
               placeholder={t(QuickAppEditorI18nKeys.SearchAgentSkills)}
               value={search}
-              onChange={setSearch}
+              onChange={(value) => setSearch(value ?? '')}
+              clearLabel={tCommon(CommonI18nKeys.ClearSearch)}
               autoFocus
             />
           </div>
@@ -185,7 +188,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
         <div className="min-h-0 flex-1">
           {isLoading ? (
             <div className="flex h-40 items-center justify-center">
-              <div className="size-6 animate-spin rounded-full border-2 border-tertiary border-t-accent" />
+              <Spinner size={24} fullWidth={false} />
             </div>
           ) : filteredItems.length === 0 ? (
             <DialNoDataContent

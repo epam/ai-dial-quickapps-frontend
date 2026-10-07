@@ -1,5 +1,5 @@
 import { IconAlertTriangleFilled } from '@tabler/icons-react';
-import { DialSwitch, DialTooltip } from '@epam/ai-dial-ui-kit';
+import { DialTooltip, Switch } from '@epam/ai-dial-ui-kit';
 import { FC, useId } from 'react';
 
 import classNames from 'classnames';
@@ -27,10 +27,10 @@ export const ToggleSwitch: FC<ToggleSwitchProps> = ({
 
   const inner = (
     <div className={classNames('flex items-center gap-2', className)}>
-      <DialSwitch
-        switchId={switchId}
+      <Switch
+        id={switchId}
         isOn={isOn}
-        label={additionalText}
+        labelProps={additionalText ? { label: additionalText } : undefined}
         disabled={disabled}
         onChange={() => handleSwitch()}
       />

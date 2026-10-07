@@ -6,6 +6,7 @@ import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
 
+import { Section } from '@/components/common/Section/Section';
 import { DialMarkdownEditorContainer } from '@/components/common/MarkdownEditor/MarkdownEditorContainer';
 
 export interface InstructionsSectionProps {
@@ -16,13 +17,7 @@ const InstructionsSection: FC<InstructionsSectionProps> = ({ control }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
 
   return (
-    <section
-      aria-label={t(QuickAppEditorI18nKeys.Instructions)}
-      className="rounded-[24px] bg-layer-raised p-8 shadow-sm"
-    >
-      <h2 className="dial-medium-semi-text mb-4 text-primary">
-        {t(QuickAppEditorI18nKeys.Instructions)}
-      </h2>
+    <Section title={t(QuickAppEditorI18nKeys.Instructions)} isRequired>
       <Controller
         control={control}
         name="instructions"
@@ -34,7 +29,7 @@ const InstructionsSection: FC<InstructionsSectionProps> = ({ control }) => {
           />
         )}
       />
-    </section>
+    </Section>
   );
 };
 

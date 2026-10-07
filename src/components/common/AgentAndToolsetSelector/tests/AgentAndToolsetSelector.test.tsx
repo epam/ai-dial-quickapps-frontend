@@ -4,9 +4,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AgentAndToolsetSelector } from '../AgentAndToolsetSelector';
 
-vi.mock('@/hooks/useTranslation', () => ({
-  useTranslation: () => ({ t: (key: string) => key, language: 'en' }),
-}));
 vi.mock('@/context/AppContext', () => ({
   useAppContext: () => ({ settings: { allowedOrigin: '*' } }),
 }));
@@ -28,31 +25,16 @@ vi.mock('../AgentAndToolsetChip', () => ({
     </div>
   ),
 }));
-vi.mock('../AgentAndToolsetModal', () => ({ AgentAndToolsetModal: () => null }));
+vi.mock('../AgentAndToolsetModal', () => ({
+  AgentAndToolsetModal: ({ onConfirm }: { onConfirm: (ids: string[]) => void }) => (
+    <div data-testid="agent-toolset-modal">
+      <button type="button" onClick={() => onConfirm(['toolset-1', 'agent-1'])}>
+        Confirm
+      </button>
+    </div>
+  ),
+}));
 vi.mock('../ToolsetLoginModal', () => ({ ToolsetLoginModal: () => null }));
-vi.mock('@/components/common/ToggleSwitch/ToggleSwitch', () => ({
-  ToggleSwitch: ({ disabled, additionalText }: { disabled?: boolean; additionalText: string }) => (
-    <button type="button" disabled={disabled}>
-      {additionalText}
-    </button>
-  ),
-}));
-vi.mock('@epam/ai-dial-ui-kit', () => ({
-  mergeClasses: (...values: Array<string | undefined>) => values.filter(Boolean).join(' '),
-  DialLinkButton: ({
-    disabled,
-    label,
-    onClick,
-  }: {
-    disabled?: boolean;
-    label: string;
-    onClick: () => void;
-  }) => (
-    <button type="button" disabled={disabled} onClick={onClick}>
-      {label}
-    </button>
-  ),
-}));
 
 let root: Root;
 let container: HTMLDivElement;
@@ -69,12 +51,13 @@ afterEach(() => {
   container.remove();
 });
 
-const renderSelector = (
-  value: string[],
-  onChange = vi.fn(),
+const renderSelector = ({
+  value = [] as string[],
   readonly = false,
-  onJsonSwitchClick?: () => void,
-) => {
+  isSelectModalOpen = false,
+  onChange = vi.fn(),
+  onSelectModalOpenChange = vi.fn(),
+} = {}) => {
   act(() => {
     root.render(
       <AgentAndToolsetSelector
@@ -82,31 +65,31 @@ const renderSelector = (
         onChange={onChange}
         readonly={readonly}
         allItemsMap={{}}
-        onJsonSwitchClick={onJsonSwitchClick}
+        isSelectModalOpen={isSelectModalOpen}
+        onSelectModalOpenChange={onSelectModalOpenChange}
       />,
     );
   });
-  return onChange;
+  return { onChange, onSelectModalOpenChange };
 };
 
 describe('AgentAndToolsetSelector', () => {
-  it('keeps Add visible and hides the empty content window', () => {
-    renderSelector([]);
+  it('renders nothing when no agents or toolsets are selected', () => {
+    renderSelector();
 
-    expect(container.querySelector('button')).toBeTruthy();
     expect(container.querySelector('[data-testid="agent-toolset-chip"]')).toBeNull();
-    expect(container.textContent).not.toContain('NoAgentsAndToolsetsAdded');
+    expect(container.querySelector('.rounded.border')).toBeNull();
   });
 
-  it('renders the existing chip panel when an agent or toolset is selected', () => {
-    renderSelector(['toolset-1']);
+  it('renders the chip panel when an agent or toolset is selected', () => {
+    renderSelector({ value: ['toolset-1'] });
 
     expect(container.querySelector('[data-testid="agent-toolset-chip"]')).toBeTruthy();
     expect(container.querySelector('.rounded.border')).toBeTruthy();
   });
 
   it('updates the form value when the last agent or toolset is removed', () => {
-    const onChange = renderSelector(['toolset-1']);
+    const { onChange } = renderSelector({ value: ['toolset-1'] });
     const removeButton = [...container.querySelectorAll('button')].find(
       (button) => button.textContent === 'Remove',
     );
@@ -116,10 +99,22 @@ describe('AgentAndToolsetSelector', () => {
     expect(onChange).toHaveBeenCalledWith([]);
   });
 
-  it('keeps Add and JSON controls disabled in read-only mode', () => {
-    renderSelector(['toolset-1'], vi.fn(), true, vi.fn());
+  it('hides chip removal and the modal in read-only mode', () => {
+    renderSelector({ value: ['toolset-1'], readonly: true, isSelectModalOpen: true });
 
-    expect(container.querySelectorAll('button')[0]?.disabled).toBe(true);
-    expect(container.textContent).toContain('JSON');
+    expect(container.textContent).not.toContain('Remove');
+    expect(container.querySelector('[data-testid="agent-toolset-modal"]')).toBeNull();
+  });
+
+  it('applies the selection and closes the modal on confirm', () => {
+    const { onChange, onSelectModalOpenChange } = renderSelector({ isSelectModalOpen: true });
+    const confirmButton = [...container.querySelectorAll('button')].find(
+      (button) => button.textContent === 'Confirm',
+    );
+
+    act(() => confirmButton?.click());
+
+    expect(onChange).toHaveBeenCalledWith(['toolset-1', 'agent-1']);
+    expect(onSelectModalOpenChange).toHaveBeenCalledWith(false);
   });
 });

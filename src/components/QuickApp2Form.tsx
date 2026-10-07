@@ -1,24 +1,21 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo } from 'react';
 import { Resolver, useForm, useWatch } from 'react-hook-form';
 
 import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { ToolsetTypes } from '@/constants/quick-apps';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import {
   AgentOrToolsetSchemaKeys,
-  getAgentsAndToolsetsFormValue,
   getQuickApp2FormData,
-  getQuickApp2Toolsets,
   MIME_TYPE_REGEX,
   QuickApp2Schema,
   resolveDefaultModelId,
   type QuickApp2Form as QuickApp2FormType,
 } from '@/form/quickApp2Form';
 import { useTranslation } from '@/hooks/useTranslation';
-import { AnyToolset, DialAppTransportType } from '@/types/quick-apps';
+import { DialAppTransportType } from '@/types/quick-apps';
 import type { QuickApp2Config } from '@/types/quick-apps';
 import type { TriggerSaveGeneralPayload } from '@/types/editor-messages';
 import type { LocalizedText } from '@/types/dial-entities';
@@ -57,7 +54,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   onModelReady,
   readonly,
 }) => {
-  const { t, language } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation(Translation.QuickAppEditor);
   const { app, settings } = useAppContext();
   const { models, modelsMap, toolsetsMap, mcpAgentsMap, status } = useDataContext();
 
@@ -186,10 +183,8 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     return () => window.removeEventListener(DIAL_EDITOR_TRIGGER_SAVE_EVENT, handleTriggerSave);
   }, [handleSubmit, isDirty, isReadonly, onSave, allEntitiesMap]);
 
-  const isJsonView = watch('isJsonView');
   const starters = watch('starters');
   const agentsAndToolsets = watch('agentsAndToolsets');
-  const agentsAndToolsetsJson = watch('agentsAndToolsetsJson');
   const chatMessageInputDisabled = watch('chatMessageInputDisabled');
   const autoSubmit = watch('autoSubmit');
 
@@ -230,33 +225,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     [agentsAndToolsets, setValue],
   );
 
-  const handleSwitchToJsonView = useCallback(() => {
-    const toolsets = getQuickApp2Toolsets({
-      data: getValues(),
-      allEntitiesMap,
-      language,
-    });
-    setValue('agentsAndToolsetsJson', JSON.stringify(toolsets, null, 2));
-    setValue('isJsonView', true);
-  }, [allEntitiesMap, getValues, setValue, language]);
-
-  const handleSwitchToSimpleView = useCallback(
-    (toolsets: AnyToolset[]) => {
-      setValue(
-        'agentsAndToolsets',
-        getAgentsAndToolsetsFormValue(toolsets) as QuickApp2FormType['agentsAndToolsets'],
-      );
-      setValue(
-        'codeInterpreter',
-        toolsets.some((toolset) => toolset.type === ToolsetTypes.CodeInterpreter),
-      );
-      setValue('isJsonView', false);
-    },
-    [setValue],
-  );
-
-  const [attachmentTypesResetKey, setAttachmentTypesResetKey] = useState(0);
-
   const handleAttachmentTypesChange = useCallback(
     (tags: string[], prevTags: string[]) => {
       const addedTags = tags.filter((tag) => !prevTags.includes(tag));
@@ -266,9 +234,8 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
           type: 'manual',
           message: t(QuickAppEditorI18nKeys.PleaseMatchTheMimeFormat),
         });
-        // DialTagInput adds tags optimistically to its own state, so force
-        // it to remount and resync with the last valid RHF value.
-        setAttachmentTypesResetKey((key) => key + 1);
+        // TagInput is controlled by the RHF value, so skipping setValue
+        // drops the rejected tag.
         return;
       }
       clearErrors('inputAttachmentTypes');
@@ -277,41 +244,22 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     [setError, clearErrors, setValue, t],
   );
 
-  const handleDiscardJson = useCallback(() => {
-    const toolsets = getQuickApp2Toolsets({
-      data: getValues(),
-      allEntitiesMap,
-      language,
-    });
-    setValue('agentsAndToolsetsJson', JSON.stringify(toolsets, null, 2));
-    setValue('isJsonView', false);
-  }, [allEntitiesMap, getValues, setValue, language]);
-
   return (
     <form
       onSubmit={handleSubmit((data) => onSave(data, allEntitiesMap, false))}
-      className="grid grid-cols-1 gap-4 p-4 desktop:grid-cols-[minmax(0,1fr)_minmax(280px,440px)] desktop:gap-x-0 desktop:px-8 desktop:py-7"
+      className="grid grid-cols-1 gap-4 desktop:grid-cols-[minmax(0,1fr)_minmax(280px,440px)] desktop:gap-x-0"
     >
-      <div className="min-w-0">
+      <div className="min-w-0 flex flex-col min-h-0 gap-4">
         <InstructionsSection control={control} />
 
         <AddOnsSection
           control={control}
-          errors={errors}
           isReadonly={isReadonly}
           tooltip={sharedTooltip}
           agentsAndToolsets={agentsAndToolsets}
-          agentsAndToolsetsJson={agentsAndToolsetsJson}
-          isJsonView={isJsonView}
           onAgentsChange={handleAgentsChange}
-          onJsonChange={(json: string) => setValue('agentsAndToolsetsJson', json)}
-          onSwitchToJsonView={handleSwitchToJsonView}
-          onSwitchToSimpleView={handleSwitchToSimpleView}
-          onDiscardJson={handleDiscardJson}
           onConfigureAgent={handleConfigureAgent}
         />
-
-        <hr className="border-secondary" />
 
         <ContextAndToolsSection
           control={control}
@@ -329,7 +277,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
           errors={errors}
           isReadonly={isReadonly}
           tooltip={sharedTooltip}
-          attachmentTypesResetKey={attachmentTypesResetKey}
           onAttachmentTypesChange={handleAttachmentTypesChange}
         />
 
