@@ -2,5 +2,7 @@
   "Application credentials": "Application credentials",
   "Configuration": "Configuration",
   "Add-ons": "Add-ons",
-  "Skills": "Skills"
+  "Skills": "Skills",
+  "Default model": "Default model",
+  "Agent": "Agent"
 }

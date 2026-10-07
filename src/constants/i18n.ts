@@ -81,6 +81,8 @@ export enum QuickAppEditorI18nKeys {
   MaxAttachmentsNumber = 'Max. attachments number',
   EnterMaxAttachments = 'Enter the maximum number of attachments',
   Model = 'Model',
+  Agent = 'Agent',
+  DefaultModel = 'Default model',
   Instructions = 'Instructions',
   InstructionsPlaceholder = 'Instructions of your application',
   Temperature = 'Temperature',

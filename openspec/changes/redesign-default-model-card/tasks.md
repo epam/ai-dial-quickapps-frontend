@@ -23,16 +23,16 @@ Tests use the repo's existing `react-dom/client` `createRoot` + `act` harness (s
 
 ## 1. Shared ConfigurationSection header
 
-- [ ] 1.1 Create `src/components/common/ConfigurationSection/ConfigurationSection.tsx`:
+- [x] 1.1 Create `src/components/common/ConfigurationSection/ConfigurationSection.tsx`:
   - Use `ConfigurationSectionProps { title; action?; description?; className?; children? }`, exported as a named arrow component.
-  - Render `<section aria-labelledby={useId()}>` with an `h4` caption using `dial-caption-text font-semibold uppercase tracking-[0.06em] text-secondary`.
+  - Render `<section aria-labelledby={useId()}>` with an `h3` caption using `dial-caption-text font-semibold uppercase tracking-[0.06em] text-secondary`.
   - Put the action in an end-aligned `shrink-0` wrapper, rendered only when it is provided.
   - Render the description as `p.dial-small-text text-secondary`, only when it is provided.
   - Render children below.
   - No `aria-expanded`.
   - Use logical/flex layout only (design D2).
   - **Verification:** `npx vitest run src/components/common/ConfigurationSection`, `npm run lint`, `npm run typecheck`.
-- [ ] 1.2 Add `src/components/common/ConfigurationSection/tests/ConfigurationSection.test.tsx`. It must cover:
+- [x] 1.2 Add `src/components/common/ConfigurationSection/tests/ConfigurationSection.test.tsx`. It must cover:
   - The section is labelled by its heading text.
   - The action is rendered and is a reachable button.
   - The description is rendered when given.
@@ -41,11 +41,11 @@ Tests use the repo's existing `react-dom/client` `createRoot` + `act` harness (s
 
 ## 2. Default model block (depends on 0, 1, 3.1)
 
-- [ ] 2.1 Add `getModelEntityType` and `getModelTypeI18nKey` to `src/utils/application.ts` (design D5). Both are `switch`es:
+- [x] 2.1 Add `getModelEntityType` and `getModelTypeI18nKey` to `src/utils/application.ts` (design D5). Both are `switch`es:
   - `getModelEntityType`: `'application'` maps to `EntityType.Agent`, anything else to `EntityType.Model`.
   - `getModelTypeI18nKey`: `'application'` maps to `QuickAppEditorI18nKeys.Agent`, anything else to `QuickAppEditorI18nKeys.Model`. Add unit tests in `src/utils/tests/application.test.ts`, creating the file if it is absent.
   - **Verification:** `npx vitest run src/utils/tests/application.test.ts`, `npm run lint`, `npm run typecheck`.
-- [ ] 2.2 In `src/components/Orchestrator/ModelField.tsx`, wrap the collapsed card in `ConfigurationSection` with `title={t(QuickAppEditorI18nKeys.DefaultModel)}`. The `action` is the ui-kit 2.0 `Button`, configured as follows:
+- [x] 2.2 In `src/components/Orchestrator/ModelField.tsx`, wrap the collapsed card in `ConfigurationSection` with `title={t(QuickAppEditorI18nKeys.DefaultModel)}`. The `action` is the ui-kit 2.0 `Button`, configured as follows:
   - `appearance={ButtonAppearance.Outlined}`, `variant={ButtonVariant.Primary}`, `size={ElementSize.Small}`.
   - `iconBefore={<IconPencil size={16} />}`, `label={t(Change)}`, `onClick={handleOpen}`, `disabled={disabled || isModelInfoLoading}`.
   - `tooltipProps` set from `tooltip` when it is present.
@@ -53,30 +53,30 @@ Tests use the repo's existing `react-dom/client` `createRoot` + `act` harness (s
   Remove the in-card `DialLinkButton`. Confirm the `Button`/`ButtonAppearance`/`ButtonVariant`/`ElementSize` props via the ui-kit MCP `getEntityDetails` before coding, then compare the visual result with the mockup and adjust the variant if needed (design D3).
   - **Verification:** `npm run lint`, `npm run typecheck`.
 
-- [ ] 2.3 Restyle the collapsed card in `src/components/Orchestrator/ModelField.tsx` per design D4:
+- [x] 2.3 Restyle the collapsed card in `src/components/Orchestrator/ModelField.tsx` per design D4:
   - Container: raised `rounded-[16px]` with a border that turns error-coloured when there is an error, and `opacity-50` when disabled.
   - Inside it, the ui-kit `EntityIdentity`, configured as follows:
     - `item.type` from `getModelEntityType`;
     - `labels.type` = `t(getModelTypeI18nKey(...))`;
     - `iconUrl` passed through `resolveIconUrl`;
-    - `hasFeaturedTag={false}`, `iconSize={44}`, `headingLevel={5}`, `nameClassName="dial-body-semi-text"`.
+    - `hasFeaturedTag={false}`, `iconSize={44}`, `headingLevel={4}`, `nameClassName="dial-body-semi-text"`.
   - Skeletons while loading (circle 44 plus text lines).
   - The raw id in secondary text for an unknown model, with no label or version.
   - The error message stays below the card.
   - **Verification:** `npm run lint`, `npm run typecheck`.
-- [ ] 2.4 Remove the dead inline-version code from the collapsed card in `src/components/Orchestrator/ModelField.tsx`:
+- [x] 2.4 Remove the dead inline-version code from the collapsed card in `src/components/Orchestrator/ModelField.tsx`:
   - Remove `cardVersionOptions`, `hasVersions`, the inline `DialSelect`, and the `VersionPrefix` usage in the card.
   - Remove `selectedGroup` if it is now unused.
   - Keep `VERSION_SELECT_CLASS`/`VersionPrefix` for the popup `ModelCard`.
   - Drop the `classNames` import if it is no longer used.
   - **Verification:** `npm run lint`, `npm run typecheck`.
-- [ ] 2.5 In `src/components/Orchestrator/ModelConfigurationSection/ModelConfigurationSection.tsx`, remove the `DialFormItem label={t(Model)}` wrapper around the `model` `Controller` and render `ModelField` directly. Temperature and Process files stay unchanged.
+- [x] 2.5 In `src/components/Orchestrator/ModelConfigurationSection/ModelConfigurationSection.tsx`, remove the `DialFormItem label={t(Model)}` wrapper around the `model` `Controller` and render `ModelField` directly. Temperature and Process files stay unchanged.
   - **Verification:** `npx vitest run src/components/Orchestrator/ModelConfigurationSection`, `npm run lint`, `npm run typecheck`.
-- [ ] 2.6 Update `src/components/Orchestrator/ModelConfigurationSection/tests/ModelConfigurationSection.test.tsx` so it no longer expects a "Model" form-item label. Keep the temperature, process-files and read-only assertions.
+- [x] 2.6 Update `src/components/Orchestrator/ModelConfigurationSection/tests/ModelConfigurationSection.test.tsx` so it no longer expects a "Model" form-item label. Keep the temperature, process-files and read-only assertions.
   - **Verification:** `npx vitest run src/components/Orchestrator/ModelConfigurationSection/tests/ModelConfigurationSection.test.tsx`.
-- [ ] 2.7 Add `src/components/Orchestrator/tests/ModelField.test.tsx`, mocking `useDataContext`, `useAppContext`, `useTranslation` and the ui-kit `DialPopup`. It must cover:
+- [x] 2.7 Add `src/components/Orchestrator/tests/ModelField.test.tsx`, mocking `useDataContext`, `useAppContext`, `useTranslation` and the ui-kit `DialPopup`. It must cover:
   - The "Default model" heading labels the section, and the "Change" button is in it.
-  - The card shows the "Model" label, the name as a level-5 heading and the version text, with no combobox and no "Featured" chip.
+  - The card shows the "Model" label, the name as a level-4 heading and the version text, with no combobox and no "Featured" chip.
   - The type label is "Agent" for `type: 'application'`.
 
   Keep the real `EntityIdentity` (do not mock it) so the assertions cover what the user sees.
@@ -89,14 +89,14 @@ Tests use the repo's existing `react-dom/client` `createRoot` + `act` harness (s
 
 ## 3. i18n, RTL and specs
 
-- [ ] 3.1 Add `DefaultModel = 'Default model'` and `Agent = 'Agent'` to `QuickAppEditorI18nKeys` in `src/constants/i18n.ts`, and the matching entries to `src/i18n/locales/quick-app-editor.json`, the only registered locale (`en`).
+- [x] 3.1 Add `DefaultModel = 'Default model'` and `Agent = 'Agent'` to `QuickAppEditorI18nKeys` in `src/constants/i18n.ts`, and the matching entries to `src/i18n/locales/quick-app-editor.json`, the only registered locale (`en`).
   - **Verification:** `npm run lint`, `npm run typecheck`.
-- [ ] 3.2 RTL pass over `ConfigurationSection.tsx` and the `ModelField.tsx` card:
+- [x] 3.2 RTL pass over `ConfigurationSection.tsx` and the `ModelField.tsx` card:
   - No physical `ml/mr/pl/pr/left/right/text-left/text-right` classes.
   - The pencil icon is not mirrored.
   - Add an RTL test case to `ConfigurationSection.test.tsx`: with `document.documentElement.dir = 'rtl'`, the DOM order is heading first, then action, and no physical direction classes are present.
   - **Verification:** `npx vitest run src/components/common/ConfigurationSection`, `npm run lint`.
-- [ ] 3.3 Remove the "Orchestrator / model selection" entry from `docs/TECH_DEBT.md`'s "OpenSpec spec creation candidates", or mark it as started. Add the follow-ups from design.md:
+- [x] 3.3 Remove the "Orchestrator / model selection" entry from `docs/TECH_DEBT.md`'s "OpenSpec spec creation candidates", or mark it as started. Add the follow-ups from design.md:
   - migrate the Add-ons rows to `ConfigurationSection`;
   - extract the `ModelField` popup.
   - **Verification:** `npm run format:check`.

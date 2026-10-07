@@ -16,7 +16,8 @@ vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({ modelsMap }),
 }));
 vi.mock('@/utils/application', () => ({
-  doesModelAllowTemperature: (model: { allowTemperature?: boolean }) => model.allowTemperature !== false,
+  doesModelAllowTemperature: (model: { allowTemperature?: boolean }) =>
+    model.allowTemperature !== false,
 }));
 vi.mock('../../ModelField', () => ({
   ModelField: ({ disabled }: { disabled?: boolean }) => (
@@ -88,12 +89,20 @@ describe('ModelConfigurationSection', () => {
     act(() => root.render(<TestForm />));
 
     expect(container.textContent).toContain('Configuration');
-    expect(container.querySelector('section[aria-labelledby="model-configuration-heading"]')?.className).toContain(
-      'px-8',
-    );
+    expect(
+      container.querySelector('section[aria-labelledby="model-configuration-heading"]')?.className,
+    ).toContain('px-8');
     expect(container.textContent).toContain('Model picker');
     expect(container.textContent).toContain('Temperature control');
     expect(container.textContent).toContain('Process files toggle');
+  });
+
+  it('renders the model picker without a separate "Model" form label', () => {
+    act(() => root.render(<TestForm />));
+
+    const labels = [...container.querySelectorAll('div')].map((el) => el.textContent);
+    expect(labels).not.toContain('Model');
+    expect(container.textContent).toContain('Model picker');
   });
 
   it('omits temperature when the selected model does not support it', () => {

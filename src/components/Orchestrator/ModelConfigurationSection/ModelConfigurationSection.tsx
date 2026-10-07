@@ -40,29 +40,24 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
   }, [modelId, modelsMap]);
 
   return (
-    <section
-      aria-labelledby="model-configuration-heading"
-      className="px-8"
-    >
+    <section aria-labelledby="model-configuration-heading" className="px-8">
       <h2 id="model-configuration-heading" className="dial-small-semi-text">
         {t(QuickAppEditorI18nKeys.Configuration)}
       </h2>
       <div className="mt-3 flex flex-col gap-3">
-        <DialFormItem label={t(QuickAppEditorI18nKeys.Model)}>
-          <Controller
-            control={control}
-            name="model"
-            render={({ field }) => (
-              <ModelField
-                value={field.value}
-                onChange={field.onChange}
-                disabled={isReadonly}
-                tooltip={tooltip}
-                error={errors.model?.message}
-              />
-            )}
-          />
-        </DialFormItem>
+        <Controller
+          control={control}
+          name="model"
+          render={({ field }) => (
+            <ModelField
+              value={field.value}
+              onChange={field.onChange}
+              disabled={isReadonly}
+              tooltip={tooltip}
+              error={errors.model?.message}
+            />
+          )}
+        />
 
         {showTemperatureSlider && (
           <DialFormItem label={t(QuickAppEditorI18nKeys.Temperature)}>

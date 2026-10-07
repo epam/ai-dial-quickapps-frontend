@@ -2,7 +2,7 @@
 
 The Configuration column (`ModelConfigurationSection.tsx:43-104`) currently renders three things:
 
-- an `h3` "Configuration",
+- an `h2` "Configuration",
 - a `DialFormItem label="Model"` that wraps `ModelField`,
 - Temperature and Process files.
 
@@ -51,7 +51,7 @@ export interface ConfigurationSectionProps {
 
 - The section uses `useId()` for the heading id and renders `<section aria-labelledby={id}>`.
 - The header row is `flex items-center justify-between gap-2`.
-- The title is an `h4` (it sits under the `h3` "Configuration") with `dial-caption-text font-semibold uppercase tracking-[0.06em] text-secondary`. These are the caption tokens `ModelCard` already uses for its type label (`ModelField.tsx:~100`), with the colour set to secondary.
+- The title is an `h3` (it sits under the `h2` "Configuration") with `dial-caption-text font-semibold uppercase tracking-[0.06em] text-secondary`. These are the caption tokens `ModelCard` already uses for its type label (`ModelField.tsx:~100`), with the colour set to secondary.
 - `action` goes in a `shrink-0` wrapper and is rendered only when provided.
 - `description` is a `p.dial-small-text text-secondary mt-2`, rendered only when provided.
 - Children go in a `mt-3` wrapper.
@@ -84,7 +84,7 @@ The identity row is the new kit 2.0 `EntityIdentity`, moved from `ai-dial-chat/l
   labels={{ type: t(getModelTypeI18nKey(selectedModel.type)) }}
   hasFeaturedTag={false}
   iconSize={44}
-  headingLevel={5}
+  headingLevel={4}
   nameClassName="dial-body-semi-text"
 />
 ```

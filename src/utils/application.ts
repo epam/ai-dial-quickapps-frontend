@@ -1,3 +1,5 @@
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { DialModel } from '@/types/dial-entities';
 import { decodeApiUrl, isApplicationId, parseEntityApiKey, splitEntityId } from '@/utils/api';
 import {
   DialAppToolset,
@@ -6,6 +8,7 @@ import {
   QuickApp2Config,
 } from '@/types/quick-apps';
 
+import { EntityType } from '@epam/ai-dial-ui-kit';
 import omit from 'lodash-es/omit';
 
 export interface DialAIEntityModel {
@@ -97,3 +100,21 @@ export const isToolsetEntityModel = (entity: { type?: string }): boolean =>
 
 export const getSharedTooltip = (context: string): string =>
   `Cannot change the ${context} of a shared application.`;
+
+export const getModelEntityType = (type: DialModel['type']): EntityType => {
+  switch (type) {
+    case 'application':
+      return EntityType.Agent;
+    default:
+      return EntityType.Model;
+  }
+};
+
+export const getModelTypeI18nKey = (type: DialModel['type']): QuickAppEditorI18nKeys => {
+  switch (type) {
+    case 'application':
+      return QuickAppEditorI18nKeys.Agent;
+    default:
+      return QuickAppEditorI18nKeys.Model;
+  }
+};

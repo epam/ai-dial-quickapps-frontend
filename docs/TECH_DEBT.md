@@ -14,6 +14,11 @@
   `openspec/changes/` for tracking individual pieces of it as they're picked up.
 - [] react-hook-form usage - should get rid of it
 - [] need to review components, some seem to be unnecessary, e.g. AgentSkillsField just proxy SkillsSelectors
+- [] Move the Add-ons rows (Skills, Agents & Toolsets) onto `components/common/ConfigurationSection`,
+  so their "+ Add" actions sit in the section header instead of being absolutely positioned
+  (`addButtonClassName="!top-[-56px]"`).
+- [] Extract the model picker popup out of `components/Orchestrator/ModelField.tsx` into its own
+  component; the file mixes the Default model block with the whole picker (~450 lines).
 - [] ...
 
 ## Documentation and behavior reconciliation backlog
@@ -81,7 +86,7 @@ Track these dimensions separately for every capability:
 | `toolsets_login` | No | Yes | Partial | Planned |
 | `application_credentials` | No | Yes | Partial | Planned |
 | `skills_catalog` | No | Yes | Partial | Planned |
-| `orchestrator_model-selection` | No | Yes | Partial | Planned |
+| `orchestrator_model-selection` | In change | Yes | Partial | Planned |
 | `app-configuration` | No | Yes | Partial | Planned |
 | `theming` | No | Yes | Partial | Planned |
 | `i18n` | No | Yes | Partial | Planned |
@@ -120,6 +125,9 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 - src/components/Orchestrator/**, src/app/api/dial-deployments, ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE in constants/quick-apps.ts
 - Proposed: orchestrator_model-selection
+- **Started** in change `redesign-default-model-card`, which covers the Default model block
+  (selected-model card and the Change action). The picker popup, temperature and process-files
+  behaviour are not specified yet.
 
 ### Context files (file manager)
 

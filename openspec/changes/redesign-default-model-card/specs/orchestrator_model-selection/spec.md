@@ -32,7 +32,7 @@ The selected-model card SHALL render its identity row with `@epam/ai-dial-ui-kit
 #### Scenario: Name heading level
 
 - **WHEN** the Default model block is rendered
-- **THEN** the selected model name SHALL be exposed as a level-5 heading, below the level-4 "Default model" caption
+- **THEN** the selected model name SHALL be exposed as a level-4 heading, below the level-3 "Default model" caption (itself below the level-2 "Configuration" heading)
 - **AND** no "Featured" chip SHALL be rendered, even for a featured deployment
 
 ### Requirement: Selected-model card content
