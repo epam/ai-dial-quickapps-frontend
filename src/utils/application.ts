@@ -1,4 +1,6 @@
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { decodeApiUrl, isApplicationId, parseEntityApiKey, splitEntityId } from '@/utils/api';
+import type { DialAIEntityModel } from '@/types/dial-entities';
 import {
   DialAppToolset,
   DialDeploymentSimpleTool,
@@ -8,14 +10,7 @@ import {
 
 import omit from 'lodash-es/omit';
 
-export interface DialAIEntityModel {
-  applicationTypeSchemaId?: string;
-  mcp?: boolean;
-  features?: { mcp?: boolean };
-  [key: string]: unknown;
-}
-
-export const getQuickApp2Config = (entity: { applicationProperties?: unknown }): QuickApp2Config =>
+const getQuickApp2Config = (entity: { applicationProperties?: unknown }): QuickApp2Config =>
   entity.applicationProperties as QuickApp2Config;
 
 export const getQuick2AppDocumentUrl = (entity?: { applicationProperties?: unknown }) =>
@@ -76,24 +71,15 @@ export const doesAgentSupportMcp = (entity?: DialAIEntityModel): boolean =>
 export const doesModelAllowTemperature = (model?: DialAIEntityModel): boolean =>
   !!(model as { features?: { temperature?: boolean } } | undefined)?.features?.temperature;
 
+// Half-step thresholds keep 0.3 / 0.7 (and float noise like 0.1 + 0.2) in the intended band.
+export const getTemperatureScaleLabelKey = (value: number): QuickAppEditorI18nKeys => {
+  if (value < 0.35) return QuickAppEditorI18nKeys.TemperaturePrecise;
+  if (value > 0.65) return QuickAppEditorI18nKeys.TemperatureCreative;
+  return QuickAppEditorI18nKeys.TemperatureNeutral;
+};
+
 export const isEntityIdPublic = (entity: { id: string }): boolean =>
   entity.id.startsWith('public/');
 
-export const getEntityDisplayName = (
-  id: string,
-  allEntitiesMap: Record<string, { name?: string } | undefined>,
-): string => {
-  const entity = allEntitiesMap[id];
-  if (entity?.name) return entity.name;
-  const parts = id.split('/');
-  return decodeURIComponent(parts[parts.length - 1]);
-};
-
 export const isDialAiEntityModel = (entity: { type?: string }): boolean =>
   entity?.type === 'application' || entity?.type === 'model';
-
-export const isToolsetEntityModel = (entity: { type?: string }): boolean =>
-  entity?.type === 'toolset';
-
-export const getSharedTooltip = (context: string): string =>
-  `Cannot change the ${context} of a shared application.`;

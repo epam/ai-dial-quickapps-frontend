@@ -206,7 +206,7 @@ If `DEFAULT_DEPLOYMENT` is not set, or names a deployment the user can't see, th
 
 These don't map onto a native chat-api concept, so they travel inside `CUSTOM_CLIENT_VARIABLES`
 — a single JSON object, passed through untouched to the client via `GET /api/v1/client-config`
-(`src/utils/dialClient.ts`'s `fetchAppSettings`). Keys map 1:1 onto `AppSettings`
+(`src/utils/dial-client.ts`'s `fetchAppSettings`). Keys map 1:1 onto `AppSettings`
 (`src/types/dial-entities.ts`):
 
 | Key               | Required | Description                                                                                                                                                                                                                                                    |

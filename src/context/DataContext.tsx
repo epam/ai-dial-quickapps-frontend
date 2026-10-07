@@ -24,7 +24,7 @@ import {
   fetchDialModels,
   fetchDialSkills,
   fetchDialToolsets,
-} from '@/utils/dialClient';
+} from '@/utils/dial-client';
 import { isOriginAllowed } from '@/utils/allowed-origins';
 import { fetchFavoriteIds } from '@/utils/user-config';
 

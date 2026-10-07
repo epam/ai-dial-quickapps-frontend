@@ -8,7 +8,7 @@ import { ManifestStatus } from '@/types/skill-manifest';
 
 const { fetchSkillManifest } = vi.hoisted(() => ({ fetchSkillManifest: vi.fn() }));
 
-vi.mock('@/utils/dialClient', () => ({ fetchSkillManifest }));
+vi.mock('@/utils/dial-client', () => ({ fetchSkillManifest }));
 
 const makeSkill = (id: string): DialSkill => ({ id, reference: id, name: id, type: 'skill' });
 

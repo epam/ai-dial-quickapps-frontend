@@ -43,7 +43,7 @@ import {
   updateUploadEntry,
 } from '@/utils/dial-file-manager';
 import { resolveDialFileApiPath, virtualPathToApiPath } from '@/utils/dial-file-path';
-import type { ListFilesItem } from '@/utils/dial-files-api';
+import { FilesApiNodeType, type ListFilesItem } from '@/types/dial-files';
 import {
   createFolder,
   deleteFiles,
@@ -479,7 +479,9 @@ export const useDialFileManager = ({
               path: resolveDialFileApiPath(f, f.bucket ?? bucket, rootLabel),
               name: f.name,
               nodeType:
-                f.nodeType === DialFileNodeType.FOLDER ? ('FOLDER' as const) : ('ITEM' as const),
+                f.nodeType === DialFileNodeType.FOLDER
+                  ? FilesApiNodeType.Folder
+                  : FilesApiNodeType.Item,
             }));
             const response = await downloadArchive(archiveItems);
             await triggerBrowserDownload(response, filename, destination);
@@ -523,7 +525,7 @@ export const useDialFileManager = ({
             bucket: itemBucket,
             path: itemPath,
             name,
-            nodeType: (isFolder ? 'FOLDER' : 'ITEM') as 'ITEM' | 'FOLDER',
+            nodeType: isFolder ? FilesApiNodeType.Folder : FilesApiNodeType.Item,
           };
         });
 
@@ -584,12 +586,14 @@ export const useDialFileManager = ({
         }
 
         const deletedFolderPaths = dtos
-          .filter((d) => d.nodeType === 'FOLDER')
+          .filter((d) => d.nodeType === FilesApiNodeType.Folder)
           .map((d) => ensureTrailingSlash(d.path));
 
         const affectedFolderKeys = new Set<string>(
           dtos.map((d) =>
-            d.nodeType === 'FOLDER' ? ensureTrailingSlash(d.path) : getParentApiPath(d.path),
+            d.nodeType === FilesApiNodeType.Folder
+              ? ensureTrailingSlash(d.path)
+              : getParentApiPath(d.path),
           ),
         );
 
@@ -674,7 +678,7 @@ export const useDialFileManager = ({
             destinationPath: isFolder
               ? ensureTrailingSlash(destinationPath)
               : destinationPath.replace(/\/$/, ''),
-            nodeType: (isFolder ? 'FOLDER' : 'ITEM') as 'ITEM' | 'FOLDER',
+            nodeType: isFolder ? FilesApiNodeType.Folder : FilesApiNodeType.Item,
             name,
           };
         });
@@ -699,7 +703,7 @@ export const useDialFileManager = ({
 
           const renamedFolderDto = dtos.find(
             (dto) =>
-              dto.nodeType === 'FOLDER' &&
+              dto.nodeType === FilesApiNodeType.Folder &&
               results.some((result) => result.success && result.sourcePath === dto.sourcePath),
           );
           if (renamedFolderDto != null) {

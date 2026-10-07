@@ -23,12 +23,8 @@ import {
   resolveOwnerCoords,
   updateUploadEntry,
 } from '@/utils/dial-file-manager';
-import {
-  listFiles,
-  listPublicFiles,
-  listSharedFiles,
-  type ListFilesItem,
-} from '@/utils/dial-files-api';
+import { listFiles, listPublicFiles, listSharedFiles } from '@/utils/dial-files-api';
+import { FilesApiNodeType, type ListFilesItem } from '@/types/dial-files';
 
 vi.mock('@/utils/dial-files-api', () => ({
   listFiles: vi.fn(),
@@ -130,16 +126,19 @@ describe('buildFromCache', () => {
       [
         '',
         [
-          { name: 'docs', path: 'files/b/docs/', nodeType: 'FOLDER' },
+          { name: 'docs', path: 'files/b/docs/', nodeType: FilesApiNodeType.Folder },
           {
             name: 'a%20b.txt',
             path: 'files/b/a%20b.txt',
-            nodeType: 'ITEM',
+            nodeType: FilesApiNodeType.Item,
             updatedAt: '2026-01-02T00:00:00Z',
           },
         ],
       ],
-      ['docs/', [{ name: 'inner.txt', path: 'files/b/docs/inner.txt', nodeType: 'ITEM' }]],
+      [
+        'docs/',
+        [{ name: 'inner.txt', path: 'files/b/docs/inner.txt', nodeType: FilesApiNodeType.Item }],
+      ],
     ]);
     const permissions = new Map<string, string[] | undefined>([['docs/', ['WRITE']]]);
 
@@ -174,14 +173,18 @@ describe('mergeCreatedFolderIntoCache', () => {
     const next = mergeCreatedFolderIntoCache(cache, '', created, ['WRITE']);
 
     expect(next.get('')).toEqual([
-      expect.objectContaining({ name: 'New', nodeType: 'FOLDER', permissions: ['WRITE'] }),
+      expect.objectContaining({
+        name: 'New',
+        nodeType: FilesApiNodeType.Folder,
+        permissions: ['WRITE'],
+      }),
     ]);
     expect(cache.get('')).toEqual([]);
   });
 
   it('skips a folder whose name is already listed (case-insensitive)', () => {
     const cache = new Map<string, ListFilesItem[]>([
-      ['', [{ name: 'new', path: 'files/b/new/', nodeType: 'FOLDER' }]],
+      ['', [{ name: 'new', path: 'files/b/new/', nodeType: FilesApiNodeType.Folder }]],
     ]);
     expect(mergeCreatedFolderIntoCache(cache, '', created).get('')).toHaveLength(1);
   });
@@ -232,7 +235,7 @@ describe('resolveOwnerCoords', () => {
 });
 
 describe('fetchFolderListing', () => {
-  const items: ListFilesItem[] = [{ name: 'x', path: 'x', nodeType: 'ITEM' }];
+  const items: ListFilesItem[] = [{ name: 'x', path: 'x', nodeType: FilesApiNodeType.Item }];
 
   beforeEach(() => {
     vi.resetAllMocks();

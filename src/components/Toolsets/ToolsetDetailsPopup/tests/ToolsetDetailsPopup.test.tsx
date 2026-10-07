@@ -35,7 +35,7 @@ vi.mock('@/utils/allowed-origins', () => ({
   postToHost,
   isOriginAllowed: (origin: string, allowed: string[] = []) => allowed.includes(origin),
 }));
-vi.mock('@/utils/dialClient', () => ({
+vi.mock('@/utils/dial-client', () => ({
   fetchToolsetToolNames,
   encodeDialPath: (id: string) => id,
 }));
@@ -141,8 +141,7 @@ const getButtonByText = (text: string) =>
 
 const getTab = (name: string) =>
   [...document.querySelectorAll('[role="tab"]')].find((tab) => tab.textContent === name) as
-    | HTMLElement
-    | undefined;
+    HTMLElement | undefined;
 
 const click = async (element?: HTMLElement) => {
   expect(element).toBeTruthy();

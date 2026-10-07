@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchApplicationRequiresAuthentication } from '@/utils/dialClient';
+import { fetchApplicationRequiresAuthentication } from '@/utils/dial-client';
 
 interface ApplicationAuthenticationResult {
   appId: string;

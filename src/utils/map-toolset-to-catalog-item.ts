@@ -37,7 +37,7 @@ const AUTH_STATUS_MAP: Record<ToolsetAuthStatus, CredentialStatus> = {
  * A toolset's sign-in state in the catalog's shape, which draws the logged-out
  * badge. `authSettings.authStatus` is already the level that applies — the
  * user's own for public toolsets, the workspace's for private ones (see
- * `mapAuthSettings` in dialClient.ts) — so it fills only that level. A missing
+ * `mapAuthSettings` in dial-client.ts) — so it fills only that level. A missing
  * status reads as signed out. Undefined when no authentication is needed.
  */
 export const mapToolsetCredentials = (

@@ -29,6 +29,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { FileUploadStatus } from '@/types/file-manager';
 import { Translation } from '@/types/translation';
 import { isHiddenPath } from '@/utils/dial-file-path';
+import { FilesApiNodeType } from '@/types/dial-files';
 import { listFiles } from '@/utils/dial-files-api';
 
 import UploadProgressModal from './UploadProgressModal';
@@ -201,7 +202,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
           recursive: true,
         });
         return result.items
-          .filter((item) => item.nodeType === 'ITEM' && !isHiddenPath(item.path))
+          .filter((item) => item.nodeType === FilesApiNodeType.Item && !isHiddenPath(item.path))
           .map((item) => item.path);
       } catch {
         return [];

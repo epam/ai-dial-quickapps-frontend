@@ -18,7 +18,7 @@ lives under `src/`:
 - `i18n/` — i18next setup and locale JSON files (namespaces: `quickAppEditor`, `common`).
 - `types/` — TypeScript types, interfaces, and enums.
 - `utils/` — Pure utility functions, including the chat-api client layer (`chat-api-client.ts`,
-  `chat-api-fetch.ts`, `auth-api.ts`, `dialClient.ts`, `dial-files-api.ts`, `user-config.ts`).
+  `chat-api-fetch.ts`, `auth-api.ts`, `dial-client.ts`, `dial-files-api.ts`, `user-config.ts`).
 - `constants/` — App-wide constants including i18n key enums.
 
 Use the `@/*` path alias (resolves to `src/`) for all imports that would otherwise require multiple `../` traversals.

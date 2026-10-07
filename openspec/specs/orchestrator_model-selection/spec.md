@@ -10,7 +10,7 @@ Defines how the Quick App editor presents and changes the orchestrator settings 
 
 The Configuration area SHALL present the orchestrator model selection as a **Default model** block. The block SHALL have a caption heading and an end-aligned **Change** action in the same header row, with the selected-model card below the header. State SHALL remain owned by the editor's form state (`useQuickApp2Form` in `src/hooks/use-quick-app2-form.ts`) through the existing `model` field. Model data SHALL come from the existing `DataContext` (`useDataContext`). No new context, hook state owner, or chat-api request SHALL be introduced.
 
-This change introduces no chat-api endpoint. Models continue to come from the existing `DataContext` load, `deploymentsApi.listDeployments({ interfaceType: [ListDeploymentsInterfaceTypeEnum.Chat] })` in `src/utils/dialClient.ts`.
+This change introduces no chat-api endpoint. Models continue to come from the existing `DataContext` load, `deploymentsApi.listDeployments({ interfaceType: [ListDeploymentsInterfaceTypeEnum.Chat] })` in `src/utils/dial-client.ts`.
 
 #### Scenario: Block header is rendered
 

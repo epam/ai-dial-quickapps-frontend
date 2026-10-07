@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { ToolsStatus } from '@/types/toolset-tools';
-import { fetchToolsetToolNames } from '@/utils/dialClient';
+import { fetchToolsetToolNames } from '@/utils/dial-client';
 
 export interface UseToolsetToolsResult {
   status: ToolsStatus;

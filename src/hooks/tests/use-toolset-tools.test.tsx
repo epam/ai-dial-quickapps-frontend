@@ -7,7 +7,7 @@ import { ToolsStatus } from '@/types/toolset-tools';
 
 const { fetchToolsetToolNames } = vi.hoisted(() => ({ fetchToolsetToolNames: vi.fn() }));
 
-vi.mock('@/utils/dialClient', () => ({ fetchToolsetToolNames }));
+vi.mock('@/utils/dial-client', () => ({ fetchToolsetToolNames }));
 
 interface Deferred {
   resolve: (names: string[]) => void;

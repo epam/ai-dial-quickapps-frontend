@@ -17,13 +17,16 @@ vi.mock('@epam/ai-dial-ui-kit', () => ({
       value,
       onChange,
       placeholder,
+      showDragbar,
     }: {
       value: string;
       onChange: (value: string) => void;
       placeholder?: string;
+      showDragbar?: boolean;
     }) => (
       <textarea
         aria-label="Instructions editor"
+        data-show-dragbar={String(showDragbar)}
         placeholder={placeholder}
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -76,7 +79,9 @@ describe('InstructionsSection', () => {
   it('keeps the existing instructions value bound to the editor', async () => {
     await act(async () => root.render(<TestForm />));
 
-    const editor = container.querySelector('[aria-label="Instructions editor"]') as HTMLTextAreaElement;
+    const editor = container.querySelector(
+      '[aria-label="Instructions editor"]',
+    ) as HTMLTextAreaElement;
     expect(editor.value).toBe('Existing instructions');
 
     act(() => {
@@ -85,5 +90,12 @@ describe('InstructionsSection', () => {
     });
 
     expect(editor.value).toBe('Changed instructions');
+  });
+
+  it('hides the editor resize drag bar', async () => {
+    await act(async () => root.render(<TestForm />));
+
+    const editor = container.querySelector('[aria-label="Instructions editor"]');
+    expect(editor?.getAttribute('data-show-dragbar')).toBe('false');
   });
 });

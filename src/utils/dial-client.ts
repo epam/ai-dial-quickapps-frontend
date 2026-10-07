@@ -88,7 +88,7 @@ const toDisplayName = (value: LocalizedText | undefined, fallback: string): stri
 const toDisplayText = (value: LocalizedText | undefined): string | undefined =>
   value == null ? undefined : getLocalizedText(value, 'en', '') || undefined;
 
-function mapDeploymentToDialModel(entity: DeploymentItemDto): DialModel {
+const mapDeploymentToDialModel = (entity: DeploymentItemDto): DialModel => {
   // Keep the internal id decoded — see encodeDialPath's comment. The form
   // re-encodes it once on save, so an id left encoded here ends up `%2520`.
   const id = decodeDialPath(entity.id);
@@ -114,9 +114,9 @@ function mapDeploymentToDialModel(entity: DeploymentItemDto): DialModel {
     updatedAt: entity.updatedAt,
     inputAttachmentTypes: entity.inputAttachmentTypes,
   };
-}
+};
 
-function mapToolsetToDialToolset(entity: DialToolsetDto): DialToolset {
+const mapToolsetToDialToolset = (entity: DialToolsetDto): DialToolset => {
   // Keep the internal id decoded — see mapDeploymentToDialModel.
   const id = decodeDialPath(entity.id);
   const authSettings = mapAuthSettings(id, entity.authSettings);
@@ -136,12 +136,12 @@ function mapToolsetToDialToolset(entity: DialToolsetDto): DialToolset {
     topics: entity.descriptionKeywords,
     updatedAt: entity.updatedAt,
   };
-}
+};
 
-function mapAuthSettings(
+const mapAuthSettings = (
   toolsetId: string,
   authSettings?: DialToolsetAuthSettingsDto,
-): ToolsetAuthSettings | undefined {
+): ToolsetAuthSettings | undefined => {
   if (!authSettings?.authenticationType) return undefined;
   // Public toolsets are signed in per-user, private ones per-workspace — mirrors
   // the level selection in applyToolsetAuthResult.
@@ -154,15 +154,15 @@ function mapAuthSettings(
     authStatus: authStatus as ToolsetAuthSettings['authStatus'],
     apiKeyHeader: authSettings.apiKeyHeader,
   };
-}
+};
 
-export async function fetchApplicationRequiresAuthentication(appId: string): Promise<boolean> {
+export const fetchApplicationRequiresAuthentication = async (appId: string): Promise<boolean> => {
   // Re-encode to chat-api's canonical id form — see encodeDialPath's comment.
   const services = await externalServicesApi.listExternalServices({
     appId: encodeDialPath(appId),
   });
   return services.length > 0;
-}
+};
 
 /**
  * /v1/deployments returns models, applications and toolsets in one call.
@@ -175,7 +175,7 @@ export async function fetchApplicationRequiresAuthentication(appId: string): Pro
  * was seeing ~871 raw deployments vs. chat's ~495. Passing it here, not
  * filtering client-side afterwards, is what actually narrows the set.
  */
-export async function fetchDialModels(): Promise<DialModel[]> {
+export const fetchDialModels = async (): Promise<DialModel[]> => {
   const res: DeploymentsResponseDto = await deploymentsApi.listDeployments({
     interfaceType: [CHAT_DEPLOYMENT_INTERFACE],
   });
@@ -183,7 +183,7 @@ export async function fetchDialModels(): Promise<DialModel[]> {
     .filter((entity) => entity.type === 'model' || entity.type === 'application')
     .filter((entity) => !isHiddenDialFolderId(entity.id))
     .map(mapDeploymentToDialModel);
-}
+};
 
 /**
  * Fetches deployments exposing an MCP interface and returns only the
@@ -191,7 +191,7 @@ export async function fetchDialModels(): Promise<DialModel[]> {
  * surfaces toolsets under this interface tag — those are filtered out by
  * the caller, which already has the toolset list to dedupe against.
  */
-export async function fetchDialMcpAgents(): Promise<DialModel[]> {
+export const fetchDialMcpAgents = async (): Promise<DialModel[]> => {
   const res = await deploymentsApi.listDeployments({ interfaceType: [MCP_DEPLOYMENT_INTERFACE] });
   return (
     res.deployments
@@ -203,13 +203,13 @@ export async function fetchDialMcpAgents(): Promise<DialModel[]> {
       // these entries, so stamp it explicitly rather than trusting the payload.
       .map((model) => ({ ...model, mcp: true, features: { ...model.features, mcp: true } }))
   );
-}
+};
 
 /**
  * Decode URL-encoded fields in application_properties that DIAL Core stores encoded.
  * Also migrates the legacy `name` field to `deployment_id` in orchestrator.deployment.
  */
-function mapApplicationPropertiesFromApi(properties: unknown): unknown {
+const mapApplicationPropertiesFromApi = (properties: unknown): unknown => {
   if (properties == null) return properties;
 
   const config = properties as QuickApp2Config;
@@ -244,10 +244,10 @@ function mapApplicationPropertiesFromApi(properties: unknown): unknown {
   }
 
   return result;
-}
+};
 
 /** Re-encode context and skill URLs before sending to DIAL Core. */
-function encodeApplicationPropertiesForApi(properties: unknown): unknown {
+const encodeApplicationPropertiesForApi = (properties: unknown): unknown => {
   if (properties == null) return properties;
 
   const config = properties as QuickApp2Config;
@@ -268,7 +268,7 @@ function encodeApplicationPropertiesForApi(properties: unknown): unknown {
   }
 
   return encoded;
-}
+};
 
 interface CustomVariables {
   allowedOrigins: string[];
@@ -298,7 +298,7 @@ const readCustomVariables = (value: unknown): CustomVariables => {
   };
 };
 
-export async function fetchAppSettings(): Promise<AppSettings> {
+export const fetchAppSettings = async (): Promise<AppSettings> => {
   try {
     const res = await appConfigApi.getClientConfig({ appId: CLIENT_CONFIG_APP_ID });
     const custom = readCustomVariables(res.config.customVariables);
@@ -316,7 +316,7 @@ export async function fetchAppSettings(): Promise<AppSettings> {
   } catch {
     return {};
   }
-}
+};
 
 /**
  * General-step display fields (name, description, iconUrl, topics, version)
@@ -325,12 +325,12 @@ export async function fetchAppSettings(): Promise<AppSettings> {
  * return them. Loading one app therefore needs both calls; flagged as a
  * follow-up worth asking the ai-dial-chat team to fold into one response.
  */
-async function fetchApplicationSummary(appId: string): Promise<DeploymentItemDto | undefined> {
+const fetchApplicationSummary = async (appId: string): Promise<DeploymentItemDto | undefined> => {
   const res = await deploymentsApi.listDeployments({ interfaceType: [CHAT_DEPLOYMENT_INTERFACE] });
   return res.deployments.find((d) => d.id === appId);
-}
+};
 
-export async function fetchDialApp(appId: string): Promise<DialApp | null> {
+export const fetchDialApp = async (appId: string): Promise<DialApp | null> => {
   let details;
   try {
     [details] = await Promise.all([
@@ -342,7 +342,13 @@ export async function fetchDialApp(appId: string): Promise<DialApp | null> {
     if (isForbiddenError(error)) throw new ForbiddenError();
     throw error;
   }
-  const summary = await fetchApplicationSummary(appId).catch(() => undefined);
+  // The summary only adds display fields; a failed listing must not fail the load.
+  let summary: DeploymentItemDto | undefined;
+  try {
+    summary = await fetchApplicationSummary(appId);
+  } catch {
+    summary = undefined;
+  }
   const appDetails = details.applicationDetails;
   // appDetails.displayName comes from the same getDeploymentDetails call that
   // just succeeded, so it's always available; summary (a separate, interface-
@@ -368,9 +374,9 @@ export async function fetchDialApp(appId: string): Promise<DialApp | null> {
       displayVersion: summary?.displayVersion,
     },
   };
-}
+};
 
-export async function saveDialApp(
+export const saveDialApp = async (
   app: DialApp,
   applicationProperties: unknown,
   general?: StoredGeneralFields,
@@ -378,7 +384,7 @@ export async function saveDialApp(
   id: string;
   applicationProperties: unknown;
   [key: string]: unknown;
-}> {
+}> => {
   const rawForSave = (app._rawForSave as Record<string, unknown>) ?? {};
   const primaryLocale = general?.primaryLocale ?? 'en';
   const name =
@@ -415,12 +421,12 @@ export async function saveDialApp(
     id: app.id,
     applicationProperties,
   };
-}
+};
 
-export async function fetchDialToolsets(): Promise<DialToolset[]> {
+export const fetchDialToolsets = async (): Promise<DialToolset[]> => {
   const res = await toolsetsApi.listToolsets();
   return res.data.map(mapToolsetToDialToolset).filter((t) => !isHiddenPath(t.id));
-}
+};
 
 interface CoreSkillItem {
   url: string;
@@ -508,12 +514,12 @@ export const fetchToolsetToolNames = async (
 };
 
 /** chat-api's own controller already does the personal+public+shared aggregation this app used to replicate against Core directly. */
-export async function fetchDialSkills(): Promise<DialSkill[]> {
+export const fetchDialSkills = async (): Promise<DialSkill[]> => {
   const res = await skillsApi.listCatalogSkills();
   return [...res.skills, ...res.publicSkills, ...res.sharedWithMe]
     .map(mapCoreToDialSkill)
     .filter((skill) => !isHiddenDialFolderId(skill.id));
-}
+};
 
 // kept for callers that still fetch a raw response directly (e.g. resolve-icon-url's
 // `<img>` src, which stays outside the typed client — see resolve-icon-url.ts).
