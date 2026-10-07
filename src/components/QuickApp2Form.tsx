@@ -185,7 +185,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         event.preventDefault();
         handleSubmitForm();
       }}
-      className="grid grid-cols-1 gap-4 desktop:grid-cols-[minmax(0,1fr)_minmax(280px,440px)] desktop:gap-x-12"
+      className="grid grid-cols-1 gap-4 desktop:grid-cols-[minmax(0,1fr)_minmax(280px,440px)] desktop:gap-x-0"
     >
       <div className="min-w-0 flex flex-col min-h-0 gap-4">
         <InstructionsSection
