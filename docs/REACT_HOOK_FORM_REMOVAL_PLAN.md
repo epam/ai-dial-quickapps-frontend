@@ -191,3 +191,22 @@ The detailed OpenSpec artifacts are in `openspec/changes/remove-react-hook-form/
 - No delta spec is created because this is intended to preserve existing observable behavior; the change opts out with `skip_specs: true`.
 
 Implementation should proceed only after reviewing the proposal and design. Start with characterization tests, then implement the controller and migrate sections in slices. Do not remove the packages until the regression matrix and final lint/typecheck/build/test checks pass.
+
+## Status (paused)
+
+Work is paused after task 3 of `openspec/changes/remove-react-hook-form/tasks.md`. Resume from task 4.1.
+
+Done:
+
+- Tasks 1.x: characterization tests.
+- Tasks 2.x: `useQuickApp2Form` controller (`src/hooks/use-quick-app2-form.ts`) with tests.
+- Tasks 3.1/3.2: `QuickApp2Form` root plus `InstructionsSection`, `AdvancedSettingsSection`, `AgentSkillsFormSection` and `ModelConfigurationSection` are RHF-free.
+
+Temporary scaffolding:
+
+- `src/components/QuickApp2FormLegacyFields/` wraps the three unmigrated sections (`ContextAndToolsSection`, `ConversationStartersSection`, `UserAttachmentsSection`) in a local RHF `useForm` and syncs it with the controller. Delete it once 4.1 and 4.2 land (task 5.1).
+- `react-hook-form` and `@hookform/resolvers` stay in `package.json` until task 5.2.
+
+State at pause: typecheck, lint and the full Vitest suite (26 files, 206 tests) pass.
+
+Next: 4.1 `ContextAndToolsSection` (uses the controller actions `setAgentIds`, `configureAgent`, `switchToJsonView`, `switchToSimpleView`, `discardJson`), then 4.2, 4.3, 5.x, 6.x.
