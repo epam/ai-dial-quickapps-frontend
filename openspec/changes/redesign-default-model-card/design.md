@@ -17,33 +17,35 @@ The target design has a `DEFAULT MODEL` caption with a `✎ Change` pill on the 
 
 **Goals:**
 
-- Introduce a reusable `ConfigurationSection` header (caption, action slot, description).
+- Introduce a reusable `SectionRow` header (caption, action slot, description).
 - Restyle the selected-model card and move **Change** into the header.
 - Keep `model` field semantics, the picker, and the loading, error and read-only states unchanged.
 
 **Non-Goals:**
 
 - Model options and Settings blocks.
-- Migrating Add-ons rows onto the new section.
 - Changes to the picker popup.
 
 ## Decisions
 
 ### D1. `ModelField` renders the whole Default model block
 
-`ModelField` already owns `isOpen`/`handleOpen` and the disabled/loading logic that gates **Change**. Having it render `<ConfigurationSection title={t(DefaultModel)} action={<ChangeButton/>}>` keeps all of that local. No state is lifted, and the component needs no `forwardRef` or imperative handle.
+`ModelField` already owns `isOpen`/`handleOpen` and the disabled/loading logic that gates **Change**. Having it render `<SectionRow title={t(DefaultModel)} action={<ChangeButton/>}>` keeps all of that local. No state is lifted, and the component needs no `forwardRef` or imperative handle.
 
 `ModelConfigurationSection` drops the `DialFormItem label="Model"` wrapper and renders `ModelField` directly inside the `Controller`.
 
 - _Alternative:_ lift `isOpen` into `ModelConfigurationSection` and pass `onOpen` down. Rejected because it spreads the picker state across two files for no benefit.
 
-### D2. `ConfigurationSection` API (`src/components/common/ConfigurationSection/ConfigurationSection.tsx`)
+### D2. `SectionRow` API (`src/components/common/SectionRow/SectionRow.tsx`)
+
+`SectionRow` replaces the header markup that `AddOnRow` already had (title, end-side action, description, content). It is the one shared row component: `AddOnRow` becomes a thin wrapper that passes its Add button as `action`, and `ModelField` passes **Change**. The two looks differ only in typography, selected by `variant: SectionRowVariant` (`Row` for Add-ons rows, `Caption` for Configuration blocks; enum in `src/types/section-row.ts`).
 
 ```ts
-export interface ConfigurationSectionProps {
+export interface SectionRowProps {
   title: string;
   action?: ReactNode;
   description?: string;
+  variant?: SectionRowVariant;
   className?: string;
   children?: ReactNode;
 }
@@ -51,10 +53,10 @@ export interface ConfigurationSectionProps {
 
 - The section uses `useId()` for the heading id and renders `<section aria-labelledby={id}>`.
 - The header row is `flex items-center justify-between gap-2`.
-- The title is an `h3` (it sits under the `h2` "Configuration") with `dial-caption-text font-semibold uppercase tracking-[0.06em] text-secondary`. These are the caption tokens `ModelCard` already uses for its type label (`ModelField.tsx:~100`), with the colour set to secondary.
+- The title is an `h3`. In the `Caption` variant (Configuration blocks, under the `h2` "Configuration") it uses `dial-caption-lead-semi-text text-secondary`, which is already uppercase with letter spacing; in the `Row` variant (Add-ons) it keeps `dial-small-semi-text text-primary`.
 - `action` goes in a `shrink-0` wrapper and is rendered only when provided.
-- `description` is a `p.dial-small-text text-secondary mt-2`, rendered only when provided.
-- Children go in a `mt-3` wrapper.
+- `description` is a `p` (`dial-tiny-text` for `Caption`, `dial-small-text` for `Row`, both `text-secondary`), rendered only when provided.
+- Children go in a content wrapper (`relative` for `Row`, so selectors can position their popovers).
 - No collapsible behaviour and no `aria-expanded`.
 - The component is presentational, with no memoisation needs. Callers pass a stable `action` element. This is not critical, because the section re-renders with its parent anyway.
 
@@ -145,5 +147,4 @@ Presentation only. The change ships in one PR and is reverted by reverting it.
 ## Open Questions
 
 - None blocking. Follow-ups:
-  - migrate the Add-ons rows to `ConfigurationSection`;
   - split the `ModelField` popup into its own component.

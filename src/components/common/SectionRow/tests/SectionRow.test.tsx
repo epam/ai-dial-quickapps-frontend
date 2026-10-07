@@ -2,7 +2,9 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { ConfigurationSection } from '../ConfigurationSection';
+import { SectionRowVariant } from '@/types/section-row';
+
+import { SectionRow } from '../SectionRow';
 
 const PHYSICAL_DIRECTION_CLASS = /(^|\s)(ml|mr|pl|pr|left|right)-|text-(left|right)/;
 
@@ -29,11 +31,9 @@ const getAccessibleName = (element: Element | null) => {
   return labelledBy ? document.getElementById(labelledBy)?.textContent : undefined;
 };
 
-describe('ConfigurationSection', () => {
+describe('SectionRow', () => {
   it('is a section named by its heading', () => {
-    act(() =>
-      root.render(<ConfigurationSection title="Default model">Content</ConfigurationSection>),
-    );
+    act(() => root.render(<SectionRow title="Default model">Content</SectionRow>));
 
     const heading = container.querySelector('h3');
     expect(heading?.textContent).toBe('Default model');
@@ -44,10 +44,7 @@ describe('ConfigurationSection', () => {
   it('renders the action as a reachable button in the header row', () => {
     act(() =>
       root.render(
-        <ConfigurationSection
-          title="Default model"
-          action={<button type="button">Change</button>}
-        />,
+        <SectionRow title="Default model" action={<button type="button">Change</button>} />,
       ),
     );
 
@@ -63,10 +60,7 @@ describe('ConfigurationSection', () => {
   it('renders the description when given', () => {
     act(() =>
       root.render(
-        <ConfigurationSection
-          title="Model options"
-          description="Additional models users can choose from."
-        />,
+        <SectionRow title="Model options" description="Additional models users can choose from." />,
       ),
     );
 
@@ -75,7 +69,7 @@ describe('ConfigurationSection', () => {
   });
 
   it('renders no action wrapper and no description when they are omitted', () => {
-    act(() => root.render(<ConfigurationSection title="Default model" />));
+    act(() => root.render(<SectionRow title="Default model" />));
 
     const headerRow = container.querySelector('h3')?.parentElement;
     expect(headerRow?.children).toHaveLength(1);
@@ -83,9 +77,7 @@ describe('ConfigurationSection', () => {
   });
 
   it('exposes no expanded state', () => {
-    act(() =>
-      root.render(<ConfigurationSection title="Default model" action={<button>Change</button>} />),
-    );
+    act(() => root.render(<SectionRow title="Default model" action={<button>Change</button>} />));
 
     expect(container.querySelector('[aria-expanded]')).toBeNull();
   });
@@ -95,7 +87,7 @@ describe('ConfigurationSection', () => {
 
     act(() =>
       root.render(
-        <ConfigurationSection
+        <SectionRow
           title="Default model"
           description="Description"
           action={<button type="button">Change</button>}
@@ -109,5 +101,19 @@ describe('ConfigurationSection', () => {
 
     const classes = [...container.querySelectorAll('[class]')].map((el) => el.className);
     expect(classes.some((className) => PHYSICAL_DIRECTION_CLASS.test(className))).toBe(false);
+  });
+
+  it('styles the title as a row title by default', () => {
+    act(() => root.render(<SectionRow title="Skills" />));
+
+    expect(container.querySelector('h3')?.className).toContain('dial-small-semi-text');
+  });
+
+  it('styles the title as an uppercase caption in the caption variant', () => {
+    act(() =>
+      root.render(<SectionRow title="Default model" variant={SectionRowVariant.Caption} />),
+    );
+
+    expect(container.querySelector('h3')?.className).toContain('dial-caption-lead-semi-text');
   });
 });

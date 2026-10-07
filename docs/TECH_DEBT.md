@@ -14,9 +14,6 @@
   `openspec/changes/` for tracking individual pieces of it as they're picked up.
 - [] react-hook-form usage - should get rid of it
 - [] need to review components, some seem to be unnecessary, e.g. AgentSkillsField just proxy SkillsSelectors
-- [] Move the Add-ons rows (Skills, Agents & Toolsets) onto `components/common/ConfigurationSection`,
-  so their "+ Add" actions sit in the section header instead of being absolutely positioned
-  (`addButtonClassName="!top-[-56px]"`).
 - [] Extract the model picker popup out of `components/Orchestrator/ModelField.tsx` into its own
   component; the file mixes the Default model block with the whole picker (~450 lines).
 - [] ...

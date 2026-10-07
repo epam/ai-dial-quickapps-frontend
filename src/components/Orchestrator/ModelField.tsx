@@ -6,11 +6,9 @@ import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { DialModel } from '@/types/dial-entities';
+import { SectionRowVariant } from '@/types/section-row';
 import { Translation } from '@/types/translation';
 import {
-  Button,
-  ButtonAppearance,
-  ButtonVariant,
   DialLinkButton,
   ElementSize,
   EntityIdentity,
@@ -25,9 +23,10 @@ import {
   PopupSize,
   Search,
   SelectSize,
+  NeutralButton,
 } from '@epam/ai-dial-ui-kit';
 
-import { ConfigurationSection } from '@/components/common/ConfigurationSection/ConfigurationSection';
+import { SectionRow } from '@/components/common/SectionRow/SectionRow';
 import FavoriteStarButton from '@/components/common/FavoriteStarButton/FavoriteStarButton';
 import { EntityScopeLine } from '@/components/common/EntityScopeLine/EntityScopeLine';
 import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
@@ -342,12 +341,11 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
   };
 
   return (
-    <ConfigurationSection
+    <SectionRow
       title={t(QuickAppEditorI18nKeys.DefaultModel)}
+      variant={SectionRowVariant.Caption}
       action={
-        <Button
-          appearance={ButtonAppearance.Outlined}
-          variant={ButtonVariant.Primary}
+        <NeutralButton
           size={ElementSize.Small}
           iconBefore={<IconPencil size={16} aria-hidden="true" />}
           label={t(QuickAppEditorI18nKeys.Change)}
@@ -456,6 +454,6 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
           </div>
         </div>
       </DialPopup>
-    </ConfigurationSection>
+    </SectionRow>
   );
 };

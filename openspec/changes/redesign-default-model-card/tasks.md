@@ -21,23 +21,25 @@ Tests use the repo's existing `react-dom/client` `createRoot` + `act` harness (s
 - [x] 0.1 Merge and release ui-kit `feat/entity-identity`, which adds `EntityIdentity`, `EntityIdentityProps`/`Item`/`Labels` and `EntityType`. Then bump `@epam/ai-dial-ui-kit` in `package.json` to that release and run `npm install`. Use the ui-kit MCP `getEntityDetails("component", "EntityIdentity")` to confirm the props.
   - **Verification:** `npm run typecheck`.
 
-## 1. Shared ConfigurationSection header
+## 1. Shared SectionRow header
 
-- [x] 1.1 Create `src/components/common/ConfigurationSection/ConfigurationSection.tsx`:
-  - Use `ConfigurationSectionProps { title; action?; description?; className?; children? }`, exported as a named arrow component.
-  - Render `<section aria-labelledby={useId()}>` with an `h3` caption using `dial-caption-text font-semibold uppercase tracking-[0.06em] text-secondary`.
+- [x] 1.1 Create `src/components/common/SectionRow/SectionRow.tsx`:
+  - Use `SectionRowProps { title; action?; description?; className?; children? }`, exported as a named arrow component.
+  - Render `<section aria-labelledby={useId()}>` with an `h3` title whose typography comes from `variant: SectionRowVariant` (`Caption`: `dial-caption-lead-semi-text text-secondary`; `Row`: `dial-small-semi-text text-primary`).
   - Put the action in an end-aligned `shrink-0` wrapper, rendered only when it is provided.
   - Render the description as `p.dial-small-text text-secondary`, only when it is provided.
   - Render children below.
   - No `aria-expanded`.
   - Use logical/flex layout only (design D2).
-  - **Verification:** `npx vitest run src/components/common/ConfigurationSection`, `npm run lint`, `npm run typecheck`.
-- [x] 1.2 Add `src/components/common/ConfigurationSection/tests/ConfigurationSection.test.tsx`. It must cover:
+  - **Verification:** `npx vitest run src/components/common/SectionRow`, `npm run lint`, `npm run typecheck`.
+- [x] 1.2 Add `src/components/common/SectionRow/tests/SectionRow.test.tsx`. It must cover:
   - The section is labelled by its heading text.
   - The action is rendered and is a reachable button.
   - The description is rendered when given.
   - No action wrapper and no description element are rendered when they are omitted.
-  - **Verification:** `npx vitest run src/components/common/ConfigurationSection/tests/ConfigurationSection.test.tsx`.
+  - **Verification:** `npx vitest run src/components/common/SectionRow/tests/SectionRow.test.tsx`.
+- [x] 1.3 Make `src/components/AddOns/AddOnRow.tsx` a wrapper over `SectionRow` (`Row` variant, Add button as `action`, description only while empty), so the editor has one row-header component instead of two. Update the read-only Add test in `src/components/AddOns/tests/AddOnsSection.test.tsx`: with a tooltip the kit 0.15 `Button` is `aria-disabled` instead of natively `disabled`, so assert that the button is disabled either way and that clicking it opens nothing.
+  - **Verification:** `npx vitest run src/components/AddOns src/components/common/SectionRow`, `npm run lint`, `npm run typecheck`.
 
 ## 2. Default model block (depends on 0, 1, 3.1)
 
@@ -45,7 +47,7 @@ Tests use the repo's existing `react-dom/client` `createRoot` + `act` harness (s
   - `getModelEntityType`: `'application'` maps to `EntityType.Agent`, anything else to `EntityType.Model`.
   - `getModelTypeI18nKey`: `'application'` maps to `QuickAppEditorI18nKeys.Agent`, anything else to `QuickAppEditorI18nKeys.Model`. Add unit tests in `src/utils/tests/application.test.ts`, creating the file if it is absent.
   - **Verification:** `npx vitest run src/utils/tests/application.test.ts`, `npm run lint`, `npm run typecheck`.
-- [x] 2.2 In `src/components/Orchestrator/ModelField.tsx`, wrap the collapsed card in `ConfigurationSection` with `title={t(QuickAppEditorI18nKeys.DefaultModel)}`. The `action` is the ui-kit 2.0 `Button`, configured as follows:
+- [x] 2.2 In `src/components/Orchestrator/ModelField.tsx`, wrap the collapsed card in `SectionRow` with `title={t(QuickAppEditorI18nKeys.DefaultModel)}`. The `action` is the ui-kit 2.0 `Button`, configured as follows:
   - `appearance={ButtonAppearance.Outlined}`, `variant={ButtonVariant.Primary}`, `size={ElementSize.Small}`.
   - `iconBefore={<IconPencil size={16} />}`, `label={t(Change)}`, `onClick={handleOpen}`, `disabled={disabled || isModelInfoLoading}`.
   - `tooltipProps` set from `tooltip` when it is present.
@@ -91,12 +93,11 @@ Tests use the repo's existing `react-dom/client` `createRoot` + `act` harness (s
 
 - [x] 3.1 Add `DefaultModel = 'Default model'` and `Agent = 'Agent'` to `QuickAppEditorI18nKeys` in `src/constants/i18n.ts`, and the matching entries to `src/i18n/locales/quick-app-editor.json`, the only registered locale (`en`).
   - **Verification:** `npm run lint`, `npm run typecheck`.
-- [x] 3.2 RTL pass over `ConfigurationSection.tsx` and the `ModelField.tsx` card:
+- [x] 3.2 RTL pass over `SectionRow.tsx` and the `ModelField.tsx` card:
   - No physical `ml/mr/pl/pr/left/right/text-left/text-right` classes.
   - The pencil icon is not mirrored.
-  - Add an RTL test case to `ConfigurationSection.test.tsx`: with `document.documentElement.dir = 'rtl'`, the DOM order is heading first, then action, and no physical direction classes are present.
-  - **Verification:** `npx vitest run src/components/common/ConfigurationSection`, `npm run lint`.
+  - Add an RTL test case to `SectionRow.test.tsx`: with `document.documentElement.dir = 'rtl'`, the DOM order is heading first, then action, and no physical direction classes are present.
+  - **Verification:** `npx vitest run src/components/common/SectionRow`, `npm run lint`.
 - [x] 3.3 Remove the "Orchestrator / model selection" entry from `docs/TECH_DEBT.md`'s "OpenSpec spec creation candidates", or mark it as started. Add the follow-ups from design.md:
-  - migrate the Add-ons rows to `ConfigurationSection`;
   - extract the `ModelField` popup.
   - **Verification:** `npm run format:check`.
