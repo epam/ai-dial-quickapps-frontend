@@ -16,6 +16,9 @@
 - [] need to review components, some seem to be unnecessary, e.g. AgentSkillsField just proxy SkillsSelectors
 - [] Extract the model picker popup out of `components/Orchestrator/ModelField.tsx` into its own
   component; the file mixes the Default model block with the whole picker (~450 lines).
+- [x] Auth screens other than the sign-in prompt - `ForbiddenPage` and `AuthError` now share
+  `LoginScreen`'s layout (`components/common/AuthStateScreen`), use 2.0 buttons and take all copy from
+  `common` i18n keys (see the `redesign-auth-state-screens` change).
 - [] ...
 
 ## Documentation and behavior reconciliation backlog
@@ -35,6 +38,11 @@ documentation correction.
 - [ ] **Save, auto-save, and reset semantics** — document the conditions under which saves are
   ignored, the actual meaning of `SaveSuccess.hasChanges`, and that `RESET` remounts the current
   state rather than refetching from the API.
+- [ ] **Stale General fields on auto-save** — a save without a `general` payload (auto-save)
+  rebuilds `name`/`description`/`iconUrl`/`topics` from the load-time `_rawForSave` snapshot
+  (`src/utils/dialClient.ts` `fetchDialApp`), which is never refreshed after a save. A dirty
+  auto-save after a host Metadata edit can therefore revert those fields. `display_version` is
+  already excluded (see change `fix-quickapp-display-version-save`).
 - [ ] **Origin validation defaults** — decide and document behavior while runtime settings are
   unresolved and when `allowedOrigin` is empty, including the current `*` fallback and its
   security implications.
@@ -77,7 +85,7 @@ Track these dimensions separately for every capability:
 | --- | --- | --- | --- | --- |
 | `host-integration` | Yes | Partial | Partial | Reconcile |
 | `auth` | Yes | Partial | Partial | Reconcile |
-| `application_editing` | No | Yes | Partial | Planned |
+| `application_editing` | Partial | Yes | Partial | Planned |
 | `context-files` | No | Yes | Partial | Planned |
 | `toolsets_selection` | No | Yes | Partial | Planned |
 | `toolsets_login` | No | Yes | Partial | Planned |
@@ -99,6 +107,9 @@ Update this matrix as each capability is explored, specified, tested, and checke
   has-quick-app-changes.ts, get-updated-at-timestamp.ts
 - Covers: load/save/auto-save lifecycle, dirty-state tracking, application_properties serialization
 - Proposed: application_editing (leaves room for a sibling below)
+- Started in `openspec/specs/application_editing/spec.md` (change `fix-quickapp-display-version-save`), which only covers how host-supplied General-step
+  fields (including `display_version` → `version`) are persisted on save. The rest of the lifecycle is
+  still uncovered.
 
 ### Application credentials (recent feature, git log: "feat: support application credentials #140")
 

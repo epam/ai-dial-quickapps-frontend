@@ -5,7 +5,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import type { MaybeLocalizedText } from '@/types/dial-entities';
 import { Translation } from '@/types/translation';
 import ForbiddenPage from '@/components/ForbiddenPage/ForbiddenPage';
-import LoadingScreen from '@/components/LoadingScreen/LoadingScreen';
+import FullScreenSpinner from '@/components/FullScreenSpinner/FullScreenSpinner';
 import { DataContextProvider } from '@/context/DataContext';
 import { buildQuickApp2Config } from '@/form/quickApp2Form';
 import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
@@ -234,6 +234,12 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
           description: rawForSave.description as MaybeLocalizedText,
           iconUrl: rawForSave.iconUrl as string | undefined,
           topics: rawForSave.topics as string[] | undefined,
+        };
+        // The load-time display_version is only a diff baseline: carrying it into
+        // the save would let a `general`-less save (auto-save) revert a version
+        // the host changed earlier in this session.
+        const storedGeneral: StoredGeneralFields = {
+          ...generalForSave,
           display_version: rawForSave.displayVersion as string | undefined,
         };
         // `general.name`/`general.description` only carry the primary-locale
@@ -270,7 +276,7 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
           existingConfig,
           newConfig,
           normalizedGeneral,
-          generalForSave,
+          storedGeneral,
         );
         const updatedApp = await saveDialApp(appWithFormValues, newConfig, effectiveGeneral);
         setHasSavedOnce(true);
@@ -322,7 +328,7 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
   }
 
   if (!appState) {
-    return <LoadingScreen />;
+    return <FullScreenSpinner />;
   }
 
   return (

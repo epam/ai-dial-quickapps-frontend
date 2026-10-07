@@ -35,8 +35,9 @@ export interface LocaleTextEntryDto {
 /**
  * General-step fields the host (ai-dial-chat) owns, sent with TRIGGER_SAVE so
  * this editor's single save can persist the current values instead of racing
- * a second host-side write. Never includes `version` — that stays untouched
- * by this payload. Absent when the trigger is a Preview, or when the app was
+ * a second host-side write. `display_version` is persisted as chat-api's
+ * `version`; when it is missing or blank, the stored version is left
+ * untouched. Absent when the trigger is a Preview, or when the app was
  * created in this same editor session (host already wrote initial values via
  * create-application).
  *

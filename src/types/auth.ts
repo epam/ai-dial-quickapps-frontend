@@ -4,6 +4,12 @@ export enum AuthStatus {
   Unauthenticated = 'unauthenticated',
 }
 
+/** Why sign-in can't be offered; a host or deployment configuration problem. */
+export enum AuthErrorReason {
+  NoProvider = 'no-provider',
+  ProviderNotConfigured = 'provider-not-configured',
+}
+
 export interface UserProfile {
   sub: string;
   providerId: string;
