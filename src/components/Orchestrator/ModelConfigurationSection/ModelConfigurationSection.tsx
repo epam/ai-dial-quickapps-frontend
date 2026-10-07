@@ -9,6 +9,7 @@ import { Translation } from '@/types/translation';
 import { doesModelAllowTemperature } from '@/utils/application';
 
 import { SectionRow } from '@/components/common/SectionRow/SectionRow';
+import SettingsSection from '@/components/Settings/SettingsSection';
 
 import { DefaultModelBlock } from '@/components/Orchestrator/DefaultModelBlock/DefaultModelBlock';
 
@@ -103,6 +104,8 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
             />
           </SectionRow>
         )}
+
+        <SettingsSection isReadonly={isReadonly} />
       </div>
     </section>
   );

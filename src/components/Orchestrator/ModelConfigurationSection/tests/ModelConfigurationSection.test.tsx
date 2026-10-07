@@ -62,6 +62,11 @@ vi.mock('@epam/ai-dial-ui-kit', async (importOriginal) => ({
     </button>
   ),
 }));
+vi.mock('@/components/Settings/SettingsSection', () => ({
+  default: ({ isReadonly }: { isReadonly: boolean }) => (
+    <div data-testid="settings-section" data-readonly={String(isReadonly)} />
+  ),
+}));
 
 const TestForm = ({ isReadonly = false, tooltip }: { isReadonly?: boolean; tooltip?: string }) => {
   const [model, setModel] = useState('model-id');
@@ -111,6 +116,14 @@ describe('ModelConfigurationSection', () => {
     expect(container.textContent).toContain('Model picker');
     expect(container.textContent).toContain('Temperature control');
     expect(container.textContent).toContain('Process files toggle');
+  });
+
+  it('composes the Settings row after the existing controls and passes read-only through', () => {
+    act(() => root.render(<TestForm isReadonly />));
+
+    const settings = container.querySelector('[data-testid="settings-section"]');
+    expect(settings?.getAttribute('data-readonly')).toBe('true');
+    expect(settings?.previousElementSibling?.textContent).toContain('Process files toggle');
   });
 
   it('renders the model picker without a separate "Model" form label', () => {
