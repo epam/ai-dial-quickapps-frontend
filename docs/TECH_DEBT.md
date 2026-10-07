@@ -91,7 +91,7 @@ Track these dimensions separately for every capability:
 | `toolsets_login` | No | Yes | Partial | Planned |
 | `application_credentials` | No | Yes | Partial | Planned |
 | `skills_catalog` | No | Yes | Partial | Planned |
-| `orchestrator_model-selection` | In change | Yes | Partial | Planned |
+| `orchestrator_model-selection` | Yes | Yes | Partial | Planned |
 | `app-configuration` | No | Yes | Partial | Planned |
 | `theming` | No | Yes | Partial | Planned |
 | `i18n` | No | Yes | Partial | Planned |
@@ -133,7 +133,7 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 - src/components/Orchestrator/**, src/app/api/dial-deployments, ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE in constants/quick-apps.ts
 - Proposed: orchestrator_model-selection
-- **Started** in change `redesign-default-model-card`, which covers the Default model block
+- **Spec written** (`openspec/specs/orchestrator_model-selection`, from archived change `redesign-default-model-card`); it covers the Default model block
   (selected-model card and the Change action). The picker popup, temperature and process-files
   behaviour are not specified yet.
 

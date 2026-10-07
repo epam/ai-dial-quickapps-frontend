@@ -16,7 +16,7 @@ This change ships the first block, Default model. It also introduces the shared 
   - The button opens the existing model picker popup.
 - Render the selected-model card with the ui-kit 2.0 **`EntityIdentity`**. This is chat's `EntityHeader` from `ai-dial-chat`'s `libs/chat-shared`, moved into the kit under a new name, so chat and quickapps share one implementation. It shows:
   - the icon, as a square `Avatar` with an initials fallback,
-  - an uppercase type label coloured by type: **Model** in blue, **Agent** in green, matching the chat catalog,
+  - an uppercase **Model** type label in the model entity colour, as in the chat catalog,
   - the model name,
   - the version as plain secondary text next to the name.
 
@@ -78,7 +78,7 @@ The change is presentation-only. It has no data, schema or API impact, so revert
   - `src/components/AddOns/AddOnRow.tsx` (now a wrapper over `SectionRow`) and the Add-ons test
   - `src/constants/i18n.ts`
   - `src/i18n/locales/quick-app-editor.json`
-- **i18n:** new `quickAppEditor` keys `DefaultModel` ("Default model") and `Agent` ("Agent"). In the DIAL catalog an `application` deployment is called an Agent. The model type label and the **Change** button reuse the existing `quickAppEditor` keys `Model` and `Change`. Uppercasing is done in CSS (`uppercase`), not in the strings.
+- **i18n:** new `quickAppEditor` key `DefaultModel` ("Default model"). The model type label and the **Change** button reuse the existing `quickAppEditor` keys `Model` and `Change`. Uppercasing is done in CSS (`uppercase`), not in the strings.
 - **RTL:** the header uses logical/flex alignment (`justify-between`, `ms-*`/`me-*`, `text-start`). The pencil icon is symmetric and must not be mirrored.
 - **Dependency:** this change needs the ui-kit release that adds `EntityIdentity` (ui-kit branch `feat/entity-identity`), followed by a `package.json` bump. The **Change** button uses the 2.0 `Button` already in `^0.14.0`.
 - **Cross-cutting:** none. There are no auth, host-integration or chat-api changes.

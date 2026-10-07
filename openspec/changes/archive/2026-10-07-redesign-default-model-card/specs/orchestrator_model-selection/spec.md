@@ -38,7 +38,7 @@ The model picker opened by **Change** SHALL list only deployments of `type: 'mod
 #### Scenario: Saved application is still shown
 
 - **WHEN** the `model` form value is an application deployment id
-- **THEN** the selected-model card SHALL show that application with the `Agent` type label
+- **THEN** the selected-model card SHALL show that application with the same `Model` type label as any selection
 - **AND** the user SHALL be able to replace it only with a model from the picker
 
 ### Requirement: Selected-model card uses the shared entity header
@@ -56,7 +56,7 @@ The selected-model card SHALL render its identity row with `@epam/ai-dial-ui-kit
 The selected-model card SHALL show, in reading order:
 
 - the model icon,
-- an uppercase accent label naming the entity type,
+- an uppercase accent label, always `Model`, since the picker offers only models,
 - the model's localized display name,
 - the version as plain text.
 
@@ -69,11 +69,6 @@ The card SHALL NOT contain an inline version selector.
 - **AND** a type label from `quickAppEditor` key `Model` ("Model"), displayed uppercase in the model entity colour (`text-blue`)
 - **AND** the localized name (e.g. "Google Gemini 3.5 Flash Lite")
 - **AND** the version `1.0.3` as secondary text next to the name, with no dropdown control
-
-#### Scenario: Application selected as orchestrator
-
-- **WHEN** the selected deployment has `type: 'application'`
-- **THEN** the type label SHALL use `quickAppEditor` key `Agent` ("Agent") in the agent entity colour (`text-green-1`), matching the chat catalog
 
 #### Scenario: Deployment without a version
 

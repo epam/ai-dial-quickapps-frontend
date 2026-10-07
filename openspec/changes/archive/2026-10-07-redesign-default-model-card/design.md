@@ -78,12 +78,12 @@ The identity row is the new kit 2.0 `EntityIdentity`, moved from `ai-dial-chat/l
 ```tsx
 <EntityIdentity
   item={{
-    type: getModelEntityType(selectedModel.type),
+    type: EntityType.Model,
     name: displayName,
     version: selectedModel.version,
     iconUrl: resolvedIconUrl,
   }}
-  labels={{ type: t(getModelTypeI18nKey(selectedModel.type)) }}
+  labels={{ type: t(QuickAppEditorI18nKeys.Model) }}
   hasFeaturedTag={false}
   iconSize={44}
   headingLevel={4}
@@ -99,14 +99,9 @@ The identity row is the new kit 2.0 `EntityIdentity`, moved from `ai-dial-chat/l
 - Loading state: the existing skeletons (a 44px circle plus text lines, `SKELETON_COLOR`), shown in place of `EntityIdentity`.
 - Unknown id: `EntityIdentity` is not used. The raw id is rendered as `dial-body-semi-text text-secondary`, with no label and no version.
 
-### D5. Type mapping lives in utils
+### D5. The type label is always Model
 
-Per the module-boundary rule, the component file gets no helpers. Both helpers go in `src/utils/application.ts`, the existing home of entity helpers:
-
-- `getModelEntityType(type)`: `'application'` maps to `EntityType.Agent`, everything else to `EntityType.Model`.
-- `getModelTypeI18nKey(type)`: `'application'` maps to `QuickAppEditorI18nKeys.Agent`, everything else to `QuickAppEditorI18nKeys.Model`.
-
-Both use a `switch`.
+The picker offers only models (D5a), so the card always passes `EntityType.Model` and the `Model` label. A legacy value that is an application is still shown, labelled `Model`; no per-type mapping helper is kept for that rare case.
 
 ### D5a. Picker lists only models
 
@@ -124,7 +119,6 @@ The following become dead code and are deleted: `cardVersionOptions`, `hasVersio
 Add the following to the `QuickAppEditorI18nKeys` enum in `src/constants/i18n.ts` and to `src/i18n/locales/quick-app-editor.json`:
 
 - `DefaultModel = 'Default model'`
-- `Agent = 'Agent'`
 
 The `Model` and `Change` keys are reused. Only the `en` locale is registered (`src/i18n/index.ts`), so there is one JSON file to update.
 

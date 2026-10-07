@@ -43,10 +43,7 @@ Tests use the repo's existing `react-dom/client` `createRoot` + `act` harness (s
 
 ## 2. Default model block (depends on 0, 1, 3.1)
 
-- [x] 2.1 Add `getModelEntityType` and `getModelTypeI18nKey` to `src/utils/application.ts` (design D5). Both are `switch`es:
-  - `getModelEntityType`: `'application'` maps to `EntityType.Agent`, anything else to `EntityType.Model`.
-  - `getModelTypeI18nKey`: `'application'` maps to `QuickAppEditorI18nKeys.Agent`, anything else to `QuickAppEditorI18nKeys.Model`. Add unit tests in `src/utils/tests/application.test.ts`, creating the file if it is absent.
-  - **Verification:** `npx vitest run src/utils/tests/application.test.ts`, `npm run lint`, `npm run typecheck`.
+- [x] 2.1 ~~Add `getModelEntityType` / `getModelTypeI18nKey` to `src/utils/application.ts`~~ — superseded by 2.8: the picker offers only models, so the card always uses `EntityType.Model` and the `Model` label; the helpers, their tests and the `Agent` i18n key are removed.
 - [x] 2.2 In `src/components/Orchestrator/ModelField.tsx`, wrap the collapsed card in `SectionRow` with `title={t(QuickAppEditorI18nKeys.DefaultModel)}`. The `action` is the ui-kit 2.0 `Button`, configured as follows:
   - `appearance={ButtonAppearance.Outlined}`, `variant={ButtonVariant.Primary}`, `size={ElementSize.Small}`.
   - `iconBefore={<IconPencil size={16} />}`, `label={t(Change)}`, `onClick={handleOpen}`, `disabled={disabled || isModelInfoLoading}`.
@@ -58,8 +55,8 @@ Tests use the repo's existing `react-dom/client` `createRoot` + `act` harness (s
 - [x] 2.3 Restyle the collapsed card in `src/components/Orchestrator/ModelField.tsx` per design D4:
   - Container: raised `rounded-[16px]` with a border that turns error-coloured when there is an error, and `opacity-50` when disabled.
   - Inside it, the ui-kit `EntityIdentity`, configured as follows:
-    - `item.type` from `getModelEntityType`;
-    - `labels.type` = `t(getModelTypeI18nKey(...))`;
+    - `item.type` = `EntityType.Model`;
+    - `labels.type` = `t(QuickAppEditorI18nKeys.Model)`;
     - `iconUrl` passed through `resolveIconUrl`;
     - `hasFeaturedTag={false}`, `iconSize={44}`, `headingLevel={4}`, `nameClassName="dial-body-semi-text"`.
   - Skeletons while loading (circle 44 plus text lines).
@@ -79,7 +76,6 @@ Tests use the repo's existing `react-dom/client` `createRoot` + `act` harness (s
 - [x] 2.7 Add `src/components/Orchestrator/tests/ModelField.test.tsx`, mocking `useDataContext`, `useAppContext`, `useTranslation` and the ui-kit `DialPopup`. It must cover:
   - The "Default model" heading labels the section, and the "Change" button is in it.
   - The card shows the "Model" label, the name as a level-4 heading and the version text, with no combobox and no "Featured" chip.
-  - The type label is "Agent" for `type: 'application'`.
 
   Keep the real `EntityIdentity` (do not mock it) so the assertions cover what the user sees.
   - With several versions, only the selected version text shows and no combobox is rendered.
@@ -94,7 +90,7 @@ Tests use the repo's existing `react-dom/client` `createRoot` + `act` harness (s
 
 ## 3. i18n, RTL and specs
 
-- [x] 3.1 Add `DefaultModel = 'Default model'` and `Agent = 'Agent'` to `QuickAppEditorI18nKeys` in `src/constants/i18n.ts`, and the matching entries to `src/i18n/locales/quick-app-editor.json`, the only registered locale (`en`).
+- [x] 3.1 Add `DefaultModel = 'Default model'` to `QuickAppEditorI18nKeys` in `src/constants/i18n.ts`, and the matching entries to `src/i18n/locales/quick-app-editor.json`, the only registered locale (`en`).
   - **Verification:** `npm run lint`, `npm run typecheck`.
 - [x] 3.2 RTL pass over `SectionRow.tsx` and the `ModelField.tsx` card:
   - No physical `ml/mr/pl/pr/left/right/text-left/text-right` classes.
