@@ -112,13 +112,12 @@ describe('AddOnsSection', () => {
     renderSection();
 
     const section = container.querySelector('section[aria-label="Add-ons"]');
-    const rows = section?.querySelector('div.mt-4');
+    const rows = section?.querySelector('div.gap-7');
     const agentsTitle = [...(section?.querySelectorAll('h3') ?? [])].find(
       (heading) => heading.textContent === 'Agents & Toolsets',
     );
 
-    expect(section?.className).toContain('mt-4');
-    expect(section?.querySelector('h2')?.className).toContain('dial-medium-semi-text');
+    expect(section?.querySelector('h2 > span')?.className).toContain('dial-h3-text');
     expect(rows?.className).toContain('gap-7');
     expect(agentsTitle?.className).toContain('dial-small-semi-text');
   });
