@@ -27,7 +27,11 @@ const testContext = vi.hoisted(() => {
 
   return {
     appContext: {
-      app: { id: 'app', applicationProperties: {} },
+      app: { id: 'app', applicationProperties: {} } as {
+        id: string;
+        applicationProperties: unknown;
+        isShared?: boolean;
+      },
       settings: {
         defaultModelId: 'model-1',
         isCodeInterpreterEnabled: false,
@@ -86,13 +90,16 @@ vi.mock('@/components/QuickApp2FormLegacyFields/QuickApp2FormLegacyFields', () =
   const LegacyFieldsTest = ({
     values,
     errors,
+    startersSettingsTooltip,
     onAttachmentTypesChange,
   }: {
     values: QuickApp2Form;
     errors: Record<string, string | undefined>;
+    startersSettingsTooltip?: string;
     onAttachmentTypesChange: (tags: string[], previousTags: string[]) => void;
   }) => (
     <div>
+      <output data-testid="starters-hint">{startersSettingsTooltip ?? ''}</output>
       <button
         type="button"
         data-testid="add-invalid-mime"
@@ -168,6 +175,7 @@ const triggerSave = async (detail: { isAutoSave: boolean; ignoreDirty?: boolean 
 
 beforeEach(() => {
   (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
+  testContext.appContext.app = { id: 'app', applicationProperties: {} };
   testContext.dataContext = {
     models: [testContext.model],
     modelsMap: { [testContext.model.id]: testContext.model },
@@ -322,5 +330,36 @@ describe('QuickApp2Form observable behavior', () => {
 
     expect((container.querySelector('[aria-label="Model"]') as HTMLInputElement).value).toBe('model-1');
     expect(onModelReady).toHaveBeenCalled();
+  });
+
+  it('hints that a starter is required until the app has a complete starter', () => {
+    renderForm();
+
+    expect(container.querySelector('[data-testid="starters-hint"]')?.textContent).toBe(
+      QuickAppEditorI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings,
+    );
+  });
+
+  it('drops the starters hint for an app with a complete starter', () => {
+    testContext.appContext.app = {
+      id: 'app',
+      applicationProperties: {
+        conversation_starters: { starters: [{ title: 'Travel tips', text: 'Suggest destinations' }] },
+      },
+    };
+
+    renderForm();
+
+    expect(container.querySelector('[data-testid="starters-hint"]')?.textContent).toBe('');
+  });
+
+  it('shows the shared-application hint on the starters settings of a shared app', () => {
+    testContext.appContext.app = { id: 'app', applicationProperties: {}, isShared: true };
+
+    renderForm();
+
+    expect(container.querySelector('[data-testid="starters-hint"]')?.textContent).toBe(
+      QuickAppEditorI18nKeys.CannotChangeSharedApp,
+    );
   });
 });

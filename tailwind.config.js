@@ -9,7 +9,8 @@ const backgroundsColors = {
   warning: 'var(--bg-warning, #FAF0CF)', // yellow-100
   info: 'var(--bg-info, #E1EAF9)', // blue-100
   success: 'var(--bg-success, #DBF1EB)', // green-100
-  backdrop: 'var(--bg-backdrop, #161B2D4D)', // grey-1000 alpha-30
+  // Per design the popup overlay is the base layer colour, not the dimmed grey-1000 alpha-30 scrim.
+  backdrop: 'var(--bg-layer-base, #F5F7FA)', // grey-100
 };
 
 const shadowColors = {

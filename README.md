@@ -247,6 +247,10 @@ CSP is enforced by chat-api's own server (Helmet), not by this app. This app's b
 `__DIAL_CSP_NONCE__` placeholder on its built `<script>`/`<link rel="stylesheet">` tags (see
 `vite.config.ts`) for chat-api's nonce-based `CSP_MODE=enforce` policy, and bundles Monaco locally
 (`src/monaco-setup.ts`) instead of loading it from a CDN, since `script-src` has no CDN allowance.
+The same placeholder goes on a `<meta property="csp-nonce">` tag, which the ag-grid copy bundled in
+ui-kit reads (via the `dial-trusted-style-nonce` build plugin) to put the nonce on the `<style>` tags
+it injects. An image built before that plugin shows blocked ag-grid styles under `enforce`: rebuild
+and redeploy it.
 
 ## postMessage protocol
 

@@ -53,7 +53,7 @@ export const SectionRow: FC<SectionRowProps> = ({
         {action != null && <div className="shrink-0">{action}</div>}
       </div>
       {description != null && <p className={styles.description}>{description}</p>}
-      <div className={styles.content}>{children}</div>
+      {children != null && <div className={styles.content}>{children}</div>}
     </section>
   );
 };
