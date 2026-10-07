@@ -18,14 +18,27 @@ vi.mock('@/hooks/useTranslation', () => ({
 interface MockPopupProps {
   isOpen: boolean;
   advancedSettings: AdvancedSettingsValues;
+  isTemperatureAvailable: boolean;
+  isProcessLargeFilesAvailable: boolean;
   onSave: (values: AdvancedSettingsValues) => void;
   onClose: () => void;
 }
 
-const MockPopup = ({ isOpen, advancedSettings, onSave, onClose }: MockPopupProps) => {
+const MockPopup = ({
+  isOpen,
+  advancedSettings,
+  isTemperatureAvailable,
+  isProcessLargeFilesAvailable,
+  onSave,
+  onClose,
+}: MockPopupProps) => {
   const [draft, setDraft] = useState(advancedSettings);
   return isOpen ? (
-    <div role="dialog">
+    <div
+      role="dialog"
+      data-temperature={String(isTemperatureAvailable)}
+      data-process-files={String(isProcessLargeFilesAvailable)}
+    >
       <button
         type="button"
         role="switch"
@@ -60,14 +73,26 @@ vi.mock('@epam/ai-dial-ui-kit', () => ({
   ),
 }));
 
-const advancedSettings: AdvancedSettingsValues = { maxInputAttachments: 50, timestamp: true, fileTools: false };
+const advancedSettings: AdvancedSettingsValues = {
+  temperature: 0.5,
+  maxInputAttachments: 50,
+  timestamp: true,
+  fileTools: false,
+  processLargeFiles: false,
+};
 
-const renderSection = (isReadonly: boolean, onAdvancedSettingsSave = vi.fn()) =>
+const renderSection = (
+  isReadonly: boolean,
+  onAdvancedSettingsSave = vi.fn(),
+  { isTemperatureAvailable = true, isProcessLargeFilesAvailable = false } = {},
+) =>
   act(() =>
     root.render(
       <SettingsSection
         isReadonly={isReadonly}
         advancedSettings={advancedSettings}
+        isTemperatureAvailable={isTemperatureAvailable}
+        isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
         onAdvancedSettingsSave={onAdvancedSettingsSave}
       />,
     ),
@@ -136,6 +161,15 @@ describe('SettingsSection', () => {
     act(() => getButtonByText('Save popup').click());
 
     expect(onAdvancedSettingsSave).toHaveBeenCalledWith({ ...advancedSettings, fileTools: true });
+  });
+
+  it('forwards temperature and process-files availability to the popup', () => {
+    renderSection(false, vi.fn(), { isTemperatureAvailable: false, isProcessLargeFilesAvailable: true });
+
+    act(() => getAdvancedButton().click());
+    const dialog = container.querySelector('[role="dialog"]') as HTMLElement;
+    expect(dialog.getAttribute('data-temperature')).toBe('false');
+    expect(dialog.getAttribute('data-process-files')).toBe('true');
   });
 
   it('disables Advanced when read-only and does not open the popup', () => {

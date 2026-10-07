@@ -122,6 +122,18 @@ vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationS
       <button type="button" onClick={() => onAdvancedSettingsSave(advancedSettings)}>
         Save unchanged advanced settings
       </button>
+      <button
+        type="button"
+        onClick={() =>
+          onAdvancedSettingsSave({
+            ...advancedSettings,
+            temperature: 0.3,
+            processLargeFiles: !advancedSettings.processLargeFiles,
+          })
+        }
+      >
+        Save changed orchestrator settings
+      </button>
     </div>
   );
 
@@ -289,6 +301,21 @@ describe('QuickApp2Form observable behavior', () => {
     await submitForm();
     expect(onSave).toHaveBeenLastCalledWith(
       expect.objectContaining({ fileTools: true, maxInputAttachments: 5, timestamp: true }),
+      expect.anything(),
+      false,
+      undefined,
+    );
+  });
+
+  it('applies temperature and process files saved from Advanced Settings and marks the form dirty', async () => {
+    const { onSave, onDirtyChange } = renderForm();
+
+    act(() => getButtonByText('Save changed orchestrator settings').click());
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+
+    await submitForm();
+    expect(onSave).toHaveBeenLastCalledWith(
+      expect.objectContaining({ temperature: 0.3, processLargeFiles: true }),
       expect.anything(),
       false,
       undefined,

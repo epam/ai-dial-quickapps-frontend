@@ -166,11 +166,19 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   );
   const advancedSettings = useMemo<AdvancedSettingsValues>(
     () => ({
+      temperature: values.temperature,
       maxInputAttachments: values.maxInputAttachments,
       timestamp: values.timestamp,
       fileTools: values.fileTools,
+      processLargeFiles: values.processLargeFiles,
     }),
-    [values.fileTools, values.maxInputAttachments, values.timestamp],
+    [
+      values.fileTools,
+      values.maxInputAttachments,
+      values.processLargeFiles,
+      values.temperature,
+      values.timestamp,
+    ],
   );
   const handleAdvancedSettingsSave = useCallback(
     (nextAdvancedSettings: AdvancedSettingsValues) => setValues(nextAdvancedSettings),
@@ -244,10 +252,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
       <ModelConfigurationSection
         model={values.model}
         onModelChange={(value) => setField('model', value)}
-        temperature={values.temperature}
-        onTemperatureChange={(value) => setField('temperature', value)}
-        processLargeFiles={values.processLargeFiles}
-        onProcessLargeFilesChange={(value) => setField('processLargeFiles', value)}
         errors={errors}
         isReadonly={isReadonly}
         tooltip={sharedTooltip}
