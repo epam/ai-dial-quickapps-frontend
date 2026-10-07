@@ -1,8 +1,6 @@
 import { FC, memo } from 'react';
-import { Control, Controller } from 'react-hook-form';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
 
@@ -11,10 +9,11 @@ import { DialMarkdownEditorContainer } from '@/components/common/MarkdownEditor/
 import { DialFormItem } from '@epam/ai-dial-ui-kit';
 
 export interface InstructionsSectionProps {
-  control: Control<QuickApp2FormType>;
+  value: string;
+  onChange: (value: string) => void;
 }
 
-const InstructionsSection: FC<InstructionsSectionProps> = ({ control }) => {
+const InstructionsSection: FC<InstructionsSectionProps> = ({ value, onChange }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
 
   return (
@@ -23,16 +22,10 @@ const InstructionsSection: FC<InstructionsSectionProps> = ({ control }) => {
       className="rounded-[24px] bg-layer-0 p-8 shadow-sm"
     >
       <DialFormItem label={t(QuickAppEditorI18nKeys.Instructions)}>
-        <Controller
-          control={control}
-          name="instructions"
-          render={({ field }) => (
-            <DialMarkdownEditorContainer
-              value={field.value}
-              onChangeValue={field.onChange}
-              placeholder={t(QuickAppEditorI18nKeys.InstructionsPlaceholder)}
-            />
-          )}
+        <DialMarkdownEditorContainer
+          value={value}
+          onChangeValue={onChange}
+          placeholder={t(QuickAppEditorI18nKeys.InstructionsPlaceholder)}
         />
       </DialFormItem>
     </section>

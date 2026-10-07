@@ -1,16 +1,15 @@
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { useController, type Control, type FieldErrors } from 'react-hook-form';
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import type { QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form';
-import type { QuickApp2Form as QuickApp2FormValues } from '@/form/quickApp2Form';
+import type { QuickApp2Form } from '@/form/quickApp2Form';
 import type { TriggerSaveGeneralPayload } from '@/types/editor-messages';
 
 type FormSaveHandler = (
-  data: QuickApp2FormValues,
+  data: QuickApp2Form,
   allEntitiesMap: QuickApp2AllEntitiesMap,
   isAutoSave?: boolean,
   general?: TriggerSaveGeneralPayload,
@@ -60,63 +59,58 @@ vi.mock('@/context/DataContext', () => ({
 }));
 
 vi.mock('@/components/InstructionsSection/InstructionsSection', () => {
-  const InstructionsTestField = ({ control }: { control: Control<QuickApp2FormValues> }) => {
-    const { field } = useController({ control, name: 'instructions' });
-
-    return (
-      <input
-        aria-label="Instructions"
-        value={field.value}
-        onChange={field.onChange}
-      />
-    );
-  };
+  const InstructionsTestField = ({
+    value,
+    onChange,
+  }: {
+    value: string;
+    onChange: (value: string) => void;
+  }) => <input aria-label="Instructions" value={value} onChange={(event) => onChange(event.target.value)} />;
 
   return { default: InstructionsTestField };
 });
 
 vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationSection', () => {
-  const ModelTestField = ({ control }: { control: Control<QuickApp2FormValues> }) => {
-    const { field } = useController({ control, name: 'model' });
-
-    return <input aria-label="Model" value={field.value} onChange={field.onChange} />;
-  };
+  const ModelTestField = ({
+    model,
+    onModelChange,
+  }: {
+    model: string;
+    onModelChange: (value: string) => void;
+  }) => <input aria-label="Model" value={model} onChange={(event) => onModelChange(event.target.value)} />;
 
   return { default: ModelTestField };
 });
 
-vi.mock('@/components/ContextAndTools/ContextAndToolsSection', () => ({ default: () => null }));
-vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => ({ default: () => null }));
-vi.mock('@/components/UserAttachments/UserAttachmentsSection', () => {
-  const AttachmentsTestField = ({
-    control,
+vi.mock('@/components/QuickApp2FormLegacyFields/QuickApp2FormLegacyFields', () => {
+  const LegacyFieldsTest = ({
+    values,
     errors,
     attachmentTypesResetKey,
     onAttachmentTypesChange,
   }: {
-    control: Control<QuickApp2FormValues>;
-    errors: FieldErrors<QuickApp2FormValues>;
+    values: QuickApp2Form;
+    errors: Record<string, string | undefined>;
     attachmentTypesResetKey: number;
     onAttachmentTypesChange: (tags: string[], previousTags: string[]) => void;
-  }) => {
-    const { field } = useController({ control, name: 'inputAttachmentTypes' });
+  }) => (
+    <div>
+      <button
+        type="button"
+        data-testid="add-invalid-mime"
+        onClick={() => onAttachmentTypesChange(['not-a-mime'], values.inputAttachmentTypes)}
+      />
+      <output data-testid="attachment-reset-key">{attachmentTypesResetKey}</output>
+      <output data-testid="attachment-error">{errors.inputAttachmentTypes}</output>
+      <output data-testid="attachment-value">{values.inputAttachmentTypes.join('|')}</output>
+    </div>
+  );
 
-    return (
-      <div>
-        <button
-          type="button"
-          data-testid="add-invalid-mime"
-          onClick={() => onAttachmentTypesChange(['not-a-mime'], field.value)}
-        />
-        <output data-testid="attachment-reset-key">{attachmentTypesResetKey}</output>
-        <output data-testid="attachment-error">{errors.inputAttachmentTypes?.message}</output>
-        <output data-testid="attachment-value">{field.value.join('|')}</output>
-      </div>
-    );
-  };
-
-  return { default: AttachmentsTestField };
+  return { default: LegacyFieldsTest };
 });
+vi.mock('@/components/ContextAndTools/ContextAndToolsSection', () => ({ default: () => null }));
+vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => ({ default: () => null }));
+vi.mock('@/components/UserAttachments/UserAttachmentsSection', () => ({ default: () => null }));
 vi.mock('@/components/ConversationStarters/ConversationStartersSection', () => ({
   default: () => null,
 }));

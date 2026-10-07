@@ -1,9 +1,8 @@
 import { FC, memo, useMemo } from 'react';
-import { Control, Controller, FieldErrors, useWatch } from 'react-hook-form';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
-import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
+import type { QuickApp2FormErrors } from '@/types/quick-app-form';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
 import { doesModelAllowTemperature } from '@/utils/application';
@@ -16,15 +15,25 @@ import { ModelField } from '../ModelField';
 import { DialFormItem } from '@epam/ai-dial-ui-kit';
 
 export interface ModelConfigurationSectionProps {
-  control: Control<QuickApp2FormType>;
-  errors: FieldErrors<QuickApp2FormType>;
+  model: string;
+  onModelChange: (value: string) => void;
+  temperature: number;
+  onTemperatureChange: (value: number) => void;
+  processLargeFiles: boolean;
+  onProcessLargeFilesChange: (value: boolean) => void;
+  errors: QuickApp2FormErrors;
   isReadonly: boolean;
   tooltip?: string;
   isProcessLargeFilesAvailable: boolean;
 }
 
 const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
-  control,
+  model,
+  onModelChange,
+  temperature,
+  onTemperatureChange,
+  processLargeFiles,
+  onProcessLargeFilesChange,
   errors,
   isReadonly,
   tooltip,
@@ -32,51 +41,35 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
   const { modelsMap } = useDataContext();
-  const modelId = useWatch({ control, name: 'model' });
 
   const showTemperatureSlider = useMemo(() => {
-    const selectedModel = modelsMap[modelId];
+    const selectedModel = modelsMap[model];
     return selectedModel ? doesModelAllowTemperature(selectedModel) : true;
-  }, [modelId, modelsMap]);
+  }, [model, modelsMap]);
 
   return (
-    <section
-      aria-labelledby="model-configuration-heading"
-      className="px-8"
-    >
+    <section aria-labelledby="model-configuration-heading" className="px-8">
       <h2 id="model-configuration-heading" className="dial-small-semi-text">
         {t(QuickAppEditorI18nKeys.Configuration)}
       </h2>
       <div className="mt-3 flex flex-col gap-3">
         <DialFormItem label={t(QuickAppEditorI18nKeys.Model)}>
-          <Controller
-            control={control}
-            name="model"
-            render={({ field }) => (
-              <ModelField
-                value={field.value}
-                onChange={field.onChange}
-                disabled={isReadonly}
-                tooltip={tooltip}
-                error={errors.model?.message}
-              />
-            )}
+          <ModelField
+            value={model}
+            onChange={onModelChange}
+            disabled={isReadonly}
+            tooltip={tooltip}
+            error={errors.model}
           />
         </DialFormItem>
 
         {showTemperatureSlider && (
           <DialFormItem label={t(QuickAppEditorI18nKeys.Temperature)}>
-            <Controller
-              control={control}
-              name="temperature"
-              render={({ field }) => (
-                <TemperatureSlider
-                  temperature={field.value}
-                  onChangeTemperature={field.onChange}
-                  disabled={isReadonly}
-                  tooltip={tooltip}
-                />
-              )}
+            <TemperatureSlider
+              temperature={temperature}
+              onChangeTemperature={onTemperatureChange}
+              disabled={isReadonly}
+              tooltip={tooltip}
             />
           </DialFormItem>
         )}
@@ -87,19 +80,13 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
             description={t(QuickAppEditorI18nKeys.ProcessFilesDescription)}
             className="!py-0"
           >
-            <Controller
-              control={control}
-              name="processLargeFiles"
-              render={({ field }) => (
-                <ToggleSwitch
-                  isOn={field.value}
-                  handleSwitch={() => field.onChange(!field.value)}
-                  disabled={isReadonly}
-                  additionalText={t(QuickAppEditorI18nKeys.AllowOrchestratorToProcessFiles)}
-                  className="flex items-center gap-2"
-                  tooltip={tooltip}
-                />
-              )}
+            <ToggleSwitch
+              isOn={processLargeFiles}
+              handleSwitch={() => onProcessLargeFilesChange(!processLargeFiles)}
+              disabled={isReadonly}
+              additionalText={t(QuickAppEditorI18nKeys.AllowOrchestratorToProcessFiles)}
+              className="flex items-center gap-2"
+              tooltip={tooltip}
             />
           </DialFormItem>
         )}

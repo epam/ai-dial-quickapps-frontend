@@ -26,10 +26,10 @@ Slicing strategy: **risk-first, then vertical migration**. First characterize th
 
 ## 3. Migrate the Editor Root and Scalar Sections
 
-- [ ] 3.1 Replace RHF ownership in `src/components/QuickApp2Form.tsx` with `useQuickApp2Form`, preserving both native submit and `DIAL_EDITOR_TRIGGER_SAVE_EVENT`, dirty notifications, model-ready behavior, read-only checks, and derived selectors; verify root form tests pass and run `npm run lint` and `npm run typecheck`.
+- [x] 3.1 Replace RHF ownership in `src/components/QuickApp2Form.tsx` with `useQuickApp2Form`, preserving both native submit and `DIAL_EDITOR_TRIGGER_SAVE_EVENT`, dirty notifications, model-ready behavior, read-only checks, and derived selectors; verify root form tests pass and run `npm run lint` and `npm run typecheck`.
   - **Verification:** Run `src/components/tests/QuickApp2Form.test.tsx` and `src/hooks/tests/use-quick-app2-form.test.ts`; confirm `onSave`, `onDirtyChange`, and `onModelReady` receive the same observable results for valid, invalid, clean, dirty, and reset flows.
 
-- [ ] 3.2 Migrate `InstructionsSection`, `AdvancedSettingsSection`, `AgentSkillsFormSection`, and `ModelConfigurationSection` from RHF `Control`/`Controller` to typed value/change/error/blur adapters while preserving rich editor, model, temperature, toggle, and read-only behavior; update their tests and run `npm run lint` and `npm run typecheck`.
+- [x] 3.2 Migrate `InstructionsSection`, `AdvancedSettingsSection`, `AgentSkillsFormSection`, and `ModelConfigurationSection` from RHF `Control`/`Controller` to typed value/change/error/blur adapters while preserving rich editor, model, temperature, toggle, and read-only behavior; update their tests and run `npm run lint` and `npm run typecheck`.
   - **Verification:** Run `src/components/InstructionsSection/tests/InstructionsSection.test.tsx`, `src/components/Orchestrator/ModelConfigurationSection/tests/ModelConfigurationSection.test.tsx`, and the affected section tests; confirm values propagate in both directions and validation errors remain associated with the same fields.
 
 ## 4. Migrate Array, JSON, File, and Attachment Sections

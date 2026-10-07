@@ -176,14 +176,24 @@ const reduceFormState = (state: FormState, action: FormAction): FormState => {
       }
 
       const nextValues = { ...state.values, ...values };
+      const nextInitialValues = { ...state.initialValues, ...initialValues };
       const nextErrors = externalState.shouldValidate
         ? getQuickApp2FormErrors(nextValues)
         : state.errors;
 
+      if (
+        isEqual(nextValues, state.values) &&
+        isEqual(nextInitialValues, state.initialValues) &&
+        isEqual(nextErrors, state.errors) &&
+        externalState.modelStatus === state.modelStatus
+      ) {
+        return state;
+      }
+
       return {
         ...state,
         values: nextValues,
-        initialValues: { ...state.initialValues, ...initialValues },
+        initialValues: nextInitialValues,
         errors: nextErrors,
         modelStatus: externalState.modelStatus,
       };

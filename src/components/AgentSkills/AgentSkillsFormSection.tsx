@@ -1,8 +1,7 @@
 import { FC, memo } from 'react';
-import { Control, Controller } from 'react-hook-form';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
+import type { QuickApp2FormValues } from '@/types/quick-app-form';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
 
@@ -11,13 +10,15 @@ import { FormCollapsibleSection } from '@/components/common/FormCollapsibleSecti
 import { AgentSkillsField } from './AgentSkillsField';
 
 export interface AgentSkillsFormSectionProps {
-  control: Control<QuickApp2FormType>;
+  value: QuickApp2FormValues['agentSkills'];
+  onChange: (value: QuickApp2FormValues['agentSkills']) => void;
   isReadonly: boolean;
   tooltip?: string;
 }
 
 const AgentSkillsFormSection: FC<AgentSkillsFormSectionProps> = ({
-  control,
+  value,
+  onChange,
   isReadonly,
   tooltip,
 }) => {
@@ -28,17 +29,11 @@ const AgentSkillsFormSection: FC<AgentSkillsFormSectionProps> = ({
       name={t(QuickAppEditorI18nKeys.AgentSkills)}
       description={t(QuickAppEditorI18nKeys.AgentSkillsDescription)}
     >
-      <Controller
-        control={control}
-        name="agentSkills"
-        render={({ field }) => (
-          <AgentSkillsField
-            value={field.value}
-            onChange={field.onChange}
-            readonly={isReadonly}
-            tooltip={tooltip}
-          />
-        )}
+      <AgentSkillsField
+        value={value}
+        onChange={onChange}
+        readonly={isReadonly}
+        tooltip={tooltip}
       />
     </FormCollapsibleSection>
   );
