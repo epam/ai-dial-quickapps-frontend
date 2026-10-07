@@ -18,6 +18,8 @@ export interface AddOnRowProps {
   isEmpty: boolean;
   isAddDisabled?: boolean;
   addTooltip?: string;
+  actionLabel?: string;
+  actionIcon?: ReactNode;
   children: ReactNode;
   onAdd: () => void;
 }
@@ -28,6 +30,8 @@ export const AddOnRow: FC<AddOnRowProps> = ({
   isEmpty,
   isAddDisabled,
   addTooltip,
+  actionLabel,
+  actionIcon,
   children,
   onAdd,
 }) => {
@@ -45,8 +49,10 @@ export const AddOnRow: FC<AddOnRowProps> = ({
       action={
         <NeutralButton
           size={ElementSize.Small}
-          iconBefore={<IconPlus size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} />}
-          label={t(CommonI18nKeys.Add)}
+          iconBefore={
+            actionIcon ?? <IconPlus size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} />
+          }
+          label={actionLabel ?? t(CommonI18nKeys.Add)}
           disabled={isAddDisabled}
           tooltipProps={addTooltip ? { tooltip: addTooltip } : undefined}
           onClick={handleAdd}

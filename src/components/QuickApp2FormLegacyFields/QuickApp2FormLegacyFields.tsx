@@ -6,18 +6,8 @@ import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import type { QuickApp2FormValues } from '@/types/quick-app-form';
 
 import ContextAndToolsSection from '../ContextAndTools/ContextAndToolsSection';
-import ConversationStartersSection from '../ConversationStarters/ConversationStartersSection';
 
-const LEGACY_FIELDS = [
-  'documentRelativeUrl',
-  'codeInterpreter',
-  'addAttachment',
-  'webFetch',
-  'starters',
-  'introText',
-  'autoSubmit',
-  'chatMessageInputDisabled',
-] as const;
+const LEGACY_FIELDS = ['documentRelativeUrl', 'codeInterpreter', 'addAttachment', 'webFetch'] as const;
 
 export interface QuickApp2FormLegacyFieldsProps {
   values: QuickApp2FormValues;
@@ -26,7 +16,6 @@ export interface QuickApp2FormLegacyFieldsProps {
   isCodeInterpreterEnabled: boolean;
   isWebFetchEnabled: boolean;
   isAddAttachmentEnabled: boolean;
-  startersSettingsTooltip?: string;
   onValuesChange: (values: Partial<QuickApp2FormValues>) => void;
 }
 
@@ -37,7 +26,6 @@ const QuickApp2FormLegacyFields: FC<QuickApp2FormLegacyFieldsProps> = ({
   isCodeInterpreterEnabled,
   isWebFetchEnabled,
   isAddAttachmentEnabled,
-  startersSettingsTooltip,
   onValuesChange,
 }) => {
   const { control, setValue } = useForm<QuickApp2FormType>({
@@ -80,29 +68,15 @@ const QuickApp2FormLegacyFields: FC<QuickApp2FormLegacyFieldsProps> = ({
     if (hasChanges) onValuesChange(changedValues);
   }, [legacyValues, onValuesChange]);
 
-  const hasStarters = values.starters.some((starter) => starter.title.trim() && starter.text.trim());
-
-
   return (
-    <>
-      <ContextAndToolsSection
-        control={control}
-        isReadonly={isReadonly}
-        tooltip={tooltip}
-        isCodeInterpreterEnabled={isCodeInterpreterEnabled}
-        isWebFetchEnabled={isWebFetchEnabled}
-        isAddAttachmentEnabled={isAddAttachmentEnabled}
-      />
-
-      <hr className="border-secondary" />
-
-      <ConversationStartersSection
-        control={control}
-        isReadonly={isReadonly}
-        hasStarters={hasStarters}
-        startersSettingsTooltip={startersSettingsTooltip}
-      />
-    </>
+    <ContextAndToolsSection
+      control={control}
+      isReadonly={isReadonly}
+      tooltip={tooltip}
+      isCodeInterpreterEnabled={isCodeInterpreterEnabled}
+      isWebFetchEnabled={isWebFetchEnabled}
+      isAddAttachmentEnabled={isAddAttachmentEnabled}
+    />
   );
 };
 

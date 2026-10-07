@@ -357,6 +357,19 @@ describe('conversation starters', () => {
     ]);
   });
 
+  it('saves starters in list order', () => {
+    expect(
+      buildConfig({
+        starters: [
+          { id: 'b', title: 'B', text: 'b' },
+          { id: 'a', title: 'A', text: 'a' },
+          { id: 'c', title: 'C', text: 'c' },
+          { id: 'blank', title: '', text: '' },
+        ],
+      }).conversation_starters?.starters.map(({ title }) => title),
+    ).toEqual(['B', 'A', 'C']);
+  });
+
   it('omits empty intro text', () => {
     expect(
       buildConfig({

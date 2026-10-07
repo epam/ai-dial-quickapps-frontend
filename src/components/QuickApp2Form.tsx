@@ -12,6 +12,7 @@ import type { TriggerSaveGeneralPayload } from '@/types/editor-messages';
 import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import type { QuickApp2Config } from '@/types/quick-apps';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
+import type { ConversationStartersValues } from '@/types/conversation-starters';
 import type { LocalizedText } from '@/types/dial-entities';
 import { Translation } from '@/types/translation';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -133,10 +134,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   );
 
   const isProcessLargeFilesAvailable = !!modelsMap[values.model]?.inputAttachmentTypes?.length;
-  const hasStarters = values.starters.some((starter) => starter.title.trim() && starter.text.trim());
-  const startersSettingsTooltip =
-    sharedTooltip ??
-    (!hasStarters ? t(QuickAppEditorI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings) : undefined);
 
   const handleSubmitForm = useCallback(
     (isAutoSave = false, general?: TriggerSaveGeneralPayload) => {
@@ -180,6 +177,19 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     (nextAdvancedSettings: AdvancedSettingsValues) => setValues(nextAdvancedSettings),
     [setValues],
   );
+  const conversationStarters = useMemo<ConversationStartersValues>(
+    () => ({
+      starters: values.starters,
+      introText: values.introText,
+      autoSubmit: values.autoSubmit,
+      chatMessageInputDisabled: values.chatMessageInputDisabled,
+    }),
+    [values.autoSubmit, values.chatMessageInputDisabled, values.introText, values.starters],
+  );
+  const handleConversationStartersSave = useCallback(
+    (nextConversationStarters: ConversationStartersValues) => setValues(nextConversationStarters),
+    [setValues],
+  );
   const handleAttachmentsEnabledChange = useCallback(
     (isEnabled: boolean) => {
       if (isEnabled) {
@@ -217,6 +227,8 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
           agentsAndToolsets={values.agentsAndToolsets}
           onAgentsChange={setAgentIds}
           onConfigureAgent={configureAgent}
+          conversationStarters={conversationStarters}
+          onConversationStartersSave={handleConversationStartersSave}
         />
 
         <QuickApp2FormLegacyFields
@@ -226,7 +238,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
           isCodeInterpreterEnabled={!!settings.isCodeInterpreterEnabled}
           isWebFetchEnabled={!!settings.isWebFetchEnabled}
           isAddAttachmentEnabled={!!settings.isAddAttachmentEnabled}
-          startersSettingsTooltip={startersSettingsTooltip}
           onValuesChange={handleLegacyValuesChange}
         />
       </div>
