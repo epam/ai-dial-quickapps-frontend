@@ -3,4 +3,6 @@ export enum SectionRowVariant {
   Row = 'row',
   /** A block in the Configuration column, e.g. Default model: uppercase caption title. */
   Caption = 'caption',
+  /** A setting inside a Configuration group, e.g. Attachments under Settings: tiny semibold title. */
+  Setting = 'setting',
 }

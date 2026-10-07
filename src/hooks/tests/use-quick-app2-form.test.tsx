@@ -25,6 +25,7 @@ const createValues = (overrides: Partial<QuickApp2FormValues> = {}): QuickApp2Fo
   model: 'model-1',
   agentsAndToolsets: [],
   codeInterpreter: false,
+  attachmentsEnabled: false,
   inputAttachmentTypes: [],
   maxInputAttachments: undefined,
   introText: undefined,
@@ -272,20 +273,4 @@ describe('useQuickApp2Form semantic actions', () => {
     expect(latestForm.values.documentRelativeUrl).toEqual(['new file']);
   });
 
-  it('rejects invalid MIME tags with recovery state and accepts valid tags', () => {
-    renderHook();
-
-    act(() => {
-      latestForm.setAttachmentTypes(['invalid'], [], 'Invalid MIME type');
-    });
-    expect(latestForm.values.inputAttachmentTypes).toEqual([]);
-    expect(latestForm.errors.inputAttachmentTypes).toBe('Invalid MIME type');
-    expect(latestForm.attachmentTypesResetKey).toBe(1);
-
-    act(() => {
-      latestForm.setAttachmentTypes(['image/png'], [], 'Invalid MIME type');
-    });
-    expect(latestForm.values.inputAttachmentTypes).toEqual(['image/png']);
-    expect(latestForm.errors.inputAttachmentTypes).toBeUndefined();
-  });
 });

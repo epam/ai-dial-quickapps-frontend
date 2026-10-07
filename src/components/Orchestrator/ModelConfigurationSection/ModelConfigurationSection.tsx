@@ -10,6 +10,7 @@ import { Translation } from '@/types/translation';
 import { doesModelAllowTemperature } from '@/utils/application';
 
 import { SectionRow } from '@/components/common/SectionRow/SectionRow';
+import AttachmentsSection from '@/components/Attachments/AttachmentsSection';
 import SettingsSection from '@/components/Settings/SettingsSection';
 
 import { DefaultModelBlock } from '@/components/Orchestrator/DefaultModelBlock/DefaultModelBlock';
@@ -29,6 +30,10 @@ export interface ModelConfigurationSectionProps {
   isProcessLargeFilesAvailable: boolean;
   advancedSettings: AdvancedSettingsValues;
   onAdvancedSettingsSave: (values: AdvancedSettingsValues) => void;
+  attachmentsEnabled: boolean;
+  onAttachmentsEnabledChange: (isEnabled: boolean) => void;
+  inputAttachmentTypes: string[];
+  onInputAttachmentTypesChange: (mimeTypes: string[]) => void;
 }
 
 const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
@@ -44,6 +49,10 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
   isProcessLargeFilesAvailable,
   advancedSettings,
   onAdvancedSettingsSave,
+  attachmentsEnabled,
+  onAttachmentsEnabledChange,
+  inputAttachmentTypes,
+  onInputAttachmentTypesChange,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
   const { modelsMap } = useDataContext();
@@ -115,6 +124,15 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
           advancedSettings={advancedSettings}
           maxInputAttachmentsError={errors.maxInputAttachments}
           onAdvancedSettingsSave={onAdvancedSettingsSave}
+        />
+
+        <AttachmentsSection
+          isEnabled={attachmentsEnabled}
+          value={inputAttachmentTypes}
+          error={errors.inputAttachmentTypes}
+          isReadonly={isReadonly}
+          onEnabledChange={onAttachmentsEnabledChange}
+          onChange={onInputAttachmentTypesChange}
         />
       </div>
     </section>

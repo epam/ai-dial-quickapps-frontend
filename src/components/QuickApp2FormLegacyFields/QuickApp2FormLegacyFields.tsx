@@ -1,13 +1,12 @@
-import { FC, useEffect, useMemo, useRef } from 'react';
+import { FC, useEffect, useRef } from 'react';
 import isEqual from 'lodash-es/isEqual';
-import { useForm, useWatch, type FieldErrors } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 
 import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
-import type { QuickApp2FormErrors, QuickApp2FormValues } from '@/types/quick-app-form';
+import type { QuickApp2FormValues } from '@/types/quick-app-form';
 
 import ContextAndToolsSection from '../ContextAndTools/ContextAndToolsSection';
 import ConversationStartersSection from '../ConversationStarters/ConversationStartersSection';
-import UserAttachmentsSection from '../UserAttachments/UserAttachmentsSection';
 
 const LEGACY_FIELDS = [
   'documentRelativeUrl',
@@ -18,12 +17,10 @@ const LEGACY_FIELDS = [
   'introText',
   'autoSubmit',
   'chatMessageInputDisabled',
-  'inputAttachmentTypes',
 ] as const;
 
 export interface QuickApp2FormLegacyFieldsProps {
   values: QuickApp2FormValues;
-  errors: QuickApp2FormErrors;
   isReadonly: boolean;
   tooltip?: string;
   isCodeInterpreterEnabled: boolean;
@@ -31,12 +28,10 @@ export interface QuickApp2FormLegacyFieldsProps {
   isAddAttachmentEnabled: boolean;
   startersSettingsTooltip?: string;
   onValuesChange: (values: Partial<QuickApp2FormValues>) => void;
-  onAttachmentTypesChange: (tags: string[], previousTags: string[]) => void;
 }
 
 const QuickApp2FormLegacyFields: FC<QuickApp2FormLegacyFieldsProps> = ({
   values,
-  errors,
   isReadonly,
   tooltip,
   isCodeInterpreterEnabled,
@@ -44,16 +39,14 @@ const QuickApp2FormLegacyFields: FC<QuickApp2FormLegacyFieldsProps> = ({
   isAddAttachmentEnabled,
   startersSettingsTooltip,
   onValuesChange,
-  onAttachmentTypesChange,
 }) => {
-  const { control, setValue, formState } = useForm<QuickApp2FormType>({
+  const { control, setValue } = useForm<QuickApp2FormType>({
     defaultValues: values as QuickApp2FormType,
     mode: 'onChange',
   });
   const legacyValues = useWatch({ control }) as unknown as QuickApp2FormValues;
   const previousValuesPropRef = useRef(values);
   const previousLegacyValuesRef = useRef(legacyValues);
-  const legacyErrors = formState.errors as FieldErrors<QuickApp2FormType>;
 
   useEffect(() => {
     const previousValues = previousValuesPropRef.current;
@@ -89,16 +82,6 @@ const QuickApp2FormLegacyFields: FC<QuickApp2FormLegacyFieldsProps> = ({
 
   const hasStarters = values.starters.some((starter) => starter.title.trim() && starter.text.trim());
 
-  const attachmentErrors = useMemo<FieldErrors<QuickApp2FormType>>(() => {
-    const nextErrors = { ...legacyErrors };
-    const attachmentTypesMessage = errors.inputAttachmentTypes;
-    if (attachmentTypesMessage) {
-      nextErrors.inputAttachmentTypes = { type: 'manual', message: attachmentTypesMessage };
-    } else {
-      delete nextErrors.inputAttachmentTypes;
-    }
-    return nextErrors;
-  }, [errors.inputAttachmentTypes, legacyErrors]);
 
   return (
     <>
@@ -109,15 +92,6 @@ const QuickApp2FormLegacyFields: FC<QuickApp2FormLegacyFieldsProps> = ({
         isCodeInterpreterEnabled={isCodeInterpreterEnabled}
         isWebFetchEnabled={isWebFetchEnabled}
         isAddAttachmentEnabled={isAddAttachmentEnabled}
-      />
-
-      <hr className="border-secondary" />
-
-      <UserAttachmentsSection
-        control={control}
-        errors={attachmentErrors}
-        isReadonly={isReadonly}
-        onAttachmentTypesChange={onAttachmentTypesChange}
       />
 
       <hr className="border-secondary" />

@@ -76,7 +76,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     submit,
     setAgentIds,
     configureAgent,
-    setAttachmentTypes,
   } = useQuickApp2Form({ defaultValues });
 
   const modelStatus = useMemo<QuickApp2ModelStatus>(() => {
@@ -181,14 +180,19 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     (nextAdvancedSettings: AdvancedSettingsValues) => setValues(nextAdvancedSettings),
     [setValues],
   );
-  const handleAttachmentTypesChange = useCallback(
-    (tags: string[], previousTags: string[]) =>
-      setAttachmentTypes(
-        tags,
-        previousTags,
-        t(QuickAppEditorI18nKeys.PleaseMatchTheMimeFormat),
-      ),
-    [setAttachmentTypes, t],
+  const handleAttachmentsEnabledChange = useCallback(
+    (isEnabled: boolean) => {
+      if (isEnabled) {
+        setField('attachmentsEnabled', true);
+        return;
+      }
+      setValues({ attachmentsEnabled: false, inputAttachmentTypes: [] });
+    },
+    [setField, setValues],
+  );
+  const handleInputAttachmentTypesChange = useCallback(
+    (mimeTypes: string[]) => setField('inputAttachmentTypes', mimeTypes),
+    [setField],
   );
 
   return (
@@ -217,7 +221,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
 
         <QuickApp2FormLegacyFields
           values={values}
-          errors={errors}
           isReadonly={isReadonly}
           tooltip={sharedTooltip}
           isCodeInterpreterEnabled={!!settings.isCodeInterpreterEnabled}
@@ -225,7 +228,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
           isAddAttachmentEnabled={!!settings.isAddAttachmentEnabled}
           startersSettingsTooltip={startersSettingsTooltip}
           onValuesChange={handleLegacyValuesChange}
-          onAttachmentTypesChange={handleAttachmentTypesChange}
         />
       </div>
 
@@ -242,6 +244,10 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
         advancedSettings={advancedSettings}
         onAdvancedSettingsSave={handleAdvancedSettingsSave}
+        attachmentsEnabled={values.attachmentsEnabled}
+        onAttachmentsEnabledChange={handleAttachmentsEnabledChange}
+        inputAttachmentTypes={values.inputAttachmentTypes}
+        onInputAttachmentTypesChange={handleInputAttachmentTypesChange}
       />
     </form>
   );

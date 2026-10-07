@@ -48,7 +48,7 @@ The following components still import RHF types/components and contain active `C
 
 - `src/components/ContextAndTools/ContextAndToolsSection.tsx` — document files, code interpreter, file tools, add attachment, and web fetch.
 - `src/components/ConversationStarters/ConversationStartersSection.tsx` — starters, intro text, auto-submit, and chat-input-disabled state; forwards container blur.
-- `src/components/UserAttachments/UserAttachmentsSection.tsx` — attachment MIME types and maximum attachment count.
+- ~~`src/components/UserAttachments/UserAttachmentsSection.tsx`~~ — migrated and removed by `move-attachments-to-settings` (see the update at the end).
 
 There are 11 active `Controller` instances. The sections are already mostly controlled components, so they can be migrated to typed `value`/`onChange`/`onBlur`/`error` adapters.
 
@@ -203,7 +203,7 @@ Done:
 
 Temporary scaffolding:
 
-- `src/components/QuickApp2FormLegacyFields/` wraps the three unmigrated sections (`ContextAndToolsSection`, `ConversationStartersSection`, `UserAttachmentsSection`) in a local RHF `useForm` and syncs it with the controller. Delete it once 4.1 and 4.2 land (task 5.1).
+- `src/components/QuickApp2FormLegacyFields/` wraps the unmigrated sections (`ContextAndToolsSection`, `ConversationStartersSection`) in a local RHF `useForm` and syncs it with the controller. Delete it once 4.1 and 4.2 land (task 5.1).
 - `react-hook-form` and `@hookform/resolvers` stay in `package.json` until task 5.2.
 
 State at pause: typecheck, lint and the full Vitest suite (26 files, 206 tests) pass.
@@ -218,3 +218,17 @@ Next: 4.1 `ContextAndToolsSection` (uses the controller actions `setAgentIds`, `
 - `AddOnsSection` (agent skills + agents/toolsets) is migrated to value props and no longer uses RHF. `ContextAndToolsSection` now only has context files and toggles.
 - `UserAttachmentsSection` uses a value-controlled `TagInput`, so `attachmentTypesResetKey` is no longer consumed by the UI. Remove it from the controller in 4.2.
 - Remaining RHF consumers: `ContextAndToolsSection`, `ConversationStartersSection`, `UserAttachmentsSection` (via `QuickApp2FormLegacyFields`).
+
+### Update after `move-attachments-to-settings` (2026-10-07)
+
+User attachments are off RHF. This is tracked as task 4.4 in `openspec/changes/remove-react-hook-form/tasks.md`, and was done in change `move-attachments-to-settings` (#199):
+
+- `UserAttachmentsSection` is deleted. Attachment types now live in an Attachments row in Configuration (`src/components/Attachments/AttachmentsSection.tsx`), driven by `useQuickApp2Form`:
+  - `inputAttachmentTypes`;
+  - a form-only `attachmentsEnabled` that drives the switch and is never serialized;
+  - `QuickApp2Schema` makes "enabled with no types" an error that blocks save.
+- `inputAttachmentTypes` is no longer in `LEGACY_FIELDS`, and the attachment error bridge in `QuickApp2FormLegacyFields` is gone.
+- `setAttachmentTypes`, `attachmentTypesResetKey` and `MIME_TYPE_REGEX` are removed from the controller. MIME validation was dropped by design: the field is the ui-kit `AutocompleteTagInput`, matching the DIAL admin app, so the MIME-rollback cases above no longer apply.
+- Remaining RHF consumers: `ContextAndToolsSection` and `ConversationStartersSection` (via `QuickApp2FormLegacyFields`). The starters section is being replaced by `redesign-conversation-starters`.
+
+Next: 4.1 `ContextAndToolsSection`, then 4.2 (inside `redesign-conversation-starters`), 4.3, 5.x, 6.x.

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { ToolsetTypes } from '@/constants/quick-apps';
 import {
   AgentOrToolsetSchemaKeys,
@@ -20,6 +21,7 @@ const createForm = (overrides: Partial<QuickApp2Form> = {}): QuickApp2Form => ({
   model: 'model-1',
   agentsAndToolsets: [],
   codeInterpreter: false,
+  attachmentsEnabled: false,
   inputAttachmentTypes: [],
   maxInputAttachments: undefined,
   introText: undefined,
@@ -105,6 +107,27 @@ describe('QuickApp2Schema', () => {
     }
     expect(invalidResult.success).toBe(false);
   });
+
+  it('requires at least one attachment type while attachments are enabled', () => {
+    const result = QuickApp2Schema.safeParse(createForm({ attachmentsEnabled: true }));
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toEqual([
+        expect.objectContaining({
+          path: ['inputAttachmentTypes'],
+          message: QuickAppEditorI18nKeys.AttachmentTypesRequired,
+        }),
+      ]);
+    }
+  });
+
+  it.each([
+    ['enabled with a type', { attachmentsEnabled: true, inputAttachmentTypes: ['application/pdf'] }],
+    ['disabled without types', { attachmentsEnabled: false, inputAttachmentTypes: [] }],
+  ])('accepts attachments %s', (_label, overrides) => {
+    expect(QuickApp2Schema.safeParse(createForm(overrides)).success).toBe(true);
+  });
 });
 
 describe('getQuickApp2FormData', () => {
@@ -183,6 +206,14 @@ describe('getQuickApp2FormData', () => {
 
     expect(data.inputAttachmentTypes).toEqual(['image/png']);
     expect(data.maxInputAttachments).toBe(4);
+    expect(data.attachmentsEnabled).toBe(true);
+  });
+
+  it('starts with attachments disabled when the app has no attachment types', () => {
+    const data = getQuickApp2FormData(undefined, ['model-1'], ['model-1'], 'model-1');
+
+    expect(data.attachmentsEnabled).toBe(false);
+    expect(data.inputAttachmentTypes).toEqual([]);
   });
 });
 

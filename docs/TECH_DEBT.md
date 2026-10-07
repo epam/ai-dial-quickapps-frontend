@@ -188,6 +188,5 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 ### User attachments
 
-- src/components/UserAttachments/**
-- Proposed: application_user-attachments
-- Only Attachment types remain here; max attachments moved to the Advanced Settings popup (`application_advanced-settings`).
+- src/components/Attachments/** (the Attachments row in Configuration; the old src/components/UserAttachments/** section was removed)
+- **Spec written** (`openspec/specs/application_user-attachments`, from change `move-attachments-to-settings`): Attachments switch and the admin-style Attachment types MIME tag input with suggestions (ui-kit `AutocompleteTagInput`; suggestions in src/constants/attachment-types.ts). Max attachments stays in the Advanced Settings popup (`application_advanced-settings`).

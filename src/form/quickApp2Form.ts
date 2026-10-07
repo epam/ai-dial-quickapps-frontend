@@ -10,6 +10,7 @@ import {
   ToolsetTypes,
   WEB_FETCH_FEATURE_VALUE,
 } from '@/constants/quick-apps';
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import {
   doesAgentSupportMcp,
   doesModelAllowTemperature,
@@ -69,8 +70,6 @@ export const MaxInputAttachmentsSchema = z.preprocess(
 export const isValidMaxInputAttachments = (value: unknown): boolean =>
   MaxInputAttachmentsSchema.safeParse(value).success;
 
-export const MIME_TYPE_REGEX = /^([a-zA-Z0-9!*\-.+]+|\*)\/([a-zA-Z0-9!*\-.+]+|\*)$/;
-
 export const QuickApp2Schema = z
   .object({
     instructions: z.string(),
@@ -79,6 +78,8 @@ export const QuickApp2Schema = z
     model: z.string(),
     agentsAndToolsets: z.array(AgentOrToolsetSchema),
     codeInterpreter: z.boolean(),
+    // Form-only: drives the Attachments switch and is never sent to chat-api.
+    attachmentsEnabled: z.boolean(),
     inputAttachmentTypes: AttachmentTypesSchema,
     maxInputAttachments: MaxInputAttachmentsSchema,
     introText: z.string().optional(),
@@ -101,6 +102,14 @@ export const QuickApp2Schema = z
     webFetch: z.boolean(),
   })
   .superRefine((data, ctx) => {
+    if (data.attachmentsEnabled && data.inputAttachmentTypes.length === 0) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['inputAttachmentTypes'],
+        message: QuickAppEditorI18nKeys.AttachmentTypesRequired,
+      });
+    }
+
     const modelExists = !data.availableModelIds || data.availableModelIds.includes(data.model);
     if (!modelExists) {
       ctx.addIssue({
@@ -183,6 +192,7 @@ export const getQuickApp2FormData = (
   defaultModelId: string = DEFAULT_QUICK_APPS_MODEL,
 ): QuickApp2Form => {
   const appProperties = app?.applicationProperties as QuickApp2Config | undefined;
+  const inputAttachmentTypes = (app?.inputAttachmentTypes as string[] | undefined) ?? [];
   const model = resolveDefaultModelId(
     appProperties?.orchestrator?.deployment?.deployment_id,
     toolSupportingModelIds,
@@ -216,7 +226,8 @@ export const getQuickApp2FormData = (
     codeInterpreter:
       appProperties?.tool_sets?.some((toolset) => toolset.type === ToolsetTypes.CodeInterpreter) ??
       false,
-    inputAttachmentTypes: (app?.inputAttachmentTypes as string[] | undefined) ?? [],
+    attachmentsEnabled: inputAttachmentTypes.length > 0,
+    inputAttachmentTypes,
     maxInputAttachments: app?.maxInputAttachments as number | undefined,
     introText: appProperties?.conversation_starters?.intro_text,
     chatMessageInputDisabled:

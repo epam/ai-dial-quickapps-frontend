@@ -4,7 +4,6 @@ import { nanoid } from 'nanoid';
 
 import {
   AgentOrToolsetSchemaKeys,
-  MIME_TYPE_REGEX,
   QuickApp2Schema,
   resolveDefaultModelId,
 } from '@/form/quickApp2Form';
@@ -45,15 +44,12 @@ type FormAction =
   | { type: 'UPDATE_STARTER'; index: number; field: StarterField; value: string }
   | { type: 'REMOVE_STARTER'; index: number }
   | { type: 'ADD_DOCUMENTS'; documents: string[] }
-  | { type: 'REMOVE_DOCUMENT'; document: string }
-  | { type: 'SET_ATTACHMENT_TYPES'; tags: string[]; previousTags: string[]; invalidMessage: string }
-  | { type: 'SET_ATTACHMENT_RESET_KEY'; value: number };
+  | { type: 'REMOVE_DOCUMENT'; document: string };
 
 interface FormState {
   values: QuickApp2FormValues;
   initialValues: QuickApp2FormValues;
   errors: QuickApp2FormErrors;
-  attachmentTypesResetKey: number;
   modelStatus: QuickApp2ModelStatus;
 }
 
@@ -66,7 +62,6 @@ export interface UseQuickApp2FormResult {
   errors: QuickApp2FormErrors;
   isDirty: boolean;
   isModelReady: boolean;
-  attachmentTypesResetKey: number;
   setField: <K extends keyof QuickApp2FormValues>(
     field: K,
     value: QuickApp2FormValues[K],
@@ -84,8 +79,6 @@ export interface UseQuickApp2FormResult {
   removeStarter: (index: number) => void;
   addDocuments: (documents: string[]) => void;
   removeDocument: (document: string) => void;
-  setAttachmentTypes: (tags: string[], previousTags: string[], invalidMessage: string) => void;
-  setAttachmentTypesResetKey: (value: number) => void;
 }
 
 const getErrorPath = (path: PropertyKey[]): string =>
@@ -202,7 +195,6 @@ const reduceFormState = (state: FormState, action: FormAction): FormState => {
         ...state,
         values: state.initialValues,
         errors: {},
-        attachmentTypesResetKey: state.attachmentTypesResetKey + 1,
       };
     case 'SET_AGENT_IDS': {
       const currentValues = new Map(
@@ -276,25 +268,6 @@ const reduceFormState = (state: FormState, action: FormAction): FormState => {
         },
         { shouldValidate: true },
       );
-    case 'SET_ATTACHMENT_TYPES': {
-      const addedTags = action.tags.filter((tag) => !action.previousTags.includes(tag));
-      if (addedTags.some((tag) => !MIME_TYPE_REGEX.test(tag))) {
-        return {
-          ...state,
-          errors: { ...state.errors, inputAttachmentTypes: action.invalidMessage },
-          attachmentTypesResetKey: state.attachmentTypesResetKey + 1,
-        };
-      }
-      const errors = { ...state.errors };
-      delete errors.inputAttachmentTypes;
-      return applyValues(
-        { ...state, errors },
-        { inputAttachmentTypes: action.tags },
-        { shouldValidate: true },
-      );
-    }
-    case 'SET_ATTACHMENT_RESET_KEY':
-      return { ...state, attachmentTypesResetKey: action.value };
     default:
       return state;
   }
@@ -308,7 +281,6 @@ export const useQuickApp2Form = ({ defaultValues }: UseQuickApp2FormOptions): Us
       values,
       initialValues: values,
       errors: {},
-      attachmentTypesResetKey: 0,
       modelStatus: QuickApp2ModelStatus.Idle,
     }),
   );
@@ -358,15 +330,6 @@ export const useQuickApp2Form = ({ defaultValues }: UseQuickApp2FormOptions): Us
     (document: string) => dispatch({ type: 'REMOVE_DOCUMENT', document }),
     [],
   );
-  const setAttachmentTypes = useCallback(
-    (tags: string[], previousTags: string[], invalidMessage: string) =>
-      dispatch({ type: 'SET_ATTACHMENT_TYPES', tags, previousTags, invalidMessage }),
-    [],
-  );
-  const setAttachmentTypesResetKey = useCallback(
-    (value: number) => dispatch({ type: 'SET_ATTACHMENT_RESET_KEY', value }),
-    [],
-  );
 
   return useMemo(
     () => ({
@@ -374,7 +337,6 @@ export const useQuickApp2Form = ({ defaultValues }: UseQuickApp2FormOptions): Us
       errors: state.errors,
       isDirty: !isEqual(state.values, state.initialValues),
       isModelReady: state.modelStatus === QuickApp2ModelStatus.Ready && !!state.values.model,
-      attachmentTypesResetKey: state.attachmentTypesResetKey,
       setField,
       setValues,
       syncExternalState,
@@ -388,8 +350,6 @@ export const useQuickApp2Form = ({ defaultValues }: UseQuickApp2FormOptions): Us
       removeStarter,
       addDocuments,
       removeDocument,
-      setAttachmentTypes,
-      setAttachmentTypesResetKey,
     }),
     [
       state,
@@ -406,8 +366,6 @@ export const useQuickApp2Form = ({ defaultValues }: UseQuickApp2FormOptions): Us
       removeStarter,
       addDocuments,
       removeDocument,
-      setAttachmentTypes,
-      setAttachmentTypesResetKey,
     ],
   );
 };

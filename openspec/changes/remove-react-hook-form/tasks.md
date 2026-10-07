@@ -37,8 +37,16 @@ Slicing strategy: **risk-first, then vertical migration**. First characterize th
 - [ ] 4.1 Migrate `ContextAndToolsSection` and its agents/toolsets/JSON callbacks from RHF `Control`/`FieldErrors` to semantic controller actions, preserving JSON error display, conversion, discard behavior, entity metadata, file selection, and feature-gated toggles; update tests and run `npm run lint` and `npm run typecheck`.
   - **Verification:** Run the affected `ContextAndTools` tests plus `src/hooks/tests/use-quick-app2-form.test.tsx`; confirm simple/JSON transitions and file deduplication match the characterization cases.
 
-- [ ] 4.2 Migrate `ConversationStartersSection` and `UserAttachmentsSection` from RHF controllers to typed adapters, preserving starter blur handling, dynamic blank rows, numeric intermediate values, MIME validation, error rendering, and reset/remount recovery; update tests and run `npm run lint` and `npm run typecheck`.
-  - **Verification:** Run the affected `ConversationStarters` and `UserAttachments` tests plus `src/hooks/tests/use-quick-app2-form.test.tsx`; confirm starter identity, trailing blank row, attachment count coercion, and invalid-tag rollback.
+- [ ] 4.2 Migrate `ConversationStartersSection` from RHF controllers to typed adapters, preserving starter blur handling, dynamic blank rows, error rendering, and reset recovery; update tests and run `npm run lint` and `npm run typecheck`.
+  - **Verification:** Run the affected `ConversationStarters` tests plus `src/hooks/tests/use-quick-app2-form.test.tsx`; confirm starter identity and trailing blank row.
+  - **Note:** the in-flight change `redesign-conversation-starters` replaces this section with an Add-ons row and a draft modal; land the migration there rather than on the old section.
+
+- [x] 4.4 Move user attachments off RHF — done in change `move-attachments-to-settings` (epam/ai-dial-quickapps-frontend#199):
+  - `UserAttachmentsSection` is deleted and replaced by an Attachments row in Configuration (`src/components/Attachments/AttachmentsSection.tsx`), driven by `useQuickApp2Form` (`inputAttachmentTypes` plus the form-only `attachmentsEnabled`).
+  - `inputAttachmentTypes` is out of `QuickApp2FormLegacyFields`' `LEGACY_FIELDS`, together with the attachment error bridge.
+  - `attachmentTypesResetKey`, `setAttachmentTypes` and the MIME regex are removed from the controller. That change dropped MIME validation by design (parity with the DIAL admin app), so the "invalid-tag rollback" characterization in 1.3 / 2.3 no longer applies.
+  - Max attachments already moved to the Advanced Settings popup (`populate-advanced-settings-popup`).
+  - **Not a pure refactor:** the UI and validation changed under that change's own specs (`application_user-attachments`, `application_editor-layout`).
 
 - [ ] 4.3 Update `src/components/tests/QuickApp2Form.test.tsx`, `src/components/InstructionsSection/tests/InstructionsSection.test.tsx`, and `src/components/Orchestrator/ModelConfigurationSection/tests/ModelConfigurationSection.test.tsx` to remove RHF test fixtures and exercise the project-owned adapter contracts; verify no test imports RHF and run `npm run lint` and `npm run typecheck`.
   - **Verification:** Run all three named Vitest files and repository search for `react-hook-form`/`@hookform/resolvers`; only dependency cleanup references or planning documents may remain.
