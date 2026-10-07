@@ -63,6 +63,9 @@ const AttachmentsSection: FC<AttachmentsSectionProps> = ({
           disabled={isReadonly}
           tagListLabel={t(QuickAppEditorI18nKeys.AttachmentTypes)}
           getRemoveTagLabel={getRemoveTagLabel}
+          // ui-kit's list `flex` class overrides its `hidden` attribute, leaving an empty
+          // surface under the input. Remove once the ui-kit fix is released.
+          listClassName="[&[hidden]]:hidden"
         />
       ) : undefined}
     </SectionRow>
