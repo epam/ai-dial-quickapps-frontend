@@ -8,13 +8,15 @@ The Skills row of the Add-ons card SHALL list the application's attached skills 
 - the skill name,
 - the version as secondary text, only when the catalog listing supplies one.
 
-Each item SHALL be a button. Its accessible name SHALL come from `quickAppEditor` key `SkillDetails` with the skill name interpolated (e.g. "Web Search details"), and activating it SHALL open the skill details popup for that skill. Items SHALL NOT render a remove control, a bordered chip box or a tooltip. The list SHALL be read from `DataContext.skillsMap` and SHALL make no chat-api request of its own.
+Each item SHALL hold a button whose accessible name comes from `quickAppEditor` key `SkillDetails` with the skill name interpolated (e.g. "Web Search details"); activating it SHALL open the skill details popup for that skill. Items SHALL NOT render a bordered chip box or a tooltip.
+
+In an editable application, each item SHALL also hold a remove button at its end: a ui-kit 2.0 ghost icon button with a trash icon, named by `quickAppEditor` key `RemoveSkill` with the skill name interpolated (e.g. "Remove Web Search"). It SHALL be visible only while the item is hovered or holds keyboard focus, and SHALL stay in the tab order. Activating it SHALL remove that skill id from `agentSkills` without opening the details popup, and SHALL move focus to the first remaining item. Read-only and shared applications SHALL NOT render it. The list SHALL be read from `DataContext.skillsMap` and SHALL make no chat-api request of its own.
 
 #### Scenario: Attached skills are listed
 
 - **WHEN** an application loads with `agentSkills` `["skills/public/web-search", "skills/public/user-research"]` and both are in the catalog listing with names "Web Search" and "User Research"
 - **THEN** the Skills row SHALL show two items in that order, each with an initials avatar ("WS", "UR") and the name
-- **AND** no remove control SHALL be rendered on either item
+- **AND** each item SHALL have a "Remove <name>" button that is hidden until the item is hovered or focused
 
 #### Scenario: Version is shown when available
 
@@ -28,10 +30,18 @@ Each item SHALL be a button. Its accessible name SHALL come from `quickAppEditor
 - **THEN** its item SHALL still be listed, using the last id segment as the name
 - **AND** activating it SHALL open the details popup in its unavailable state
 
+#### Scenario: Remove a skill from the list
+
+- **WHEN** an editable application has `agentSkills` `["a", "b", "c"]` and the user hovers `b` and activates its trash button
+- **THEN** `agentSkills` SHALL become `["a", "c"]` and the form SHALL become dirty
+- **AND** the details popup SHALL NOT open
+- **AND** focus SHALL move to the first remaining item
+
 #### Scenario: Read-only application
 
 - **WHEN** the editor is read-only or the application is shared
 - **THEN** the attached skills SHALL still be listed and SHALL still open the details popup
+- **AND** no remove button SHALL be rendered
 
 ### Requirement: Skill details popup
 
@@ -40,7 +50,7 @@ Activating a Skills row item SHALL open a modal dialog (ui-kit 2.0 `Popup`) for 
 - **Header:** the avatar, a caption from `quickAppEditor` key `SkillTypeLabel` ("Skill"), the skill name, and a close (×) control labelled by `common` key `CloseDialog`. The dialog's accessible name SHALL be the skill name.
 - **Tabs:** ui-kit 2.0 `Tabs`, **Details** (`quickAppEditor` key `SkillDetailsTab`) and **Overview** (`quickAppEditor` key `SkillOverviewTab`). The popup SHALL open on Details.
 - **Footer:**
-  - **Delete** (`quickAppEditor` key `RemoveSkillFromApp`, label "Delete") at the start edge, in the danger style with a trash icon.
+  - **Delete** (`quickAppEditor` key `RemoveSkillFromApp`, label "Delete") at the start edge: a red (danger), solid, standard-size button with a leading trash icon.
   - **Close** (`quickAppEditor` key `Close`) at the end edge.
 
 The open popup's skill id SHALL be local `useState` in the Skills list component. No new context SHALL be introduced.
@@ -305,7 +315,7 @@ The Skills row, Add skill popup and details popup SHALL be keyboard operable, SH
 #### Scenario: Right-to-left locale
 
 - **WHEN** `document.documentElement.dir` is `rtl`
-- **THEN** Skills row items SHALL run avatar → name → version from right to left
+- **THEN** Skills row items SHALL run avatar → name → version from right to left, with the trash button at the end (left)
 - **AND** in the Add skill popup the heading SHALL be at the start (right) and the sort menu at the end (left), and the list columns SHALL run selection → Tags from right to left
 - **AND** in the details popup Delete SHALL be at the start (right) and Close at the end (left)
 - **AND** no icon SHALL be mirrored (avatar, folder, funnel, chevron-down, search, trash and × are not directional)

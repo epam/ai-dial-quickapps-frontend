@@ -142,12 +142,41 @@ describe('SkillsList', () => {
     expect(getButton('deleted-skill details')).toBeTruthy();
   });
 
-  it('renders each item as a details button and no remove control', async () => {
+  it('gives each item a details button followed by a remove button', async () => {
     await render(['skills/public/web-search']);
 
-    const buttons = container.querySelectorAll('button');
-    expect(buttons).toHaveLength(1);
-    expect(buttons[0].getAttribute('aria-label')).toBe('Web Search details');
+    const labels = [...container.querySelectorAll('li button')].map((button) =>
+      button.getAttribute('aria-label'),
+    );
+    expect(labels).toEqual(['Web Search details', 'Remove Web Search']);
+  });
+
+  it('keeps the remove button hidden until the item is hovered or focused', async () => {
+    await render(['skills/public/web-search']);
+
+    const remove = getButton('Remove Web Search') as HTMLButtonElement;
+    expect(remove.className).toContain('opacity-0');
+    expect(remove.className).toContain('group-hover:opacity-100');
+    expect(remove.className).toContain('group-focus-within:opacity-100');
+    expect(remove.tabIndex).not.toBe(-1);
+  });
+
+  it('removes a skill from the list without opening its details', async () => {
+    await render(['skills/public/web-search', 'skills/public/user-research']);
+
+    await click(getButton('Remove User Research'));
+
+    expect(container.querySelector('[data-testid="value"]')?.textContent).toBe(
+      'skills/public/web-search',
+    );
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.activeElement).toBe(getButton('Web Search details'));
+  });
+
+  it('renders no remove button in a read-only application', async () => {
+    await render(['skills/public/web-search'], true);
+
+    expect(getButton('Remove Web Search')).toBeUndefined();
   });
 
   it('renders nothing without attached skills', async () => {

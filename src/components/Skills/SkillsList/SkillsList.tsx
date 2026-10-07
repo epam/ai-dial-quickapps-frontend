@@ -59,6 +59,7 @@ const SkillsList: FC<SkillsListProps> = ({ value, isReadonly, onRemove }) => {
                 name={skill?.name ?? getEntityNameFromId(id)}
                 version={skill?.version}
                 onClick={setOpenSkillId}
+                onRemove={isReadonly ? undefined : handleRemove}
               />
             </li>
           );

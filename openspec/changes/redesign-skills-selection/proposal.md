@@ -8,7 +8,7 @@ The model picker already moved to the catalog list (`src/components/Orchestrator
 
 - **Skills row (Add-ons card).** The chip box is replaced by a plain list. Each item shows the skill's initials avatar, its name and, when chat-api supplies one, its version.
   - Each item is a button that opens the skill details popup.
-  - Items no longer carry an inline remove control. Removal moves into the details popup.
+  - In an editable app, hovering an item (or focusing into it) reveals a trash icon button at its end. It removes the skill from the app directly, without opening the popup. The details popup's Delete does the same.
   - The row's Add action and empty-state description are unchanged.
 - **Add skill popup** replaces the card-grid modal.
   - **Header:** a "Skills catalog" heading with the number of listed skills, and a sort dropdown (Recently updated / Newest / Name A–Z).
@@ -34,15 +34,15 @@ The model picker already moved to the catalog list (`src/components/Orchestrator
 
 ## Alternatives considered
 
-- *Keep chips and the card grid, restyle only* (conservative baseline). Smallest diff, but it doesn't match the design and still gives no way to read a skill. Rejected.
-- *ui-kit 2.0 `Grid` with `selectionMode={GridSelectionMode.MULTIPLE}`.* Available today with a checkbox column and a mixed select-all, so there's no release dependency. Rejected by product decision: the skills list must stay identical to the models catalog list (`ListView`). Its columns, folder rendering and search highlighting would otherwise be re-implemented here and drift.
-- *`ListView` plus a CSS-only checkbox overlay.* It depends on private CSS-module class names, the way the selected-row outline already does (`ModelCatalogModal.tsx:198-210`), and a tri-state header can't be built that way. Rejected.
-- *Reuse the chat's `SkillDetailsSidePanel` / `useSkillDetailsPanelData`.* Both live in private, unpublished packages (`@epam/ai-dial-skills`, `@epam/ai-dial-chat-hooks`). They are also a side drawer, while the mock is a centred popup. Rejected. The popup reuses the published `ContentTab` from `@epam/ai-dial-catalog` instead.
-- *Delete as "delete the skill resource".* Destructive for every other user of the skill and not an editor concern. Rejected; Delete only detaches.
+- _Keep chips and the card grid, restyle only_ (conservative baseline). Smallest diff, but it doesn't match the design and still gives no way to read a skill. Rejected.
+- _ui-kit 2.0 `Grid` with `selectionMode={GridSelectionMode.MULTIPLE}`._ Available today with a checkbox column and a mixed select-all, so there's no release dependency. Rejected by product decision: the skills list must stay identical to the models catalog list (`ListView`). Its columns, folder rendering and search highlighting would otherwise be re-implemented here and drift.
+- _`ListView` plus a CSS-only checkbox overlay._ It depends on private CSS-module class names, the way the selected-row outline already does (`ModelCatalogModal.tsx:198-210`), and a tri-state header can't be built that way. Rejected.
+- _Reuse the chat's `SkillDetailsSidePanel` / `useSkillDetailsPanelData`._ Both live in private, unpublished packages (`@epam/ai-dial-skills`, `@epam/ai-dial-chat-hooks`). They are also a side drawer, while the mock is a centred popup. Rejected. The popup reuses the published `ContentTab` from `@epam/ai-dial-catalog` instead.
+- _Delete as "delete the skill resource"._ Destructive for every other user of the skill and not an editor concern. Rejected; Delete only detaches.
 
 ## Acceptance criteria
 
-- An app with attached skills shows them in the Skills row as avatar + name (+ version when present), with no chip box and no inline remove control.
+- An app with attached skills shows them in the Skills row as avatar + name (+ version when present), with no chip box. Hovering an item reveals a trash button that removes it from `agentSkills`; there is no trash button in a read-only app.
 - Activating a row item opens the details popup. The popup shows the skill name, its description and its rendered `SKILL.md` body; Overview shows author, folder and updated date.
 - In the details popup of an editable app, **Delete** removes that skill from `agentSkills` and closes the popup. The form becomes dirty, and saving writes the same `skills` config as removing a chip did before. Read-only or shared app: no Delete.
 - **Add** opens "Add skill": catalog list, count, sort, search, From filter. The attached skills are pre-checked.
@@ -54,9 +54,11 @@ The model picker already moved to the catalog list (`src/components/Orchestrator
 ## Capabilities
 
 ### New Capabilities
+
 - `skills_catalog`: how attached skills are listed in the editor, how skills are picked from the catalog (Add skill popup), and how a skill's details are shown and detached. This is the spec-id proposed for this source area in `docs/TECH_DEBT.md`.
 
 ### Modified Capabilities
+
 - `application_editor-layout`: "Skills content window is conditional" and the "Existing selections remain visible" scenario of "Presentation change preserves form contract". The Skills content window becomes a list of skill items without inline removal; removal happens through the details popup.
 
 ## Impact

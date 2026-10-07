@@ -27,12 +27,14 @@ The `agentSkills: string[]` form value is owned by `useQuickApp2Form` and flows 
 ## Goals / Non-Goals
 
 **Goals:**
+
 - A Skills row list (avatar, name, optional version) whose items open a details popup.
 - A details popup with Details (rendered `SKILL.md`) and Overview (metadata), plus Delete (detach) and Close.
 - An Add skill popup on the catalog list with multi-select, search, From filter and sort, committing on Add.
 - Delete the `SkillsSelector` / `AgentSkillsField` proxy layer.
 
 **Non-Goals:**
+
 - Any skill resource mutation, favourites, or a file tree inside a skill.
 - Changing `agentSkills`, the save mapping, or the `DataContext` loading strategy.
 - Implementing the catalog multi-select inside this repo.
@@ -40,6 +42,7 @@ The `agentSkills: string[]` form value is owned by `useQuickApp2Form` and flows 
 ## Decisions
 
 ### D1. Component layout
+
 New folder `src/components/Skills/`, one PascalCase folder per component, with tests in `tests/`:
 
 - **`SkillsList/SkillsList.tsx` (`memo`).**
@@ -48,11 +51,11 @@ New folder `src/components/Skills/`, one PascalCase folder per component, with t
   - Owns `openSkillId: string | null` and mounts `SkillDetailsPopup` lazily while it is set.
   - Reads `skillsMap` from `DataContext`.
   - Keeps a ref per item, so focus returns to the opener on close. The kit `Popup` restores focus to the previously focused element; the ref is the fallback if the item was removed.
-- **`SkillsList/SkillListItem.tsx`.** `DeploymentIcon` (size 36, `initialsName`), name, and the optional version via `ItemHeader` `postfix`. This matches the catalog Name cell, so the row and the list look the same. The whole item is a button. Use a ui-kit clickable list-item or button-base component if the MCP search finds one that can hold this content. Otherwise use a native `<button type="button">`, with a comment explaining why (`.claude/rules/all-tsx.md` "Component-First Development").
+- **`SkillsList/SkillListItem.tsx`.** A `group` row: the details button (`DeploymentIcon` size 36 with `initialsName`, name, and the optional version via `ItemHeader` `postfix`), then, in an editable app, a ui-kit `GhostIconButton` with `IconTrash`. The trash button is a sibling, not a child, of the details button, because buttons cannot nest. It is `opacity-0` until `group-hover` / `group-focus-within`, so it stays keyboard reachable. Removal goes through the same `onRemove` + refocus path as the popup's Delete. This matches the catalog Name cell, so the row and the list look the same. The whole item is a button. Use a ui-kit clickable list-item or button-base component if the MCP search finds one that can hold this content. Otherwise use a native `<button type="button">`, with a comment explaining why (`.claude/rules/all-tsx.md` "Component-First Development").
 - **`SkillDetailsPopup/SkillDetailsPopup.tsx`.**
   - Kit `Popup` (`PopupSize.Lg`). The header node is avatar + caption + name, with `ariaLabel` = name.
   - Kit 2.0 `Tabs` with local `activeTab`.
-  - The footer uses `additionalButtons` (Delete, danger variant, `IconTrash`) with `additionalButtonsOnLeft`, and `mainButtons` (Close, primary link appearance). Delete is omitted when `isReadonly`.
+  - The footer uses `additionalButtons` (Delete: red danger solid button with a leading `IconTrash`) with `additionalButtonsOnLeft`, and `mainButtons` (Close, primary link appearance). Delete is omitted when `isReadonly`.
   - Body: `SkillDetailsTab` or `SkillOverviewTab`.
 - **`SkillDetailsPopup/SkillDetailsTab.tsx`.** Uses `useSkillManifest` and renders `ContentTab` (`content`, `description`) or the loading, error and unavailable states.
 - **`SkillDetailsPopup/SkillOverviewTab.tsx`.** A `<dl>` of label/value rows built by the pure `getSkillOverviewRows` (in `src/utils/map-skill-to-catalog-item.ts`, next to the folder logic it shares).
@@ -60,12 +63,14 @@ New folder `src/components/Skills/`, one PascalCase folder per component, with t
 
 `AgentSkillsFormSection.tsx` keeps owning `isAddModalOpen` and the `AddOnRow`. It renders `<SkillsList>` as the row content and lazily mounts `<AddSkillsModal>` while open. `common/SkillsSelector/**` and `AgentSkills/AgentSkillsField.tsx` are deleted.
 
-*Alternative:* keep `SkillsSelector` as the owner of both popups. Rejected: it is the proxy layer `docs/TECH_DEBT.md:16` asks to remove, and splitting the list and picker matches `DefaultModelBlock` / `ModelCatalogModal`.
+_Alternative:_ keep `SkillsSelector` as the owner of both popups. Rejected: it is the proxy layer `docs/TECH_DEBT.md:16` asks to remove, and splitting the list and picker matches `DefaultModelBlock` / `ModelCatalogModal`.
 
 ### D2. Lazy loading
+
 `AddSkillsModal` and `SkillDetailsPopup` both import from `@epam/ai-dial-catalog` (`ListView`, `Filter`, `ContentTab`). The package's index bundles ag-grid, so both are `React.lazy` + `Suspense fallback={null}`, exactly as in `DefaultModelBlock.tsx:19-24`. The editor's initial chunk then doesn't grow. `SkillListItem` imports only `@epam/ai-dial-chat-shared`, which is already in the main chunk.
 
 ### D3. Catalog mapping (`src/utils/map-skill-to-catalog-item.ts`)
+
 `mapSkillToCatalogItem(skill: DialSkill, { userBucket, scopeLabels }): CatalogItem` is a pure function, mirroring `mapModelToCatalogItem`:
 
 - `id`: the skill id.
@@ -84,6 +89,7 @@ The scope/folder resolution is extracted from `map-model-to-catalog-item.ts` int
 `DialSkill` gains the optional `bucket`, `path`, `version` and `tags`. `mapCoreToDialSkill` copies `bucket` and `path`, and copies `version` and `tags` only when the DTO carries them (read defensively via `'version' in item`, since the generated type lacks them). When chat-api adds the fields, they appear with no code change here.
 
 ### D4. Selection semantics (Add skill popup)
+
 - `checkedIds` starts as `[...agentSkills]`. Toggling on appends the id; toggling off removes it.
 - On Add: `[...agentSkills.filter(id => checked.has(id) || !listedIds.has(id)), ...checkedIds.filter(id => !agentSkills.includes(id))]`.
   - This keeps today's "existing first, then newly added" order (`SkillsModal.tsx:136-140`).
@@ -93,6 +99,7 @@ The scope/folder resolution is extracted from `map-model-to-catalog-item.ts` int
 - Only the row checkbox, a row click and Space toggle. Enter on a row is left to the catalog's default.
 
 ### D5. Upstream `ListView` multi-select contract (ai-dial-chat `libs/catalog`)
+
 Proposed additive props, so existing single-select callers are unaffected:
 
 ```ts
@@ -109,9 +116,10 @@ selectAllAriaLabel?: string;
 
 This repo consumes those props, and the Add skill slice (tasks §4) waits for the release.
 
-*Alternative:* ui-kit `Grid` with `GridSelectionMode.MULTIPLE`, which works today. Declined by product decision (see proposal).
+_Alternative:_ ui-kit `Grid` with `GridSelectionMode.MULTIPLE`, which works today. Declined by product decision (see proposal).
 
 ### D6. Manifest fetch and parsing
+
 - **Client.** `fetchSkillManifest(skill: DialSkill, signal?)` in `dialClient.ts` calls `skillsApi.downloadSkillFile({ bucket, path, filePath: SKILL_MANIFEST_FILE }, { signal })` and returns `await blob.text()`.
   - `bucket` and `path` come from `DialSkill.bucket` / `path`.
   - Fallback: split the id `skills/{bucket}/{...path}` and decode the segments.
@@ -126,15 +134,18 @@ This repo consumes those props, and the Add skill slice (tasks §4) waits for th
   - It refetches on `skill.id` or a retry nonce. It returns `Idle` without fetching when `skill` is undefined (the unavailable state).
 - **Caching.** None: the popup is opened deliberately, and the content can change between opens.
 
-*Alternative:* `getSkillMetadata` / `listSkillFiles` first, to resolve the manifest path the way the chat does (`resolveSkillManifestFileId`). Rejected for now: `downloadSkillFile` with `filePath=SKILL.md` is the documented chat-api contract. If a Core version stores it under `files/`, the error state shows Retry and this becomes a follow-up (see Open questions).
+_Alternative:_ `getSkillMetadata` / `listSkillFiles` first, to resolve the manifest path the way the chat does (`resolveSkillManifestFileId`). Rejected for now: `downloadSkillFile` with `filePath=SKILL.md` is the documented chat-api contract. If a Core version stores it under `files/`, the error state shows Retry and this becomes a follow-up (see Open questions).
 
-### D7. Footer and danger button
-The kit `Popup` renders `ButtonProps` from data. Delete uses `variant: ButtonVariant.Danger` (present in the installed kit), `iconBefore: <IconTrash/>` and `additionalButtonsOnLeft`. Close uses `variant: Primary, appearance: Link`. Delete doesn't need a confirmation dialog: it only edits the unsaved form, so the change can be undone by not saving.
+### D7. Footer buttons
+
+The kit `Popup` renders `ButtonProps` from data. Delete follows the design's button spec — `variant: ButtonVariant.Danger`, `appearance: ButtonAppearance.Solid`, the default standard size and `iconBefore: <IconTrash/>` and `additionalButtonsOnLeft`. Close uses `variant: Primary, appearance: Link`. Delete doesn't need a confirmation dialog: it only edits the unsaved form, so the change can be undone by not saving.
 
 ### D8. i18n
+
 All strings use `quickAppEditor`, except the reused `common` `Add`, `Cancel`, `CloseDialog` and `ClearSearch`. The keys are added to `QuickAppEditorI18nKeys` in `src/constants/i18n.ts` and `src/i18n/locales/quick-app-editor.json`. `SkillDetails` and `SelectSkill` take a `{{name}}` interpolation. The Overview date uses `Intl.DateTimeFormat(language, { dateStyle: 'medium' })`.
 
 ### D9. RTL
+
 - Row items: `flex items-center gap-2.5` and `text-start`.
 - Popup header: `flex gap-3`.
 - Overview rows: a `grid grid-cols-[auto_1fr] gap-x-6`.

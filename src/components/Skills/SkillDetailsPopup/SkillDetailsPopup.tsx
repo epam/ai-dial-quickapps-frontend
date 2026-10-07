@@ -73,7 +73,9 @@ export const SkillDetailsPopup: FC<SkillDetailsPopupProps> = ({
         : [
             {
               label: t(QuickAppEditorI18nKeys.RemoveSkillFromApp),
+              // Design: red (Danger) / Solid / Standard with a leading trash icon.
               variant: ButtonVariant.Danger,
+              appearance: ButtonAppearance.Solid,
               iconBefore: <IconTrash size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} />,
               onClick: handleRemove,
             },

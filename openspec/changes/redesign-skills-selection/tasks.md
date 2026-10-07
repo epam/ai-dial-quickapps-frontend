@@ -77,7 +77,7 @@ Depends on 1.
   - items are listed in order with their initials and name;
   - the version is shown only when present;
   - a missing skill shows the id-derived name;
-  - no remove button is rendered;
+  - (superseded by 6.x) no remove button is rendered;
   - each item is a button named "<name> details".
   - Update the Skills cases in `src/components/AddOns/tests/AddOnsSection.test.tsx`, `src/components/tests/QuickApp2Form.test.tsx` and `src/components/tests/QuickApp2Form.behavior.test.tsx` that relied on chips or chip removal.
   - Verification: `npx vitest run src/components/Skills src/components/AddOns src/components/tests/QuickApp2Form.test.tsx src/components/tests/QuickApp2Form.behavior.test.tsx`, `npm run lint`, `npm run typecheck`, then the full `npm test`.
@@ -96,7 +96,7 @@ Depends on 2.
   - the kit `Popup` `open`, `PopupSize.Lg`, `ariaLabel` = name, `closeAriaLabel` `common` `CloseDialog`;
   - a header node with `DeploymentIcon`, the `SkillTypeLabel` caption and the name;
   - kit 2.0 `Tabs` (Details / Overview) with local `activeTab`, defaulting to Details;
-  - `additionalButtons` = Delete (`ButtonVariant.Danger`, `IconTrash`), omitted when `isReadonly`, with `additionalButtonsOnLeft`;
+  - `additionalButtons` = Delete (`ButtonVariant.Danger`, `ButtonAppearance.Solid`, standard size, leading `IconTrash`), omitted when `isReadonly`, with `additionalButtonsOnLeft`;
   - `mainButtons` = Close (`quickAppEditor` `Close`, primary link). Delete calls `onRemove(skillId)` and then `onClose()`.
 - [x] 3.4 Wire the popup into `SkillsList.tsx` through `React.lazy` + `Suspense fallback={null}`, using the `DefaultModelBlock.tsx:19-24` pattern (design D2). It is mounted while `openSkillId != null`, and `onRemove` is forwarded. Focus returns to the opener item on close: rely on `Popup`'s focus restore and fall back to the list's first item when the opener was removed.
 - [x] 3.5 Component tests:
@@ -164,3 +164,16 @@ Depends on 3 (and on 4 for the Add skill part).
   - remove the "AgentSkillsField just proxy SkillsSelectors" item;
   - add follow-ups: a chat-api ask for `version`/`tags` on `SkillMetadataItemDto`; resolving the manifest path via `listSkillFiles` for Core versions that store it under `files/`; an optional bundled-file tree in the Details tab.
 - [x] 5.3 Final verification: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` (confirms that both popups land in the lazy catalog chunk, not the main chunk), `openspec validate redesign-skills-selection --strict`.
+
+## 6. Hover remove button on Skills row items
+
+Depends on 2 and 3. Added after review: the design shows a trash icon on hover.
+
+- [x] 6.1 Add the `quickAppEditor` key `RemoveSkill` ("Remove {{name}}") to `src/constants/i18n.ts` and `src/i18n/locales/quick-app-editor.json`.
+- [x] 6.2 In `src/components/Skills/SkillsList/SkillListItem.tsx`, wrap the details button and a ui-kit `GhostIconButton` (`IconTrash`, `DIAL_ICON_SIZE.SM` / `DIAL_KIT_ICON_STROKE`, `aria-label` = `RemoveSkill` with `{ name }`) in a `group` row. The trash button is `opacity-0` and becomes visible on `group-hover` / `group-focus-within`, and is rendered only when an `onRemove` prop is passed. In `SkillsList.tsx`, pass `onRemove` to every item unless `isReadonly`, through the existing `handleRemove` refocus path. Use logical classes only (`ms-*`, `pe-*`).
+- [x] 6.3 Tests in `src/components/Skills/SkillsList/tests/SkillsList.test.tsx`:
+  - every item has a "Remove <name>" button in an editable app;
+  - activating it removes that id, does not open the popup, and focuses the first remaining item;
+  - there is no remove button when read-only;
+  - the trash button sits after the details button in DOM order (RTL: at the end).
+  - Verification: `npx vitest run src/components/Skills`, `npm run lint`, `npm run typecheck`, then `npm test`.

@@ -72,5 +72,6 @@
   "Loading skills…": "Loading skills…",
   "Failed to load skills": "Failed to load skills",
   "Select {{name}}": "Select {{name}}",
-  "Select all skills": "Select all skills"
+  "Select all skills": "Select all skills",
+  "Remove {{name}}": "Remove {{name}}"
 }

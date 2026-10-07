@@ -113,6 +113,7 @@ export enum QuickAppEditorI18nKeys {
   FailedToLoadSkills = 'Failed to load skills',
   SelectSkill = 'Select {{name}}',
   SelectAllSkills = 'Select all skills',
+  RemoveSkill = 'Remove {{name}}',
   AdvancedSettings = 'Advanced settings',
   Settings = 'Settings',
   Advanced = 'Advanced',
