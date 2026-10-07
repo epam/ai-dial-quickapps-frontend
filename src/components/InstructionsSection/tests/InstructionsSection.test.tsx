@@ -7,23 +7,29 @@ import InstructionsSection from '../InstructionsSection';
 vi.mock('@/hooks/useTranslation', () => ({
   useTranslation: () => ({ language: 'en', t: (key: string) => key }),
 }));
-vi.mock('@/components/common/MarkdownEditor/MarkdownEditorContainer', () => ({
-  DialMarkdownEditorContainer: ({
-    value,
-    onChangeValue,
-    placeholder,
-  }: {
-    value: string;
-    onChangeValue: (value: string) => void;
-    placeholder?: string;
-  }) => (
-    <textarea
-      aria-label="Instructions editor"
-      placeholder={placeholder}
-      value={value}
-      onChange={(event) => onChangeValue(event.target.value)}
-    />
-  ),
+vi.mock('@/context/ThemeContext', () => ({
+  useThemeContext: () => ({ currentTheme: { id: 'light' } }),
+}));
+vi.mock('@epam/ai-dial-ui-kit', () => ({
+  EditorThemes: { dark: 'dark', light: 'light' },
+  LazyMarkdownEditor: async () => ({
+    MarkdownEditor: ({
+      value,
+      onChange,
+      placeholder,
+    }: {
+      value: string;
+      onChange: (value: string) => void;
+      placeholder?: string;
+    }) => (
+      <textarea
+        aria-label="Instructions editor"
+        placeholder={placeholder}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    ),
+  }),
 }));
 
 const TestForm = () => {
@@ -47,8 +53,8 @@ afterEach(() => {
 });
 
 describe('InstructionsSection', () => {
-  it('renders the instructions editor immediately in a standalone section', () => {
-    act(() => root.render(<TestForm />));
+  it('renders the instructions editor in a standalone section', async () => {
+    await act(async () => root.render(<TestForm />));
 
     expect(container.textContent).toContain('Instructions');
     const heading = container.querySelector('section[aria-label="Instructions"] > h2');
@@ -67,8 +73,8 @@ describe('InstructionsSection', () => {
     expect(container.querySelector('[aria-expanded]')).toBeNull();
   });
 
-  it('keeps the existing instructions value bound to the editor', () => {
-    act(() => root.render(<TestForm />));
+  it('keeps the existing instructions value bound to the editor', async () => {
+    await act(async () => root.render(<TestForm />));
 
     const editor = container.querySelector('[aria-label="Instructions editor"]') as HTMLTextAreaElement;
     expect(editor.value).toBe('Existing instructions');

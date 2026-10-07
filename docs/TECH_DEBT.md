@@ -191,7 +191,7 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 ### Feature flags / runtime config
 
-- utils/is-env-flag-enabled.ts, utils/user-config.ts, src/app/api/settings, src/app/api/session
+- utils/user-config.ts, src/app/api/settings, src/app/api/session
 - Standalone → app-configuration (name's debatable — open to a better slug)
 
 ### Advanced settings
