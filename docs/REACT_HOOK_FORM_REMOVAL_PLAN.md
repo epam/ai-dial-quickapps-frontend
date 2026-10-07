@@ -210,3 +210,12 @@ Temporary scaffolding:
 State at pause: typecheck, lint and the full Vitest suite (26 files, 206 tests) pass.
 
 Next: 4.1 `ContextAndToolsSection` (uses the controller actions `setAgentIds`, `configureAgent`, `switchToJsonView`, `switchToSimpleView`, `discardJson`), then 4.2, 4.3, 5.x, 6.x.
+
+### Update after merging `development` (2026-10-07)
+
+`development` changed the form in ways that make parts of the plan obsolete:
+
+- The JSON view is gone (`isJsonView`/`agentsAndToolsetsJson` removed from the schema). The controller's `switchToJsonView`/`switchToSimpleView`/`discardJson` were removed too. Ignore the JSON items in tasks 4.1 and 1.3.
+- `AddOnsSection` (agent skills + agents/toolsets) is migrated to value props and no longer uses RHF. `ContextAndToolsSection` now only has context files and toggles.
+- `UserAttachmentsSection` uses a value-controlled `TagInput`, so `attachmentTypesResetKey` is no longer consumed by the UI. Remove it from the controller in 4.2.
+- Remaining RHF consumers: `ContextAndToolsSection`, `ConversationStartersSection`, `UserAttachmentsSection` (via `QuickApp2FormLegacyFields`).
