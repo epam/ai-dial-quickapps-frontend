@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { DialSkill } from '@/types/dial-entities';
 import { ManifestStatus, type SkillManifest } from '@/types/skill-manifest';
-import { fetchSkillManifest } from '@/utils/dialClient';
+import { fetchSkillManifest } from '@/utils/dial-client';
 import { parseSkillManifest } from '@/utils/parse-skill-manifest';
 
 export interface UseSkillManifestResult {

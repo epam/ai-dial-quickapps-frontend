@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { DialSkill } from '@/types/dial-entities';
 
-import { fetchSkillManifest, mapCoreToDialSkill } from '../dialClient';
+import { fetchSkillManifest, mapCoreToDialSkill } from '../dial-client';
 
 const { downloadSkillFile } = vi.hoisted(() => ({ downloadSkillFile: vi.fn() }));
 
