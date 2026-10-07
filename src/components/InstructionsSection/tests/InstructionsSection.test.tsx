@@ -43,15 +43,18 @@ describe('InstructionsSection', () => {
     act(() => root.render(<TestForm />));
 
     expect(container.textContent).toContain('Instructions');
-    expect(container.querySelector('.dial-medium-semi-text')?.className).toContain('text-primary');
+    const heading = container.querySelector('section[aria-label="Instructions"] > h2');
+    expect(heading?.className).toContain('text-primary');
+    expect(heading?.querySelector('.dial-h3-text')?.textContent).toBe('Instructions');
+    expect(heading?.textContent).toContain('*');
     expect(container.textContent).not.toContain('Orchestrator');
     expect(container.textContent).not.toContain('Model');
     expect(container.textContent).not.toContain('Temperature');
     expect(container.textContent).not.toContain('Process files');
     const instructionsSection = container.querySelector('section[aria-label="Instructions"]');
-    expect(instructionsSection?.className).toContain('rounded-[24px]');
+    expect(instructionsSection?.className).toContain('rounded-[20px]');
     expect(instructionsSection?.className).toContain('bg-layer-raised');
-    expect(instructionsSection?.className).toContain('shadow-sm');
+    expect(instructionsSection?.className).toContain('shadow-md');
     expect(container.querySelector('[aria-label="Instructions editor"]')).toBeTruthy();
     expect(container.querySelector('[aria-expanded]')).toBeNull();
   });
