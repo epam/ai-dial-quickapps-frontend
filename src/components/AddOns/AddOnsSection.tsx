@@ -10,7 +10,7 @@ import { Translation } from '@/types/translation';
 import AgentSkillsFormSection from '@/components/AgentSkills/AgentSkillsFormSection';
 import { AddOnRow } from '@/components/AddOns/AddOnRow';
 import { AgentsAndToolsetsField } from '@/components/ContextAndTools/AgentsAndToolsetsField';
-
+import { Section } from '@/components/common/Section/Section';
 
 export interface AddOnsSectionProps {
   control: Control<QuickApp2FormType>;
@@ -46,12 +46,8 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
   const { t } = useTranslation(Translation.QuickAppEditor);
 
   return (
-    <section
-      aria-label={t(QuickAppEditorI18nKeys.AddOns)}
-      className="mt-4 rounded-[24px] bg-layer-raised p-8 shadow-sm"
-    >
-      <h2 className="dial-medium-semi-text">{t(QuickAppEditorI18nKeys.AddOns)}</h2>
-      <div className="mt-4 flex flex-col gap-10">
+    <Section title={t(QuickAppEditorI18nKeys.AddOns)}>
+      <div className="flex flex-col gap-10">
         <AgentSkillsFormSection control={control} isReadonly={isReadonly} tooltip={tooltip} />
 
         <AddOnRow
@@ -75,7 +71,7 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
           />
         </AddOnRow>
       </div>
-    </section>
+    </Section>
   );
 };
 
