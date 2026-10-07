@@ -32,6 +32,7 @@ const testContext = vi.hoisted(() => {
         id: string;
         applicationProperties: unknown;
         isShared?: boolean;
+        inputAttachmentTypes?: string[];
       },
       settings: {
         defaultModelId: 'model-1',
@@ -81,13 +82,35 @@ vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationS
     onModelChange,
     advancedSettings,
     onAdvancedSettingsSave,
+    attachmentsEnabled,
+    onAttachmentsEnabledChange,
+    inputAttachmentTypes,
+    onInputAttachmentTypesChange,
+    errors,
   }: {
     model: string;
     onModelChange: (value: string) => void;
     advancedSettings: AdvancedSettingsValues;
     onAdvancedSettingsSave: (values: AdvancedSettingsValues) => void;
+    attachmentsEnabled: boolean;
+    onAttachmentsEnabledChange: (isEnabled: boolean) => void;
+    inputAttachmentTypes: string[];
+    onInputAttachmentTypesChange: (mimeTypes: string[]) => void;
+    errors: Record<string, string | undefined>;
   }) => (
     <div>
+      <output data-testid="attachments-enabled">{String(attachmentsEnabled)}</output>
+      <output data-testid="attachment-value">{inputAttachmentTypes.join('|')}</output>
+      <output data-testid="attachment-error">{errors.inputAttachmentTypes ?? ''}</output>
+      <button type="button" onClick={() => onAttachmentsEnabledChange(true)}>
+        Turn attachments on
+      </button>
+      <button type="button" onClick={() => onAttachmentsEnabledChange(false)}>
+        Turn attachments off
+      </button>
+      <button type="button" onClick={() => onInputAttachmentTypesChange(['application/pdf'])}>
+        Select PDF
+      </button>
       <input aria-label="Model" value={model} onChange={(event) => onModelChange(event.target.value)} />
       <button
         type="button"
@@ -105,26 +128,9 @@ vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationS
 });
 
 vi.mock('@/components/QuickApp2FormLegacyFields/QuickApp2FormLegacyFields', () => {
-  const LegacyFieldsTest = ({
-    values,
-    errors,
-    startersSettingsTooltip,
-    onAttachmentTypesChange,
-  }: {
-    values: QuickApp2Form;
-    errors: Record<string, string | undefined>;
-    startersSettingsTooltip?: string;
-    onAttachmentTypesChange: (tags: string[], previousTags: string[]) => void;
-  }) => (
+  const LegacyFieldsTest = ({ startersSettingsTooltip }: { startersSettingsTooltip?: string }) => (
     <div>
       <output data-testid="starters-hint">{startersSettingsTooltip ?? ''}</output>
-      <button
-        type="button"
-        data-testid="add-invalid-mime"
-        onClick={() => onAttachmentTypesChange(['not-a-mime'], values.inputAttachmentTypes)}
-      />
-      <output data-testid="attachment-error">{errors.inputAttachmentTypes}</output>
-      <output data-testid="attachment-value">{values.inputAttachmentTypes.join('|')}</output>
     </div>
   );
 
@@ -132,7 +138,6 @@ vi.mock('@/components/QuickApp2FormLegacyFields/QuickApp2FormLegacyFields', () =
 });
 vi.mock('@/components/ContextAndTools/ContextAndToolsSection', () => ({ default: () => null }));
 vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => ({ default: () => null }));
-vi.mock('@/components/UserAttachments/UserAttachmentsSection', () => ({ default: () => null }));
 vi.mock('@/components/ConversationStarters/ConversationStartersSection', () => ({
   default: () => null,
 }));
@@ -324,20 +329,68 @@ describe('QuickApp2Form observable behavior', () => {
     expect(onDirtyChange).toHaveBeenLastCalledWith(false);
   });
 
-  it('rolls back invalid MIME tags', async () => {
-    renderForm();
+  it('submits the loaded attachment types unchanged', async () => {
+    testContext.appContext.app = {
+      id: 'app',
+      applicationProperties: {},
+      inputAttachmentTypes: ['audio/mpeg', 'image/*'],
+    };
+    const { onSave, onDirtyChange } = renderForm();
 
-    await act(async () => {
-      container.querySelector('[data-testid="add-invalid-mime"]')?.dispatchEvent(
-        new MouseEvent('click', { bubbles: true }),
-      );
-      await Promise.resolve();
-    });
-
-    expect(container.querySelector('[data-testid="attachment-error"]')?.textContent).toBe(
-      QuickAppEditorI18nKeys.PleaseMatchTheMimeFormat,
+    expect(container.querySelector('[data-testid="attachment-value"]')?.textContent).toBe(
+      'audio/mpeg|image/*',
     );
-    expect(container.querySelector('[data-testid="attachment-value"]')?.textContent).toBe('');
+    expect(onDirtyChange).not.toHaveBeenCalledWith(true);
+
+    await submitForm();
+    expect(onSave.mock.calls[0][0]).toMatchObject({ inputAttachmentTypes: ['audio/mpeg', 'image/*'] });
+  });
+
+  it('submits no attachment types and marks the form dirty after attachments are turned off', async () => {
+    testContext.appContext.app = {
+      id: 'app',
+      applicationProperties: {},
+      inputAttachmentTypes: ['application/pdf'],
+    };
+    const { onSave, onDirtyChange } = renderForm();
+
+    act(() => getButtonByText('Turn attachments off').click());
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+    expect(container.querySelector('[data-testid="attachments-enabled"]')?.textContent).toBe('false');
+
+    await submitForm();
+    expect(onSave.mock.calls[0][0]).toMatchObject({ inputAttachmentTypes: [] });
+  });
+
+  it('blocks save and auto-save while attachments are enabled without a type', async () => {
+    const { onSave, onDirtyChange } = renderForm();
+
+    act(() => getButtonByText('Turn attachments on').click());
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+    expect(container.querySelector('[data-testid="attachment-error"]')?.textContent).toBe(
+      QuickAppEditorI18nKeys.AttachmentTypesRequired,
+    );
+
+    await submitForm();
+    await triggerSave({ isAutoSave: true });
+    expect(onSave).not.toHaveBeenCalled();
+
+    act(() => getButtonByText('Select PDF').click());
+    expect(container.querySelector('[data-testid="attachment-error"]')?.textContent).toBe('');
+
+    await submitForm();
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(onSave.mock.calls[0][0]).toMatchObject({ inputAttachmentTypes: ['application/pdf'] });
+  });
+
+  it('keeps the form clean when attachments are turned on and off without a selection', () => {
+    const { onDirtyChange } = renderForm();
+
+    act(() => getButtonByText('Turn attachments on').click());
+    act(() => getButtonByText('Turn attachments off').click());
+
+    expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+    expect(container.querySelector('[data-testid="attachment-error"]')?.textContent).toBe('');
   });
 
   it('resolves the model and reports ready when model data arrives asynchronously', () => {

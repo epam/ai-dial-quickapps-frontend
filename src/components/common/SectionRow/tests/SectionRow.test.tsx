@@ -116,4 +116,12 @@ describe('SectionRow', () => {
 
     expect(container.querySelector('h3')?.className).toContain('dial-caption-lead-semi-text');
   });
+
+  it('styles the title as a tiny lead semibold primary title in the setting variant', () => {
+    act(() => root.render(<SectionRow title="Attachments" variant={SectionRowVariant.Setting} />));
+
+    const titleClassName = container.querySelector('h3')?.className;
+    expect(titleClassName).toContain('dial-tiny-lead-semi-text');
+    expect(titleClassName).toContain('text-primary');
+  });
 });

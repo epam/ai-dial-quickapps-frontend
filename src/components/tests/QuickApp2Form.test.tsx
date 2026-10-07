@@ -41,7 +41,6 @@ vi.mock('@/components/AddOns/AddOnsSection', () => ({
   ),
 }));
 vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => ({ default: () => null }));
-vi.mock('@/components/UserAttachments/UserAttachmentsSection', () => ({ default: () => null }));
 vi.mock('@/components/ConversationStarters/ConversationStartersSection', () => ({ default: () => null }));
 
 let root: Root;

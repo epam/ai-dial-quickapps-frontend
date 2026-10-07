@@ -32,6 +32,12 @@ const VARIANT_STYLES: Record<SectionRowVariant, SectionRowStyles> = {
     description: 'dial-tiny-text text-secondary',
     content: '',
   },
+  [SectionRowVariant.Setting]: {
+    header: 'gap-4',
+    title: 'dial-tiny-lead-semi-text text-primary',
+    description: 'dial-tiny-text text-secondary',
+    content: '',
+  },
 };
 
 export const SectionRow: FC<SectionRowProps> = ({

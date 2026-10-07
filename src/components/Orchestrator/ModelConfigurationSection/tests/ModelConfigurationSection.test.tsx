@@ -67,6 +67,15 @@ vi.mock('@/components/Settings/SettingsSection', () => ({
     <div data-testid="settings-section" data-readonly={String(isReadonly)} />
   ),
 }));
+vi.mock('@/components/Attachments/AttachmentsSection', () => ({
+  default: ({ value, isReadonly }: { value: string[]; isReadonly: boolean }) => (
+    <div
+      data-testid="attachments-section"
+      data-value={value.join(',')}
+      data-readonly={String(isReadonly)}
+    />
+  ),
+}));
 
 interface TestFormProps {
   isReadonly?: boolean;
@@ -97,6 +106,10 @@ const TestForm = ({
       isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
       advancedSettings={{ maxInputAttachments: undefined, timestamp: true, fileTools: false }}
       onAdvancedSettingsSave={vi.fn()}
+      attachmentsEnabled
+      onAttachmentsEnabledChange={vi.fn()}
+      inputAttachmentTypes={['application/pdf']}
+      onInputAttachmentTypesChange={vi.fn()}
     />
   );
 };
@@ -136,6 +149,15 @@ describe('ModelConfigurationSection', () => {
     const settings = container.querySelector('[data-testid="settings-section"]');
     expect(settings?.getAttribute('data-readonly')).toBe('true');
     expect(settings?.previousElementSibling?.textContent).toContain('Process files toggle');
+  });
+
+  it('renders the Attachments row directly after the Settings row with the form value', () => {
+    act(() => root.render(<TestForm isReadonly />));
+
+    const attachments = container.querySelector('[data-testid="attachments-section"]');
+    expect(attachments?.previousElementSibling?.getAttribute('data-testid')).toBe('settings-section');
+    expect(attachments?.getAttribute('data-value')).toBe('application/pdf');
+    expect(attachments?.getAttribute('data-readonly')).toBe('true');
   });
 
   it('renders the model picker without a separate "Model" form label', () => {

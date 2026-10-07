@@ -31,5 +31,11 @@
   "Enter a whole number greater than 0": "Enter a whole number greater than 0",
   "Gives the agent the current date and time, helping it understand references like \"today,\" deadlines, and schedules.": "Gives the agent the current date and time, helping it understand references like \"today,\" deadlines, and schedules.",
   "Built-in file tools": "Built-in file tools",
-  "Lets the agent browse, search, read, and edit files within the app’s file context. Includes write access, so worth reviewing for agents handling sensitive files.": "Lets the agent browse, search, read, and edit files within the app’s file context. Includes write access, so worth reviewing for agents handling sensitive files."
+  "Lets the agent browse, search, read, and edit files within the app’s file context. Includes write access, so worth reviewing for agents handling sensitive files.": "Lets the agent browse, search, read, and edit files within the app’s file context. Includes write access, so worth reviewing for agents handling sensitive files.",
+  "Attachments": "Attachments",
+  "Lets end users upload files during a conversation. Useful for sharing documents, images, or data the agent needs to process.": "Lets end users upload files during a conversation. Useful for sharing documents, images, or data the agent needs to process.",
+  "Select at least one attachment type": "Select at least one attachment type",
+  "Enter attachment types": "Enter attachment types",
+  "Choose from suggested MIME types or add a new one using <type>/<subtype>.": "Choose from suggested MIME types or add a new one using <type>/<subtype>.",
+  "Remove {{type}}": "Remove {{type}}"
 }

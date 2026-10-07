@@ -31,22 +31,15 @@ vi.mock('@/components/ConversationStarters/ConversationStartersSection', () => (
   ),
 }));
 
-vi.mock('@/components/UserAttachments/UserAttachmentsSection', () => ({
-  default: ({ errors }: { errors: Record<string, { message?: string } | undefined> }) => (
-    <output data-testid="attachment-error">{errors.inputAttachmentTypes?.message}</output>
-  ),
-}));
-
 import QuickApp2FormLegacyFields from '../QuickApp2FormLegacyFields';
 
 const initialValues = getQuickApp2FormData(undefined, ['model-1'], ['model-1'], 'model-1');
 
 interface HarnessProps {
-  errors?: Record<string, string | undefined>;
   starters?: QuickApp2FormValues['starters'];
 }
 
-const Harness = ({ errors = {}, starters }: HarnessProps) => {
+const Harness = ({ starters }: HarnessProps) => {
   const [values, setValues] = useState<QuickApp2FormValues>(
     starters ? { ...initialValues, starters } : initialValues,
   );
@@ -60,7 +53,6 @@ const Harness = ({ errors = {}, starters }: HarnessProps) => {
       />
       <QuickApp2FormLegacyFields
         values={values}
-        errors={errors}
         isReadonly={false}
         isCodeInterpreterEnabled={false}
         isWebFetchEnabled={false}
@@ -69,7 +61,6 @@ const Harness = ({ errors = {}, starters }: HarnessProps) => {
         onValuesChange={(changedValues) =>
           setValues((current) => ({ ...current, ...changedValues }))
         }
-        onAttachmentTypesChange={vi.fn()}
       />
     </>
   );
@@ -92,12 +83,9 @@ afterEach(() => {
 
 describe('QuickApp2FormLegacyFields', () => {
   it('bridges legacy RHF fields into the custom form state and back', async () => {
-    act(() => root.render(<Harness errors={{ inputAttachmentTypes: 'Invalid MIME type' }} />));
+    act(() => root.render(<Harness />));
 
     expect(container.querySelector('[data-testid="document-value"]')?.textContent).toBe('');
-    expect(container.querySelector('[data-testid="attachment-error"]')?.textContent).toBe(
-      'Invalid MIME type',
-    );
 
     await act(async () => {
       container
