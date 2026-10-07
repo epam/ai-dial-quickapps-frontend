@@ -25,8 +25,20 @@ export enum TimestampInjectionStrategy {
   ToolCall = 'tool_call',
 }
 
+export enum AttachmentStrategyType {
+  LazyOnDemand = 'lazy_on_demand',
+}
+
+export enum SystemPromptType {
+  Custom = 'custom',
+}
+
+export enum ContextType {
+  File = 'file',
+}
+
 export interface OrchestratorAttachmentStrategy {
-  type: 'lazy_on_demand';
+  type: AttachmentStrategyType.LazyOnDemand;
 }
 
 export interface RepresentationToolingFeature {
@@ -53,7 +65,7 @@ export interface QuickAppConfig {
 
 export interface FileContext {
   url: string;
-  type: 'file';
+  type: ContextType.File;
 }
 
 export interface DialDeploymentSimpleTool {
@@ -131,7 +143,7 @@ export interface QuickApp2Config {
       };
     };
     system_prompt: {
-      type: 'custom';
+      type: SystemPromptType.Custom;
       variables: object;
       content: string;
     };

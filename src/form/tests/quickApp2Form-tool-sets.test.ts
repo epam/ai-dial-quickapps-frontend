@@ -5,6 +5,7 @@ import {
   AnyToolset,
   DialDeploymentToolsetToolTypes,
   QuickApp2Config,
+  SystemPromptType,
   ToolsetTypes,
 } from '@/types/quick-apps';
 
@@ -42,7 +43,7 @@ const createApp = (toolSets: AnyToolset[]) => ({
   applicationProperties: {
     orchestrator: {
       deployment: { deployment_id: MODEL_ID },
-      system_prompt: { type: 'custom', variables: {}, content: 'Be helpful' },
+      system_prompt: { type: SystemPromptType.Custom, variables: {}, content: 'Be helpful' },
     },
     contexts: [],
     tool_sets: toolSets,

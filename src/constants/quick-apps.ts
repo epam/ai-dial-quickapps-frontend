@@ -1,7 +1,8 @@
-import type {
-  OrchestratorAttachmentStrategy,
-  RepresentationToolingFeature,
-  WebFetchFeature,
+import {
+  AttachmentStrategyType,
+  type OrchestratorAttachmentStrategy,
+  type RepresentationToolingFeature,
+  type WebFetchFeature,
 } from '@/types/quick-apps';
 
 export enum AgentsAndToolsetsModalQueryParams {
@@ -9,7 +10,7 @@ export enum AgentsAndToolsetsModalQueryParams {
 }
 
 export const ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE: OrchestratorAttachmentStrategy = {
-  type: 'lazy_on_demand',
+  type: AttachmentStrategyType.LazyOnDemand,
 };
 
 export const REPRESENTATION_TOOLING_FEATURE_VALUE: RepresentationToolingFeature = {

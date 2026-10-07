@@ -23,6 +23,7 @@ import {
   AnyToolset,
   CodeInterpreterTemplate,
   CodeInterpreterToolset,
+  ContextType,
   DialAppToolset,
   DialAppTransportType,
   DialDeploymentSimpleTool,
@@ -33,6 +34,7 @@ import {
   MCPToolset,
   QuickApp2Config,
   SkillRefType,
+  SystemPromptType,
   TimestampInjectionStrategy,
   ToolsetTypes,
   UnknownToolset,
@@ -297,7 +299,7 @@ export const buildQuickApp2Config = ({
           : undefined,
       },
       system_prompt: {
-        type: 'custom',
+        type: SystemPromptType.Custom,
         variables: existingConfig?.orchestrator?.system_prompt?.variables ?? {},
         content: data.instructions,
       },
@@ -307,7 +309,7 @@ export const buildQuickApp2Config = ({
     },
     contexts: data.documentRelativeUrl.map((url) => ({
       url,
-      type: 'file' as const,
+      type: ContextType.File,
     })),
     tool_sets: toolSets,
     conversation_starters: starters.length
