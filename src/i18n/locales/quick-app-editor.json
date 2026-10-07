@@ -3,5 +3,10 @@
   "Configuration": "Configuration",
   "Add-ons": "Add-ons",
   "Skills": "Skills",
+  "Settings": "Settings",
+  "Advanced": "Advanced",
+  "Close": "Close",
+  "Save": "Save",
+  "Close advanced settings": "Close advanced settings",
   "Default model": "Default model"
 }

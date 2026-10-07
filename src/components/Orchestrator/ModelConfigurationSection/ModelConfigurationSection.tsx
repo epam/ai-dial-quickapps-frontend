@@ -9,6 +9,7 @@ import { doesModelAllowTemperature } from '@/utils/application';
 
 import { TemperatureSlider } from '@/components/common/Temperature';
 import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
+import SettingsSection from '@/components/Settings/SettingsSection';
 
 import { ModelField } from '../ModelField';
 
@@ -88,6 +89,8 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
             />
           </DialFormItem>
         )}
+
+        <SettingsSection isReadonly={isReadonly} />
       </div>
     </section>
   );
