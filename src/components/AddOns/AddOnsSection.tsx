@@ -2,6 +2,7 @@ import { FC, memo, useState } from 'react';
 
 import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { AgentsAndToolsetsModalQueryParams } from '@/constants/quick-apps';
+import type { ConversationStartersValues } from '@/types/conversation-starters';
 import type { QuickApp2FormValues } from '@/types/quick-app-form';
 import { useSearchParams } from '@/hooks/useSearchParams';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -11,6 +12,7 @@ import { Translation } from '@/types/translation';
 import AgentSkillsFormSection from '@/components/AgentSkills/AgentSkillsFormSection';
 import { AddOnRow } from '@/components/AddOns/AddOnRow';
 import { AgentsAndToolsetsField } from '@/components/ContextAndTools/AgentsAndToolsetsField';
+import ConversationStartersRow from '@/components/ConversationStarters/ConversationStartersRow';
 import { Section } from '@/components/common/Section/Section';
 
 export interface AddOnsSectionProps {
@@ -21,6 +23,8 @@ export interface AddOnsSectionProps {
   agentsAndToolsets: QuickApp2FormValues['agentsAndToolsets'];
   onAgentsChange: (ids: string[]) => void;
   onConfigureAgent: (id: string, transport: DialAppTransportType) => void;
+  conversationStarters: ConversationStartersValues;
+  onConversationStartersSave: (values: ConversationStartersValues) => void;
 }
 
 export const AddOnsSection: FC<AddOnsSectionProps> = ({
@@ -31,6 +35,8 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
   agentsAndToolsets,
   onAgentsChange,
   onConfigureAgent,
+  conversationStarters,
+  onConversationStartersSave,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
   const { t: tCommon } = useTranslation(Translation.Common);
@@ -67,6 +73,13 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
             onSelectModalOpenChange={setIsAgentsModalOpen}
           />
         </AddOnRow>
+
+        <ConversationStartersRow
+          values={conversationStarters}
+          isReadonly={isReadonly}
+          tooltip={tooltip}
+          onSave={onConversationStartersSave}
+        />
       </div>
     </Section>
   );

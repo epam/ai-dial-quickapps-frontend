@@ -26,6 +26,9 @@ vi.mock('@/components/ContextAndTools/AgentsAndToolsetsField', () => ({
     </section>
   ),
 }));
+vi.mock('@/components/ConversationStarters/ConversationStartersRow', () => ({
+  default: () => <section aria-label="Conversation starters row" />,
+}));
 
 let root: Root;
 let container: HTMLDivElement;
@@ -55,6 +58,12 @@ const renderSection = ({
         agentsAndToolsets={agentsAndToolsets}
         onAgentsChange={vi.fn()}
         onConfigureAgent={vi.fn()}
+        conversationStarters={{
+          starters: [],
+          autoSubmit: true,
+          chatMessageInputDisabled: false,
+        }}
+        onConversationStartersSave={vi.fn()}
       />,
     );
   });
@@ -76,6 +85,15 @@ describe('AddOnsSection', () => {
     expect(container.querySelector('[aria-label="Skills row"]')).toBeTruthy();
     expect(getByAriaLabel('Agents & Toolsets row')).toBeTruthy();
     expect(container.querySelector('[aria-expanded]')).toBeNull();
+  });
+
+  it('renders the Conversation starters row after the other add-on rows', () => {
+    renderSection();
+
+    const rows = [...container.querySelectorAll('section[aria-label$="row"]')].map((row) =>
+      row.getAttribute('aria-label'),
+    );
+    expect(rows).toEqual(['Skills row', 'Agents & Toolsets row', 'Conversation starters row']);
   });
 
   it('keeps translated Add actions keyboard reachable', () => {

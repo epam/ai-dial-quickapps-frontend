@@ -32,6 +32,14 @@
   `conversation_starters`, but it does not enable the starters settings (that needs both). Needs a
   product decision — either require both fields to save a starter, or enable the settings for any
   non-blank starter (see the `application_conversation-starters` spec, "Partially filled starter").
+- [] Conversation starters: `useQuickApp2Form` still exposes `updateStarter` / `removeStarter`, which
+  only the hook's own tests use since the starters modal edits a local draft
+  (`redesign-conversation-starters`). Remove them together with those tests.
+- [] Add-ons: the same mock as the starters redesign splits Agents & Toolsets into separate Toolsets
+  and Agents rows and adds a Knowledge base row. Needs its own OpenSpec change.
+- [] ui-kit: `DialDraggableItem` imports a private bundled copy of react-dnd whose `DndProvider` the
+  kit does not export, and it has no keyboard support, so consumers can't use it. Ask the kit for an
+  exported, keyboard-accessible sortable list; the starters modal uses `@dnd-kit/sortable` meanwhile.
 - [] ...
 
 ## Documentation and behavior reconciliation backlog
@@ -182,9 +190,12 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 ### Conversation starters
 
-- src/components/ConversationStarters/**
+- src/components/ConversationStarters/** (the Conversation starters row in Add-ons and the Set up
+  conversation starters modal; the old collapsible main-column section was removed)
 - **Spec written** (`openspec/specs/application_conversation-starters`, from change
-  `specify-configuration-controls-and-starters`).
+  `specify-configuration-controls-and-starters`; reshaped by `redesign-conversation-starters`:
+  Add-ons row, draft modal, drag-to-reorder, 30-character labels). The half-filled-starter item in
+  the backlog above is still open.
 
 ### User attachments
 

@@ -7,6 +7,7 @@ import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import type { QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form';
 import type { QuickApp2Form } from '@/form/quickApp2Form';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
+import type { ConversationStartersValues } from '@/types/conversation-starters';
 import type { TriggerSaveGeneralPayload } from '@/types/editor-messages';
 
 type FormSaveHandler = (
@@ -127,20 +128,50 @@ vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationS
   return { default: ModelTestField };
 });
 
-vi.mock('@/components/QuickApp2FormLegacyFields/QuickApp2FormLegacyFields', () => {
-  const LegacyFieldsTest = ({ startersSettingsTooltip }: { startersSettingsTooltip?: string }) => (
+vi.mock('@/components/QuickApp2FormLegacyFields/QuickApp2FormLegacyFields', () => ({
+  default: () => null,
+}));
+vi.mock('@/components/ContextAndTools/ContextAndToolsSection', () => ({ default: () => null }));
+vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => ({ default: () => null }));
+vi.mock('@/components/ConversationStarters/ConversationStartersRow', () => {
+  const ConversationStartersTestRow = ({
+    values,
+    isReadonly,
+    onSave,
+  }: {
+    values: ConversationStartersValues;
+    isReadonly: boolean;
+    onSave: (values: ConversationStartersValues) => void;
+  }) => (
     <div>
-      <output data-testid="starters-hint">{startersSettingsTooltip ?? ''}</output>
+      <output data-testid="starters-readonly">{String(isReadonly)}</output>
+      <output data-testid="starters-titles">
+        {values.starters.map((starter) => starter.title).join('|')}
+      </output>
+      <button
+        type="button"
+        onClick={() =>
+          onSave({
+            starters: [
+              { id: 's1', title: 'Travel tips', text: 'Suggest destinations' },
+              { id: 's2', title: '', text: '' },
+            ],
+            introText: 'Hi!',
+            autoSubmit: false,
+            chatMessageInputDisabled: true,
+          })
+        }
+      >
+        Save changed starters
+      </button>
+      <button type="button" onClick={() => onSave(values)}>
+        Save unchanged starters
+      </button>
     </div>
   );
 
-  return { default: LegacyFieldsTest };
+  return { default: ConversationStartersTestRow };
 });
-vi.mock('@/components/ContextAndTools/ContextAndToolsSection', () => ({ default: () => null }));
-vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => ({ default: () => null }));
-vi.mock('@/components/ConversationStarters/ConversationStartersSection', () => ({
-  default: () => null,
-}));
 
 import { QuickApp2Form as QuickApp2FormComponent } from '../QuickApp2Form';
 
@@ -427,34 +458,59 @@ describe('QuickApp2Form observable behavior', () => {
     expect(onModelReady).toHaveBeenCalled();
   });
 
-  it('hints that a starter is required until the app has a complete starter', () => {
-    renderForm();
-
-    expect(container.querySelector('[data-testid="starters-hint"]')?.textContent).toBe(
-      QuickAppEditorI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings,
-    );
-  });
-
-  it('drops the starters hint for an app with a complete starter', () => {
+  it('passes saved conversation starters to the Add-ons row', () => {
     testContext.appContext.app = {
       id: 'app',
       applicationProperties: {
-        conversation_starters: { starters: [{ title: 'Travel tips', text: 'Suggest destinations' }] },
+        conversation_starters: {
+          starters: [
+            { title: 'B', text: 'b' },
+            { title: 'A', text: 'a' },
+          ],
+        },
       },
     };
 
     renderForm();
 
-    expect(container.querySelector('[data-testid="starters-hint"]')?.textContent).toBe('');
+    expect(container.querySelector('[data-testid="starters-titles"]')?.textContent).toBe('B|A|');
   });
 
-  it('shows the shared-application hint on the starters settings of a shared app', () => {
+  it('applies saved conversation starters to the form and marks it dirty', async () => {
+    const { onSave, onDirtyChange } = renderForm();
+
+    act(() => getButtonByText('Save changed starters').click());
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+
+    await submitForm();
+    expect(onSave).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        starters: [
+          { id: 's1', title: 'Travel tips', text: 'Suggest destinations' },
+          { id: 's2', title: '', text: '' },
+        ],
+        introText: 'Hi!',
+        autoSubmit: false,
+        chatMessageInputDisabled: true,
+      }),
+      expect.anything(),
+      false,
+      undefined,
+    );
+  });
+
+  it('keeps the form clean when conversation starters are saved unchanged', () => {
+    const { onDirtyChange } = renderForm();
+
+    act(() => getButtonByText('Save unchanged starters').click());
+    expect(onDirtyChange).not.toHaveBeenCalledWith(true);
+  });
+
+  it('renders the conversation starters row read-only for a shared app', () => {
     testContext.appContext.app = { id: 'app', applicationProperties: {}, isShared: true };
 
     renderForm();
 
-    expect(container.querySelector('[data-testid="starters-hint"]')?.textContent).toBe(
-      QuickAppEditorI18nKeys.CannotChangeSharedApp,
-    );
+    expect(container.querySelector('[data-testid="starters-readonly"]')?.textContent).toBe('true');
   });
 });

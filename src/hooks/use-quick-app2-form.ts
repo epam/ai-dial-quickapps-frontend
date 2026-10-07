@@ -1,12 +1,12 @@
 import { useCallback, useMemo, useReducer } from 'react';
 import isEqual from 'lodash-es/isEqual';
-import { nanoid } from 'nanoid';
 
 import {
   AgentOrToolsetSchemaKeys,
   QuickApp2Schema,
   resolveDefaultModelId,
 } from '@/form/quickApp2Form';
+import { removeStarter, updateStarterField } from '@/utils/conversation-starters';
 import { decodeFileUrl } from '@/utils/decode-file-url';
 import {
   QuickApp2ModelStatus,
@@ -16,9 +16,8 @@ import {
   type QuickApp2FormValidationResult,
   type QuickApp2FormValues,
 } from '@/types/quick-app-form';
+import type { StarterField } from '@/types/conversation-starters';
 import type { DialAppTransportType } from '@/types/quick-apps';
-
-type StarterField = 'title' | 'text';
 
 type FormAction =
   | {
@@ -227,26 +226,15 @@ const reduceFormState = (state: FormState, action: FormAction): FormState => {
       );
     }
     case 'UPDATE_STARTER': {
-      const updated = state.values.starters.map((starter, index) =>
-        index === action.index
-          ? { ...starter, [action.field]: action.value.length === 1 ? action.value.trim() : action.value }
-          : starter,
-      );
-      const updatedItem = updated[action.index];
-      const isLastRow = action.index === updated.length - 1;
-      const starters =
-        isLastRow && (updatedItem.title.trim() || updatedItem.text.trim())
-          ? [...updated, { id: nanoid(), title: '', text: '' }]
-          : updated;
+      const starters = updateStarterField(state.values.starters, action.index, action.field, action.value);
+      if (starters === state.values.starters) return state;
       return applyValues(state, { starters }, { shouldValidate: true });
     }
-    case 'REMOVE_STARTER':
-      if (action.index === state.values.starters.length - 1) return state;
-      return applyValues(
-        state,
-        { starters: state.values.starters.filter((_, index) => index !== action.index) },
-        { shouldValidate: true },
-      );
+    case 'REMOVE_STARTER': {
+      const starters = removeStarter(state.values.starters, action.index);
+      if (starters === state.values.starters) return state;
+      return applyValues(state, { starters }, { shouldValidate: true });
+    }
     case 'ADD_DOCUMENTS': {
       const existing = new Set(state.values.documentRelativeUrl);
       const documents = action.documents

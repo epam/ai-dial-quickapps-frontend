@@ -1,0 +1,1 @@
+export const STARTER_TITLE_MAX_LENGTH = 30;

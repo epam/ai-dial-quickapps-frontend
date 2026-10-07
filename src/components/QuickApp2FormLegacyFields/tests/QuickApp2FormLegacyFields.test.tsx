@@ -25,24 +25,12 @@ vi.mock('@/components/ContextAndTools/ContextAndToolsSection', () => {
   return { default: ContextAndToolsTestSection };
 });
 
-vi.mock('@/components/ConversationStarters/ConversationStartersSection', () => ({
-  default: ({ hasStarters }: { hasStarters: boolean }) => (
-    <output data-testid="has-starters">{String(hasStarters)}</output>
-  ),
-}));
-
 import QuickApp2FormLegacyFields from '../QuickApp2FormLegacyFields';
 
 const initialValues = getQuickApp2FormData(undefined, ['model-1'], ['model-1'], 'model-1');
 
-interface HarnessProps {
-  starters?: QuickApp2FormValues['starters'];
-}
-
-const Harness = ({ starters }: HarnessProps) => {
-  const [values, setValues] = useState<QuickApp2FormValues>(
-    starters ? { ...initialValues, starters } : initialValues,
-  );
+const Harness = () => {
+  const [values, setValues] = useState<QuickApp2FormValues>(initialValues);
 
   return (
     <>
@@ -57,7 +45,6 @@ const Harness = ({ starters }: HarnessProps) => {
         isCodeInterpreterEnabled={false}
         isWebFetchEnabled={false}
         isAddAttachmentEnabled={false}
-        startersSettingsTooltip="starter tooltip"
         onValuesChange={(changedValues) =>
           setValues((current) => ({ ...current, ...changedValues }))
         }
@@ -104,22 +91,4 @@ describe('QuickApp2FormLegacyFields', () => {
     });
     expect(container.querySelector('[data-testid="document-value"]')?.textContent).toBe('external');
   });
-
-  it.each([
-    ['no starter', [{ id: '1', title: '', text: '' }], 'false'],
-    ['a title-only starter', [{ id: '1', title: 'Travel tips', text: ' ' }], 'false'],
-    ['a prompt-only starter', [{ id: '1', title: '', text: 'Suggest destinations' }], 'false'],
-    [
-      'a complete starter',
-      [{ id: '1', title: 'Travel tips', text: 'Suggest destinations' }],
-      'true',
-    ],
-  ])(
-    'enables the starters settings only for a complete starter: %s',
-    (_label, starters, expected) => {
-      act(() => root.render(<Harness starters={starters} />));
-
-      expect(container.querySelector('[data-testid="has-starters"]')?.textContent).toBe(expected);
-    },
-  );
 });

@@ -32,10 +32,10 @@ export default defineConfig({
       // (the build fails instead) — bump the 70% target itself in
       // docs/TECH_DEBT.md once these numbers get close to it.
       thresholds: {
-        statements: 42.06,
-        branches: 36.05,
-        functions: 35.86,
-        lines: 43.27,
+        statements: 45.84,
+        branches: 38.75,
+        functions: 40.11,
+        lines: 47.06,
         autoUpdate: true,
       },
     },
