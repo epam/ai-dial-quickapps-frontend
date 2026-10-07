@@ -65,7 +65,8 @@ const MCP_DEPLOYMENT_INTERFACE = ListDeploymentsInterfaceTypeEnum.Mcp;
  * which is why the wire ends up "double-encoded" (e.g. `%2520`): that's
  * chat-api's expected shape, not a bug.
  */
-export const encodeDialPath = (id: string): string => id.split('/').map(encodeURIComponent).join('/');
+export const encodeDialPath = (id: string): string =>
+  id.split('/').map(encodeURIComponent).join('/');
 
 /** Decode each path segment individually. */
 export const decodeDialPath = (url: string): string =>
@@ -83,10 +84,13 @@ const toDisplayText = (value: LocalizedText | undefined): string | undefined =>
   value == null ? undefined : getLocalizedText(value, 'en', '') || undefined;
 
 function mapDeploymentToDialModel(entity: DeploymentItemDto): DialModel {
+  // Keep the internal id decoded — see encodeDialPath's comment. The form
+  // re-encodes it once on save, so an id left encoded here ends up `%2520`.
+  const id = decodeDialPath(entity.id);
   return {
-    id: entity.id,
-    reference: entity.id,
-    name: toDisplayName(entity.displayName, entity.id),
+    id,
+    reference: id,
+    name: toDisplayName(entity.displayName, id),
     type: entity.type === 'application' ? 'application' : 'model',
     version: entity.displayVersion,
     iconUrl: entity.iconUrl,
@@ -108,7 +112,8 @@ function mapDeploymentToDialModel(entity: DeploymentItemDto): DialModel {
 }
 
 function mapToolsetToDialToolset(entity: DialToolsetDto): DialToolset {
-  const id = entity.id;
+  // Keep the internal id decoded — see mapDeploymentToDialModel.
+  const id = decodeDialPath(entity.id);
   const authSettings = mapAuthSettings(id, entity.authSettings);
   return {
     id,
