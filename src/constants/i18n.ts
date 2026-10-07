@@ -90,7 +90,6 @@ export enum QuickAppEditorI18nKeys {
   CodeInterpreterInfo = 'Allows to build multi-agent applications where agents can generate and safely execute Python code in real-time to perform specific tasks, such as data visualization or analytics.',
   UseToExecuteCustomPythonCode = 'Use to execute custom Python code',
   CannotChangeSharedApp = 'You cannot change the {{context}} of a shared application.',
-  AgentSkills = 'Agent Skills',
   AgentSkillsDescription = 'Reusable instruction modules the agent loads on demand when the task matches.',
   NoAgentSkillsAdded = 'No Agent Skills added',
   AddAgentSkills = 'Add Agent Skills',
