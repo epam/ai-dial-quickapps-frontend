@@ -3,12 +3,12 @@ import { FC, useLayoutEffect, useRef, useState } from 'react';
 
 import { DialTag, DialTooltip } from '@epam/ai-dial-ui-kit';
 
-export interface TopicTagProps {
+interface TopicTagProps {
   label: string;
   className?: string;
 }
 
-export const TopicTag: FC<TopicTagProps> = ({ label, className = 'dial-tiny-text' }) => (
+const TopicTag: FC<TopicTagProps> = ({ label, className = 'dial-tiny-text' }) => (
   <DialTag label={label} className={classNames(className, 'text-secondary')} />
 );
 
