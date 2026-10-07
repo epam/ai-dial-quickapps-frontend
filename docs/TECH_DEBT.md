@@ -120,7 +120,7 @@ Track these dimensions separately for every capability:
 | `toolsets_selection` | No | Yes | Partial | Planned |
 | `toolsets_login` | No | Yes | Partial | Planned |
 | `application_credentials` | No | Yes | Partial | Planned |
-| `skills_catalog` | In change | Yes | Partial | Planned |
+| `skills_catalog` | Yes | Yes | Partial | Planned |
 | `orchestrator_model-selection` | Yes | Yes | Partial | Planned |
 | `application_advanced-settings` | Yes | Yes | Partial | Planned |
 | `application_conversation-starters` | Yes | Yes | Partial | Planned |
@@ -160,8 +160,8 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 - src/utils/dialClient.ts (`fetchDialSkills`, `fetchSkillManifest`), src/components/AgentSkills/**, src/components/Skills/**
 - Proposed: skills_catalog (standalone slug skills also defensible if no sibling ever appears)
-- **Spec drafted** in change `redesign-skills-selection` (attached skills list, skill details popup with
-  Delete, Add skill popup); it moves to `openspec/specs/skills_catalog` when the change is archived.
+- **Spec written** (`openspec/specs/skills_catalog`, from archived change `redesign-skills-selection`): the attached
+  skills list with its hover remove button, the skill details popup with Delete, and the Add skill popup.
 
 ### Orchestrator / model selection
 

@@ -89,7 +89,8 @@ The layout change SHALL preserve existing form state ownership, field names, con
 #### Scenario: Existing selections remain visible
 - **WHEN** an application loads with one or more skills or agents/toolsets already selected
 - **THEN** the corresponding Add-ons content window SHALL be visible
-- **AND** the selected chips and their existing remove/configuration behavior SHALL be preserved
+- **AND** the selected agents/toolsets chips SHALL keep their existing remove/configuration behavior
+- **AND** the selected skills SHALL be listed as defined by `skills_catalog` ("Attached skills list"), with removal available from the skill details popup
 
 ### Requirement: Add-ons section groups add-on controls
 The editor SHALL render an Add-ons section directly below Instructions. The section SHALL contain a Skills row and one merged Agents & Toolsets row. Each row SHALL show its title and its Add action together in a row header, and the Add action SHALL open that row's existing selection modal.
@@ -118,7 +119,7 @@ The editor SHALL render an Add-ons section directly below Instructions. The sect
 - **AND** hiding an empty content window SHALL not leave an orphaned `aria-expanded` control claiming that content is open
 
 ### Requirement: Skills content window is conditional
-The Skills row SHALL render the existing Skills content window only when at least one skill is selected, while its Add action SHALL remain visible regardless of selection count.
+The Skills row SHALL render the Skills content window (the attached skills list defined by `skills_catalog`) only when at least one skill is selected. Its Add action SHALL remain visible regardless of selection count.
 
 #### Scenario: No skills selected
 - **WHEN** the `agentSkills` selection is empty
@@ -127,11 +128,11 @@ The Skills row SHALL render the existing Skills content window only when at leas
 
 #### Scenario: Skill selected
 - **WHEN** the `agentSkills` selection contains at least one skill
-- **THEN** the Skills content window SHALL be rendered with the existing chip styles and removal behavior
+- **THEN** the Skills content window SHALL be rendered as the attached skills list, with no chip box; each item reveals a trash button on hover or focus in an editable editor
 - **AND** the Skills Add action SHALL remain visible
 
 #### Scenario: Last skill removed
-- **WHEN** a user removes the last selected skill
+- **WHEN** a user removes the last selected skill with its trash button, through the skill details popup's Delete action, or by unchecking it in the Add skill popup and confirming
 - **THEN** the `agentSkills` form value SHALL become empty
 - **AND** the Skills content window SHALL be removed without changing any other form value
 
