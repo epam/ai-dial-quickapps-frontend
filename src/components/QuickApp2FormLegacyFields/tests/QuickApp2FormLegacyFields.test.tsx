@@ -7,13 +7,7 @@ import { getQuickApp2FormData, type QuickApp2Form } from '@/form/quickApp2Form';
 import type { QuickApp2FormValues } from '@/types/quick-app-form';
 
 vi.mock('@/components/ContextAndTools/ContextAndToolsSection', () => {
-  const ContextAndToolsTestSection = ({
-    control,
-    agentsAndToolsetsJson,
-  }: {
-    control: Control<QuickApp2Form>;
-    agentsAndToolsetsJson: string;
-  }) => {
+  const ContextAndToolsTestSection = ({ control }: { control: Control<QuickApp2Form> }) => {
     const { field } = useController({ control, name: 'documentRelativeUrl' });
 
     return (
@@ -24,7 +18,6 @@ vi.mock('@/components/ContextAndTools/ContextAndToolsSection', () => {
           onClick={() => field.onChange(['changed-document'])}
         />
         <output data-testid="document-value">{field.value.join('|')}</output>
-        <output data-testid="toolset-json">{agentsAndToolsetsJson}</output>
       </div>
     );
   };
@@ -39,17 +32,8 @@ vi.mock('@/components/ConversationStarters/ConversationStartersSection', () => (
 }));
 
 vi.mock('@/components/UserAttachments/UserAttachmentsSection', () => ({
-  default: ({
-    errors,
-    attachmentTypesResetKey,
-  }: {
-    errors: Record<string, { message?: string } | undefined>;
-    attachmentTypesResetKey: number;
-  }) => (
-    <div>
-      <output data-testid="attachment-error">{errors.inputAttachmentTypes?.message}</output>
-      <output data-testid="attachment-reset-key">{attachmentTypesResetKey}</output>
-    </div>
+  default: ({ errors }: { errors: Record<string, { message?: string } | undefined> }) => (
+    <output data-testid="attachment-error">{errors.inputAttachmentTypes?.message}</output>
   ),
 }));
 
@@ -74,17 +58,9 @@ const Harness = ({ errors = {} }: { errors?: Record<string, string | undefined> 
         isCodeInterpreterEnabled={false}
         isWebFetchEnabled={false}
         isAddAttachmentEnabled={false}
-        attachmentTypesResetKey={2}
-        agentSkills={<output data-testid="agent-skills">skills</output>}
         startersSettingsTooltip="starter tooltip"
         onValuesChange={(changedValues) => setValues((current) => ({ ...current, ...changedValues }))}
         onAttachmentTypesChange={vi.fn()}
-        onAgentsChange={vi.fn()}
-        onJsonChange={vi.fn()}
-        onSwitchToJsonView={vi.fn()}
-        onSwitchToSimpleView={vi.fn()}
-        onDiscardJson={vi.fn()}
-        onConfigureAgent={vi.fn()}
       />
     </>
   );
@@ -110,12 +86,9 @@ describe('QuickApp2FormLegacyFields', () => {
     act(() => root.render(<Harness errors={{ inputAttachmentTypes: 'Invalid MIME type' }} />));
 
     expect(container.querySelector('[data-testid="document-value"]')?.textContent).toBe('');
-    expect(container.querySelector('[data-testid="toolset-json"]')?.textContent).toBe('[]');
-    expect(container.querySelector('[data-testid="agent-skills"]')?.textContent).toBe('skills');
     expect(container.querySelector('[data-testid="attachment-error"]')?.textContent).toBe(
       'Invalid MIME type',
     );
-    expect(container.querySelector('[data-testid="attachment-reset-key"]')?.textContent).toBe('2');
 
     await act(async () => {
       container.querySelector('[data-testid="change-document"]')?.dispatchEvent(

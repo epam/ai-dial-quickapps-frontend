@@ -17,7 +17,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { DialAIEntityModel } from '@/utils/application';
 
 import AdvancedSettingsSection from './AdvancedSettings/AdvancedSettingsSection';
-import AgentSkillsFormSection from './AgentSkills/AgentSkillsFormSection';
+import AddOnsSection from './AddOns/AddOnsSection';
 import InstructionsSection from './InstructionsSection/InstructionsSection';
 import ModelConfigurationSection from './Orchestrator/ModelConfigurationSection/ModelConfigurationSection';
 import QuickApp2FormLegacyFields from './QuickApp2FormLegacyFields/QuickApp2FormLegacyFields';
@@ -46,7 +46,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   onModelReady,
   readonly,
 }) => {
-  const { t, language } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation(Translation.QuickAppEditor);
   const { app, settings } = useAppContext();
   const { models, modelsMap, toolsetsMap, mcpAgentsMap, status } = useDataContext();
 
@@ -70,16 +70,12 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     errors,
     isDirty,
     isModelReady,
-    attachmentTypesResetKey,
     setField,
     setValues,
     syncExternalState,
     submit,
     setAgentIds,
     configureAgent,
-    switchToJsonView,
-    switchToSimpleView,
-    discardJson,
     setAttachmentTypes,
   } = useQuickApp2Form({ defaultValues });
 
@@ -173,14 +169,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     (legacyValues: Partial<QuickApp2FormValues>) => setValues(legacyValues),
     [setValues],
   );
-  const handleSwitchToJsonView = useCallback(
-    () => switchToJsonView(allEntitiesMap, language),
-    [allEntitiesMap, language, switchToJsonView],
-  );
-  const handleDiscardJson = useCallback(
-    () => discardJson(allEntitiesMap, language),
-    [allEntitiesMap, discardJson, language],
-  );
   const handleAttachmentTypesChange = useCallback(
     (tags: string[], previousTags: string[]) =>
       setAttachmentTypes(
@@ -197,15 +185,23 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         event.preventDefault();
         handleSubmitForm();
       }}
-      className="grid grid-cols-1 gap-4 p-4 desktop:grid-cols-[minmax(0,1fr)_minmax(280px,440px)] desktop:gap-x-12 desktop:px-8 desktop:py-7"
+      className="grid grid-cols-1 gap-4 desktop:grid-cols-[minmax(0,1fr)_minmax(280px,440px)] desktop:gap-x-12"
     >
-      <div className="min-w-0">
+      <div className="min-w-0 flex flex-col min-h-0 gap-4">
         <InstructionsSection
           value={values.instructions}
           onChange={(value) => setField('instructions', value)}
         />
 
-        <hr className="border-secondary" />
+        <AddOnsSection
+          agentSkills={values.agentSkills}
+          onAgentSkillsChange={(value) => setField('agentSkills', value)}
+          isReadonly={isReadonly}
+          tooltip={sharedTooltip}
+          agentsAndToolsets={values.agentsAndToolsets}
+          onAgentsChange={setAgentIds}
+          onConfigureAgent={configureAgent}
+        />
 
         <QuickApp2FormLegacyFields
           values={values}
@@ -215,24 +211,9 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
           isCodeInterpreterEnabled={!!settings.isCodeInterpreterEnabled}
           isWebFetchEnabled={!!settings.isWebFetchEnabled}
           isAddAttachmentEnabled={!!settings.isAddAttachmentEnabled}
-          attachmentTypesResetKey={attachmentTypesResetKey}
-          agentSkills={
-            <AgentSkillsFormSection
-              value={values.agentSkills}
-              onChange={(value) => setField('agentSkills', value)}
-              isReadonly={isReadonly}
-              tooltip={sharedTooltip}
-            />
-          }
           startersSettingsTooltip={startersSettingsTooltip}
           onValuesChange={handleLegacyValuesChange}
           onAttachmentTypesChange={handleAttachmentTypesChange}
-          onAgentsChange={setAgentIds}
-          onJsonChange={(json) => setField('agentsAndToolsetsJson', json)}
-          onSwitchToJsonView={handleSwitchToJsonView}
-          onSwitchToSimpleView={switchToSimpleView}
-          onDiscardJson={handleDiscardJson}
-          onConfigureAgent={configureAgent}
         />
 
         <hr className="border-secondary" />

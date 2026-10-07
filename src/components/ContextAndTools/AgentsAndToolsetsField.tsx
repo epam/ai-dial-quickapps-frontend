@@ -1,73 +1,38 @@
 import type { ChipEntity } from '@/components/common/AgentAndToolsetSelector/AgentAndToolsetChip';
 import { AgentAndToolsetSelector } from '@/components/common/AgentAndToolsetSelector/AgentAndToolsetSelector';
 import { EntityInfoModal } from '@/components/common/AgentAndToolsetSelector/EntityInfoModal';
-import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
-import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
-import { useThemeContext } from '@/context/ThemeContext';
 import type { QuickApp2Form } from '@/form/quickApp2Form';
 import { AgentOrToolsetSchemaKeys } from '@/form/quickApp2Form';
 import { useTranslation } from '@/hooks/useTranslation';
-import { AnyToolset, DialAppTransportType } from '@/types/quick-apps';
-import { ThemeId } from '@/types/theme';
+import { DialAppTransportType } from '@/types/quick-apps';
 import { Translation } from '@/types/translation';
 import { isDialAiEntityModel } from '@/utils/application';
 import { getLocalizedText } from '@/utils/get-localized-text';
-import {
-  ButtonVariant,
-  ConfirmationPopupVariant,
-  DialButton,
-  DialConfirmationPopup,
-  DialNeutralButton,
-  DialNeutralIconButton,
-  ElementSize,
-  LazyDialJsonEditor,
-} from '@epam/ai-dial-ui-kit';
-import { IconArrowsMaximize, IconArrowsMinimize } from '@tabler/icons-react';
 import sortBy from 'lodash-es/sortBy';
-import { FC, lazy, Suspense, useCallback, useMemo, useState } from 'react';
+import { FC, useCallback, useMemo, useState } from 'react';
 import { DialAppConfigurationModal } from './DialAppConfigurationModal';
 
-const DialJsonEditor = lazy(async () => ({
-  default: (await LazyDialJsonEditor()).DialJsonEditor,
-}));
 interface AgentsAndToolsetsFieldProps {
   agentsAndToolsets: QuickApp2Form['agentsAndToolsets'];
-  agentsAndToolsetsJson: string;
-  isJsonView: boolean;
   onAgentsChange: (ids: string[]) => void;
-  onJsonChange: (json: string) => void;
-  onSwitchToJsonView: () => void;
-  onSwitchToSimpleView: (toolsets: AnyToolset[]) => void;
-  onDiscardJson: () => void;
   onConfigureAgent: (id: string, transport: DialAppTransportType) => void;
   readonly?: boolean;
-  tooltip?: string;
-  jsonError?: string;
+  isSelectModalOpen: boolean;
+  onSelectModalOpenChange: (isOpen: boolean) => void;
 }
 
 export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
   agentsAndToolsets,
-  agentsAndToolsetsJson,
-  isJsonView,
   onAgentsChange,
-  onJsonChange,
-  onSwitchToJsonView,
-  onSwitchToSimpleView,
-  onDiscardJson,
   onConfigureAgent,
   readonly,
-  tooltip,
-  jsonError,
+  isSelectModalOpen,
+  onSelectModalOpenChange,
 }) => {
-  const { t, language } = useTranslation(Translation.QuickAppEditor);
-  const { currentTheme } = useThemeContext();
-  const editorMonacoTheme = currentTheme?.id === ThemeId.Light ? 'light' : 'vs-dark';
+  const { language } = useTranslation(Translation.QuickAppEditor);
   const { modelsMap, toolsetsMap, mcpAgentsMap } = useDataContext();
 
-  const [editorError, setEditorError] = useState<string | undefined>(undefined);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isDiscardConfirmOpen, setIsDiscardConfirmOpen] = useState(false);
   const [configuringChip, setConfiguringChip] = useState<{
     id: string;
     transport?: DialAppTransportType;
@@ -80,12 +45,13 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
       ...toolsetsMap,
       ...mcpAgentsMap,
     };
-    // Toolsets added via the JSON editor are inline configs with no
-    // deployment_id — the chip id for those is the toolset `name` from the
-    // config. Index toolsets by display name as well so those chips resolve
-    // against the toolset list from context (details, auth status, sign-in)
-    // instead of reporting the toolset as not available. Id-keyed entries
-    // always win; the first toolset wins on a display-name collision.
+    // Existing apps may contain inline toolset configs with no deployment_id
+    // (previously added via the removed JSON editor) — the chip id for those is
+    // the toolset `name` from the config. Index toolsets by display name as
+    // well so those chips resolve against the toolset list from context
+    // (details, auth status, sign-in) instead of reporting the toolset as not
+    // available. Id-keyed entries always win; the first toolset wins on a
+    // display-name collision.
     for (const toolset of Object.values(toolsetsMap)) {
       const displayName = getLocalizedText(toolset.name, language, toolset.id);
       if (displayName && !(displayName in map)) {
@@ -103,39 +69,6 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
       ),
     [agentsAndToolsets, allItemsMap, language],
   );
-
-  const handleAgentsChange = useCallback(
-    (ids: string[]) => {
-      onAgentsChange(ids);
-    },
-    [onAgentsChange],
-  );
-
-  const handleJsonSwitchClick = useCallback(() => {
-    if (isJsonView) {
-      // Try to switch back to UI view — validate JSON first
-      try {
-        const parsed = JSON.parse(agentsAndToolsetsJson);
-        if (!Array.isArray(parsed)) {
-          setEditorError(t(CommonI18nKeys.ShouldBeAnArray));
-          return;
-        }
-        setEditorError(undefined);
-        onSwitchToSimpleView(parsed as AnyToolset[]);
-      } catch {
-        setEditorError(t(CommonI18nKeys.ShouldBeAValidJSON));
-      }
-    } else {
-      onSwitchToJsonView();
-    }
-  }, [isJsonView, agentsAndToolsetsJson, onSwitchToSimpleView, onSwitchToJsonView, t]);
-
-  const handleDiscardConfirm = useCallback(() => {
-    setEditorError(undefined);
-    setIsFullscreen(false);
-    setIsDiscardConfirmOpen(false);
-    onDiscardJson();
-  }, [onDiscardJson]);
 
   const handleItemClick = useCallback(
     (id: string) => {
@@ -167,83 +100,16 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
 
   return (
     <div className="flex flex-col gap-2">
-      {isJsonView ? (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-end gap-2">
-            <ToggleSwitch
-              isOn={true}
-              handleSwitch={handleJsonSwitchClick}
-              disabled={readonly}
-              additionalText={t(QuickAppEditorI18nKeys.JSON)}
-              className="flex w-fit items-center gap-2"
-              tooltip={readonly ? tooltip : t(QuickAppEditorI18nKeys.SwitchToMarketplaceView)}
-            />
-            <DialNeutralIconButton
-              size={ElementSize.Small}
-              icon={
-                isFullscreen ? <IconArrowsMinimize size={16} /> : <IconArrowsMaximize size={16} />
-              }
-              onClick={() => setIsFullscreen((prev) => !prev)}
-            />
-          </div>
-          <div
-            className={
-              isFullscreen
-                ? 'fixed inset-0 z-50 flex flex-col gap-2 bg-layer-2 p-4'
-                : 'flex flex-col gap-2'
-            }
-          >
-            {isFullscreen && (
-              <div className="flex items-center justify-end">
-                <DialNeutralIconButton
-                  size={ElementSize.Small}
-                  icon={<IconArrowsMinimize size={16} />}
-                  onClick={() => setIsFullscreen(false)}
-                />
-              </div>
-            )}
-            <div style={{ height: isFullscreen ? 'calc(100% - 80px)' : '300px' }}>
-              <Suspense fallback={null}>
-                <DialJsonEditor
-                  value={agentsAndToolsetsJson}
-                  onChange={(val) => onJsonChange(val ?? '')}
-                  currentTheme={editorMonacoTheme}
-                  options={{ readOnly: readonly, automaticLayout: true }}
-                />
-              </Suspense>
-            </div>
-            {(editorError ?? jsonError) && (
-              <p className="dial-tiny-text text-error">{editorError ?? jsonError}</p>
-            )}
-            {!readonly && (
-              <div className="flex justify-end gap-2">
-                <DialNeutralButton
-                  size={ElementSize.Small}
-                  onClick={() => setIsDiscardConfirmOpen(true)}
-                  label={t(QuickAppEditorI18nKeys.Discard)}
-                />
-                <DialButton
-                  variant={ButtonVariant.Primary}
-                  size={ElementSize.Small}
-                  onClick={handleJsonSwitchClick}
-                  label={t(QuickAppEditorI18nKeys.SaveJSON)}
-                />
-              </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        <AgentAndToolsetSelector
-          value={selectedIds}
-          onChange={handleAgentsChange}
-          readonly={readonly}
-          allItemsMap={allItemsMap}
-          tooltip={tooltip}
-          onItemClick={handleItemClick}
-          onJsonSwitchClick={handleJsonSwitchClick}
-          onConfigureClick={handleConfigureClick}
-        />
-      )}
+      <AgentAndToolsetSelector
+        value={selectedIds}
+        onChange={onAgentsChange}
+        readonly={readonly}
+        allItemsMap={allItemsMap}
+        isSelectModalOpen={isSelectModalOpen}
+        onSelectModalOpenChange={onSelectModalOpenChange}
+        onItemClick={handleItemClick}
+        onConfigureClick={handleConfigureClick}
+      />
 
       {configuringChip && (
         <DialAppConfigurationModal
@@ -255,21 +121,7 @@ export const AgentsAndToolsetsField: FC<AgentsAndToolsetsFieldProps> = ({
         />
       )}
 
-      {viewingItem && (
-        <EntityInfoModal item={viewingItem} onClose={() => setViewingItem(null)} />
-      )}
-
-      <DialConfirmationPopup
-        variant={ConfirmationPopupVariant.Danger}
-        open={isDiscardConfirmOpen}
-        header={t(QuickAppEditorI18nKeys.DiscardChanges)}
-        description={t(QuickAppEditorI18nKeys.DiscardJsonChangesConfirmation)}
-        confirmLabel={t(QuickAppEditorI18nKeys.Discard)}
-        cancelLabel={t(QuickAppEditorI18nKeys.ContinueEditing)}
-        onConfirm={handleDiscardConfirm}
-        onCancel={() => setIsDiscardConfirmOpen(false)}
-        onClose={() => setIsDiscardConfirmOpen(false)}
-      />
+      {viewingItem && <EntityInfoModal item={viewingItem} onClose={() => setViewingItem(null)} />}
     </div>
   );
 };

@@ -25,14 +25,14 @@ const UploadProgressModal: FC<UploadProgressModalProps> = ({
     if (percent === undefined) return null;
     return (
       <div
-        className="h-1 w-full overflow-hidden rounded-full bg-layer-1"
+        className="h-1 w-full overflow-hidden rounded-full bg-layer-sunken"
         role="progressbar"
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={percent}
       >
         <div
-          className="bg-accent-primary h-full rounded-full transition-all duration-300"
+          className="bg-control-accent h-full rounded-full transition-all duration-300"
           style={{ width: `${percent}%` }}
         />
       </div>
@@ -62,7 +62,7 @@ const UploadProgressModal: FC<UploadProgressModalProps> = ({
       <div className="flex h-full max-h-full flex-col gap-4 px-6">
         <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
           {files.map((entry) => (
-            <div key={entry.id} className="rounded bg-layer-2 px-3 py-2">
+            <div key={entry.id} className="rounded bg-layer-base px-3 py-2">
               <DialFileName name={entry.name} details={renderDetails(entry.percent)} />
             </div>
           ))}

@@ -6,10 +6,7 @@ import {
   AgentOrToolsetSchemaKeys,
   MIME_TYPE_REGEX,
   QuickApp2Schema,
-  getAgentsAndToolsetsFormValue,
-  getQuickApp2Toolsets,
   resolveDefaultModelId,
-  type QuickApp2Form,
 } from '@/form/quickApp2Form';
 import { decodeFileUrl } from '@/utils/decode-file-url';
 import {
@@ -20,10 +17,8 @@ import {
   type QuickApp2FormValidationResult,
   type QuickApp2FormValues,
 } from '@/types/quick-app-form';
-import { ToolsetTypes } from '@/constants/quick-apps';
-import type { AnyToolset, DialAppTransportType } from '@/types/quick-apps';
+import type { DialAppTransportType } from '@/types/quick-apps';
 
-type AllEntitiesMap = Parameters<typeof getQuickApp2Toolsets>[0]['allEntitiesMap'];
 type StarterField = 'title' | 'text';
 
 type FormAction =
@@ -85,9 +80,6 @@ export interface UseQuickApp2FormResult {
   reset: () => void;
   setAgentIds: (ids: string[]) => void;
   configureAgent: (id: string, transport: DialAppTransportType) => void;
-  switchToJsonView: (allEntitiesMap: AllEntitiesMap, language: string) => void;
-  switchToSimpleView: (toolsets: AnyToolset[]) => void;
-  discardJson: (allEntitiesMap: AllEntitiesMap, language: string) => void;
   updateStarter: (index: number, field: StarterField, value: string) => void;
   removeStarter: (index: number) => void;
   addDocuments: (documents: string[]) => void;
@@ -356,47 +348,6 @@ export const useQuickApp2Form = ({ defaultValues }: UseQuickApp2FormOptions): Us
       dispatch({ type: 'CONFIGURE_AGENT', id, transport }),
     [],
   );
-  const switchToJsonView = useCallback(
-    (allEntitiesMap: AllEntitiesMap, language: string) => {
-      const agentsAndToolsetsJson = JSON.stringify(
-        getQuickApp2Toolsets({ data: state.values as QuickApp2Form, allEntitiesMap, language }),
-        null,
-        2,
-      );
-      dispatch({
-        type: 'SET_VALUES',
-        values: { agentsAndToolsetsJson, isJsonView: true },
-        options: { shouldValidate: true },
-      });
-    },
-    [state.values],
-  );
-  const switchToSimpleView = useCallback((toolsets: AnyToolset[]) => {
-    dispatch({
-      type: 'SET_VALUES',
-      values: {
-        agentsAndToolsets: getAgentsAndToolsetsFormValue(toolsets) as QuickApp2FormValues['agentsAndToolsets'],
-        codeInterpreter: toolsets.some((toolset) => toolset.type === ToolsetTypes.CodeInterpreter),
-        isJsonView: false,
-      },
-      options: { shouldValidate: true },
-    });
-  }, []);
-  const discardJson = useCallback(
-    (allEntitiesMap: AllEntitiesMap, language: string) => {
-      const agentsAndToolsetsJson = JSON.stringify(
-        getQuickApp2Toolsets({ data: state.values as QuickApp2Form, allEntitiesMap, language }),
-        null,
-        2,
-      );
-      dispatch({
-        type: 'SET_VALUES',
-        values: { agentsAndToolsetsJson, isJsonView: false },
-        options: { shouldValidate: true },
-      });
-    },
-    [state.values],
-  );
   const updateStarter = useCallback(
     (index: number, field: StarterField, value: string) => dispatch({ type: 'UPDATE_STARTER', index, field, value }),
     [],
@@ -433,9 +384,6 @@ export const useQuickApp2Form = ({ defaultValues }: UseQuickApp2FormOptions): Us
       reset,
       setAgentIds,
       configureAgent,
-      switchToJsonView,
-      switchToSimpleView,
-      discardJson,
       updateStarter,
       removeStarter,
       addDocuments,
@@ -454,9 +402,6 @@ export const useQuickApp2Form = ({ defaultValues }: UseQuickApp2FormOptions): Us
       reset,
       setAgentIds,
       configureAgent,
-      switchToJsonView,
-      switchToSimpleView,
-      discardJson,
       updateStarter,
       removeStarter,
       addDocuments,

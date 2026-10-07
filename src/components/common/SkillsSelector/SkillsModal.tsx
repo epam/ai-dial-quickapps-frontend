@@ -18,9 +18,10 @@ import {
   DialNoDataContent,
   DialPopup,
   DialPrimaryButton,
-  DialSearch,
   DialTabs,
   PopupSize,
+  Search,
+  Spinner,
 } from '@epam/ai-dial-ui-kit';
 
 import { SkillChip } from './SkillChip';
@@ -44,10 +45,10 @@ const SkillCard: React.FC<SkillCardProps> = ({ item, isSelected, isFavorite, onT
       onClick={() => onToggle(item.id)}
       className={classNames(
         'relative box-border flex min-h-[220px] cursor-pointer flex-col gap-[14px] rounded-[16px] border p-[11px] md:p-[15px]',
-        'bg-layer-0 shadow-[0_1px_3px_rgba(0,0,0,0.04)]',
+        'bg-layer-raised shadow-xs',
         'transition-[transform,box-shadow] duration-[180ms] ease-out',
-        'hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.04)]',
-        isSelected ? 'border-accent-primary' : 'border-[rgba(0,0,0,0.07)]',
+        'hover:-translate-y-0.5 hover:shadow-md',
+        isSelected ? 'border-accent' : 'border-tertiary',
       )}
     >
       <FavoriteStarButton isFavorite={isFavorite} />
@@ -75,6 +76,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
   onConfirm,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t: tCommon } = useTranslation(Translation.Common);
   const { skillsWithFavorites: skills, skillsMap, favoriteIds, status } = useDataContext();
   const isLoading = status === 'loading' || status === 'idle';
 
@@ -153,10 +155,11 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
       <div className="flex h-[calc(100dvh-14rem)] flex-col gap-3 px-6 py-4 desktop:h-[calc(100vh-12rem)]">
         <div className="flex shrink-0 justify-between gap-3">
           <div className="flex-1">
-            <DialSearch
+            <Search
               placeholder={t(QuickAppEditorI18nKeys.SearchAgentSkills)}
               value={search}
-              onChange={setSearch}
+              onChange={(value) => setSearch(value ?? '')}
+              clearLabel={tCommon(CommonI18nKeys.ClearSearch)}
               autoFocus
             />
           </div>
@@ -185,7 +188,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
         <div className="min-h-0 flex-1">
           {isLoading ? (
             <div className="flex h-40 items-center justify-center">
-              <div className="size-6 animate-spin rounded-full border-2 border-tertiary border-t-accent-primary" />
+              <Spinner size={24} fullWidth={false} />
             </div>
           ) : filteredItems.length === 0 ? (
             <DialNoDataContent

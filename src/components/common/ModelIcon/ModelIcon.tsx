@@ -19,7 +19,7 @@ const ModelIcon: FC<ModelIconProps> = memo(({ name, iconUrl, size, radius = 8 })
   if (!resolvedUrl) {
     return (
       <div
-        className="flex shrink-0 items-center justify-center bg-layer-4 font-semibold text-secondary"
+        className="flex shrink-0 items-center justify-center bg-control-neutral-active font-semibold text-secondary"
         style={{
           width: size,
           height: size,

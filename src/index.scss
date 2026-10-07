@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* @fontsource-variable/inter (imported in main.tsx) registers the family as 'Inter Variable'.
+   `--theme-font` is the hook the ui-kit's `.font` class reads. */
+$font-family: 'Inter Variable', sans-serif;
+
+@layer base {
+  html,
+  body,
+  #root {
+    @apply size-full overflow-hidden bg-layer-base text-primary;
+    font-family: $font-family;
+    --theme-font: #{$font-family};
+  }
+}

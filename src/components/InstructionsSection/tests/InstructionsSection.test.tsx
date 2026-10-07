@@ -25,14 +25,6 @@ vi.mock('@/components/common/MarkdownEditor/MarkdownEditorContainer', () => ({
     />
   ),
 }));
-vi.mock('@epam/ai-dial-ui-kit', () => ({
-  DialFormItem: ({ label, children }: { label: string; children: React.ReactNode }) => (
-    <div>
-      <div>{label}</div>
-      {children}
-    </div>
-  ),
-}));
 
 const TestForm = () => {
   const [value, setValue] = useState('Existing instructions');
@@ -59,14 +51,18 @@ describe('InstructionsSection', () => {
     act(() => root.render(<TestForm />));
 
     expect(container.textContent).toContain('Instructions');
+    const heading = container.querySelector('section[aria-label="Instructions"] > h2');
+    expect(heading?.className).toContain('text-primary');
+    expect(heading?.querySelector('.dial-h3-text')?.textContent).toBe('Instructions');
+    expect(heading?.textContent).toContain('*');
     expect(container.textContent).not.toContain('Orchestrator');
     expect(container.textContent).not.toContain('Model');
     expect(container.textContent).not.toContain('Temperature');
     expect(container.textContent).not.toContain('Process files');
     const instructionsSection = container.querySelector('section[aria-label="Instructions"]');
-    expect(instructionsSection?.className).toContain('rounded-[24px]');
-    expect(instructionsSection?.className).toContain('bg-layer-0');
-    expect(instructionsSection?.className).toContain('shadow-sm');
+    expect(instructionsSection?.className).toContain('rounded-[20px]');
+    expect(instructionsSection?.className).toContain('bg-layer-raised');
+    expect(instructionsSection?.className).toContain('shadow-md');
     expect(container.querySelector('[aria-label="Instructions editor"]')).toBeTruthy();
     expect(container.querySelector('[aria-expanded]')).toBeNull();
   });

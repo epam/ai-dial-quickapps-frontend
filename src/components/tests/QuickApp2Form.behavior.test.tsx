@@ -86,12 +86,10 @@ vi.mock('@/components/QuickApp2FormLegacyFields/QuickApp2FormLegacyFields', () =
   const LegacyFieldsTest = ({
     values,
     errors,
-    attachmentTypesResetKey,
     onAttachmentTypesChange,
   }: {
     values: QuickApp2Form;
     errors: Record<string, string | undefined>;
-    attachmentTypesResetKey: number;
     onAttachmentTypesChange: (tags: string[], previousTags: string[]) => void;
   }) => (
     <div>
@@ -100,7 +98,6 @@ vi.mock('@/components/QuickApp2FormLegacyFields/QuickApp2FormLegacyFields', () =
         data-testid="add-invalid-mime"
         onClick={() => onAttachmentTypesChange(['not-a-mime'], values.inputAttachmentTypes)}
       />
-      <output data-testid="attachment-reset-key">{attachmentTypesResetKey}</output>
       <output data-testid="attachment-error">{errors.inputAttachmentTypes}</output>
       <output data-testid="attachment-value">{values.inputAttachmentTypes.join('|')}</output>
     </div>
@@ -277,7 +274,7 @@ describe('QuickApp2Form observable behavior', () => {
     expect(onDirtyChange).toHaveBeenLastCalledWith(false);
   });
 
-  it('rolls back invalid MIME tags and signals the input to remount', async () => {
+  it('rolls back invalid MIME tags', async () => {
     renderForm();
 
     await act(async () => {
@@ -287,7 +284,6 @@ describe('QuickApp2Form observable behavior', () => {
       await Promise.resolve();
     });
 
-    expect(container.querySelector('[data-testid="attachment-reset-key"]')?.textContent).toBe('1');
     expect(container.querySelector('[data-testid="attachment-error"]')?.textContent).toBe(
       QuickAppEditorI18nKeys.PleaseMatchTheMimeFormat,
     );

@@ -9,7 +9,7 @@ vi.mock('@/hooks/useTranslation', () => ({
 }));
 
 vi.mock('@epam/ai-dial-ui-kit', () => ({
-  DialInput: ({
+  Input: ({
     value,
     onChange,
     disabled,

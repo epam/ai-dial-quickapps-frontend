@@ -5,7 +5,7 @@ import {
   DialButton,
   DialNeutralButton,
   Popup,
-  Spinner as DialSpinner,
+  Spinner,
   NOT_ALLOWED_SYMBOLS_REGEXP,
   NotificationVariant,
   PopupSize,
@@ -381,7 +381,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
       ? 'bg-error'
       : notification?.variant === NotificationVariant.Success
         ? 'bg-success'
-        : 'bg-layer-3';
+        : 'bg-layer-sunken';
 
   return (
     <>
@@ -407,7 +407,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
       >
         {notification != null && (
           <div
-            className={`dial-small-text flex flex-col gap-1 px-6 py-3 text-primary-bg ${notificationBgClass}`}
+            className={`dial-small-text flex flex-col gap-1 px-6 py-3 text-primary ${notificationBgClass}`}
           >
             {notification.title != null && (
               <span className="font-semibold">{notification.title}</span>
@@ -463,9 +463,9 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
             {isDownloading && (
               <div
                 aria-live="polite"
-                className="absolute inset-0 z-[52] flex items-center justify-center bg-blackout md:p-4"
+                className="absolute inset-0 z-[52] flex items-center justify-center bg-backdrop md:p-4"
               >
-                <DialSpinner
+                <Spinner
                   size={32}
                   fullWidth={false}
                   ariaLabel={t(DialFileManagerI18nKeys.Downloading)}
@@ -475,9 +475,9 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
             {isDeleting && (
               <div
                 aria-live="polite"
-                className="absolute inset-0 z-[52] flex items-center justify-center bg-blackout md:p-4"
+                className="absolute inset-0 z-[52] flex items-center justify-center bg-backdrop md:p-4"
               >
-                <DialSpinner
+                <Spinner
                   size={32}
                   fullWidth={false}
                   ariaLabel={t(DialFileManagerI18nKeys.DeletingLabel)}
@@ -487,9 +487,9 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
             {isRenaming && (
               <div
                 aria-live="polite"
-                className="absolute inset-0 z-[52] flex items-center justify-center bg-blackout md:p-4"
+                className="absolute inset-0 z-[52] flex items-center justify-center bg-backdrop md:p-4"
               >
-                <DialSpinner
+                <Spinner
                   size={32}
                   fullWidth={false}
                   ariaLabel={t(DialFileManagerI18nKeys.RenamingLabel)}

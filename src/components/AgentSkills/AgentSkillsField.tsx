@@ -5,16 +5,8 @@ interface AgentSkillsFieldProps {
   value: string[];
   onChange: (ids: string[]) => void;
   readonly?: boolean;
-  tooltip?: string;
+  isSelectModalOpen: boolean;
+  onSelectModalOpenChange: (isOpen: boolean) => void;
 }
 
-export const AgentSkillsField: FC<AgentSkillsFieldProps> = ({
-  value,
-  onChange,
-  readonly,
-  tooltip,
-}) => {
-  return (
-    <SkillsSelector value={value} onChange={onChange} readonly={readonly} tooltip={tooltip} />
-  );
-};
+export const AgentSkillsField: FC<AgentSkillsFieldProps> = (props) => <SkillsSelector {...props} />;

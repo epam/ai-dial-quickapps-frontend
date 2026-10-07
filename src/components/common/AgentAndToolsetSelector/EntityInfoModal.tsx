@@ -50,7 +50,7 @@ export const EntityInfoModal: FC<EntityInfoModalProps> = ({ item, onClose }) => 
             <span
               className={classNames(
                 'dial-caption-text mb-1 font-semibold uppercase tracking-[0.06em]',
-                isModel ? 'text-warning' : isApplication ? 'text-success' : 'text-accent-primary',
+                isModel ? 'text-warning' : isApplication ? 'text-success' : 'text-accent',
               )}
             >
               {entityTypeLabel}

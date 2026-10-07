@@ -28,11 +28,11 @@ export const Label: FC<LabelProps> = ({
     htmlFor={htmlFor}
   >
     {children}
-    {mandatory && <span className="ml-1 inline text-accent-primary">*</span>}
+    {mandatory && <span className="ml-1 inline text-accent">*</span>}
     {info && (
       <DialTooltip
         tooltip={info}
-        triggerClassName="flex shrink-0 p-1 text-secondary hover:text-accent-primary"
+        triggerClassName="flex shrink-0 p-1 text-secondary hover:text-accent"
         contentClassName="z-[2000]"
       >
         <IconHelp size={16} />

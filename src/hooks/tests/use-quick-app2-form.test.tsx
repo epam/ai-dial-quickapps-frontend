@@ -17,7 +17,6 @@ import {
   type QuickApp2FormValues,
 } from '@/types/quick-app-form';
 import { DialAppTransportType } from '@/types/quick-apps';
-import { ToolsetTypes } from '@/constants/quick-apps';
 
 const createValues = (overrides: Partial<QuickApp2FormValues> = {}): QuickApp2FormValues => ({
   instructions: '',
@@ -28,8 +27,6 @@ const createValues = (overrides: Partial<QuickApp2FormValues> = {}): QuickApp2Fo
   codeInterpreter: false,
   inputAttachmentTypes: [],
   maxInputAttachments: undefined,
-  isJsonView: false,
-  agentsAndToolsetsJson: '[]',
   introText: undefined,
   chatMessageInputDisabled: false,
   autoSubmit: true,
@@ -103,25 +100,7 @@ describe('useQuickApp2Form values and validation', () => {
     renderHook();
     act(() => {
       latestForm.setValues(
-        { isJsonView: true, agentsAndToolsetsJson: '{' },
-        { shouldValidate: false },
-      );
-    });
-
-    let result: QuickApp2FormValidationResult | undefined;
-    await act(async () => {
-      result = latestForm.submit();
-      await Promise.resolve();
-    });
-
-    expect(result?.isValid).toBe(false);
-    expect(latestForm.errors.agentsAndToolsetsJson).toBe('Should be a valid JSON');
-
-    act(() => {
-      latestForm.setValues(
         {
-          isJsonView: false,
-          agentsAndToolsetsJson: '[]',
           starters: [{ id: 'starter-1', title: 7 as unknown as string, text: '' }],
         },
         { shouldValidate: false },
@@ -308,35 +287,5 @@ describe('useQuickApp2Form semantic actions', () => {
     });
     expect(latestForm.values.inputAttachmentTypes).toEqual(['image/png']);
     expect(latestForm.errors.inputAttachmentTypes).toBeUndefined();
-  });
-
-  it('switches between simple and JSON toolset representations', () => {
-    const toolset = {
-      type: ToolsetTypes.DialApp,
-      name: 'Weather',
-      deployment_id: 'applications/weather',
-    };
-    renderHook(createValues({ agentsAndToolsets: [] }));
-
-    act(() => {
-      latestForm.switchToJsonView({}, 'en');
-    });
-    expect(latestForm.values.isJsonView).toBe(true);
-    expect(JSON.parse(latestForm.values.agentsAndToolsetsJson)).toEqual([
-      {
-        name: 'dial-deployment-tool-set',
-        type: ToolsetTypes.DialDeployment,
-        tools: [],
-      },
-    ]);
-
-    act(() => {
-      latestForm.switchToSimpleView([toolset, { template_name: 'py_interpreter', type: ToolsetTypes.CodeInterpreter }]);
-    });
-    expect(latestForm.values.isJsonView).toBe(false);
-    expect(latestForm.values.codeInterpreter).toBe(true);
-    expect(latestForm.values.agentsAndToolsets[0][AgentOrToolsetSchemaKeys.id]).toBe(
-      'applications/weather',
-    );
   });
 });

@@ -59,20 +59,10 @@ const FormHarness = () => {
   return (
     <ContextAndToolsSection
       control={control}
-      errors={{}}
       isReadonly={false}
       isCodeInterpreterEnabled={false}
       isWebFetchEnabled={false}
       isAddAttachmentEnabled={false}
-      agentsAndToolsets={[]}
-      agentsAndToolsetsJson="[]"
-      isJsonView={false}
-      onAgentsChange={vi.fn()}
-      onJsonChange={vi.fn()}
-      onSwitchToJsonView={vi.fn()}
-      onSwitchToSimpleView={vi.fn()}
-      onDiscardJson={vi.fn()}
-      onConfigureAgent={vi.fn()}
     />
   );
 };

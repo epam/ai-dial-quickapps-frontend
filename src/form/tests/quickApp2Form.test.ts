@@ -7,7 +7,6 @@ import {
   getAgentsAndToolsetsFormValue,
   getQuickApp2FormData,
   getQuickApp2Toolsets,
-  buildQuickApp2Config,
   type QuickApp2Form,
 } from '@/form/quickApp2Form';
 import type { AnyToolset } from '@/types/quick-apps';
@@ -21,8 +20,6 @@ const createForm = (overrides: Partial<QuickApp2Form> = {}): QuickApp2Form => ({
   codeInterpreter: false,
   inputAttachmentTypes: [],
   maxInputAttachments: undefined,
-  isJsonView: false,
-  agentsAndToolsetsJson: '[]',
   introText: undefined,
   chatMessageInputDisabled: false,
   autoSubmit: true,
@@ -43,46 +40,6 @@ describe('QuickApp2Schema', () => {
     const result = QuickApp2Schema.safeParse(createForm());
 
     expect(result.success).toBe(true);
-  });
-
-  it('rejects invalid JSON only when JSON view is active', () => {
-    const inactiveResult = QuickApp2Schema.safeParse(
-      createForm({ agentsAndToolsetsJson: 'not-json' }),
-    );
-    const activeResult = QuickApp2Schema.safeParse(
-      createForm({ isJsonView: true, agentsAndToolsetsJson: 'not-json' }),
-    );
-
-    expect(inactiveResult.success).toBe(true);
-    expect(activeResult.success).toBe(false);
-    if (!activeResult.success) {
-      expect(activeResult.error.issues).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            path: ['agentsAndToolsetsJson'],
-            message: 'Should be a valid JSON',
-          }),
-        ]),
-      );
-    }
-  });
-
-  it('rejects JSON values that are valid JSON but not arrays', () => {
-    const result = QuickApp2Schema.safeParse(
-      createForm({ isJsonView: true, agentsAndToolsetsJson: '{"tool": true}' }),
-    );
-
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.issues).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            path: ['agentsAndToolsetsJson'],
-            message: 'Should be an array',
-          }),
-        ]),
-      );
-    }
   });
 
   it('rejects a model that is not available', () => {
@@ -190,7 +147,7 @@ describe('getQuickApp2FormData', () => {
     });
   });
 
-  it('round-trips simple and JSON toolset representations', () => {
+  it('builds toolsets from the simple representation', () => {
     const toolset = {
       type: ToolsetTypes.DialApp,
       name: 'Weather',
@@ -202,26 +159,12 @@ describe('getQuickApp2FormData', () => {
       data: createForm({ agentsAndToolsets: formValue }),
       language: 'en',
     });
-    const jsonConfig = buildQuickApp2Config({
-      data: createForm({
-        isJsonView: true,
-        agentsAndToolsetsJson: JSON.stringify([toolset]),
-        codeInterpreter: true,
-      }),
-      allEntitiesMap: {},
-      language: 'en',
-    });
-
     expect(simpleToolsets).toEqual(
       expect.arrayContaining([
         expect.objectContaining(toolset),
         expect.objectContaining({ type: ToolsetTypes.DialDeployment }),
       ]),
     );
-    expect(jsonConfig.tool_sets).toEqual([
-      toolset,
-      { template_name: 'py_interpreter', type: ToolsetTypes.CodeInterpreter },
-    ]);
   });
 
   it('preserves attachment values from the app when building defaults', () => {

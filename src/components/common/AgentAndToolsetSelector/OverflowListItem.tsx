@@ -64,7 +64,7 @@ export const OverflowListItem: React.FC<OverflowListItemProps> = ({
         className={mergeClasses(
           'flex w-full items-center justify-between gap-3 px-3 py-2 transition-colors',
           'cursor-pointer',
-          isError ? 'hover:bg-error' : 'hover:bg-accent-primary-alpha',
+          isError ? 'hover:bg-error' : 'hover:bg-control-accent-alpha-hover',
         )}
         onClick={handleClick}
       >

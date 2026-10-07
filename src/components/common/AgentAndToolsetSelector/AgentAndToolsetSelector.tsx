@@ -1,58 +1,41 @@
-import { IconLayoutGrid, IconPlus } from '@tabler/icons-react';
-import React, { MouseEvent, useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import { useSearchParams } from '@/hooks/useSearchParams';
 import { requestApplicationCredentials } from '@/utils/request-application-credentials';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Translation } from '@/types/translation';
-import { CommonI18nKeys } from '@/constants/i18n';
-import { AgentsAndToolsetsModalQueryParams } from '@/constants/quick-apps';
-import { ToggleSwitch } from '@/components/common/ToggleSwitch/ToggleSwitch';
 import { AgentAndToolsetChip, type ChipEntity } from './AgentAndToolsetChip';
 import { AgentAndToolsetModal } from './AgentAndToolsetModal';
 import { ToolsetLoginModal } from './ToolsetLoginModal';
-import { DialLinkButton, DialNoDataContent } from '@epam/ai-dial-ui-kit';
 
 interface AgentAndToolsetSelectorProps {
   value: string[];
   onChange: (agentAndToolset: string[]) => void;
   readonly?: boolean;
-  addBtnTooltip?: string;
   allItemsMap: Record<string, ChipEntity | undefined>;
-  tooltip?: string;
+  // The parent owns the modal state and renders the Add trigger.
+  isSelectModalOpen: boolean;
+  onSelectModalOpenChange: (isOpen: boolean) => void;
   onItemClick?: (id: string) => void;
-  onJsonSwitchClick?: () => void;
   onConfigureClick?: (item: ChipEntity) => void;
 }
 
 export const AgentAndToolsetSelector: React.FC<AgentAndToolsetSelectorProps> = ({
   value = [],
   readonly,
-  addBtnTooltip,
-  tooltip,
   allItemsMap,
+  isSelectModalOpen,
+  onSelectModalOpenChange,
   onChange,
   onItemClick,
-  onJsonSwitchClick,
   onConfigureClick,
 }) => {
-  const { t } = useTranslation(Translation.Common);
   const searchParams = useSearchParams();
   const { settings } = useAppContext();
 
-  const [isSelectModalOpen, setSelectModalOpen] = useState(
-    searchParams.get(AgentsAndToolsetsModalQueryParams.Modal) === '1',
-  );
   const [loginToolset, setLoginToolset] = useState<ChipEntity | null>(null);
 
-  const handleOpenSelectModal = (e: MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    setSelectModalOpen(true);
-  };
-
   const handleCloseModal = useCallback(() => {
-    setSelectModalOpen(false);
-  }, []);
+    onSelectModalOpenChange(false);
+  }, [onSelectModalOpenChange]);
 
   const handleRemoveItem = useCallback(
     (idToRemove: string) => {
@@ -64,74 +47,34 @@ export const AgentAndToolsetSelector: React.FC<AgentAndToolsetSelectorProps> = (
   const handleConfirmSelection = useCallback(
     (newIds: string[]) => {
       onChange(newIds);
-      setSelectModalOpen(false);
+      onSelectModalOpenChange(false);
     },
-    [onChange],
+    [onChange, onSelectModalOpenChange],
   );
 
   return (
     <div className="relative grow space-y-4">
-      <div className="flex flex-col">
-        <div className="absolute right-0 top-[-29px] flex items-center">
-          <span>
-            <DialLinkButton
-              tooltipProps={{
-                tooltip: addBtnTooltip ?? tooltip ?? t(CommonI18nKeys.AddAgentsAndToolsets),
-              }}
-              disabled={readonly}
-              onClick={handleOpenSelectModal}
-              iconBefore={<IconPlus size={18} />}
-              label={t(CommonI18nKeys.Add)}
+      {value.length > 0 && (
+        <div className="flex flex-wrap gap-1 rounded border border-primary p-2">
+          {value.map((id) => (
+            <AgentAndToolsetChip
+              key={id}
+              id={id}
+              item={allItemsMap[id]}
+              onRemove={readonly ? undefined : handleRemoveItem}
+              readonly={readonly}
+              onItemClick={onItemClick}
+              onConfigure={onConfigureClick}
+              onLoginToolset={setLoginToolset}
+              onApplicationCredentials={
+                searchParams.get('applicationCredentials') === 'true'
+                  ? (item) => requestApplicationCredentials(item.id, settings.allowedOrigin)
+                  : undefined
+              }
             />
-          </span>
-          {!!onJsonSwitchClick && (
-            <>
-              <div className="ml-1 mr-3 h-3 w-0 border-l border-primary" />
-              <span>
-                <ToggleSwitch
-                  isOn={false}
-                  handleSwitch={onJsonSwitchClick}
-                  disabled={readonly}
-                  additionalText={t(CommonI18nKeys.JSON)}
-                  className="flex w-fit items-center gap-2"
-                  tooltip={t(
-                    !readonly
-                      ? CommonI18nKeys.SwitchToJsonView
-                      : CommonI18nKeys.PublicAppCannotBeEdited,
-                  )}
-                />
-              </span>
-            </>
-          )}
+          ))}
         </div>
-        {!value.length ? (
-          <DialNoDataContent
-            title={t(CommonI18nKeys.NoAgentsAndToolsetsAdded)}
-            icon={<IconLayoutGrid size={60} stroke={0.5} />}
-            containerClassName="rounded border border-primary p-4"
-          />
-        ) : (
-          <div className="flex flex-wrap gap-1 rounded border border-primary p-2">
-            {value.map((id) => (
-              <AgentAndToolsetChip
-                key={id}
-                id={id}
-                item={allItemsMap[id]}
-                onRemove={readonly ? undefined : handleRemoveItem}
-                readonly={readonly}
-                onItemClick={onItemClick}
-                onConfigure={onConfigureClick}
-                onLoginToolset={setLoginToolset}
-                onApplicationCredentials={
-                  searchParams.get('applicationCredentials') === 'true'
-                    ? (item) => requestApplicationCredentials(item.id, settings.allowedOrigin)
-                    : undefined
-                }
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      )}
 
       {isSelectModalOpen && !readonly && (
         <AgentAndToolsetModal

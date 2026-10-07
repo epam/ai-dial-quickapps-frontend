@@ -1,10 +1,9 @@
-import { FC, ReactNode, useEffect, useMemo, useRef } from 'react';
+import { FC, useEffect, useMemo, useRef } from 'react';
 import isEqual from 'lodash-es/isEqual';
 import { useForm, useWatch, type FieldErrors } from 'react-hook-form';
 
 import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import type { QuickApp2FormErrors, QuickApp2FormValues } from '@/types/quick-app-form';
-import type { AnyToolset, DialAppTransportType } from '@/types/quick-apps';
 
 import ContextAndToolsSection from '../ContextAndTools/ContextAndToolsSection';
 import ConversationStartersSection from '../ConversationStarters/ConversationStartersSection';
@@ -12,10 +11,7 @@ import UserAttachmentsSection from '../UserAttachments/UserAttachmentsSection';
 
 const LEGACY_FIELDS = [
   'documentRelativeUrl',
-  'agentsAndToolsets',
   'codeInterpreter',
-  'agentsAndToolsetsJson',
-  'isJsonView',
   'fileTools',
   'addAttachment',
   'webFetch',
@@ -35,17 +31,9 @@ export interface QuickApp2FormLegacyFieldsProps {
   isCodeInterpreterEnabled: boolean;
   isWebFetchEnabled: boolean;
   isAddAttachmentEnabled: boolean;
-  attachmentTypesResetKey: number;
-  agentSkills: ReactNode;
   startersSettingsTooltip?: string;
   onValuesChange: (values: Partial<QuickApp2FormValues>) => void;
   onAttachmentTypesChange: (tags: string[], previousTags: string[]) => void;
-  onAgentsChange: (ids: string[]) => void;
-  onJsonChange: (json: string) => void;
-  onSwitchToJsonView: () => void;
-  onSwitchToSimpleView: (toolsets: AnyToolset[]) => void;
-  onDiscardJson: () => void;
-  onConfigureAgent: (id: string, transport: DialAppTransportType) => void;
 }
 
 const QuickApp2FormLegacyFields: FC<QuickApp2FormLegacyFieldsProps> = ({
@@ -56,17 +44,9 @@ const QuickApp2FormLegacyFields: FC<QuickApp2FormLegacyFieldsProps> = ({
   isCodeInterpreterEnabled,
   isWebFetchEnabled,
   isAddAttachmentEnabled,
-  attachmentTypesResetKey,
-  agentSkills,
   startersSettingsTooltip,
   onValuesChange,
   onAttachmentTypesChange,
-  onAgentsChange,
-  onJsonChange,
-  onSwitchToJsonView,
-  onSwitchToSimpleView,
-  onDiscardJson,
-  onConfigureAgent,
 }) => {
   const { control, setValue, formState } = useForm<QuickApp2FormType>({
     defaultValues: values as QuickApp2FormType,
@@ -111,17 +91,6 @@ const QuickApp2FormLegacyFields: FC<QuickApp2FormLegacyFieldsProps> = ({
 
   const hasStarters = values.starters.some((starter) => starter.title.trim() && starter.text.trim());
 
-  const contextErrors = useMemo<FieldErrors<QuickApp2FormType>>(() => {
-    const nextErrors = { ...legacyErrors };
-    const message = errors.agentsAndToolsetsJson;
-    if (message) {
-      nextErrors.agentsAndToolsetsJson = { type: 'manual', message };
-    } else {
-      delete nextErrors.agentsAndToolsetsJson;
-    }
-    return nextErrors;
-  }, [errors.agentsAndToolsetsJson, legacyErrors]);
-
   const attachmentErrors = useMemo<FieldErrors<QuickApp2FormType>>(() => {
     const nextErrors = { ...legacyErrors };
     const attachmentTypesMessage = errors.inputAttachmentTypes;
@@ -143,26 +112,12 @@ const QuickApp2FormLegacyFields: FC<QuickApp2FormLegacyFieldsProps> = ({
     <>
       <ContextAndToolsSection
         control={control}
-        errors={contextErrors}
         isReadonly={isReadonly}
         tooltip={tooltip}
         isCodeInterpreterEnabled={isCodeInterpreterEnabled}
         isWebFetchEnabled={isWebFetchEnabled}
         isAddAttachmentEnabled={isAddAttachmentEnabled}
-        agentsAndToolsets={values.agentsAndToolsets}
-        agentsAndToolsetsJson={values.agentsAndToolsetsJson}
-        isJsonView={values.isJsonView}
-        onAgentsChange={onAgentsChange}
-        onJsonChange={onJsonChange}
-        onSwitchToJsonView={onSwitchToJsonView}
-        onSwitchToSimpleView={onSwitchToSimpleView}
-        onDiscardJson={onDiscardJson}
-        onConfigureAgent={onConfigureAgent}
       />
-
-      <hr className="border-secondary" />
-
-      {agentSkills}
 
       <hr className="border-secondary" />
 
@@ -171,7 +126,6 @@ const QuickApp2FormLegacyFields: FC<QuickApp2FormLegacyFieldsProps> = ({
         errors={attachmentErrors}
         isReadonly={isReadonly}
         tooltip={tooltip}
-        attachmentTypesResetKey={attachmentTypesResetKey}
         onAttachmentTypesChange={onAttachmentTypesChange}
       />
 

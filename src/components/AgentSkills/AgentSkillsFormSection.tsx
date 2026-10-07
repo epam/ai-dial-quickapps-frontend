@@ -1,11 +1,11 @@
-import { FC, memo } from 'react';
+import { FC, memo, useState } from 'react';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import type { QuickApp2FormValues } from '@/types/quick-app-form';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Translation } from '@/types/translation';
 
-import { FormCollapsibleSection } from '@/components/common/FormCollapsibleSection';
+import { AddOnRow } from '@/components/AddOns/AddOnRow';
 
 import { AgentSkillsField } from './AgentSkillsField';
 
@@ -23,19 +23,25 @@ const AgentSkillsFormSection: FC<AgentSkillsFormSectionProps> = ({
   tooltip,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
+  const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
 
   return (
-    <FormCollapsibleSection
-      name={t(QuickAppEditorI18nKeys.AgentSkills)}
-      description={t(QuickAppEditorI18nKeys.AgentSkillsDescription)}
+    <AddOnRow
+      label={t(QuickAppEditorI18nKeys.Skills)}
+      emptyDescription={t(QuickAppEditorI18nKeys.AgentSkillsDescription)}
+      isEmpty={!value?.length}
+      isAddDisabled={isReadonly}
+      addTooltip={tooltip ?? t(QuickAppEditorI18nKeys.AddAgentSkills)}
+      onAdd={() => setIsSkillsModalOpen(true)}
     >
       <AgentSkillsField
         value={value}
         onChange={onChange}
         readonly={isReadonly}
-        tooltip={tooltip}
+        isSelectModalOpen={isSkillsModalOpen}
+        onSelectModalOpenChange={setIsSkillsModalOpen}
       />
-    </FormCollapsibleSection>
+    </AddOnRow>
   );
 };
 
