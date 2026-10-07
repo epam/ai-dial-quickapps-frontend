@@ -11,7 +11,7 @@ import type {
   FileUploadStatus,
   SharedRootMeta,
 } from '@/types/file-manager';
-import type { ListFilesItem } from '@/utils/dial-files-api';
+import { FilesApiNodeType, type ListFilesItem } from '@/types/dial-files';
 import { listFiles, listPublicFiles, listSharedFiles } from '@/utils/dial-files-api';
 import { safeDecodeURI } from '@/utils/safe-decode-uri';
 
@@ -106,7 +106,7 @@ export const buildFromCache = (
   if (flat == null) return [];
 
   return flat.map((item): DialFile => {
-    const isFolder = item.nodeType === 'FOLDER';
+    const isFolder = item.nodeType === FilesApiNodeType.Folder;
     const name = safeDecodeURI(item.name);
     const virtualPath = isFolder ? `${virtualBasePath}/${name}/` : `${virtualBasePath}/${name}`;
 
@@ -157,7 +157,7 @@ export const mergeCreatedFolderIntoCache = (
     name: created.name,
     path: created.path,
     folderId: created.folderId,
-    nodeType: 'FOLDER',
+    nodeType: FilesApiNodeType.Folder,
     bucket: created.bucket,
     parentPath: created.parentPath ?? undefined,
     url: created.path,

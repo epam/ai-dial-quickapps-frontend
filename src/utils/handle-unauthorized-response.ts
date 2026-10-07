@@ -14,9 +14,17 @@ export const handleUnauthorized401 = (): void => {
   const lastReload = Number(sessionStorage.getItem(RELOAD_TS_KEY) ?? 0);
   if (Date.now() - lastReload < LOOP_WINDOW_MS) {
     sessionStorage.removeItem(RELOAD_TS_KEY);
-    void logout().finally(() => {
-      window.location.href = '/';
-    });
+    const signOut = async () => {
+      try {
+        await logout();
+      } catch {
+        // Leaving the app is what matters; a failed sign-out request must not surface as an
+        // unhandled rejection.
+      } finally {
+        window.location.href = '/';
+      }
+    };
+    void signOut();
   } else {
     sessionStorage.setItem(RELOAD_TS_KEY, String(Date.now()));
     window.location.reload();

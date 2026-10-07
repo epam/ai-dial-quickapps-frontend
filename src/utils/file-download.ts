@@ -32,7 +32,7 @@ export type DownloadDestination =
     }
   | { type: DownloadDestinationType.Cancelled };
 
-export const triggerBlobDownload = (blob: Blob, filename: string): void => {
+const triggerBlobDownload = (blob: Blob, filename: string): void => {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement('a');
   anchor.href = url;

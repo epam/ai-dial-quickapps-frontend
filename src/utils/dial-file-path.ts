@@ -17,7 +17,7 @@ export const getFileDirectoryPath = (path: string): string => {
   return directorySegments.length > 0 ? directorySegments.join('/') : '/';
 };
 
-export const resolveRelativeDialFilePath = (pathOrFileId: string, bucket: string): string => {
+const resolveRelativeDialFilePath = (pathOrFileId: string, bucket: string): string => {
   const resourcePrefix = `files/${bucket}/`;
   if (pathOrFileId.startsWith(resourcePrefix)) {
     return safeDecodeURI(pathOrFileId.slice(resourcePrefix.length));

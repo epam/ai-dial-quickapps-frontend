@@ -13,10 +13,9 @@ import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import type { QuickApp2Config } from '@/types/quick-apps';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
-import type { LocalizedText } from '@/types/dial-entities';
+import type { DialAIEntityModel, LocalizedText } from '@/types/dial-entities';
 import { Translation } from '@/types/translation';
 import { useTranslation } from '@/hooks/use-translation';
-import { DialAIEntityModel } from '@/utils/application';
 
 import AddOnsSection from './AddOns/AddOnsSection';
 import InstructionsSection from './InstructionsSection/InstructionsSection';
@@ -147,11 +146,13 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   useEffect(() => {
     const handleTriggerSave = (event: Event) => {
       const { isAutoSave, ignoreDirty, general } =
-        (event as CustomEvent<{
-          isAutoSave?: boolean;
-          ignoreDirty?: boolean;
-          general?: TriggerSaveGeneralPayload;
-        }>).detail ?? {};
+        (
+          event as CustomEvent<{
+            isAutoSave?: boolean;
+            ignoreDirty?: boolean;
+            general?: TriggerSaveGeneralPayload;
+          }>
+        ).detail ?? {};
       if (isReadonly) return;
       if (isAutoSave && !ignoreDirty && !isDirty) return;
       handleSubmitForm(!!isAutoSave, general);

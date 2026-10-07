@@ -9,7 +9,7 @@ import {
 } from '@/types/conversation-starters';
 import type { ConversationStarter } from '@/types/quick-apps';
 
-export const createEmptyStarter = (): StarterWithId => ({ id: nanoid(), title: '', text: '' });
+const createEmptyStarter = (): StarterWithId => ({ id: nanoid(), title: '', text: '' });
 
 export const isSavedVisibleStarter = (starter: ConversationStarter): boolean =>
   !!(starter.title.trim() || starter.text.trim());

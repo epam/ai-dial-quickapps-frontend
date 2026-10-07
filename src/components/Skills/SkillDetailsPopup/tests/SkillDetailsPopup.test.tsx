@@ -8,7 +8,7 @@ import { SkillDetailsPopup } from '../SkillDetailsPopup';
 
 const { fetchSkillManifest } = vi.hoisted(() => ({ fetchSkillManifest: vi.fn() }));
 
-vi.mock('@/utils/dialClient', () => ({ fetchSkillManifest }));
+vi.mock('@/utils/dial-client', () => ({ fetchSkillManifest }));
 
 vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({ language: 'en-US', t: (key: string) => key }),

@@ -110,5 +110,7 @@
       "shared": "Shared with me",
       "organization": "Organization"
     }
-  }
+  },
+  "Logged in": "Logged in",
+  "Failed to update toolset credentials": "Failed to update toolset credentials"
 }

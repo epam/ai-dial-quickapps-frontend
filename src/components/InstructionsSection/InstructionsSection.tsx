@@ -36,6 +36,7 @@ const InstructionsSection: FC<InstructionsSectionProps> = ({ value, onChange }) 
           theme={editorTheme}
           placeholder={t(QuickAppEditorI18nKeys.InstructionsPlaceholder)}
           ariaLabel={t(QuickAppEditorI18nKeys.Instructions)}
+          showDragbar={false}
         />
       </Suspense>
     </Section>
