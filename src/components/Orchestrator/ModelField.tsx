@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import { FC, useCallback, useMemo, useState } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -15,15 +15,15 @@ import {
   ElementSize,
   EntityIdentity,
   mergeClasses,
-  Spinner as DialSpinner,
+  Spinner,
   DialNoDataContent,
   DialPopup,
-  DialSearch,
   DialSelect,
   Skeleton as DialSkeleton,
   SkeletonVariant as DialSkeletonVariant,
   DialTabs,
   PopupSize,
+  Search,
   SelectSize,
 } from '@epam/ai-dial-ui-kit';
 
@@ -193,6 +193,7 @@ interface ModelFieldProps {
 
 export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, tooltip, error }) => {
   const { t, language } = useTranslation(Translation.QuickAppEditor);
+  const { t: tCommon } = useTranslation(Translation.Common);
   const { app } = useAppContext();
   const {
     modelsWithFavorites: models,
@@ -380,10 +381,11 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
           {/* Sticky header: search + tabs */}
           <div className="flex shrink-0 justify-between gap-3 border-b border-tertiary px-6 pb-3 pt-4 bg-layer-base">
             <div className="flex-1 bg-layer-raised">
-              <DialSearch
+              <Search
                 value={search}
                 placeholder={t(QuickAppEditorI18nKeys.SearchPlaceholder)}
-                onChange={setSearch}
+                onChange={(value) => setSearch(value ?? '')}
+                clearLabel={tCommon(CommonI18nKeys.ClearSearch)}
               />
             </div>
             <DialTabs tabs={tabs} activeTab={activeTab} onClick={handleTabChange} />
@@ -393,7 +395,7 @@ export const ModelField: FC<ModelFieldProps> = ({ value, onChange, disabled, too
           <div className="flex min-h-0 flex-1 flex-col bg-layer-base px-6 py-4">
             {status === 'loading' || status === 'idle' ? (
               <div className="flex items-center justify-center py-16">
-                <DialSpinner
+                <Spinner
                   size={32}
                   fullWidth={false}
                   ariaLabel={t(QuickAppEditorI18nKeys.LoadingModels)}

@@ -17,10 +17,10 @@ import { toolsetsApi } from '@/utils/chat-api-client';
 import { encodeDialPath } from '@/utils/dialClient';
 import { getLocalizedText } from '@/utils/get-localized-text';
 import {
-  DialInput,
   DialNeutralButton,
   DialPopup,
   DialPrimaryButton,
+  PasswordInput,
   PopupSize,
 } from '@epam/ai-dial-ui-kit';
 import {
@@ -44,6 +44,7 @@ const credentialsLevelFor = (toolsetId: string): ToolsetLoginBodyDtoCredentialsL
 
 export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose }) => {
   const { t, language } = useTranslation(Translation.QuickAppEditor);
+  const { t: tCommon } = useTranslation(Translation.Common);
   const { settings } = useAppContext();
   const { refreshToolsets, applyToolsetAuthResult } = useDataContext();
 
@@ -202,13 +203,14 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
           </div>
         ) : (
           <div className="flex flex-col gap-3">
-            <DialInput
+            <PasswordInput
               value={apiKey}
               onChange={(v) => setApiKey(v ?? '')}
               placeholder={authSettings?.apiKeyHeader ?? t(QuickAppEditorI18nKeys.ApiKeyLabel)}
               containerClassName="w-full"
-              type="password"
               disabled={isSignedIn}
+              showPasswordLabel={tCommon(CommonI18nKeys.ShowPassword)}
+              hidePasswordLabel={tCommon(CommonI18nKeys.HidePassword)}
             />
             {error && <p className="dial-tiny-text text-error">{error}</p>}
             <div className="flex justify-end gap-2">

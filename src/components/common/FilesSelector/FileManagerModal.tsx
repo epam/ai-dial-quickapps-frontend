@@ -5,7 +5,7 @@ import {
   DialButton,
   DialNeutralButton,
   Popup,
-  Spinner as DialSpinner,
+  Spinner,
   NOT_ALLOWED_SYMBOLS_REGEXP,
   NotificationVariant,
   PopupSize,
@@ -473,7 +473,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
                 aria-live="polite"
                 className="absolute inset-0 z-[52] flex items-center justify-center bg-backdrop md:p-4"
               >
-                <DialSpinner
+                <Spinner
                   size={32}
                   fullWidth={false}
                   ariaLabel={t(DialFileManagerI18nKeys.Downloading)}
@@ -485,7 +485,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
                 aria-live="polite"
                 className="absolute inset-0 z-[52] flex items-center justify-center bg-backdrop md:p-4"
               >
-                <DialSpinner
+                <Spinner
                   size={32}
                   fullWidth={false}
                   ariaLabel={t(DialFileManagerI18nKeys.DeletingLabel)}
@@ -497,7 +497,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
                 aria-live="polite"
                 className="absolute inset-0 z-[52] flex items-center justify-center bg-backdrop md:p-4"
               >
-                <DialSpinner
+                <Spinner
                   size={32}
                   fullWidth={false}
                   ariaLabel={t(DialFileManagerI18nKeys.RenamingLabel)}
