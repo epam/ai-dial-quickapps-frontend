@@ -3,6 +3,7 @@ import { FC, memo, useCallback, useState } from 'react';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useTranslation } from '@/hooks/useTranslation';
+import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import { SectionRowVariant } from '@/types/section-row';
 import { Translation } from '@/types/translation';
 
@@ -21,9 +22,17 @@ import {
 
 export interface SettingsSectionProps {
   isReadonly: boolean;
+  advancedSettings: AdvancedSettingsValues;
+  maxInputAttachmentsError?: string;
+  onAdvancedSettingsSave: (values: AdvancedSettingsValues) => void;
 }
 
-const SettingsSection: FC<SettingsSectionProps> = ({ isReadonly }) => {
+const SettingsSection: FC<SettingsSectionProps> = ({
+  isReadonly,
+  advancedSettings,
+  maxInputAttachmentsError,
+  onAdvancedSettingsSave,
+}) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
@@ -49,7 +58,16 @@ const SettingsSection: FC<SettingsSectionProps> = ({ isReadonly }) => {
           />
         }
       />
-      <AdvancedSettingsPopup isOpen={isPopupOpen} onClose={handleClose} />
+      {isPopupOpen && (
+        // Mounted only while open so every open re-seeds the popup draft from the form.
+        <AdvancedSettingsPopup
+          isOpen
+          advancedSettings={advancedSettings}
+          maxInputAttachmentsError={maxInputAttachmentsError}
+          onSave={onAdvancedSettingsSave}
+          onClose={handleClose}
+        />
+      )}
     </>
   );
 };

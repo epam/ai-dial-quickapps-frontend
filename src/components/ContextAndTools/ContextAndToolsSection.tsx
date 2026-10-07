@@ -83,29 +83,6 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
         </DialFormItem>
       )}
 
-      <DialFormItem
-        label={t(QuickAppEditorI18nKeys.FileTools)}
-        description={t(QuickAppEditorI18nKeys.FileToolsDescription)}
-        className="!py-0"
-      >
-        <Controller
-          control={control}
-          name="fileTools"
-          render={({ field }) => (
-            <Switch
-              isOn={field.value}
-              onChange={field.onChange}
-              disabled={isReadonly}
-              labelProps={{
-                label: t(QuickAppEditorI18nKeys.AllowTheAgentToAccessAppFiles),
-                caption: tooltip,
-              }}
-              className="relative"
-            />
-          )}
-        />
-      </DialFormItem>
-
       {isAddAttachmentEnabled && (
         <DialFormItem
           label={t(QuickAppEditorI18nKeys.AddAttachment)}

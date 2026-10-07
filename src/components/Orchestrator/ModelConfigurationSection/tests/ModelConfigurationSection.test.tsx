@@ -95,6 +95,8 @@ const TestForm = ({
       isReadonly={isReadonly}
       tooltip={tooltip}
       isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
+      advancedSettings={{ maxInputAttachments: undefined, timestamp: true, fileTools: false }}
+      onAdvancedSettingsSave={vi.fn()}
     />
   );
 };

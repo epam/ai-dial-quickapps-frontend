@@ -43,7 +43,6 @@ vi.mock('@/components/AddOns/AddOnsSection', () => ({
 vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => ({ default: () => null }));
 vi.mock('@/components/UserAttachments/UserAttachmentsSection', () => ({ default: () => null }));
 vi.mock('@/components/ConversationStarters/ConversationStartersSection', () => ({ default: () => null }));
-vi.mock('@/components/AdvancedSettings/AdvancedSettingsSection', () => ({ default: () => null }));
 
 let root: Root;
 let container: HTMLDivElement;

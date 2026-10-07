@@ -12,7 +12,6 @@ import UserAttachmentsSection from '../UserAttachments/UserAttachmentsSection';
 const LEGACY_FIELDS = [
   'documentRelativeUrl',
   'codeInterpreter',
-  'fileTools',
   'addAttachment',
   'webFetch',
   'starters',
@@ -20,7 +19,6 @@ const LEGACY_FIELDS = [
   'autoSubmit',
   'chatMessageInputDisabled',
   'inputAttachmentTypes',
-  'maxInputAttachments',
 ] as const;
 
 export interface QuickApp2FormLegacyFieldsProps {
@@ -94,19 +92,13 @@ const QuickApp2FormLegacyFields: FC<QuickApp2FormLegacyFieldsProps> = ({
   const attachmentErrors = useMemo<FieldErrors<QuickApp2FormType>>(() => {
     const nextErrors = { ...legacyErrors };
     const attachmentTypesMessage = errors.inputAttachmentTypes;
-    const maxAttachmentsMessage = errors.maxInputAttachments;
     if (attachmentTypesMessage) {
       nextErrors.inputAttachmentTypes = { type: 'manual', message: attachmentTypesMessage };
     } else {
       delete nextErrors.inputAttachmentTypes;
     }
-    if (maxAttachmentsMessage) {
-      nextErrors.maxInputAttachments = { type: 'manual', message: maxAttachmentsMessage };
-    } else {
-      delete nextErrors.maxInputAttachments;
-    }
     return nextErrors;
-  }, [errors.inputAttachmentTypes, errors.maxInputAttachments, legacyErrors]);
+  }, [errors.inputAttachmentTypes, legacyErrors]);
 
   return (
     <>
@@ -125,7 +117,6 @@ const QuickApp2FormLegacyFields: FC<QuickApp2FormLegacyFieldsProps> = ({
         control={control}
         errors={attachmentErrors}
         isReadonly={isReadonly}
-        tooltip={tooltip}
         onAttachmentTypesChange={onAttachmentTypesChange}
       />
 

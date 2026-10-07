@@ -24,5 +24,12 @@
   "Advanced": "Advanced",
   "Close": "Close",
   "Save": "Save",
-  "Close advanced settings": "Close advanced settings"
+  "Close advanced settings": "Close advanced settings",
+  "Time awareness": "Time awareness",
+  "Maximum attachments amount user can add": "Maximum attachments amount user can add",
+  "Valid only for the cases when attachments enabled for the agent": "Valid only for the cases when attachments enabled for the agent",
+  "Enter a whole number greater than 0": "Enter a whole number greater than 0",
+  "Gives the agent the current date and time, helping it understand references like \"today,\" deadlines, and schedules.": "Gives the agent the current date and time, helping it understand references like \"today,\" deadlines, and schedules.",
+  "Built-in file tools": "Built-in file tools",
+  "Lets the agent browse, search, read, and edit files within the app’s file context. Includes write access, so worth reviewing for agents handling sensitive files.": "Lets the agent browse, search, read, and edit files within the app’s file context. Includes write access, so worth reviewing for agents handling sensitive files."
 }

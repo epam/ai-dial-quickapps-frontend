@@ -1,6 +1,8 @@
-import React, { act } from 'react';
+import React, { act, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 
 import SettingsSection from '../SettingsSection';
 
@@ -13,15 +15,36 @@ interface MockButtonProps {
 vi.mock('@/hooks/useTranslation', () => ({
   useTranslation: () => ({ language: 'en', t: (key: string) => key }),
 }));
+interface MockPopupProps {
+  isOpen: boolean;
+  advancedSettings: AdvancedSettingsValues;
+  onSave: (values: AdvancedSettingsValues) => void;
+  onClose: () => void;
+}
+
+const MockPopup = ({ isOpen, advancedSettings, onSave, onClose }: MockPopupProps) => {
+  const [draft, setDraft] = useState(advancedSettings);
+  return isOpen ? (
+    <div role="dialog">
+      <button
+        type="button"
+        role="switch"
+        aria-label="Built-in file tools"
+        aria-checked={draft.fileTools}
+        onClick={() => setDraft({ ...draft, fileTools: !draft.fileTools })}
+      />
+      <button type="button" onClick={onClose}>
+        Close popup
+      </button>
+      <button type="button" onClick={() => onSave(draft)}>
+        Save popup
+      </button>
+    </div>
+  ) : null;
+};
+
 vi.mock('../AdvancedSettingsPopup', () => ({
-  default: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
-    isOpen ? (
-      <div role="dialog">
-        <button type="button" onClick={onClose}>
-          Close popup
-        </button>
-      </div>
-    ) : null,
+  default: (props: MockPopupProps) => <MockPopup {...props} />,
 }));
 vi.mock('@epam/ai-dial-ui-kit', () => ({
   ButtonAppearance: { Link: 'link' },
@@ -36,6 +59,22 @@ vi.mock('@epam/ai-dial-ui-kit', () => ({
     </button>
   ),
 }));
+
+const advancedSettings: AdvancedSettingsValues = { maxInputAttachments: 50, timestamp: true, fileTools: false };
+
+const renderSection = (isReadonly: boolean, onAdvancedSettingsSave = vi.fn()) =>
+  act(() =>
+    root.render(
+      <SettingsSection
+        isReadonly={isReadonly}
+        advancedSettings={advancedSettings}
+        onAdvancedSettingsSave={onAdvancedSettingsSave}
+      />,
+    ),
+  );
+
+const getButtonByText = (text: string) =>
+  [...container.querySelectorAll('button')].find((button) => button.textContent === text) as HTMLButtonElement;
 
 let root: Root;
 let container: HTMLDivElement;
@@ -58,7 +97,7 @@ afterEach(() => {
 
 describe('SettingsSection', () => {
   it('renders the Settings row with an Advanced action', () => {
-    act(() => root.render(<SettingsSection isReadonly={false} />));
+    renderSection(false);
 
     expect(container.querySelector('h3')?.textContent).toBe('Settings');
     expect(getAdvancedButton().disabled).toBe(false);
@@ -66,17 +105,41 @@ describe('SettingsSection', () => {
   });
 
   it('opens and closes the popup', () => {
-    act(() => root.render(<SettingsSection isReadonly={false} />));
+    renderSection(false);
 
     act(() => getAdvancedButton().click());
     expect(container.querySelector('[role="dialog"]')).not.toBeNull();
 
-    act(() => (container.querySelector('[role="dialog"] button') as HTMLButtonElement).click());
+    act(() => getButtonByText('Close popup').click());
     expect(container.querySelector('[role="dialog"]')).toBeNull();
   });
 
+  it('reopens with the form values instead of a discarded draft', () => {
+    renderSection(false);
+
+    act(() => getAdvancedButton().click());
+    const fileToolsSwitch = () => container.querySelector('[role="switch"]') as HTMLButtonElement;
+    act(() => fileToolsSwitch().click());
+    expect(fileToolsSwitch().getAttribute('aria-checked')).toBe('true');
+    act(() => getButtonByText('Close popup').click());
+
+    act(() => getAdvancedButton().click());
+    expect(fileToolsSwitch().getAttribute('aria-checked')).toBe('false');
+  });
+
+  it('passes saved popup values to the form', () => {
+    const onAdvancedSettingsSave = vi.fn();
+    renderSection(false, onAdvancedSettingsSave);
+
+    act(() => getAdvancedButton().click());
+    act(() => (container.querySelector('[role="switch"]') as HTMLButtonElement).click());
+    act(() => getButtonByText('Save popup').click());
+
+    expect(onAdvancedSettingsSave).toHaveBeenCalledWith({ ...advancedSettings, fileTools: true });
+  });
+
   it('disables Advanced when read-only and does not open the popup', () => {
-    act(() => root.render(<SettingsSection isReadonly />));
+    renderSection(true);
 
     const button = getAdvancedButton();
     expect(button.disabled).toBe(true);
@@ -86,7 +149,7 @@ describe('SettingsSection', () => {
 
   it('uses logical layout classes under RTL and stays within narrow layouts', () => {
     document.documentElement.setAttribute('dir', 'rtl');
-    act(() => root.render(<SettingsSection isReadonly={false} />));
+    renderSection(false);
 
     const header = container.querySelector('h3')?.parentElement as HTMLElement;
     expect(header.className).toContain('justify-between');

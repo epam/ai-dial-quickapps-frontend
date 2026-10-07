@@ -8,6 +8,7 @@ import {
   getAgentsAndToolsetsFormValue,
   getQuickApp2FormData,
   getQuickApp2Toolsets,
+  isValidMaxInputAttachments,
   type QuickApp2Form,
 } from '@/form/quickApp2Form';
 import type { AnyToolset } from '@/types/quick-apps';
@@ -338,5 +339,46 @@ describe('conversation starters', () => {
     expect(
       buildConfig({ starters: [{ id: '1', title: ' ', text: '' }] }).conversation_starters,
     ).toBeNull();
+  });
+});
+
+describe('advanced settings', () => {
+  it('accepts an empty or positive integer max attachments value', () => {
+    expect(isValidMaxInputAttachments('')).toBe(true);
+    expect(isValidMaxInputAttachments(undefined)).toBe(true);
+    expect(isValidMaxInputAttachments(50)).toBe(true);
+  });
+
+  it('rejects a max attachments value that is not a positive integer', () => {
+    expect(isValidMaxInputAttachments(0)).toBe(false);
+    expect(isValidMaxInputAttachments(-1)).toBe(false);
+    expect(isValidMaxInputAttachments(1.5)).toBe(false);
+  });
+
+  it('defaults time awareness to on and built-in file tools to off for a new app', () => {
+    const data = getQuickApp2FormData(undefined, ['model-1'], ['model-1'], 'model-1');
+
+    expect(data.timestamp).toBe(true);
+    expect(data.fileTools).toBe(false);
+    expect(data.maxInputAttachments).toBeUndefined();
+  });
+
+  it('saves time awareness and built-in file tools as features when on', () => {
+    const features = buildConfig({ timestamp: true, fileTools: true }).features;
+
+    expect(features?.timestamp).toEqual({ injection_strategy: 'tool_call' });
+    expect(features?.dial_files).toEqual({});
+  });
+
+  it('saves null features when off and keeps other existing features', () => {
+    const existingConfig = {
+      features: { custom_feature: { enabled: true } },
+    } as unknown as Parameters<typeof buildQuickApp2Config>[0]['existingConfig'];
+    const features = buildConfig({ timestamp: false, fileTools: false }, {}, existingConfig)
+      .features as Record<string, unknown>;
+
+    expect(features.timestamp).toBeNull();
+    expect(features.dial_files).toBeNull();
+    expect(features.custom_feature).toEqual({ enabled: true });
   });
 });
