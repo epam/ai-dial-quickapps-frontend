@@ -25,6 +25,7 @@ import {
   fetchDialSkills,
   fetchDialToolsets,
 } from '@/utils/dialClient';
+import { isOriginAllowed } from '@/utils/allowed-origins';
 import { fetchFavoriteIds } from '@/utils/user-config';
 
 import { useAppContext } from './AppContext';
@@ -244,10 +245,8 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
   // toolsetId outside the current config belongs to an unrelated login
   // elsewhere in the host and is ignored by the reducer.
   useEffect(() => {
-    const allowedOrigin = settings.allowedOrigin;
-
     const handleMessage = (event: MessageEvent) => {
-      if (allowedOrigin && allowedOrigin !== '*' && event.origin !== allowedOrigin) return;
+      if (!isOriginAllowed(event.origin, settings.allowedOrigins)) return;
 
       const msg = event.data as { type?: string } & Partial<ToolsetAuthResultPayload>;
       if (msg?.type !== InboundMessageType.ToolsetLoginResult) return;
@@ -262,7 +261,7 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [settings.allowedOrigin]);
+  }, [settings.allowedOrigins]);
 
   const refreshSkills = async () => {
     const skills = await fetchDialSkills();

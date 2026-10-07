@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AgentAndToolsetSelector } from '../AgentAndToolsetSelector';
 
 vi.mock('@/context/AppContext', () => ({
-  useAppContext: () => ({ settings: { allowedOrigin: '*' } }),
+  useAppContext: () => ({ settings: { allowedOrigins: ['*'] } }),
 }));
 vi.mock('@/hooks/useSearchParams', () => ({
   useSearchParams: () => ({ get: () => null }),
