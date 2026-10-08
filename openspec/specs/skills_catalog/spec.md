@@ -54,7 +54,7 @@ Activating a Skills row item SHALL open a modal dialog (ui-kit 2.0 `Popup`) for 
 - **Header:** the avatar, a caption from `quickAppEditor` key `SkillTypeLabel` ("Skill"), the skill name, and a close (×) control labelled by `common` key `CloseDialog`. The dialog's accessible name SHALL be the skill name.
 - **Tabs:** ui-kit 2.0 `Tabs`, **Details** (`quickAppEditor` key `SkillDetailsTab`) and **Overview** (`quickAppEditor` key `SkillOverviewTab`). The popup SHALL open on Details.
 - **Footer:**
-  - **Delete** (`quickAppEditor` key `RemoveSkillFromApp`, label "Delete") at the start edge: a red (danger), solid, standard-size button with a leading trash icon.
+  - **Delete** (`quickAppEditor` key `RemoveSkillFromApp`, label "Delete") at the start edge: a red (danger), outlined, standard-size button with a leading trash icon.
   - **Close** (`quickAppEditor` key `Close`) at the end edge.
 
 The open popup's skill id SHALL be local `useState` in the Skills list component. No new context SHALL be introduced.

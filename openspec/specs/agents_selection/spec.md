@@ -85,7 +85,7 @@ The dialog's accessible name SHALL be the agent name.
 
 **Footer:**
 
-- **Delete** (`quickAppEditor` `RemoveSkillFromApp`, "Delete"; danger, solid, leading trash icon) at the start edge;
+- **Delete** (`quickAppEditor` `RemoveSkillFromApp`, "Delete"; danger, outlined, leading trash icon) at the start edge;
 - **Close** at the end edge.
 
 The popup SHALL be loaded with `React.lazy`.

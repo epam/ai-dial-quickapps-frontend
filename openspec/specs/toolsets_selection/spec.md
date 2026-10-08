@@ -107,7 +107,7 @@ The popup SHALL open on About. A tab whose data the details lack SHALL NOT be sh
 
 **Footer:**
 
-- **Delete** (`quickAppEditor` `RemoveSkillFromApp`, "Delete") at the start edge: a danger, solid button with a leading trash icon.
+- **Delete** (`quickAppEditor` `RemoveSkillFromApp`, "Delete") at the start edge: a danger, outlined button with a leading trash icon.
 - **Close** (`quickAppEditor` `Close`) at the end edge.
 
 The popup SHALL be loaded with `React.lazy`, because it imports from `@epam/ai-dial-catalog`.
