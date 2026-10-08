@@ -17,6 +17,7 @@ vi.mock('@/hooks/use-translation', () => ({
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({ userBucket: 'user-bucket-123', skills: [SKILL] }),
 }));
+vi.mock('@/context/AppContext', () => ({ useAppContext: () => ({ settings: {} }) }));
 
 const SKILL: DialSkill = {
   id: 'skills/public/research/user-research',
@@ -125,7 +126,10 @@ describe('SkillDetailsPopup', () => {
 
     expect(getDialog()?.getAttribute('aria-label')).toBe('User Research');
     expect(getDialog()?.textContent).toContain('Skill');
-    expect(getDialog()?.textContent).toContain('Organization / research');
+    // The catalog's folder line: a FolderPath nav, one segment per folder.
+    const folderPath = getDialog()?.querySelector('nav[aria-label="Folder path"]');
+    expect(folderPath?.textContent).toContain('Organization');
+    expect(folderPath?.textContent).toContain('research');
     expect(getTabNames()).toEqual(['Details', 'Overview']);
     expect(getTab('Details')?.getAttribute('aria-selected')).toBe('true');
   });

@@ -8,14 +8,16 @@ import { useEntityDetails, type UseEntityDetailsResult } from '@/hooks/use-entit
 import type { DialSkill } from '@/types/dial-entities';
 import { DetailsStatus } from '@/types/entity-details';
 
-const { deploymentsApi, skillsApi, dataContext } = vi.hoisted(() => ({
+const { deploymentsApi, skillsApi, dataContext, appContext } = vi.hoisted(() => ({
   deploymentsApi: { getDeploymentDetails: vi.fn(), getDeploymentLimits: vi.fn() },
   skillsApi: { downloadSkillFileRaw: vi.fn(), listSkillFiles: vi.fn(), getSkillMetadata: vi.fn() },
   dataContext: { skills: [] as DialSkill[] },
+  appContext: { settings: { dialCoreExternalUrl: 'https://core.example.com' } },
 }));
 
 vi.mock('@/utils/chat-api-client', () => ({ deploymentsApi, skillsApi }));
 vi.mock('@/context/DataContext', () => ({ useDataContext: () => dataContext }));
+vi.mock('@/context/AppContext', () => ({ useAppContext: () => appContext }));
 // Prefixes every text, so a catalog English default that slips through shows.
 vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({
@@ -147,6 +149,8 @@ describe('useEntityDetails', () => {
     const labels = latest.details?.overview?.sections?.[0]?.specs.map((spec) => spec.label);
     expect(labels).toEqual(['tr:Authentication', 'tr:Provider', 'tr:Hosted by']);
     expect(latest.details?.tools?.tools.map((tool) => tool.name)).toEqual(['edit_design']);
+    // Connect: the toolset's MCP endpoint, built on the configured DIAL Core URL.
+    expect(JSON.stringify(latest.details?.api)).toContain('https://core.example.com');
   });
 
   it('adds a model’s pricing and limits', async () => {

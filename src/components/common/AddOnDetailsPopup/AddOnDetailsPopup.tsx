@@ -1,5 +1,6 @@
 import {
   AboutTab,
+  ApiTab,
   type CatalogItem,
   ContentTab,
   LimitsTab,
@@ -15,24 +16,30 @@ import {
   DIAL_KIT_ICON_STROKE,
   EntityIdentity,
   EntityType,
+  FolderPath,
   NeutralButton,
   NoDataContent,
   Popup,
   PopupSize,
-  Spinner,
+  Skeleton,
   Tabs,
 } from '@epam/ai-dial-ui-kit';
-import { IconFolder, IconTrash } from '@tabler/icons-react';
+import { IconTrash } from '@tabler/icons-react';
 import { FC, ReactNode, useCallback, useMemo, useState } from 'react';
 
 import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { useAppContext } from '@/context/AppContext';
 import { useCatalogDetailsLabels } from '@/hooks/use-catalog-details-labels';
+import { useContentFileSelection } from '@/hooks/use-content-file-selection';
 import { useTranslation } from '@/hooks/use-translation';
 import { type AddOnDetailsTab, DetailsStatus } from '@/types/entity-details';
 import { Translation } from '@/types/translation';
 
-const AVATAR_SIZE = 40;
-const LOADING_SPINNER_SIZE = 16;
+// The catalog DetailsPanel header: a 52px icon, so actions indent by it plus the 8px gap.
+const AVATAR_SIZE = 52;
+const LOADING_SKELETON_PARAGRAPH = { rows: 1, width: '72px' };
+
+const loadNoContentFile = async (): Promise<string | undefined> => undefined;
 
 // The typography the catalog's DetailsPanel renders its Overview with.
 const OVERVIEW_CLASSES = {
@@ -65,6 +72,8 @@ export interface AddOnDetailsPopupProps {
   item?: CatalogItem;
   detailsStatus: DetailsStatus;
   onRetry: () => void;
+  /** Loads another file of a skill's package for the Details tab file selector. */
+  onLoadContentFile?: (fileId: string) => Promise<string | undefined>;
   /** Replaces the tabs, for an entity that is no longer listed. */
   unavailableText?: string;
   /** Hides Delete; only Close is offered. */
@@ -94,6 +103,7 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
   item,
   detailsStatus,
   onRetry,
+  onLoadContentFile = loadNoContentFile,
   unavailableText,
   isReadonly,
   deleteLabel,
@@ -102,15 +112,20 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
   const { t: tCommon } = useTranslation(Translation.Common);
+  const {
+    settings: { dialCoreExternalUrl },
+  } = useAppContext();
   const { tabs: labels } = useCatalogDetailsLabels();
   const [selectedTabId, setSelectedTabId] = useState<AddOnDetailsTab>();
+  const contentFiles = useContentFileSelection(item, onLoadContentFile, labels.contentFiles.error);
 
   const tabIds = useMemo(
     () =>
       item == null
         ? []
-        : (getCatalogDetailsTabs(item, { isConnectHidden: true }) as AddOnDetailsTab[]),
-    [item],
+        : // Without the DIAL Core URL the catalog would build relative endpoints.
+          getCatalogDetailsTabs(item, { isConnectHidden: !dialCoreExternalUrl }),
+    [item, dialCoreExternalUrl],
   );
   // Tabs appear as details load; until the chosen one exists, the first shows.
   const activeTabId =
@@ -159,12 +174,32 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
     const details = current.details;
     switch (tabId) {
       case CatalogDetailsTab.About:
-        return <AboutTab content={current.description} topics={current.topics} />;
+        return (
+          <AboutTab
+            content={current.description}
+            topics={current.topics}
+            markdownLabels={labels.markdown}
+          />
+        );
       case CatalogDetailsTab.Content:
         return (
           <ContentTab
             content={details?.promptContent?.content ?? ''}
             description={details?.promptContent?.description ?? current.description}
+            files={details?.promptContent?.files}
+            selectedFileId={contentFiles.selectedFileId}
+            onSelectFile={contentFiles.onSelectFile}
+            filePreview={contentFiles.filePreview}
+            isFileLoading={contentFiles.isFileLoading}
+            expandedFolderIds={contentFiles.expandedFolderIds}
+            onToggleFolder={contentFiles.onToggleFolder}
+            isFileSelectorOpen={contentFiles.isFileSelectorOpen}
+            onFileSelectorOpenChange={contentFiles.onFileSelectorOpenChange}
+            fileSelectorAriaLabel={labels.contentFiles.selector}
+            fileCountLabel={labels.contentFiles.count}
+            fileLoadingLabel={labels.contentFiles.loading}
+            fileUnsupportedLabel={labels.contentFiles.unsupported}
+            markdownLabels={labels.markdown}
           />
         );
       case CatalogDetailsTab.Overview:
@@ -192,6 +227,8 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
         return <LimitsTab limits={details?.limits} />;
       case CatalogDetailsTab.Tools:
         return <ToolsTab tools={details?.tools} labels={labels.tools} />;
+      case CatalogDetailsTab.Api:
+        return details?.api == null ? null : <ApiTab api={details.api} {...labels.connect} />;
       default:
         return null;
     }
@@ -200,7 +237,7 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
   const renderBody = () => {
     if (unavailableText != null || item == null) {
       return (
-        <div className="min-h-0 flex-1 overflow-y-auto pt-4">
+        <div className="min-h-0 flex-1 overflow-y-auto">
           <NoDataContent title={unavailableText} />
         </div>
       );
@@ -208,22 +245,22 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
 
     return (
       <>
-        <div className="flex shrink-0 items-center gap-2">
+        {/* The catalog's tab row: the loading skeleton sits after the tabs. */}
+        <div className="flex shrink-0 items-center">
           <Tabs
             tabs={tabItems}
             activeTabId={activeTabId ?? ''}
             onTabChange={handleTabChange}
             ariaLabel={name}
-            className="min-w-0 flex-1"
           />
           {detailsStatus === DetailsStatus.Loading && (
-            <span role="status" className="shrink-0">
-              <Spinner size={LOADING_SPINNER_SIZE} fullWidth={false} ariaLabel={labels.loading} />
-            </span>
+            <div role="status" aria-label={labels.loading} className="shrink-0">
+              <Skeleton showTitle={false} paragraph={LOADING_SKELETON_PARAGRAPH} active />
+            </div>
           )}
         </div>
         {detailsStatus === DetailsStatus.Error && (
-          <div role="alert" className="flex shrink-0 items-center gap-3 pt-4">
+          <div role="alert" className="flex shrink-0 items-center gap-3">
             <p className="dial-small-text text-error">{labels.failed}</p>
             <NeutralButton label={labels.retry} onClick={onRetry} />
           </div>
@@ -231,7 +268,7 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
         <div
           role="tabpanel"
           aria-label={activeTabId == null ? undefined : labels.tabs[activeTabId]}
-          className="min-h-0 flex-1 overflow-y-auto pt-4"
+          className="min-h-0 flex-1 overflow-y-auto"
         >
           {activeTabId != null && renderPanel(activeTabId, item)}
         </div>
@@ -256,21 +293,18 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
             typeClassName="dial-tiny-semi-text"
             footer={
               folder.length > 0 && (
-                <span className="dial-tiny-text flex min-w-0 items-center gap-1 text-secondary">
-                  <IconFolder
-                    size={DIAL_ICON_SIZE.SM}
-                    stroke={DIAL_KIT_ICON_STROKE}
-                    aria-hidden="true"
-                    className="shrink-0"
-                  />
-                  <span className="truncate">{folder.join(' / ')}</span>
-                </span>
+                <FolderPath
+                  segments={folder}
+                  labelClassName="dial-tiny-text"
+                  leafClassName="dial-tiny-semi-text"
+                  ariaLabel={labels.folderPath}
+                />
               )
             }
           />
           {avatarBadge && (
             // A box over the avatar, so the badge lands on its bottom-end corner.
-            <span className="pointer-events-none absolute start-0 top-0 size-10 [&>*]:pointer-events-auto">
+            <span className="pointer-events-none absolute start-0 top-0 size-[52px] [&>*]:pointer-events-auto">
               {avatarBadge}
             </span>
           )}
@@ -278,15 +312,18 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
       }
       size={PopupSize.Lg}
       closeAriaLabel={tCommon(CommonI18nKeys.CloseDialog)}
-      bodyClassName="flex h-[70vh] flex-col overflow-hidden px-6 pb-5"
+      bodyClassName="flex h-[70vh] flex-col gap-4 overflow-hidden px-6 pb-5"
       additionalButtons={additionalButtons}
       additionalButtonsOnLeft
       mainButtons={mainButtons}
       footerDivider
       onClose={onClose}
     >
-      {actions && <div className="flex shrink-0 flex-wrap items-center gap-2 pb-4">{actions}</div>}
-      {banner && <div className="dial-small-text shrink-0 pb-4 text-error">{banner}</div>}
+      {/* Under the name, as in the catalog header: indented by the icon and its gap. */}
+      {actions && (
+        <div className="flex shrink-0 flex-wrap items-center gap-2 ps-[60px]">{actions}</div>
+      )}
+      {banner && <div className="dial-small-text shrink-0 text-error">{banner}</div>}
       {renderBody()}
     </Popup>
   );

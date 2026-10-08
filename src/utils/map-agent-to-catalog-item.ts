@@ -26,5 +26,6 @@ export const mapAgentToCatalogItem = (
 ): CatalogItem => ({
   ...mapModelToCatalogItem(agent, options),
   type: agent.type === 'model' ? CatalogEntityType.Model : CatalogEntityType.Agent,
+  // The catalog's rule: an MCP agent's Connect tab shows its MCP endpoint.
+  supportsMcp: doesAgentSupportMcp(agent),
 });
-
