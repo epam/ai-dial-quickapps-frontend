@@ -160,14 +160,17 @@ describe('FileManagerModal tabs, search and filters', () => {
       setValue?.call(search, 'API');
       search.dispatchEvent(new Event('input', { bubbles: true }));
     });
-    await flush();
+    await until(() => rowNames().join() === 'api keys.xls');
 
     expect(rowNames()).toEqual(['api keys.xls']);
   });
 });
 
+// Filtered-out rows linger in the DOM with `ag-opacity-zero` while AG Grid animates them away.
 const rowNames = () =>
-  [...dialog().querySelectorAll('.ag-center-cols-container [role="row"]')].map((row) =>
+  [
+    ...dialog().querySelectorAll('.ag-center-cols-container [role="row"]:not(.ag-opacity-zero)'),
+  ].map((row) =>
     row.querySelector('[col-id="name"]')?.textContent?.trim(),
   );
 
