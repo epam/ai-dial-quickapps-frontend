@@ -70,7 +70,7 @@ export const mapEntityDetailsToCatalogDetails: (
 
 - **Already public and unchanged:** `useCatalogItemDetails` and `useSkillItemDetails` with their `CatalogDetailsApi` / `SkillDetailsApi` ports, `mapDeploymentLimitsDtoToCatalogLimits` and `buildSkillOverview`.
 - **No mapper moves.** ai-dial-chat's §Library isolation forbids `libs/catalog` from depending on chat-api DTOs, and `chat-hooks` is the sanctioned, published home.
-- **Dependency.** This app adds `@epam/ai-dial-chat-hooks` and imports only from the `/catalog` subpath. Its peers are all optional. The ones this subpath needs (`@epam/ai-dial-catalog`, `@epam/ai-dial-chat-shared`, `@epam/ai-dial-ui-kit`) are already installed here. Check the bundle size in task 6.4.
+- **Dependency.** This app adds `@epam/ai-dial-chat-hooks` and imports only from the `/catalog` subpath. Its peers are all declared optional, but the subpath imports two of them at runtime: `@epam/ai-dial-attachment-input` (`mimeTypesToExtensionLabels`) and `@epam/ai-dial-skill-editor` (`SkillFileNodeKind`). Both are installed here at the same release; tracked upstream in `docs/TECH_DEBT.md`. Bundle check (6.4): the main chunk is unchanged; the popups' lazy chunks grow by about 290 KB raw (`AddOnDetailsPopup` 163 KB, shared `ItemHeader` +125 KB).
 - **Release gate.** The slices that render catalog tabs (§3–§5) and the label wiring wait for releases of both packages with these additions.
 
 _Alternative:_ an exported `CatalogDetailsTabs` component (tab row + panels). Not chosen upstream: hosts with their own popup shell need their own tab row. It can be added later.
@@ -82,9 +82,9 @@ _Alternative:_ an exported `CatalogDetailsTabs` component (tab row + panels). No
 - `item: CatalogItem`, with `details` when loaded;
 - `detailsStatus: DetailsStatus`;
 - `onRetry`;
-- `labels`, the translated catalog texts.
+- `unavailableText`, for an entity no longer listed.
 
-It computes the tab ids with `getCatalogDetailsTabs(item, { isConnectHidden: true })` and renders the matching catalog component per tab. Each popup supplies only the identity, actions, banner, footer callbacks and its `CatalogItem`. The unavailable state (no entity) stays a shell prop that replaces the tabs with `NoDataContent`. The skill popup moves onto the same shell, so all three render identically.
+The translated catalog texts come from `useCatalogDetailsLabels()` inside the shell rather than a `labels` prop: all three popups would pass the same object. It computes the tab ids with `getCatalogDetailsTabs(item, { isConnectHidden: true })` and renders the matching catalog component per tab. Each popup supplies only the identity, actions, banner, footer callbacks and its `CatalogItem`. The unavailable state (no entity) stays a shell prop that replaces the tabs with `NoDataContent`. The skill popup moves onto the same shell, so all three render identically.
 
 _Alternative:_ keep `tabs` and have each popup build catalog panels. Rejected: it repeats the tab rule three times, and the rule is exactly what must match the catalog.
 

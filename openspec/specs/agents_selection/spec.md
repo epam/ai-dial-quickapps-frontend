@@ -2,7 +2,6 @@
 
 ## Purpose
 Defines how the Quick App editor lists, inspects, configures, removes and picks agents — applications, MCP agents and models the orchestrator can delegate to — in the Agents row of the Add-ons card: the attached agents list (with status and a hover remove button), the agent details popup (About and Overview tabs, Connection and Credentials actions, and a Delete that detaches the agent from the app only), and the Add agent popup (catalog list with search, From filter, sort and multi-selection confirmed with Add). The agents are the agent entries of the editor's `addOns` form value (owned by `useQuickApp2Form`), which it shares with `toolsets_selection`; agent data comes from `DataContext`, and the popups keep their own UI state locally.
-
 ## Requirements
 ### Requirement: Agent entries of the add-ons value
 
@@ -82,7 +81,7 @@ The dialog's accessible name SHALL be the agent name.
 
 **Status banner.** When the entity is deploying, undeploying, redeploying or undeployed, the `getEntityStatusMessage` text SHALL be shown above the tabs.
 
-**Tabs:** ui-kit 2.0 `Tabs` — **About** (`AboutTab`) and **Overview** (`SkillOverviewTab`). The popup SHALL open on About.
+**Tabs:** the catalog's details tabs and content, as defined by `catalog-entity-details`, for a catalog `CatalogItem` of type `Model` (models) or `Agent` (applications and MCP agents). The popup SHALL open on About.
 
 **Footer:**
 
@@ -93,7 +92,7 @@ The popup SHALL be loaded with `React.lazy`.
 
 #### Scenario: Popup for an MCP-capable application
 
-- **WHEN** the user activates an MCP-capable application's item in an editable application
+- **WHEN** the user activates an MCP-capable application's item in an editable application and its details load
 - **THEN** a dialog named after it SHALL show the "Agent" caption, a Connection button, the About and Overview tabs with About selected, and Delete and Close
 
 #### Scenario: Configure the transport
@@ -103,8 +102,8 @@ The popup SHALL be loaded with `React.lazy`.
 
 #### Scenario: Popup for a model
 
-- **WHEN** the user opens a model's details
-- **THEN** the caption SHALL be "Model", and neither Connection nor Credentials SHALL be shown
+- **WHEN** the user opens a model's details and its details and limits load
+- **THEN** the caption SHALL be "Model", the tabs SHALL be About, Overview, Pricing and Limits, and neither Connection nor Credentials SHALL be shown
 
 #### Scenario: Application credentials
 
@@ -115,7 +114,7 @@ The popup SHALL be loaded with `React.lazy`.
 #### Scenario: Agent unavailable
 
 - **WHEN** the popup opens for an attached agent that is not in the catalog
-- **THEN** each tab SHALL show `quickAppEditor` `AgentUnavailable` ("This agent is no longer available")
+- **THEN** the content SHALL show `quickAppEditor` `AgentUnavailable` ("This agent is no longer available") in place of the tabs, and no chat-api request SHALL be made
 - **AND** no Connection or Credentials action SHALL be shown, and Delete SHALL still be offered in an editable application
 
 #### Scenario: Read-only application
@@ -125,21 +124,27 @@ The popup SHALL be loaded with `React.lazy`.
 
 ### Requirement: Agent About and Overview tabs
 
-The **About** tab SHALL render the listing `description` as Markdown followed by its `topics`, or `quickAppEditor` `NoDescription` when there is none.
+The agent's tab content SHALL be the catalog's, as defined by `catalog-entity-details`:
 
-The **Overview** tab SHALL list, from the listing and omitting empty rows:
+- **About:** `AboutTab` with the listing `description` and `topics`.
+- **Overview:** `OverviewTab` with the sections `mapEntityDetailsToCatalogDetails` builds from `modelDetails` or `applicationDetails`:
+  - Capabilities: tools, parallel tool calls, reasoning efforts, skills, …;
+  - Specification: provider, vendor, license, knowledge cutoff, parameters, hosted by, release date, context window, max output tokens, input modalities, …;
+  - each row only when present.
+- **Pricing:** `PricingTab`, when the details carry pricing (models, and applications whose details include it).
+- **Limits:** `LimitsTab`, for models, from `GET /api/v1/deployments/{deployment}/limits`.
 
-- **Folder** (`SkillFolder`);
-- **Updated** (`SkillUpdated`, localized medium date);
-- **Version** (`SkillVersion`);
-- **Connection** (`AgentConnection`): the saved transport, labelled with the existing `quickAppEditor` keys `MCP` or `ChatCompletion` (an unset transport reads as `MCP`, matching the save default; an `auto` transport omits the row). Shown only for MCP-capable applications.
+This app SHALL NOT build Overview rows of its own. The saved Connection (transport) of an MCP-capable application is no longer an Overview row; it stays visible and editable through the Connection action.
 
-Neither tab SHALL make a chat-api request. The rows SHALL be built by a pure util in `src/utils/map-agent-to-catalog-item.ts` and memoised.
+#### Scenario: Model Overview, Pricing and Limits
 
-#### Scenario: Overview content
+- **WHEN** the details of `gpt-4o` carry a context window, provider and prompt/completion prices, and its limits carry a daily token limit
+- **THEN** Overview SHALL show Specification rows for provider and context window, Pricing SHALL show the prices, and Limits SHALL show the daily limit, all with translated labels
 
-- **WHEN** the user selects Overview for MCP-capable application `applications/public/research-agent` with saved transport `MCP` and version `2.1`
-- **THEN** the tab SHALL show Folder "Organization", Updated, Version "2.1" and Connection "MCP"
+#### Scenario: Application without pricing
+
+- **WHEN** an application's details carry no pricing
+- **THEN** its popup SHALL show About and Overview only
 
 ### Requirement: Remove an agent from the application
 

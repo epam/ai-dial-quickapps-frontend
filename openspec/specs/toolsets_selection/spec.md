@@ -2,7 +2,6 @@
 
 ## Purpose
 Defines how the Quick App editor lists, inspects, signs into, removes and picks toolsets in the Toolsets row of the Add-ons card: the attached toolsets list (with the logged-out badge and a hover remove button), the toolset details popup (About, Overview and Tools tabs, Log in / Log out, and a Delete that detaches the toolset from the app only), and the Add toolset popup (catalog list with search, From filter, sort and multi-selection confirmed with Add). The toolsets are the toolset entries of the editor's `addOns` form value (owned by `useQuickApp2Form`), which it shares with `agents_selection`; toolset data comes from `DataContext`, and the popups keep their own UI state locally.
-
 ## Requirements
 ### Requirement: Toolset entries of the add-ons value
 
@@ -98,11 +97,13 @@ The dialog's accessible name SHALL be the toolset name.
 
 **Status banner.** When the toolset is logged out, the `getEntityStatusMessage` text SHALL be shown above the tabs.
 
-**Tabs:** ui-kit 2.0 `Tabs`, in this order, with the popup opening on About:
+**Tabs:** the catalog's details tabs and content, as defined by `catalog-entity-details`, for a catalog `CatalogItem` of type `Toolset`:
 
-- **About** (`quickAppEditor` `AboutTab`);
-- **Overview** (`SkillOverviewTab`);
-- **Tools** (`ToolsTab`).
+- About (listing description and topics);
+- Overview, with the catalog's sections from the deployment details;
+- Tools, with the catalog `ToolsTab` listing the allow-listed tools, or every tool the server reports when there is no allow-list.
+
+The popup SHALL open on About. A tab whose data the details lack SHALL NOT be shown.
 
 **Footer:**
 
@@ -113,7 +114,7 @@ The popup SHALL be loaded with `React.lazy`, because it imports from `@epam/ai-d
 
 #### Scenario: Popup opens on About
 
-- **WHEN** the user activates the Figma item
+- **WHEN** the user activates the Figma item and its details load
 - **THEN** a dialog named "Figma" SHALL be displayed with the "Toolset" caption, "1.0.0", the About, Overview and Tools tabs, About selected, and Delete and Close in the footer
 
 #### Scenario: Close
@@ -124,103 +125,33 @@ The popup SHALL be loaded with `React.lazy`, because it imports from `@epam/ai-d
 #### Scenario: Toolset unavailable
 
 - **WHEN** the popup opens for an attached toolset that is not in `toolsetsMap`
-- **THEN** the header SHALL show the fallback name, and each tab SHALL show `quickAppEditor` `ToolsetUnavailable` ("This toolset is no longer available")
+- **THEN** the header SHALL show the fallback name, and the content SHALL show `quickAppEditor` `ToolsetUnavailable` ("This toolset is no longer available") in place of the tabs
 - **AND** no chat-api request SHALL be made, no credentials action SHALL be shown, and Delete SHALL still be offered in an editable application
 
 ### Requirement: Toolset About and Overview tabs
 
-The **About** tab SHALL render the listing `description` as Markdown (the same safe renderer the Skills Details tab uses) followed by the listing `topics` as tags. When there is no description, it SHALL show `quickAppEditor` `NoDescription`.
+The toolset's **About**, **Overview** and **Tools** content SHALL be the catalog's, as defined by `catalog-entity-details`:
 
-The **Overview** tab SHALL list label/value rows from the listing, omitting rows with no value:
+- **About:** `AboutTab` with the listing `description` and `topics`, shown from the moment the popup opens.
+- **Overview:** `OverviewTab` with the sections `mapEntityDetailsToCatalogDetails` builds from `toolsetDetails`. These are Capabilities (from `features`) and Specification: authentication, provider, vendor, license, knowledge cutoff, parameters, hosted by (`owner`) and creation date, each only when present.
+- **Tools:** `ToolsTab` with the tool definitions the catalog mapper builds from `allowedTools`, or from `allToolNames` when the allow-list is empty.
 
-- **Authentication** (`quickAppEditor` `DetailsAuthentication`): `AuthTypeOAuth` ("OAuth") or `ApiKeyLabel` ("API key"); omitted for `NONE`;
-- **Folder** (`SkillFolder`): built by `getCatalogFolder`, joined with " / ";
-- **Updated** (`SkillUpdated`): `updatedAt` as `Intl.DateTimeFormat(language, { dateStyle: 'medium' })`;
-- **Version** (`SkillVersion`).
+This app SHALL NOT build Overview rows or tool lists of its own.
 
-Neither tab SHALL make a chat-api request. The rows SHALL be built by a pure util in `src/utils/map-toolset-to-catalog-item.ts` and memoised with `useMemo`.
+#### Scenario: Overview from the details
 
-#### Scenario: Overview content
+- **WHEN** the details of `toolsets/public/figma` carry `owner: "Figma"`, `catalogProperties.provider: "Figma"` and OAuth authentication
+- **THEN** Overview SHALL show a Specification section with Authentication, Provider "Figma" and Hosted by "Figma", labelled with the translated `quickAppEditor` keys
 
-- **WHEN** the user selects Overview for `toolsets/public/figma` (OAuth, `updatedAt` 1759795200000, version `1.0.0`)
-- **THEN** the tab SHALL show Authentication "OAuth", Folder "Organization", Updated as a localized date and Version "1.0.0"
+#### Scenario: Tools from the allow-list
 
-### Requirement: Toolset Tools tab
-
-The **Tools** tab SHALL list the names of the tools the toolset exposes:
-
-- the allow-listed names (`toolsetDetails.allowedTools`) when that list is non-empty;
-- otherwise every name the MCP server reports (`toolsetDetails.allToolNames`).
-
-Layout, top to bottom:
-
-- a search input (placeholder and accessible name `quickAppEditor` `SearchTools`, "Search...");
-- the count of listed names (`quickAppEditor` `ToolsCount`, "{{count}} tools", pluralised);
-- a list (`<ul>` named by `ToolsTab`) of names in response order, each on its own row.
-
-Search SHALL filter case-insensitively on the trimmed query, and the count SHALL follow the filtered list.
-
-**Fetch.**
-
-- The details SHALL be fetched only once the Tools tab is first selected, and not again while the popup stays open.
-- The call SHALL be `fetchToolsetToolNames(toolsetId, signal)` in `src/utils/dialClient.ts`, wrapping `deploymentsApi.getDeploymentDetails({ deployment: toolsetId })` from `@epam/ai-dial-chat-api-client`.
-- The hook `useToolsetTools` (`src/hooks/use-toolset-tools.ts`) SHALL own the fetch state as a `ToolsStatus` string enum (`Idle`, `Loading`, `Ready`, `Error`). It SHALL abort on unmount and SHALL ignore a response that arrives after the popup closed or switched toolsets.
-
-Request: `GET /api/v1/deployments/{deployment}/details`, where `deployment` is the toolset's canonical chat-api id (each segment percent-encoded, as for the other toolset calls), URL-encoded once more by the client.
-
-Example, for toolset `toolsets/public/figma`:
-
-```http
-GET /api/v1/deployments/toolsets%2Fpublic%2Ffigma/details
-```
-
-```json
-{
-  "id": "toolsets/public/figma",
-  "type": "toolset",
-  "toolsetDetails": {
-    "transport": "HTTP",
-    "allowedTools": [],
-    "allToolNames": ["evaluate_script", "get_design_context", "edit_design"],
-    "authSettings": { "authenticationType": "OAUTH" }
-  }
-}
-```
-
-Rendered result: "3 tools" above the rows `evaluate_script`, `get_design_context`, `edit_design`.
-
-#### Scenario: Tools load
-
-- **WHEN** the user selects Tools for a toolset whose details return the payload above
-- **THEN** the tab SHALL show "3 tools" and the three names in that order
-
-#### Scenario: Allow-list wins
-
-- **WHEN** the details return `allowedTools: ["edit_design"]` and three `allToolNames`
-- **THEN** the tab SHALL show "1 tool" and only `edit_design`
-
-#### Scenario: Search tools
-
-- **WHEN** the user types "design" in the search box
-- **THEN** only `get_design_context` and `edit_design` SHALL be listed and the count SHALL read "2 tools"
-- **AND** when nothing matches, the list area SHALL show `quickAppEditor` `NoResultsFound`
-
-#### Scenario: Tools loading and failure
-
-- **WHEN** the request is pending
-- **THEN** the tab SHALL show a spinner with accessible label `quickAppEditor` `LoadingTools`
-- **WHEN** the request fails
-- **THEN** the tab SHALL show `quickAppEditor` `FailedToLoadTools` and a Retry button (`quickAppEditor` `Retry`) that repeats the request, while About, Overview and the footer stay usable
+- **WHEN** the details carry `allowedTools: ["edit_design"]` and three `allToolNames`
+- **THEN** Tools SHALL list only `edit_design`
 
 #### Scenario: No tools reported
 
-- **WHEN** both lists are empty or absent
-- **THEN** the tab SHALL show `quickAppEditor` `NoToolsReported` ("This toolset reports no tools")
-
-#### Scenario: About and Overview make no request
-
-- **WHEN** the popup opens and the user never selects Tools
-- **THEN** no request to `/api/v1/deployments/{deployment}/details` SHALL be made
+- **WHEN** both tool lists are empty or absent
+- **THEN** no Tools tab SHALL be shown
 
 ### Requirement: Toolset login from the details popup
 
@@ -304,8 +235,8 @@ The Toolsets row, the Add toolset popup and the toolset details popup SHALL be k
 #### Scenario: Keyboard
 
 - **WHEN** the details popup is open
-- **THEN** focus SHALL be inside the dialog, and the tabs SHALL follow the ARIA tabs pattern (arrow keys move between About, Overview and Tools)
-- **AND** the credentials action, the Tools search, Delete and Close SHALL be reachable with Tab in reading order
+- **THEN** focus SHALL be inside the dialog, and the tabs SHALL follow the ARIA tabs pattern (arrow keys move between the shown tabs)
+- **AND** the credentials action, the tab panels, Delete and Close SHALL be reachable with Tab in reading order
 - **AND** the badge SHALL expose its label to assistive technology
 
 #### Scenario: Right-to-left locale
@@ -319,5 +250,5 @@ The Toolsets row, the Add toolset popup and the toolset details popup SHALL be k
 #### Scenario: Localization
 
 - **WHEN** any of the three surfaces is rendered in a supported locale
-- **THEN** every user-visible string SHALL come from the `quickAppEditor` or `common` keys named in this spec, and none SHALL be hardcoded
+- **THEN** every user-visible string SHALL come from the `quickAppEditor` or `common` keys named in this spec or in `catalog-entity-details`, and none SHALL be hardcoded
 

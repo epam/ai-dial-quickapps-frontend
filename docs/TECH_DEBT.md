@@ -39,14 +39,30 @@
   OpenSpec change. (The Toolsets / Agents split is done in `split-agents-and-toolsets`.)
 - [ ] Toolsets / Agents follow-ups (from the `split-agents-and-toolsets` change):
   - chat-api ask: tool descriptions and input schemas in the deployment details
-    (`ToolsetDetailsDto` carries names only), so the Tools tab could show more than names;
+    (`ToolsetDetailsDto` carries names only), so the catalog Tools tab — here and in chat — could
+    show more than names;
   - move `AddSkillsModal` onto the shared `components/common/AddOnCatalogModal` that the Add
     toolset / Add agent pickers use, and drop its duplicated list/filter/sort code;
   - write a `toolsets_login` spec for the host round-trip (`REQUEST_TOOLSET_LOGIN` /
     `TOOLSET_LOGIN_RESULT`); `toolsets_selection` only specifies the popup's Log in entry point.
   - rename the i18n keys Skills, Toolsets and Agents share (`SkillDetails`, `RemoveSkill`, `SelectSkill`,
-    `SkillOverviewTab`, `SkillFolder`, `SkillUpdated`, `SkillVersion`, `RemoveSkillFromApp`) to generic
-    names, and update `skills_catalog`, `toolsets_selection` and `agents_selection` with them.
+    `SkillOverviewTab`, `SkillDetailsTab`, `SkillAuthor`, `SkillTypeLabel`, `RemoveSkillFromApp`) to
+    generic names, and update `skills_catalog`, `toolsets_selection` and `agents_selection` with them.
+- [ ] Catalog details follow-ups (from the `align-entity-details-with-catalog` change):
+  - ai-dial-chat ask: `@epam/ai-dial-chat-hooks/catalog` imports `@epam/ai-dial-attachment-input`
+    (`mimeTypesToExtensionLabels`) and `@epam/ai-dial-skill-editor` (`SkillFileNodeKind`) at
+    runtime, yet declares both as optional peers. This app installs both only for that; move the two
+    symbols into `@epam/ai-dial-chat-shared` (or make the peers required), then drop them here;
+  - English text still comes from the catalog where no label prop exists: pricing row labels
+    ("Input tokens"…) and the "N tokens" / "K tokens" formatting in `mapEntityDetailsToCatalogDetails`,
+    and the markdown code-block / table labels of `AboutTab` and `ContentTab` (`markdownLabels`, not
+    passed yet). Ask upstream for label options, then pass translated ones;
+  - the Limits tab renders without a reset line: pass `formatResetTime` in
+    `useCatalogDetailsLabels` once the editor has a locale-aware date formatter;
+  - Connect tab: hidden (`isConnectHidden`) on the assumption editors don't need endpoint
+    snippets — confirm in review; showing it needs `dialCoreExternalUrl` and a Connect label set;
+  - the skill Details tab shows only `SKILL.md`; its bundled files (`promptContent.files`) are
+    dropped. Wiring the catalog file selector needs `onLoadContentFile` from `useCatalogItemDetails`.
 - [ ] ui-kit: `DialDraggableItem` imports a private bundled copy of react-dnd whose `DndProvider` the
   kit does not export, and it has no keyboard support, so consumers can't use it. Ask the kit for an
   exported, keyboard-accessible sortable list; the starters modal uses `@dnd-kit/sortable` meanwhile.
@@ -55,9 +71,9 @@
     when present (`mapCoreToDialSkill` in `src/utils/dial-client.ts`); until then skills have no
     version and the Add skill popup's Tags column and From topics stay empty;
   - resolve the manifest path through `skillsApi.listSkillFiles` for DIAL Core versions that store
-    `SKILL.md` under `files/` (as ai-dial-chat's `resolveSkillManifestFileId` does) — today the
-    Details tab shows its error state there;
-  - optionally list a skill's bundled files in the Details tab (`ContentTab`'s file tree).
+    `SKILL.md` under `files/` — the details now load through ai-dial-chat's `useSkillItemDetails`,
+    which still downloads `SKILL.md` at the skill root first, so such skills show the error state;
+    fix upstream (download `resolveSkillManifestFileId`'s path) and it applies here too.
 - [ ] Add-ons: `AgentsFormSection` opens the Add agent picker when the URL has
   `?agentsAndToolsetsModal=1` (`AddOnsModalQueryParams.Modal` in
   `src/constants/quick-apps.ts`; it opened the merged Agents & Toolsets modal before
@@ -164,6 +180,7 @@ Track these dimensions separately for every capability:
 | `toolsets_login` | No | Yes | Partial | Planned |
 | `application_credentials` | No | Yes | Partial | Planned |
 | `skills_catalog` | Yes | Yes | Partial | Planned |
+| `catalog-entity-details` | In change `align-entity-details-with-catalog` | Yes | Yes | Planned |
 | `orchestrator_model-selection` | Yes | Yes | Partial | Planned |
 | `application_advanced-settings` | Yes | Yes | Partial | Planned |
 | `application_conversation-starters` | Yes | Yes | Partial | Planned |
