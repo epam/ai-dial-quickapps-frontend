@@ -25,10 +25,6 @@ vi.mock('@/components/common/FormCollapsibleSection', () => ({
   FormCollapsibleSection: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
 }));
 
-vi.mock('../AgentsAndToolsetsField', () => ({
-  AgentsAndToolsetsField: () => null,
-}));
-
 vi.mock('../CodeInterpreterField', () => ({
   CodeInterpreterField: () => null,
 }));

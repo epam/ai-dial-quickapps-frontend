@@ -1,18 +1,19 @@
-import { FC, memo, useState } from 'react';
+import { FC, memo, useMemo } from 'react';
 
-import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { AgentsAndToolsetsModalQueryParams } from '@/constants/quick-apps';
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { AddOnSchemaKeys } from '@/form/quickApp2Form';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
 import type { QuickApp2FormValues } from '@/types/quick-app-form';
-import { useSearchParams } from '@/hooks/use-search-params';
+import { useAddOnEntityMap } from '@/hooks/use-add-on-entity-map';
 import { useTranslation } from '@/hooks/use-translation';
 import { DialAppTransportType } from '@/types/quick-apps';
 import { Translation } from '@/types/translation';
+import { partitionAddOnIds } from '@/utils/get-add-on-kind';
 
 import AgentSkillsFormSection from '@/components/AgentSkills/AgentSkillsFormSection';
-import { AddOnRow } from '@/components/AddOns/AddOnRow';
-import { AgentsAndToolsetsField } from '@/components/ContextAndTools/AgentsAndToolsetsField';
+import AgentsFormSection from '@/components/Agents/AgentsFormSection/AgentsFormSection';
 import ConversationStartersRow from '@/components/ConversationStarters/ConversationStartersRow';
+import ToolsetsFormSection from '@/components/Toolsets/ToolsetsFormSection/ToolsetsFormSection';
 import { Section } from '@/components/common/Section/Section';
 
 export interface AddOnsSectionProps {
@@ -20,7 +21,7 @@ export interface AddOnsSectionProps {
   onAgentSkillsChange: (value: QuickApp2FormValues['agentSkills']) => void;
   isReadonly: boolean;
   tooltip?: string;
-  agentsAndToolsets: QuickApp2FormValues['agentsAndToolsets'];
+  addOns: QuickApp2FormValues['addOns'];
   onAgentsChange: (ids: string[]) => void;
   onConfigureAgent: (id: string, transport: DialAppTransportType) => void;
   conversationStarters: ConversationStartersValues;
@@ -32,18 +33,33 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
   onAgentSkillsChange,
   isReadonly,
   tooltip,
-  agentsAndToolsets,
+  addOns,
   onAgentsChange,
   onConfigureAgent,
   conversationStarters,
   onConversationStartersSave,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
-  const { t: tCommon } = useTranslation(Translation.Common);
-  const searchParams = useSearchParams();
+  const entityMap = useAddOnEntityMap();
 
-  const [isAgentsModalOpen, setIsAgentsModalOpen] = useState(
-    searchParams.get(AgentsAndToolsetsModalQueryParams.Modal) === '1',
+  // Toolsets and Agents both edit `addOns`: each row shows its own
+  // entries and always hands back the full id list, so the other row's
+  // entries (and their tool data) stay where they are.
+  const allIds = useMemo(() => addOns.map((entry) => entry[AddOnSchemaKeys.id]), [addOns]);
+  const transports = useMemo(
+    () =>
+      Object.fromEntries(
+        addOns.map((entry) => [
+          entry[AddOnSchemaKeys.id],
+          (entry[AddOnSchemaKeys.tool] as { transport?: DialAppTransportType } | undefined)
+            ?.transport,
+        ]),
+      ),
+    [addOns],
+  );
+  const { toolsetIds, agentIds } = useMemo(
+    () => partitionAddOnIds(addOns, entityMap),
+    [addOns, entityMap],
   );
 
   return (
@@ -56,23 +72,23 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
           tooltip={tooltip}
         />
 
-        <AddOnRow
-          label={t(QuickAppEditorI18nKeys.AgentsAndToolsets)}
-          emptyDescription={t(QuickAppEditorI18nKeys.ContextAndToolsDescription)}
-          isEmpty={agentsAndToolsets.length === 0}
-          isAddDisabled={isReadonly}
-          addTooltip={tooltip ?? tCommon(CommonI18nKeys.AddAgentsAndToolsets)}
-          onAdd={() => setIsAgentsModalOpen(true)}
-        >
-          <AgentsAndToolsetsField
-            agentsAndToolsets={agentsAndToolsets}
-            onAgentsChange={onAgentsChange}
-            onConfigureAgent={onConfigureAgent}
-            readonly={isReadonly}
-            isSelectModalOpen={isAgentsModalOpen}
-            onSelectModalOpenChange={setIsAgentsModalOpen}
-          />
-        </AddOnRow>
+        <ToolsetsFormSection
+          allIds={allIds}
+          toolsetIds={toolsetIds}
+          isReadonly={isReadonly}
+          tooltip={tooltip}
+          onChange={onAgentsChange}
+        />
+
+        <AgentsFormSection
+          allIds={allIds}
+          agentIds={agentIds}
+          isReadonly={isReadonly}
+          tooltip={tooltip}
+          onChange={onAgentsChange}
+          transports={transports}
+          onConfigure={onConfigureAgent}
+        />
 
         <ConversationStartersRow
           values={conversationStarters}

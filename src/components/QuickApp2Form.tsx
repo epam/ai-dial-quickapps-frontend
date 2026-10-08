@@ -233,7 +233,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
           onAgentSkillsChange={(value) => setField('agentSkills', value)}
           isReadonly={isReadonly}
           tooltip={sharedTooltip}
-          agentsAndToolsets={values.agentsAndToolsets}
+          addOns={values.addOns}
           onAgentsChange={setAgentIds}
           onConfigureAgent={configureAgent}
           conversationStarters={conversationStarters}

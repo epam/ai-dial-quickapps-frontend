@@ -45,7 +45,9 @@ const testContext = vi.hoisted(() => {
     dataContext: {
       models: [model],
       modelsMap: { [model.id]: model },
+      toolsets: [],
       toolsetsMap: {},
+      mcpAgents: [],
       mcpAgentsMap: {},
       status: 'ready' as 'loading' | 'ready',
     },
@@ -268,7 +270,9 @@ beforeEach(() => {
   testContext.dataContext = {
     models: [testContext.model],
     modelsMap: { [testContext.model.id]: testContext.model },
+    toolsets: [],
     toolsetsMap: {},
+    mcpAgents: [],
     mcpAgentsMap: {},
     status: 'ready',
   };
@@ -506,7 +510,9 @@ describe('QuickApp2Form observable behavior', () => {
     testContext.dataContext = {
       models: [],
       modelsMap: {},
+      toolsets: [],
       toolsetsMap: {},
+      mcpAgents: [],
       mcpAgentsMap: {},
       status: 'loading',
     };
@@ -518,7 +524,9 @@ describe('QuickApp2Form observable behavior', () => {
     testContext.dataContext = {
       models: [testContext.model],
       modelsMap: { [testContext.model.id]: testContext.model },
+      toolsets: [],
       toolsetsMap: {},
+      mcpAgents: [],
       mcpAgentsMap: {},
       status: 'ready',
     };

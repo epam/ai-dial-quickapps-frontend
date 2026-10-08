@@ -3,9 +3,7 @@
 ## Purpose
 
 Defines the Quick App editor composition so primary instructions remain distinct from model and related configuration while preserving existing form behavior, saved values, and direction-aware presentation.
-
 ## Requirements
-
 ### Requirement: Responsive editor columns
 The editor SHALL present its primary content and Configuration areas as side-by-side columns when the available viewport supports the desktop layout, and SHALL stack those areas without horizontal overflow when it does not. The primary content column SHALL place the standalone Instructions section first, followed immediately by the Add-ons section, with the remaining existing settings sections after it.
 
@@ -70,10 +68,10 @@ The editor SHALL render the existing Instructions editor in a standalone, always
 - **AND** the value SHALL continue to participate in the existing validation, dirty-state, and save serialization behavior
 
 ### Requirement: Presentation change preserves form contract
-The layout change SHALL preserve existing form state ownership, field names, conditional behavior, read-only behavior, and persistence without introducing new chat-api requests. Skills SHALL continue to use the existing `agentSkills` form value, and the merged Agents & Toolsets control SHALL continue to use the existing `agentsAndToolsets` form value.
+The layout change SHALL preserve existing form state ownership, field names, conditional behavior, read-only behavior, and persistence without introducing new chat-api requests. Skills SHALL continue to use the existing `agentSkills` form value. The Toolsets and Agents rows SHALL both continue to use the existing `addOns` form value: each row shows and edits only its own entries, as classified by `toolsets_selection` ("Toolset entries of the add-ons value") and `agents_selection` ("Agent entries of the add-ons value").
 
 #### Scenario: Save after layout reorganization
-- **WHEN** a user changes a moved Skills or Agents & Toolsets selection or the instructions and saves
+- **WHEN** a user changes a moved Skills, Toolsets or Agents selection or the instructions and saves
 - **THEN** the saved application SHALL contain the same corresponding configuration values as before the reorganization
 - **AND** the editor SHALL make no additional chat-api request because of the layout change
 
@@ -83,24 +81,24 @@ The layout change SHALL preserve existing form state ownership, field names, con
 - **AND** Add actions SHALL not allow a selection modal to be opened
 
 #### Scenario: Existing selections remain visible
-- **WHEN** an application loads with one or more skills or agents/toolsets already selected
+- **WHEN** an application loads with one or more skills, toolsets or agents already selected
 - **THEN** the corresponding Add-ons content window SHALL be visible
-- **AND** the selected agents/toolsets chips SHALL keep their existing remove/configuration behavior
-- **AND** the selected skills SHALL be listed as defined by `skills_catalog` ("Attached skills list"), with removal available from the skill details popup
+- **AND** the selected skills SHALL be listed as defined by `skills_catalog` ("Attached skills list")
+- **AND** the selected toolsets SHALL be listed as defined by `toolsets_selection` ("Attached toolsets list"), and the selected agents as defined by `agents_selection` ("Attached agents list"), with removal, sign-in and configuration available from the rows' trash buttons and details popups
 
 ### Requirement: Add-ons section groups add-on controls
-The editor SHALL render an Add-ons section directly below Instructions. The section SHALL contain a Skills row, one merged Agents & Toolsets row, and a Conversation starters row (defined by `application_conversation-starters`), in that order. Each row SHALL show its title and its action together in a row header. The Skills and Agents & Toolsets Add actions SHALL open that row's existing selection modal. The Conversation starters action SHALL open the Set up conversation starters modal. The primary content column SHALL NOT render a separate Conversation starters section.
+The editor SHALL render an Add-ons section directly below Instructions. The section SHALL contain, in this order, a Skills row, a Toolsets row, an Agents row and a Conversation starters row (defined by `application_conversation-starters`). Each row SHALL show its title and its action together in a row header. The Skills, Toolsets and Agents Add actions SHALL open that row's selection modal. The Conversation starters action SHALL open the Set up conversation starters modal. The primary content column SHALL NOT render a separate Conversation starters section.
 
 #### Scenario: Empty Add-ons section
-- **WHEN** the editor loads with no selected skills, no selected agents or toolsets, and no conversation starters
+- **WHEN** the editor loads with no selected skills, toolsets or agents, and no conversation starters
 - **THEN** the Add-ons heading SHALL be visible below Instructions
-- **AND** the Skills, merged Agents & Toolsets and Conversation starters rows SHALL each display their Add action in the row header
+- **AND** the Skills, Toolsets, Agents and Conversation starters rows SHALL each display their Add action in the row header
 - **AND** no row SHALL display its populated content window
 
 #### Scenario: Add action opens the selection modal
-- **WHEN** a user activates the Add action of the Skills row or the Agents & Toolsets row in an editable editor
-- **THEN** the existing selection modal for that row SHALL open
-- **AND** confirming the modal SHALL update the corresponding `agentSkills` or `agentsAndToolsets` form value and close the modal
+- **WHEN** a user activates the Add action of the Skills, Toolsets or Agents row in an editable editor
+- **THEN** that row's selection modal SHALL open: Add skill, Add toolset or Add agent
+- **AND** confirming the modal SHALL update the `agentSkills` value, or the corresponding entries of the `addOns` value, and close the modal
 
 #### Scenario: No standalone starters section
 - **WHEN** the editor renders its primary content column
@@ -108,8 +106,10 @@ The editor SHALL render an Add-ons section directly below Instructions. The sect
 
 #### Scenario: Add-on labels and localization
 - **WHEN** the Add-ons section is rendered in any supported locale
-- **THEN** user-visible section and row labels SHALL be translated through the `quickAppEditor` namespace keys `AddOns`, `Skills`, `AgentsAndToolsets`, and `ConversationStarters`
-- **AND** the Add action label and tooltips SHALL use existing `common`/`quickAppEditor` keys, and the Manage action SHALL use `quickAppEditor` key `Manage`
+- **THEN** the section and row labels SHALL be translated through the `quickAppEditor` keys `AddOns`, `Skills`, `Toolsets` ("Toolsets"), `Agents` ("Agents") and `ConversationStarters`
+- **AND** the empty-row descriptions SHALL use `AgentSkillsDescription`, `ToolsetsDescription` ("External tools and services the agent can call, such as MCP servers.") and `AgentsDescription` ("Sub-agents this agent can delegate tasks to.")
+- **AND** the Add tooltips SHALL use `AddAgentSkills`, `AddToolsets` ("Add toolsets") and `AddAgents` ("Add agents"), or the shared-application tooltip when read-only
+- **AND** the Conversation starters Manage action SHALL use `quickAppEditor` key `Manage`
 - **AND** no user-visible label SHALL be hardcoded in the component
 
 #### Scenario: Add-ons accessibility
@@ -137,22 +137,31 @@ The Skills row SHALL render the Skills content window (the attached skills list 
 - **AND** the Skills content window SHALL be removed without changing any other form value
 
 ### Requirement: Agents and Toolsets content window is conditional
-The merged Agents & Toolsets row SHALL render the existing Agents & Toolsets content window only when at least one agent or toolset is selected, while its Add action SHALL remain visible regardless of selection count.
+The Toolsets row SHALL render its content window (the attached toolsets list) only when at least one toolset entry is selected. The Agents row SHALL render its content window (the attached agents list) only when at least one agent entry is selected. Each row's Add action SHALL remain visible regardless of selection count.
 
-#### Scenario: No agents or toolsets selected
-- **WHEN** the `agentsAndToolsets` selection is empty
-- **THEN** the merged Agents & Toolsets Add action SHALL be visible and enabled unless the editor is read-only
-- **AND** the Agents & Toolsets content window SHALL not be rendered
+#### Scenario: No toolsets selected
+- **WHEN** `addOns` holds no toolset entry, but may hold agent entries
+- **THEN** the Toolsets Add action SHALL be visible and enabled unless the editor is read-only
+- **AND** the Toolsets row SHALL show its description and no content window
 
-#### Scenario: Agent or toolset selected
-- **WHEN** the `agentsAndToolsets` selection contains at least one agent or toolset
-- **THEN** the existing chip content window SHALL be rendered with its current styles and behavior
-- **AND** the Add action SHALL remain visible in the row header
+#### Scenario: No agents selected
+- **WHEN** `addOns` holds no agent entry, but may hold toolset entries
+- **THEN** the Agents Add action SHALL be visible and enabled unless the editor is read-only
+- **AND** the Agents row SHALL show its description and no content window
 
-#### Scenario: Last agent or toolset removed
-- **WHEN** a user removes the last selected agent or toolset
-- **THEN** the `agentsAndToolsets` form value SHALL become empty
-- **AND** the Agents & Toolsets content window SHALL be removed without changing unrelated context settings
+#### Scenario: Toolset or agent selected
+- **WHEN** `addOns` holds at least one entry of a row's kind
+- **THEN** that row SHALL render its list, with no chip box
+- **AND** its Add action SHALL remain visible in the row header
+
+#### Scenario: Last toolset removed
+- **WHEN** a user removes the last toolset entry with its trash button, through the details popup's Delete, or by unchecking it in Add toolset and confirming
+- **THEN** the Toolsets content window SHALL be removed
+- **AND** the agent entries of `addOns`, and unrelated context settings, SHALL be unchanged
+
+#### Scenario: Last agent removed
+- **WHEN** a user removes the last agent entry
+- **THEN** the Agents content window SHALL be removed and the toolset entries SHALL be unchanged
 
 ### Requirement: Editor sections share a card presentation
 The Instructions and Add-ons sections SHALL be rendered with the same card presentation: a raised rounded surface, a section-level heading, and consistent spacing between the heading and the section content. Each card SHALL be exposed as a section labelled by its translated heading. Spacing between cards in the primary content column SHALL come from the column layout rather than from an individual card's own margin.
@@ -178,7 +187,7 @@ The Add-ons card SHALL be visually separated from Instructions and SHALL use a l
 #### Scenario: Add-ons row typography
 - **WHEN** the Add-ons rows are rendered
 - **THEN** the Add-ons heading SHALL have the section-level heading hierarchy
-- **AND** Skills and Agents & Toolsets SHALL use the row-title hierarchy shown in the target design
+- **AND** Skills, Toolsets and Agents SHALL use the row-title hierarchy shown in the target design
 - **AND** any visible row description SHALL use secondary body text styling
 
 #### Scenario: Row description for an empty row
@@ -196,21 +205,21 @@ The Add-ons card SHALL be visually separated from Instructions and SHALL use a l
 - **AND** Add actions SHALL remain aligned with their corresponding row titles
 
 ### Requirement: Agents and Toolsets has no JSON view
-The Agents & Toolsets row SHALL NOT offer a JSON view. The editor SHALL NOT render a JSON toggle, a JSON editor, Save JSON or Discard actions, or a discard-JSON confirmation for agents and toolsets, and saving SHALL preserve existing `tool_sets` entries that the chip view can represent, including inline toolsets without a `deployment_id`.
+The Toolsets and Agents rows SHALL NOT offer a JSON view. The editor SHALL NOT render a JSON toggle, a JSON editor, Save JSON or Discard actions, or a discard-JSON confirmation for agents and toolsets. Saving SHALL preserve existing `tool_sets` entries that the rows can represent, including inline toolsets without a `deployment_id`.
 
 #### Scenario: No JSON affordance in any state
 - **WHEN** the Add-ons section is rendered, in editable or read-only mode, with or without selected agents or toolsets
-- **THEN** no JSON toggle, JSON editor, Save JSON action, or Discard action SHALL be rendered for Agents & Toolsets
+- **THEN** no JSON toggle, JSON editor, Save JSON action, or Discard action SHALL be rendered for the Toolsets or Agents rows
 
 #### Scenario: Existing inline toolset is preserved on save
 - **WHEN** an application whose saved `tool_sets` contain an inline toolset without a `deployment_id` is loaded and then saved without changing agents or toolsets
-- **THEN** the inline toolset SHALL be shown as a chip in the Agents & Toolsets row
+- **THEN** the inline toolset SHALL be listed in the Toolsets row
 - **AND** the saved `tool_sets` SHALL still contain that inline toolset configuration
 
 #### Scenario: Code interpreter is saved independently of agents and toolsets
 - **WHEN** the code interpreter setting is enabled or disabled and the application is saved
 - **THEN** the saved `tool_sets` SHALL include or omit the code interpreter toolset accordingly
-- **AND** the remaining `tool_sets` entries SHALL be built from the `agentsAndToolsets` form value
+- **AND** the remaining `tool_sets` entries SHALL be built from the `addOns` form value
 
 ### Requirement: Configuration exposes a Settings entry point
 The Configuration area SHALL retain its existing model controls and render a translated Settings row with a trailing Advanced action.
@@ -298,3 +307,4 @@ The primary content column SHALL NOT render a standalone Advanced settings (Time
 - **THEN** no Time awareness switch, File tools switch, or max attachments input SHALL be rendered there
 - **AND** Context and tools SHALL keep its other controls (context files, Code interpreter, Add attachment, Web fetch) with their existing visibility
 - **AND** no User attachments section or Attachment types control SHALL be rendered there
+

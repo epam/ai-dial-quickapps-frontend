@@ -1,11 +1,7 @@
 import { useCallback, useMemo, useReducer } from 'react';
 import isEqual from 'lodash-es/isEqual';
 
-import {
-  AgentOrToolsetSchemaKeys,
-  QuickApp2Schema,
-  resolveDefaultModelId,
-} from '@/form/quickApp2Form';
+import { AddOnSchemaKeys, QuickApp2Schema, resolveDefaultModelId } from '@/form/quickApp2Form';
 import { removeStarter, updateStarterField } from '@/utils/conversation-starters';
 import { decodeFileUrl } from '@/utils/decode-file-url';
 import {
@@ -197,36 +193,41 @@ const reduceFormState = (state: FormState, action: FormAction): FormState => {
       };
     case 'SET_AGENT_IDS': {
       const currentValues = new Map(
-        state.values.agentsAndToolsets.map((item) => [item[AgentOrToolsetSchemaKeys.id], item]),
+        state.values.addOns.map((item) => [item[AddOnSchemaKeys.id], item]),
       );
       const nextValues = action.ids.map(
-        (id) => currentValues.get(id) ?? { [AgentOrToolsetSchemaKeys.id]: id },
+        (id) => currentValues.get(id) ?? { [AddOnSchemaKeys.id]: id },
       );
       return applyValues(
         state,
-        { agentsAndToolsets: nextValues as QuickApp2FormValues['agentsAndToolsets'] },
+        { addOns: nextValues as QuickApp2FormValues['addOns'] },
         { shouldValidate: true },
       );
     }
     case 'CONFIGURE_AGENT': {
-      const nextValues = state.values.agentsAndToolsets.map((item) => {
-        if (item[AgentOrToolsetSchemaKeys.id] !== action.id) return item;
+      const nextValues = state.values.addOns.map((item) => {
+        if (item[AddOnSchemaKeys.id] !== action.id) return item;
         return {
           ...item,
-          [AgentOrToolsetSchemaKeys.tool]: {
-            ...(item[AgentOrToolsetSchemaKeys.tool] ?? {}),
+          [AddOnSchemaKeys.tool]: {
+            ...(item[AddOnSchemaKeys.tool] ?? {}),
             transport: action.transport,
           },
         };
       });
       return applyValues(
         state,
-        { agentsAndToolsets: nextValues as QuickApp2FormValues['agentsAndToolsets'] },
+        { addOns: nextValues as QuickApp2FormValues['addOns'] },
         { shouldValidate: true },
       );
     }
     case 'UPDATE_STARTER': {
-      const starters = updateStarterField(state.values.starters, action.index, action.field, action.value);
+      const starters = updateStarterField(
+        state.values.starters,
+        action.index,
+        action.field,
+        action.value,
+      );
       if (starters === state.values.starters) return state;
       return applyValues(state, { starters }, { shouldValidate: true });
     }
@@ -261,17 +262,15 @@ const reduceFormState = (state: FormState, action: FormAction): FormState => {
   }
 };
 
-export const useQuickApp2Form = ({ defaultValues }: UseQuickApp2FormOptions): UseQuickApp2FormResult => {
-  const [state, dispatch] = useReducer(
-    reduceFormState,
-    defaultValues,
-    (values): FormState => ({
-      values,
-      initialValues: values,
-      errors: {},
-      modelStatus: QuickApp2ModelStatus.Idle,
-    }),
-  );
+export const useQuickApp2Form = ({
+  defaultValues,
+}: UseQuickApp2FormOptions): UseQuickApp2FormResult => {
+  const [state, dispatch] = useReducer(reduceFormState, defaultValues, (values): FormState => ({
+    values,
+    initialValues: values,
+    errors: {},
+    modelStatus: QuickApp2ModelStatus.Idle,
+  }));
 
   const setField = useCallback(
     <K extends keyof QuickApp2FormValues>(
@@ -291,7 +290,8 @@ export const useQuickApp2Form = ({ defaultValues }: UseQuickApp2FormOptions): Us
     [],
   );
   const syncExternalState = useCallback(
-    (externalState: QuickApp2FormExternalState) => dispatch({ type: 'SYNC_EXTERNAL', externalState }),
+    (externalState: QuickApp2FormExternalState) =>
+      dispatch({ type: 'SYNC_EXTERNAL', externalState }),
     [],
   );
   const validate = useCallback(() => {
@@ -309,11 +309,18 @@ export const useQuickApp2Form = ({ defaultValues }: UseQuickApp2FormOptions): Us
     [],
   );
   const updateStarter = useCallback(
-    (index: number, field: StarterField, value: string) => dispatch({ type: 'UPDATE_STARTER', index, field, value }),
+    (index: number, field: StarterField, value: string) =>
+      dispatch({ type: 'UPDATE_STARTER', index, field, value }),
     [],
   );
-  const removeStarter = useCallback((index: number) => dispatch({ type: 'REMOVE_STARTER', index }), []);
-  const addDocuments = useCallback((documents: string[]) => dispatch({ type: 'ADD_DOCUMENTS', documents }), []);
+  const removeStarter = useCallback(
+    (index: number) => dispatch({ type: 'REMOVE_STARTER', index }),
+    [],
+  );
+  const addDocuments = useCallback(
+    (documents: string[]) => dispatch({ type: 'ADD_DOCUMENTS', documents }),
+    [],
+  );
   const removeDocument = useCallback(
     (document: string) => dispatch({ type: 'REMOVE_DOCUMENT', document }),
     [],

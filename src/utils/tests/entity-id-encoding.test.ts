@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  AgentOrToolsetSchemaKeys,
-  buildQuickApp2Config,
-  getQuickApp2FormData,
-} from '@/form/quickApp2Form';
+import { AddOnSchemaKeys, buildQuickApp2Config, getQuickApp2FormData } from '@/form/quickApp2Form';
 import { ToolsetTypes } from '@/types/quick-apps';
 
 import { fetchDialModels, fetchDialToolsets } from '@/utils/dial-client';
@@ -50,9 +46,9 @@ describe('entity id encoding', () => {
     const [app] = await fetchDialModels();
     const data = {
       ...getQuickApp2FormData(undefined, ['gpt-4o'], ['gpt-4o']),
-      agentsAndToolsets: [toolset, app].map((entity) => ({
-        [AgentOrToolsetSchemaKeys.id]: entity.id,
-        [AgentOrToolsetSchemaKeys.isDialDeploymentTool]: false,
+      addOns: [toolset, app].map((entity) => ({
+        [AddOnSchemaKeys.id]: entity.id,
+        [AddOnSchemaKeys.isDialDeploymentTool]: false,
       })),
     };
 

@@ -3,9 +3,7 @@
 ## Purpose
 
 Defines how the Quick App editor lists, inspects, removes and picks skills in the Skills row of the Add-ons card: the attached skills list (with a hover remove button), the skill details popup (rendered `SKILL.md`, Overview metadata, Delete that detaches the skill from the app only), and the Add skill popup (catalog list with search, From filter, sort and multi-selection confirmed with Add). The attached skills stay in the editor's form state (`useQuickApp2Form`) as `agentSkills`, skill data comes from `DataContext`, and the popups keep their own UI state locally.
-
 ## Requirements
-
 ### Requirement: Attached skills list
 
 The Skills row of the Add-ons card SHALL list the application's attached skills (the `agentSkills` form value, owned by `useQuickApp2Form`) in saved order. Each item SHALL show:
@@ -76,9 +74,9 @@ The open popup's skill id SHALL be local `useState` in the Skills list component
 The Details tab SHALL show the skill's description followed by the rendered Markdown body of the skill's `SKILL.md` manifest. The YAML frontmatter SHALL be stripped from the body.
 
 - **Description:** the frontmatter `description`, falling back to the listing `description`.
-- **Rendering:** `ContentTab` from `@epam/ai-dial-catalog` with no file tree.
-- **Fetch:** the manifest SHALL be fetched only while the popup is open, through `skillsApi.downloadSkillFile` from `@epam/ai-dial-chat-api-client`.
-- **State ownership:** the hook `useSkillManifest` (`src/hooks/use-skill-manifest.ts`) owns the fetch state. It SHALL ignore a response that arrives after the popup closed or switched skills.
+- **Rendering:** the catalog `ContentTab` from `@epam/ai-dial-catalog`, fed `promptContent` from the catalog pipeline (`catalog-entity-details`); the package file tree is not shown.
+- **Fetch:** the manifest SHALL be fetched only while the popup is open, through `skillsApi.downloadSkillFileRaw` from `@epam/ai-dial-chat-api-client`, by the catalog's `useSkillItemDetails` (inside `useCatalogItemDetails`).
+- **State ownership:** `useEntityDetails` (`src/hooks/use-entity-details.ts`) owns the fetch state. It SHALL ignore a response that arrives after the popup closed or switched skills.
 
 Request: `GET /api/v1/skills/files/download?bucket={bucket}&path={path}&filePath=SKILL.md`. `bucket` and `path` are derived from the skill id `skills/{bucket}/{path}`.
 
@@ -112,13 +110,13 @@ Rendered result: the description "Plan, conduct, and synthesize user research." 
 #### Scenario: Manifest loading
 
 - **WHEN** the manifest request is pending
-- **THEN** the Details tab SHALL show the listing description, plus a spinner with accessible label `quickAppEditor` key `LoadingSkillContent`
+- **THEN** the Details tab SHALL show the listing description, and a spinner with accessible label `quickAppEditor` `LoadingDetails` SHALL be shown next to the tab row
 
 #### Scenario: Manifest fails to load
 
-- **WHEN** the manifest request fails
-- **THEN** the Details tab SHALL show the listing description and the `quickAppEditor` `FailedToLoadSkillContent` message with a **Retry** button (`quickAppEditor` key `Retry`) that repeats the request
-- **AND** the Overview tab and the footer actions SHALL remain usable
+- **WHEN** the manifest and the file listing both fail
+- **THEN** the Details tab SHALL show the listing description, and the `quickAppEditor` `FailedToLoadDetails` message with a **Retry** button (`quickAppEditor` key `Retry`) that repeats the requests
+- **AND** the footer actions SHALL remain usable
 
 #### Scenario: Manifest without frontmatter
 
@@ -134,18 +132,58 @@ Rendered result: the description "Plan, conduct, and synthesize user research." 
 
 ### Requirement: Skill overview
 
-The Overview tab SHALL list the skill's metadata from the catalog listing as label/value rows. Rows with no value SHALL be omitted. No additional chat-api request SHALL be made for the Overview tab. The rows are:
+The Overview tab SHALL be the catalog's `OverviewTab`, with the sections the catalog's `buildSkillOverview` produces, as defined by `catalog-entity-details`:
 
-- **Author** (`quickAppEditor` key `SkillAuthor`),
-- **Folder** (`quickAppEditor` key `SkillFolder`): the scope label followed by the folder segments, joined with " / ", derived the same way as the catalog Folder column,
-- **Updated** (`quickAppEditor` key `SkillUpdated`): `updatedAt` formatted as a localized date in the active language,
-- **Version** (`quickAppEditor` key `SkillVersion`): only when supplied.
+- **Specification** (`quickAppEditor` `OverviewSpecification`), from the `SKILL.md` frontmatter (parsed by the catalog's manifest parser):
+  - **When to use** (`SkillWhenToUse`);
+  - **Allowed tools** (`SkillAllowedTools`), joined with " · ";
+  - **Bundled resources** (`SkillBundledResources`), joined with " · ";
+  - the section is omitted when none of them is present.
+- **Skill** (`quickAppEditor` `SkillTypeLabel`):
+  - **Author** (`SkillAuthor`), when known;
+  - **Last updated** (`OverviewLastUpdated`), as the catalog's calendar date;
+  - **Files** (`SkillFileCount`): the number of files in the skill package.
+
+The Overview data SHALL come from three requests, made in parallel when the popup opens (as the chat catalog does), together with the manifest download from "Skill details content":
+
+- `skillsApi.getSkillMetadata({ bucket, path })` → `GET /api/v1/skills/metadata?bucket={bucket}&path={path}`. This is the authoritative author and timestamps; the listing entry is the fallback when it fails.
+- `skillsApi.listSkillFiles({ bucket, path, filePath: '', recursive: true })` → `GET /api/v1/skills/files?bucket={bucket}&path={path}&filePath=&recursive=true`.
+
+The Overview tab SHALL be shown only when the file listing succeeds. The folder is shown in the popup header, as for toolsets and agents. The version is no longer an Overview row; it shows next to the name in the header when known.
+
+Example, for skill `skills/public/research/user-research` whose frontmatter has `when_to_use: Planning interviews` and whose package has `SKILL.md` and `guide.md`:
+
+```http
+GET /api/v1/skills/files?bucket=public&path=research%2Fuser-research&filePath=&recursive=true
+```
+
+```json
+{ "items": [
+  { "name": "SKILL.md", "url": "skills/public/research/user-research/SKILL.md", "nodeType": "ITEM" },
+  { "name": "guide.md", "url": "skills/public/research/user-research/guide.md", "nodeType": "ITEM" }
+] }
+```
+
+Rendered result:
+
+- Specification: When to use "Planning interviews".
+- Skill: Author, Last updated and Files "2".
 
 #### Scenario: Overview content
 
-- **WHEN** the user selects Overview for a skill with author "jane.doe", id `skills/public/research/user-research` and `updatedAt` 1759795200000
-- **THEN** the tab SHALL show Author "jane.doe", Folder "Organization / research" and Updated as a localized date
-- **AND** no Version row SHALL be shown when the listing has no version
+- **WHEN** the user selects Overview for a skill with author "jane.doe", `when_to_use` in its frontmatter and two package files
+- **THEN** the tab SHALL show a Specification section with When to use, and a Skill section with Author "jane.doe", Last updated and Files "2"
+- **AND** no Folder or Version row SHALL be shown in the tab
+
+#### Scenario: File listing fails
+
+- **WHEN** the file listing request fails
+- **THEN** no Overview tab SHALL be shown, and Details (the manifest) SHALL still be shown
+
+#### Scenario: Metadata request fails
+
+- **WHEN** the metadata request fails
+- **THEN** the Skill section SHALL use the author and updated date from the catalog listing
 
 ### Requirement: Remove a skill from the application
 
@@ -330,3 +368,4 @@ The Skills row, Add skill popup and details popup SHALL be keyboard operable, SH
 
 - **WHEN** any of the three surfaces is rendered in a supported locale
 - **THEN** every user-visible string SHALL come from the `quickAppEditor` or `common` namespace keys named in this spec, and none SHALL be hardcoded
+

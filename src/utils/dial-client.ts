@@ -15,7 +15,6 @@ import type {
   LocalizedText,
   ToolsetAuthSettings,
 } from '@/types/dial-entities';
-import { SKILL_MANIFEST_FILE } from '@/constants/skills';
 import type { LocaleTextEntryDto } from '@/types/editor-messages';
 import type { QuickApp2Config } from '@/types/quick-apps';
 import { decodeApiUrl, isHiddenDialFolderId, isPublicToolsetId } from '@/utils/api';
@@ -472,26 +471,6 @@ export const mapCoreToDialSkill = (item: CoreSkillItem): DialSkill => {
     sharedWithMe: item.sharedWithMe,
     ...getOptionalSkillFields(item),
   };
-};
-
-/** `skills/{bucket}/{...path}` → bucket + bucket-relative path; ids are already decoded. */
-const getSkillLocation = (skill: DialSkill): { bucket: string; path: string } => {
-  if (skill.bucket && skill.path) return { bucket: skill.bucket, path: skill.path };
-  const [, bucket = '', ...pathSegments] = skill.id.split('/');
-  return { bucket, path: pathSegments.join('/') };
-};
-
-/** Downloads the skill's `SKILL.md` as text. */
-export const fetchSkillManifest = async (
-  skill: DialSkill,
-  signal?: AbortSignal,
-): Promise<string> => {
-  const { bucket, path } = getSkillLocation(skill);
-  const blob = await skillsApi.downloadSkillFile(
-    { bucket, path, filePath: SKILL_MANIFEST_FILE },
-    { signal },
-  );
-  return blob.text();
 };
 
 /** chat-api's own controller already does the personal+public+shared aggregation this app used to replicate against Core directly. */

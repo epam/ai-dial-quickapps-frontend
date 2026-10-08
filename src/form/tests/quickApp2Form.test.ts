@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import {
-  AgentOrToolsetSchemaKeys,
+  AddOnSchemaKeys,
   buildQuickApp2Config,
   QuickApp2Schema,
-  getAgentsAndToolsetsFormValue,
+  getAddOnsFormValue,
   getQuickApp2FormData,
   getQuickApp2Toolsets,
   isValidMaxInputAttachments,
@@ -19,7 +19,7 @@ const createForm = (overrides: Partial<QuickApp2Form> = {}): QuickApp2Form => ({
   temperature: 1,
   documentRelativeUrl: [],
   model: 'model-1',
-  agentsAndToolsets: [],
+  addOns: [],
   codeInterpreter: false,
   attachmentsEnabled: false,
   inputAttachmentTypes: [],
@@ -176,7 +176,7 @@ describe('getQuickApp2FormData', () => {
       instructions: '',
       temperature: 1,
       documentRelativeUrl: [],
-      agentsAndToolsets: [],
+      addOns: [],
       autoSubmit: true,
       timestamp: true,
       processLargeFiles: false,
@@ -199,13 +199,13 @@ describe('getQuickApp2FormData', () => {
       },
     ];
 
-    const values = getAgentsAndToolsetsFormValue(toolsets);
+    const values = getAddOnsFormValue(toolsets);
 
     expect(values).toHaveLength(1);
     expect(values[0]).toMatchObject({
-      [AgentOrToolsetSchemaKeys.id]: 'applications/weather',
-      [AgentOrToolsetSchemaKeys.tool]: toolsets[0],
-      [AgentOrToolsetSchemaKeys.isDialDeploymentTool]: false,
+      [AddOnSchemaKeys.id]: 'applications/weather',
+      [AddOnSchemaKeys.tool]: toolsets[0],
+      [AddOnSchemaKeys.isDialDeploymentTool]: false,
     });
   });
 
@@ -215,10 +215,10 @@ describe('getQuickApp2FormData', () => {
       name: 'Weather',
       deployment_id: 'applications/weather',
     } as AnyToolset;
-    const formValue = getAgentsAndToolsetsFormValue([toolset]);
+    const formValue = getAddOnsFormValue([toolset]);
     const simpleToolsets = getQuickApp2Toolsets({
       allEntitiesMap: {},
-      data: createForm({ agentsAndToolsets: formValue }),
+      data: createForm({ addOns: formValue }),
       language: 'en',
     });
     expect(simpleToolsets).toEqual(

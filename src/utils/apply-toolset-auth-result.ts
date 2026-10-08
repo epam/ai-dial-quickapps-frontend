@@ -35,10 +35,10 @@ export const applyToolsetAuthResult = (
     ...toolset,
     authSettings: {
       authenticationType:
-        (credentials?.authenticationType as ToolsetAuthType | undefined) ??
+        credentials?.authenticationType ??
         toolset.authSettings?.authenticationType ??
         ToolsetAuthType.OAuth,
-      authStatus: (levelStatus as ToolsetAuthStatus | undefined) ?? fallbackStatus,
+      authStatus: levelStatus ?? fallbackStatus,
       apiKeyHeader: credentials?.apiKeyHeader ?? toolset.authSettings?.apiKeyHeader,
     },
   };

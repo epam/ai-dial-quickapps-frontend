@@ -2,15 +2,8 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import {
-  AgentOrToolsetSchemaKeys,
-  QuickApp2Schema,
-  type QuickApp2Form,
-} from '@/form/quickApp2Form';
-import {
-  useQuickApp2Form,
-  type UseQuickApp2FormResult,
-} from '@/hooks/use-quick-app2-form';
+import { AddOnSchemaKeys, QuickApp2Schema, type QuickApp2Form } from '@/form/quickApp2Form';
+import { useQuickApp2Form, type UseQuickApp2FormResult } from '@/hooks/use-quick-app2-form';
 import {
   QuickApp2ModelStatus,
   type QuickApp2FormValidationResult,
@@ -23,7 +16,7 @@ const createValues = (overrides: Partial<QuickApp2FormValues> = {}): QuickApp2Fo
   temperature: 1,
   documentRelativeUrl: [],
   model: 'model-1',
-  agentsAndToolsets: [],
+  addOns: [],
   codeInterpreter: false,
   attachmentsEnabled: false,
   inputAttachmentTypes: [],
@@ -239,23 +232,23 @@ describe('useQuickApp2Form external state', () => {
 describe('useQuickApp2Form semantic actions', () => {
   it('updates agent IDs while preserving metadata and applies transport configuration', () => {
     const existing = {
-      [AgentOrToolsetSchemaKeys.id]: 'agent-1',
-      [AgentOrToolsetSchemaKeys.tool]: { name: 'Agent 1' },
+      [AddOnSchemaKeys.id]: 'agent-1',
+      [AddOnSchemaKeys.tool]: { name: 'Agent 1' },
     };
-    renderHook(createValues({ agentsAndToolsets: [existing] as QuickApp2Form['agentsAndToolsets'] }));
+    renderHook(createValues({ addOns: [existing] as QuickApp2Form['addOns'] }));
 
     act(() => {
       latestForm.setAgentIds(['agent-1', 'agent-2']);
       latestForm.configureAgent('agent-1', DialAppTransportType.MCP);
     });
 
-    expect(latestForm.values.agentsAndToolsets).toHaveLength(2);
-    expect(latestForm.values.agentsAndToolsets[0]).toMatchObject({
-      [AgentOrToolsetSchemaKeys.id]: 'agent-1',
-      [AgentOrToolsetSchemaKeys.tool]: { name: 'Agent 1', transport: DialAppTransportType.MCP },
+    expect(latestForm.values.addOns).toHaveLength(2);
+    expect(latestForm.values.addOns[0]).toMatchObject({
+      [AddOnSchemaKeys.id]: 'agent-1',
+      [AddOnSchemaKeys.tool]: { name: 'Agent 1', transport: DialAppTransportType.MCP },
     });
-    expect(latestForm.values.agentsAndToolsets[1]).toEqual({
-      [AgentOrToolsetSchemaKeys.id]: 'agent-2',
+    expect(latestForm.values.addOns[1]).toEqual({
+      [AddOnSchemaKeys.id]: 'agent-2',
     });
   });
 
@@ -291,5 +284,4 @@ describe('useQuickApp2Form semantic actions', () => {
     });
     expect(latestForm.values.documentRelativeUrl).toEqual(['new file']);
   });
-
 });

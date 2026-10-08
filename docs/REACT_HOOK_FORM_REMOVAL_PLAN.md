@@ -70,9 +70,9 @@ Already migrated to value props (no RHF imports): `AdvancedSettingsSection`, `In
 
 `src/form/quickApp2Form.ts` should remain unchanged in responsibility:
 
-- `QuickApp2Schema` and `AgentOrToolsetSchema`.
+- `QuickApp2Schema` and `AddOnSchema`.
 - `getQuickApp2FormData` and default model resolution.
-- `getAgentsAndToolsetsFormValue`.
+- `getAddOnsFormValue`.
 - `buildQuickApp2Config`.
 - `getQuickApp2Toolsets`.
 
@@ -214,7 +214,7 @@ Next: 4.1 `ContextAndToolsSection` (uses the controller actions `setAgentIds`, `
 
 `development` changed the form in ways that make parts of the plan obsolete:
 
-- The JSON view is gone (`isJsonView`/`agentsAndToolsetsJson` removed from the schema). The controller's `switchToJsonView`/`switchToSimpleView`/`discardJson` were removed too. Ignore the JSON items in tasks 4.1 and 1.3.
+- The JSON view is gone (`isJsonView`/`addOnsJson` removed from the schema). The controller's `switchToJsonView`/`switchToSimpleView`/`discardJson` were removed too. Ignore the JSON items in tasks 4.1 and 1.3.
 - `AddOnsSection` (agent skills + agents/toolsets) is migrated to value props and no longer uses RHF. `ContextAndToolsSection` now only has context files and toggles.
 - `UserAttachmentsSection` uses a value-controlled `TagInput`, so `attachmentTypesResetKey` is no longer consumed by the UI. Remove it from the controller in 4.2.
 - Remaining RHF consumers: `ContextAndToolsSection`, `ConversationStartersSection`, `UserAttachmentsSection` (via `QuickApp2FormLegacyFields`).

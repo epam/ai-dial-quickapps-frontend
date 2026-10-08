@@ -30,7 +30,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { ResourceScope } from '@/types/resource-scope';
 import { Translation } from '@/types/translation';
 import { isHiddenDialFolderId } from '@/utils/api';
-import { applySkillSelection } from '@/utils/apply-skill-selection';
+import { applyCatalogSelection } from '@/utils/apply-catalog-selection';
 import { filterCatalogItemsByQuery } from '@/utils/filter-catalog-items';
 import { mapSkillToCatalogItem } from '@/utils/map-skill-to-catalog-item';
 
@@ -123,7 +123,7 @@ export const AddSkillsModal: FC<AddSkillsModalProps> = ({ value, onConfirm, onCl
 
   const handleConfirm = useCallback(() => {
     if (!isReady) return;
-    onConfirm(applySkillSelection(value, checkedIds, listedIds));
+    onConfirm(applyCatalogSelection(value, checkedIds, listedIds));
   }, [isReady, onConfirm, value, checkedIds, listedIds]);
 
   const mainButtons = useMemo(
