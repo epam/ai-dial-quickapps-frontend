@@ -37,3 +37,8 @@ export const REPRESENTATION_TOOLING_FEATURE_VALUE: { add_attachment: true } | nu
 export const WEB_FETCH_FEATURE_VALUE: { enabled: boolean } | null = {
   enabled: true,
 };
+
+/** Orchestrator temperature range and step, shared by the Advanced Settings slider and its value input. */
+export const MIN_TEMPERATURE = 0;
+export const MAX_TEMPERATURE = 1;
+export const TEMPERATURE_STEP = 0.1;
