@@ -10,8 +10,8 @@
   70%. Closing the gap is still open work; see `openspec/specs/` / `openspec/changes/` for
   tracking individual pieces of it as they're picked up.
 - [ ] react-hook-form usage - should get rid of it. In progress in change `remove-react-hook-form`:
-  the root form and the scalar sections already run on `useQuickApp2Form`; `ContextAndToolsSection`
-  and `QuickApp2FormLegacyFields` still use RHF, and the dependency removal (tasks 5.x) is open.
+  the root form and every section now run on `useQuickApp2Form` (the Context & Tools card moved into the Advanced Settings popup in `move-feature-toggles-to-advanced-settings`);
+  only the dependency removal (tasks 5.x) is open.
 - [ ] need to review components, some seem to be unnecessary. (`AgentSkillsField` → `SkillsSelector` proxy is gone:
   removed in the `redesign-skills-selection` change.)
 - [x] Extract the model picker popup out of `components/Orchestrator/ModelField.tsx` into its own

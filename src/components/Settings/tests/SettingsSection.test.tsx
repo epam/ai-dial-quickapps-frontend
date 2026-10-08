@@ -79,6 +79,9 @@ const advancedSettings: AdvancedSettingsValues = {
   timestamp: true,
   fileTools: false,
   processLargeFiles: false,
+  codeInterpreter: false,
+  addAttachment: false,
+  webFetch: false,
 };
 
 const renderSection = (
@@ -93,6 +96,9 @@ const renderSection = (
         advancedSettings={advancedSettings}
         isTemperatureAvailable={isTemperatureAvailable}
         isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
+        isCodeInterpreterEnabled={false}
+        isAddAttachmentEnabled={false}
+        isWebFetchEnabled={false}
         onAdvancedSettingsSave={onAdvancedSettingsSave}
       />,
     ),

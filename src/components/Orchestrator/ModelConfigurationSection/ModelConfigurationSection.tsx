@@ -20,6 +20,9 @@ export interface ModelConfigurationSectionProps {
   isReadonly: boolean;
   tooltip?: string;
   isProcessLargeFilesAvailable: boolean;
+  isCodeInterpreterEnabled: boolean;
+  isAddAttachmentEnabled: boolean;
+  isWebFetchEnabled: boolean;
   advancedSettings: AdvancedSettingsValues;
   onAdvancedSettingsSave: (values: AdvancedSettingsValues) => void;
   attachmentsEnabled: boolean;
@@ -35,6 +38,9 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
   isReadonly,
   tooltip,
   isProcessLargeFilesAvailable,
+  isCodeInterpreterEnabled,
+  isAddAttachmentEnabled,
+  isWebFetchEnabled,
   advancedSettings,
   onAdvancedSettingsSave,
   attachmentsEnabled,
@@ -69,6 +75,9 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
           advancedSettings={advancedSettings}
           isTemperatureAvailable={isTemperatureAvailable}
           isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
+          isCodeInterpreterEnabled={isCodeInterpreterEnabled}
+          isAddAttachmentEnabled={isAddAttachmentEnabled}
+          isWebFetchEnabled={isWebFetchEnabled}
           maxInputAttachmentsError={errors.maxInputAttachments}
           onAdvancedSettingsSave={onAdvancedSettingsSave}
         />

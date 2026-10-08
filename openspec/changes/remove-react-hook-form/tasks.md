@@ -34,7 +34,7 @@ Slicing strategy: **risk-first, then vertical migration**. First characterize th
 
 ## 4. Migrate Array, JSON, File, and Attachment Sections
 
-- [ ] 4.1 Migrate `ContextAndToolsSection` and its agents/toolsets/JSON callbacks from RHF `Control`/`FieldErrors` to semantic controller actions, preserving JSON error display, conversion, discard behavior, entity metadata, file selection, and feature-gated toggles; update tests and run `npm run lint` and `npm run typecheck`.
+- [x] 4.1 Superseded: the Context & Tools card and `QuickApp2FormLegacyFields` were removed by `move-feature-toggles-to-advanced-settings`; nothing left to migrate.
   - **Verification:** Run the affected `ContextAndTools` tests plus `src/hooks/tests/use-quick-app2-form.test.tsx`; confirm simple/JSON transitions and file deduplication match the characterization cases.
 
 - [ ] 4.2 Migrate `ConversationStartersSection` from RHF controllers to typed adapters, preserving starter blur handling, dynamic blank rows, error rendering, and reset recovery; update tests and run `npm run lint` and `npm run typecheck`.

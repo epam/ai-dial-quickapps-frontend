@@ -24,6 +24,9 @@ export interface AdvancedSettingsPopupProps {
   advancedSettings: AdvancedSettingsValues;
   isTemperatureAvailable: boolean;
   isProcessLargeFilesAvailable: boolean;
+  isCodeInterpreterEnabled: boolean;
+  isAddAttachmentEnabled: boolean;
+  isWebFetchEnabled: boolean;
   maxInputAttachmentsError?: string;
   onSave: (values: AdvancedSettingsValues) => void;
   onClose: () => void;
@@ -34,6 +37,9 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
   advancedSettings,
   isTemperatureAvailable,
   isProcessLargeFilesAvailable,
+  isCodeInterpreterEnabled,
+  isAddAttachmentEnabled,
+  isWebFetchEnabled,
   maxInputAttachmentsError,
   onSave,
   onClose,
@@ -92,6 +98,21 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
 
   const handleProcessLargeFilesChange = useCallback(
     (processLargeFiles: boolean) => setDraft((current) => ({ ...current, processLargeFiles })),
+    [],
+  );
+
+  const handleCodeInterpreterChange = useCallback(
+    (codeInterpreter: boolean) => setDraft((current) => ({ ...current, codeInterpreter })),
+    [],
+  );
+
+  const handleAddAttachmentChange = useCallback(
+    (addAttachment: boolean) => setDraft((current) => ({ ...current, addAttachment })),
+    [],
+  );
+
+  const handleWebFetchChange = useCallback(
+    (webFetch: boolean) => setDraft((current) => ({ ...current, webFetch })),
     [],
   );
 
@@ -198,6 +219,33 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
             onChange={handleProcessLargeFilesChange}
             labelProps={{ label: t(QuickAppEditorI18nKeys.AllowOrchestratorToProcessFiles) }}
             caption={t(QuickAppEditorI18nKeys.ProcessFilesOnDemandDescription)}
+          />
+        )}
+
+        {isCodeInterpreterEnabled && (
+          <Switch
+            isOn={draft.codeInterpreter}
+            onChange={handleCodeInterpreterChange}
+            labelProps={{ label: t(QuickAppEditorI18nKeys.CodeInterpreter) }}
+            caption={t(QuickAppEditorI18nKeys.CodeInterpreterInfo)}
+          />
+        )}
+
+        {isAddAttachmentEnabled && (
+          <Switch
+            isOn={draft.addAttachment}
+            onChange={handleAddAttachmentChange}
+            labelProps={{ label: t(QuickAppEditorI18nKeys.AddAttachment) }}
+            caption={t(QuickAppEditorI18nKeys.AddAttachmentDescription)}
+          />
+        )}
+
+        {isWebFetchEnabled && (
+          <Switch
+            isOn={draft.webFetch}
+            onChange={handleWebFetchChange}
+            labelProps={{ label: t(QuickAppEditorI18nKeys.WebFetch) }}
+            caption={t(QuickAppEditorI18nKeys.WebFetchDescription)}
           />
         )}
       </div>

@@ -155,6 +155,9 @@ const initialValues: AdvancedSettingsValues = {
   timestamp: true,
   fileTools: false,
   processLargeFiles: true,
+  codeInterpreter: false,
+  addAttachment: false,
+  webFetch: false,
 };
 
 let root: Root;
@@ -170,6 +173,9 @@ const renderPopup = (props: Partial<React.ComponentProps<typeof AdvancedSettings
         advancedSettings={initialValues}
         isTemperatureAvailable={false}
         isProcessLargeFilesAvailable={false}
+        isCodeInterpreterEnabled={false}
+        isAddAttachmentEnabled={false}
+        isWebFetchEnabled={false}
         onSave={onSave}
         onClose={onClose}
         {...props}
@@ -446,6 +452,76 @@ describe('AdvancedSettingsPopup', () => {
       act(() => getButton('Save').click());
 
       expect(onSave).toHaveBeenCalledWith(initialValues);
+    });
+  });
+
+  describe('feature toggles', () => {
+    const renderToggles = (props: Partial<React.ComponentProps<typeof AdvancedSettingsPopup>> = {}) =>
+      renderPopup({
+        isProcessLargeFilesAvailable: true,
+        isCodeInterpreterEnabled: true,
+        isAddAttachmentEnabled: true,
+        isWebFetchEnabled: true,
+        ...props,
+      });
+
+    it('renders the enabled toggles after process files with their titles and descriptions', () => {
+      renderToggles();
+
+      const body = container.querySelector('[data-testid="body"]') as HTMLElement;
+      const switches = [...body.querySelectorAll('[role="switch"]')].map((element) =>
+        element.getAttribute('aria-label'),
+      );
+      expect(switches).toEqual([
+        'Time awareness',
+        'Built-in file tools',
+        'Allow orchestrator to process files',
+        'Code Interpreter',
+        'Add attachment',
+        'Web fetch',
+      ]);
+      expect(body.textContent).toContain('Allows to build multi-agent applications');
+      expect(body.textContent).toContain('attaching a file to the final response');
+      expect(body.textContent).toContain('fetching an external web resource');
+      expect(body.textContent).not.toContain('Allow the agent to');
+    });
+
+    it.each([
+      ['isCodeInterpreterEnabled', 'Code Interpreter'],
+      ['isAddAttachmentEnabled', 'Add attachment'],
+      ['isWebFetchEnabled', 'Web fetch'],
+    ] as const)('hides the matching switch when %s is off', (prop, name) => {
+      renderToggles({ [prop]: false });
+
+      expect(getSwitch(name)).toBeNull();
+    });
+
+    it('saves toggled values and keeps unrendered ones unchanged', () => {
+      const { onSave } = renderToggles({
+        isAddAttachmentEnabled: false,
+        advancedSettings: { ...initialValues, addAttachment: true },
+      });
+
+      act(() => getSwitch('Web fetch').click());
+      act(() => getSwitch('Code Interpreter').click());
+      act(() => getButton('Save').click());
+
+      expect(onSave).toHaveBeenCalledWith({
+        ...initialValues,
+        addAttachment: true,
+        codeInterpreter: true,
+        webFetch: true,
+      });
+    });
+
+    it('discards toggle edits on Close', () => {
+      const { onSave, onClose } = renderToggles();
+
+      act(() => getSwitch('Web fetch').click());
+      act(() => getButton('Close').click());
+
+      expect(onSave).not.toHaveBeenCalled();
+      expect(onClose).toHaveBeenCalledTimes(1);
     });
   });
 

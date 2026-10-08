@@ -25,6 +25,9 @@ export interface SettingsSectionProps {
   advancedSettings: AdvancedSettingsValues;
   isTemperatureAvailable: boolean;
   isProcessLargeFilesAvailable: boolean;
+  isCodeInterpreterEnabled: boolean;
+  isAddAttachmentEnabled: boolean;
+  isWebFetchEnabled: boolean;
   maxInputAttachmentsError?: string;
   onAdvancedSettingsSave: (values: AdvancedSettingsValues) => void;
 }
@@ -34,6 +37,9 @@ const SettingsSection: FC<SettingsSectionProps> = ({
   advancedSettings,
   isTemperatureAvailable,
   isProcessLargeFilesAvailable,
+  isCodeInterpreterEnabled,
+  isAddAttachmentEnabled,
+  isWebFetchEnabled,
   maxInputAttachmentsError,
   onAdvancedSettingsSave,
 }) => {
@@ -69,6 +75,9 @@ const SettingsSection: FC<SettingsSectionProps> = ({
           advancedSettings={advancedSettings}
           isTemperatureAvailable={isTemperatureAvailable}
           isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
+          isCodeInterpreterEnabled={isCodeInterpreterEnabled}
+          isAddAttachmentEnabled={isAddAttachmentEnabled}
+          isWebFetchEnabled={isWebFetchEnabled}
           maxInputAttachmentsError={maxInputAttachmentsError}
           onSave={onAdvancedSettingsSave}
           onClose={handleClose}

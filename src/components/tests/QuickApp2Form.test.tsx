@@ -33,7 +33,6 @@ vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationS
 vi.mock('@/components/QuickApp2FormLegacyFields/QuickApp2FormLegacyFields', () => ({
   default: () => null,
 }));
-vi.mock('@/components/ContextAndTools/ContextAndToolsSection', () => ({ default: () => null }));
 vi.mock('@/components/AddOns/AddOnsSection', () => ({
   default: () => (
     <section aria-label="Add-ons">
