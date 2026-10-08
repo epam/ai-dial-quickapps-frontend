@@ -56,6 +56,7 @@
   "Starter moved to position {{position}} of {{total}}.": "Starter moved to position {{position}} of {{total}}.",
   "Starter dropped at position {{position}} of {{total}}.": "Starter dropped at position {{position}} of {{total}}.",
   "Reordering cancelled.": "Reordering cancelled.",
+  "Remove starter {{name}}": "Remove starter {{name}}",
   "N/A": "N/A",
   "Change": "Change",
   "Attachment types": "Attachment types",

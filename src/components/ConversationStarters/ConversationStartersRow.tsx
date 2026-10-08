@@ -36,6 +36,12 @@ const ConversationStartersRow: FC<ConversationStartersRowProps> = ({
 
   const handleOpen = useCallback(() => setIsModalOpen(true), []);
   const handleClose = useCallback(() => setIsModalOpen(false), []);
+  // Keeps the trailing blank row and the settings, exactly as a modal save would.
+  const handleRemove = useCallback(
+    (id: string) =>
+      onSave({ ...values, starters: values.starters.filter((starter) => starter.id !== id) }),
+    [onSave, values],
+  );
 
   return (
     <>
@@ -53,7 +59,12 @@ const ConversationStartersRow: FC<ConversationStartersRowProps> = ({
         }
         onAdd={handleOpen}
       >
-        {isEmpty ? null : <ConversationStartersList starters={visibleStarters} />}
+        {isEmpty ? null : (
+          <ConversationStartersList
+            starters={visibleStarters}
+            onRemove={isReadonly ? undefined : handleRemove}
+          />
+        )}
       </AddOnRow>
       {isModalOpen && !isReadonly && (
         <ConversationStartersModal values={values} onSave={onSave} onClose={handleClose} />

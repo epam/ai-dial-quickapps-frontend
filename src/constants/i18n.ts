@@ -112,6 +112,7 @@ export enum QuickAppEditorI18nKeys {
   WhenStarterIsSelected = 'When starter is selected',
   SendPromptToTheChat = 'Send prompt to the chat',
   DeleteStarter = 'Delete starter',
+  RemoveStarter = 'Remove starter {{name}}',
   ReorderStarter = 'Reorder starter {{name}}',
   StarterDragInstructions = 'Press Space to pick up a starter, use the arrow keys to move it, Space to drop, Escape to cancel.',
   StarterPickedUp = 'Picked up starter {{position}} of {{total}}.',
