@@ -1,9 +1,9 @@
 import { FC, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
+  ButtonAppearance,
   ButtonVariant,
   DialButton,
-  DialNeutralButton,
   Popup,
   Spinner,
   NOT_ALLOWED_SYMBOLS_REGEXP,
@@ -24,11 +24,12 @@ import {
 
 import { CommonI18nKeys, DialFileManagerI18nKeys } from '@/constants/i18n';
 import { useAuthContext } from '@/context/AuthContext';
-import { useDialFileManager } from '@/hooks/use-dial-file-manager';
+import { useDialFileSources } from '@/hooks/use-dial-file-sources';
 import { useTranslation } from '@/hooks/use-translation';
 import { FileUploadStatus } from '@/types/file-manager';
 import { Translation } from '@/types/translation';
 import { isHiddenPath } from '@/utils/dial-file-path';
+import type { DialFileSourceLabels } from '@/utils/dial-file-manager';
 import { FilesApiNodeType } from '@/types/dial-files';
 import { listFiles } from '@/utils/dial-files-api';
 
@@ -64,7 +65,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
       [DialFileManagerTabs.Shared]: t(DialFileManagerI18nKeys.TabShared),
       [DialFileManagerTabs.Organization]: t(DialFileManagerI18nKeys.TabOrganization),
       [DialFileManagerTabs.Review]: '',
-      [DialFileManagerTabs.All]: '',
+      [DialFileManagerTabs.All]: t(DialFileManagerI18nKeys.TabAll),
     }),
     [t],
   );
@@ -75,15 +76,18 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
     tabs: allTabs,
   } = useDialFileManagerTabs(tabLabels, DialFileManagerTabs.MyFiles);
 
-  const rootLabel = tabLabels[activeTab] || tabLabels[DialFileManagerTabs.MyFiles];
+  const sourceLabels = useMemo(
+    (): DialFileSourceLabels => ({
+      [DialFileManagerTabs.MyFiles]: tabLabels[DialFileManagerTabs.MyFiles],
+      [DialFileManagerTabs.Shared]: tabLabels[DialFileManagerTabs.Shared],
+      [DialFileManagerTabs.Organization]: tabLabels[DialFileManagerTabs.Organization],
+    }),
+    [tabLabels],
+  );
 
-  // Only the three storage sections are offered: Review is not used here, and
-  // the combined All view would mix attachable and non-attachable roots.
+  // Review is not used here; All shows the three storage sections side by side.
   const tabs = useMemo(
-    () =>
-      allTabs?.filter(
-        (tab) => tab.value !== DialFileManagerTabs.Review && tab.value !== DialFileManagerTabs.All,
-      ),
+    () => allTabs?.filter((tab) => tab.value !== DialFileManagerTabs.Review),
     [allTabs],
   );
 
@@ -121,10 +125,10 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
     dateOptions,
     actionLabels: tabActionLabels,
     sharedWithMeIds,
-  } = useDialFileManager({
+  } = useDialFileSources({
     bucket,
     activeTab,
-    rootLabel,
+    labels: sourceLabels,
     onNotification: handleNotification,
     forbiddenSymbolsRegExp: NOT_ALLOWED_SYMBOLS_REGEXP,
   });
@@ -258,6 +262,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
   const gridOptions = useMemo(
     () => ({
       selectionMode: GridSelectionMode.MULTIPLE,
+      filterable: false,
       visibleColumns,
       dateLocale,
       dateOptions,
@@ -281,12 +286,26 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
   const treeOptions = useMemo(
     () => ({
       actionLabels,
-      header: t(DialFileManagerI18nKeys.FoldersPanelTitle),
+      // An empty header hides the "Files" heading; the chip row is named instead.
+      header: '',
+      tabsAriaLabel: t(DialFileManagerI18nKeys.TabsAriaLabel),
       tabs,
       activeTab,
       onTabChange: handleTabChangeWithReset,
     }),
     [actionLabels, t, tabs, activeTab, handleTabChangeWithReset],
+  );
+
+  const currentFolderName = useMemo(
+    () => path.split('/').filter(Boolean).pop() ?? '',
+    [path],
+  );
+  const navigationPanelOptions = useMemo(
+    () => ({
+      searchable: true,
+      placeholder: t(DialFileManagerI18nKeys.SearchPlaceholder, { folder: currentFolderName }),
+    }),
+    [t, currentFolderName],
   );
 
   const toolbarOptions = useMemo(
@@ -302,16 +321,6 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
       },
     }),
     [t, isNewButtonDisabled, disabledNewButtonTooltip],
-  );
-
-  const bulkActionsToolbarOptions = useMemo(
-    () => ({
-      // The bar renders the count itself as a badge; the label is only the wording.
-      getSelectionLabel: (count: number) => t(DialFileManagerI18nKeys.ItemsSelected, { count }),
-      clearSelectionLabel: t(DialFileManagerI18nKeys.ClearSelection),
-      actionLabels,
-    }),
-    [t, actionLabels],
   );
 
   const renameValidationMessages = useMemo(
@@ -396,23 +405,30 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
     <>
       <Popup
         open={isOpen}
-        header={t(DialFileManagerI18nKeys.Title)}
+        header={t(DialFileManagerI18nKeys.AddTitle)}
         size={PopupSize.Lg}
-        className="flex !h-[min(800px,100dvh)] w-full flex-col !bg-layer-sunken"
+        className="flex !h-[min(800px,100dvh)] w-full flex-col"
         bodyClassName="flex min-h-0 flex-col"
+        closeAriaLabel={t(DialFileManagerI18nKeys.CloseDialog)}
+        headerDivider
+        footerDivider
         onClose={handleCancel}
-        hideClose={true}
-        footer={
-          <div className="flex justify-end gap-2 px-6 py-4">
-            <DialNeutralButton label={t(CommonI18nKeys.Cancel)} onClick={handleCancel} />
-            <DialButton
-              variant={ButtonVariant.Primary}
-              label={t(DialFileManagerI18nKeys.Attach)}
-              disabled={selectedFiles.length === 0 || isLoading || isOperationInProgress}
-              onClick={handleAttach}
-            />
-          </div>
-        }
+        additionalButtons={[
+          {
+            label: t(CommonI18nKeys.Cancel),
+            variant: ButtonVariant.Primary,
+            appearance: ButtonAppearance.Link,
+            onClick: handleCancel,
+          },
+        ]}
+        mainButtons={[
+          {
+            label: t(DialFileManagerI18nKeys.Add),
+            variant: ButtonVariant.Neutral,
+            disabled: selectedFiles.length === 0 || isLoading || isOperationInProgress,
+            onClick: handleAttach,
+          },
+        ]}
       >
         {notification != null && (
           <div
@@ -435,9 +451,9 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
             />
           </div>
         ) : (
-          <div className="relative flex min-h-0 w-full grow overflow-auto bg-layer-sunken">
+          <div className="relative flex min-h-0 w-full grow overflow-auto">
             <DialFileManager
-              className="min-h-0 w-full grow bg-layer-sunken"
+              className="min-h-0 w-full grow"
               gridClassName="size-full"
               items={items}
               path={path}
@@ -445,11 +461,10 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
               filesLoading={isLoading}
               selectedPaths={selectedPaths}
               onSelectedPathsChange={setSelectedPaths}
-              navigationPanelOptions={{ searchable: false }}
+              navigationPanelOptions={navigationPanelOptions}
               gridOptions={gridOptions}
               treeOptions={treeOptions}
               toolbarOptions={toolbarOptions}
-              bulkActionsToolbarOptions={bulkActionsToolbarOptions}
               emptyStateTitle={t(DialFileManagerI18nKeys.Empty)}
               uploadEnabled={uploadEnabled}
               sharedWithMeIds={sharedWithMeIds}

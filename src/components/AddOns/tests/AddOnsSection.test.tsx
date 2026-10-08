@@ -35,6 +35,9 @@ vi.mock('@/hooks/use-add-on-entity-map', () => ({
 vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => ({
   default: () => <section aria-label="Skills row" />,
 }));
+vi.mock('@/components/KnowledgeBase/KnowledgeBaseRow', () => ({
+  default: () => <section aria-label="Knowledge base row" />,
+}));
 vi.mock('@/components/ConversationStarters/ConversationStartersRow', () => ({
   default: () => <section aria-label="Conversation starters row" />,
 }));
@@ -106,6 +109,9 @@ const renderSection = async ({
         addOns={ids.map(entry)}
         onAgentsChange={onAgentsChange}
         onConfigureAgent={vi.fn()}
+        documentRelativeUrl={[]}
+        onAddDocuments={vi.fn()}
+        onRemoveDocument={vi.fn()}
         conversationStarters={{
           starters: [],
           autoSubmit: true,
@@ -137,7 +143,7 @@ const clickAndWait = async (element?: Element) => {
 };
 
 describe('AddOnsSection', () => {
-  it('renders Skills, Toolsets, Agents and Conversation starters in that order', async () => {
+  it('renders Skills, Toolsets, Agents, Knowledge base and Conversation starters in that order', async () => {
     await renderSection();
 
     expect(container.querySelector('section[aria-label="Add-ons"]')).toBeTruthy();

@@ -76,6 +76,8 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     submit,
     setAgentIds,
     configureAgent,
+    addDocuments,
+    removeDocument,
   } = useQuickApp2Form({ defaultValues });
 
   const modelStatus = useMemo<QuickApp2ModelStatus>(() => {
@@ -237,6 +239,9 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
           addOns={values.addOns}
           onAgentsChange={setAgentIds}
           onConfigureAgent={configureAgent}
+          documentRelativeUrl={values.documentRelativeUrl}
+          onAddDocuments={addDocuments}
+          onRemoveDocument={removeDocument}
           conversationStarters={conversationStarters}
           onConversationStartersSave={handleConversationStartersSave}
         />

@@ -245,3 +245,38 @@ export const getDownloadFileName = (dialFiles: DialFile[]): string => {
   const [file] = dialFiles;
   return file.nodeType === DialFileNodeType.ITEM ? file.name : `${file.name}.zip`;
 };
+
+/** The storage sections a file can live in; the combined All view shows all three at once. */
+export type DialFileSourceTab =
+  | DialFileManagerTabs.MyFiles
+  | DialFileManagerTabs.Shared
+  | DialFileManagerTabs.Organization;
+
+export type DialFileSourceLabels = Record<DialFileSourceTab, string>;
+
+/**
+ * Finds which section a virtual path belongs to by its leading root label, e.g. `/Shared/docs/a.md`
+ * belongs to the section labelled `Shared`. Returns undefined when no label prefixes the path.
+ */
+export const resolveSourceByPath = (
+  virtualPath: string,
+  labels: DialFileSourceLabels,
+): DialFileSourceTab | undefined => {
+  const firstSegment = virtualPath.replace(/^\/+/, '').split('/')[0];
+  return (Object.keys(labels) as DialFileSourceTab[]).find((tab) => labels[tab] === firstSegment);
+};
+
+/** Groups items by the section their virtual path belongs to; items under no known section are dropped. */
+export const groupBySource = <T>(
+  items: T[],
+  getPath: (item: T) => string,
+  labels: DialFileSourceLabels,
+): Map<DialFileSourceTab, T[]> => {
+  const groups = new Map<DialFileSourceTab, T[]>();
+  for (const item of items) {
+    const source = resolveSourceByPath(getPath(item), labels);
+    if (source == null) continue;
+    groups.set(source, [...(groups.get(source) ?? []), item]);
+  }
+  return groups;
+};

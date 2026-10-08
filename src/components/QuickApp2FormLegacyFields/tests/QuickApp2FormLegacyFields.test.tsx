@@ -8,16 +8,16 @@ import type { QuickApp2FormValues } from '@/types/quick-app-form';
 
 vi.mock('@/components/ContextAndTools/ContextAndToolsSection', () => {
   const ContextAndToolsTestSection = ({ control }: { control: Control<QuickApp2Form> }) => {
-    const { field } = useController({ control, name: 'documentRelativeUrl' });
+    const { field } = useController({ control, name: 'webFetch' });
 
     return (
       <div>
         <button
           type="button"
-          data-testid="change-document"
-          onClick={() => field.onChange(['changed-document'])}
+          data-testid="change-value"
+          onClick={() => field.onChange(true)}
         />
-        <output data-testid="document-value">{field.value.join('|')}</output>
+        <output data-testid="legacy-value">{String(field.value)}</output>
       </div>
     );
   };
@@ -36,8 +36,8 @@ const Harness = () => {
     <>
       <button
         type="button"
-        data-testid="external-document"
-        onClick={() => setValues((current) => ({ ...current, documentRelativeUrl: ['external'] }))}
+        data-testid="external-value"
+        onClick={() => setValues((current) => ({ ...current, webFetch: false }))}
       />
       <QuickApp2FormLegacyFields
         values={values}
@@ -72,23 +72,23 @@ describe('QuickApp2FormLegacyFields', () => {
   it('bridges legacy RHF fields into the custom form state and back', async () => {
     act(() => root.render(<Harness />));
 
-    expect(container.querySelector('[data-testid="document-value"]')?.textContent).toBe('');
+    expect(container.querySelector('[data-testid="legacy-value"]')?.textContent).toBe('false');
 
     await act(async () => {
       container
-        .querySelector('[data-testid="change-document"]')
+        .querySelector('[data-testid="change-value"]')
         ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       await Promise.resolve();
     });
-    expect(container.querySelector('[data-testid="document-value"]')?.textContent).toBe(
-      'changed-document',
+    expect(container.querySelector('[data-testid="legacy-value"]')?.textContent).toBe(
+      'true',
     );
 
     act(() => {
       container
-        .querySelector('[data-testid="external-document"]')
+        .querySelector('[data-testid="external-value"]')
         ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
-    expect(container.querySelector('[data-testid="document-value"]')?.textContent).toBe('external');
+    expect(container.querySelector('[data-testid="legacy-value"]')?.textContent).toBe('false');
   });
 });

@@ -64,6 +64,8 @@ export interface UseDialFileManagerOptions {
   bucket: string;
   rootLabel?: string;
   activeTab?: DialFileManagerTabs;
+  /** While false the first listing is deferred, so a source nobody has opened yet costs no request. */
+  isEnabled?: boolean;
   onNotification?: (notification: FileManagerNotification) => void;
   forbiddenSymbolsRegExp?: RegExp;
 }
@@ -131,6 +133,7 @@ export const useDialFileManager = ({
   bucket,
   rootLabel = 'My files',
   activeTab = DialFileManagerTabs.MyFiles,
+  isEnabled = true,
   onNotification,
   forbiddenSymbolsRegExp,
 }: UseDialFileManagerOptions): UseDialFileManagerResult => {
@@ -140,7 +143,7 @@ export const useDialFileManager = ({
   const [listingPermissionsCache, setListingPermissionsCache] = useState<
     Map<string, string[] | undefined>
   >(() => new Map());
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(isEnabled);
   const [error, setError] = useState<string | null>(null);
   const [retryCounter, setRetryCounter] = useState(0);
   const [sharedRootIds, setSharedRootIds] = useState<string[] | undefined>(undefined);
@@ -167,6 +170,7 @@ export const useDialFileManager = ({
   }, [activeTab]);
 
   useEffect(() => {
+    if (!isEnabled) return;
     if (activeTab === DialFileManagerTabs.MyFiles && !bucket) return;
 
     let isCancelled = false;
@@ -205,7 +209,7 @@ export const useDialFileManager = ({
     return () => {
       isCancelled = true;
     };
-  }, [activeTab, bucket, folderPath, retryCounter]);
+  }, [activeTab, bucket, folderPath, retryCounter, isEnabled]);
 
   const items = useMemo(
     (): DialFile[] => [
