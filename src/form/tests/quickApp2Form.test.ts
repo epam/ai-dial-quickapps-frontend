@@ -174,7 +174,7 @@ describe('getQuickApp2FormData', () => {
     expect(data).toMatchObject({
       model: 'model-1',
       instructions: '',
-      temperature: 1,
+      temperature: 0.5,
       documentRelativeUrl: [],
       addOns: [],
       autoSubmit: true,
@@ -269,10 +269,10 @@ const buildConfig = (
   });
 
 describe('orchestrator temperature and process files', () => {
-  it('defaults the temperature to 1 and process files to off for a new app', () => {
+  it('defaults the temperature to 0.5 and process files to off for a new app', () => {
     const data = getQuickApp2FormData(undefined, ['model-1'], ['model-1'], 'model-1');
 
-    expect(data.temperature).toBe(1);
+    expect(data.temperature).toBe(0.5);
     expect(data.processLargeFiles).toBe(false);
   });
 
