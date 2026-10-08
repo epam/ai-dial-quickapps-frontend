@@ -3,6 +3,7 @@ import { FC, lazy, Suspense, useCallback, useState } from 'react';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/use-translation';
+import { LoadStatus } from '@/types/load-status';
 import { SectionRowVariant } from '@/types/section-row';
 import { Translation } from '@/types/translation';
 import {
@@ -45,7 +46,8 @@ export const DefaultModelBlock: FC<DefaultModelBlockProps> = ({
   // `modelsMap` holds models and applications, so a saved application still
   // shows on the card even though the picker offers only models.
   const selectedModel = modelsMap[value];
-  const isLoading = (status === 'loading' || status === 'idle') && selectedModel == null;
+  const isLoading =
+    (status === LoadStatus.Loading || status === LoadStatus.Idle) && selectedModel == null;
 
   const handleOpen = useCallback(() => setIsOpen(true), []);
   const handleClose = useCallback(() => setIsOpen(false), []);

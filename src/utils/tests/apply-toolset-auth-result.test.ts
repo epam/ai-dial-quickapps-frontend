@@ -6,13 +6,14 @@ import {
   ToolsetAuthType,
   ToolsetCredentialsLevel,
 } from '@/types/dial-entities';
+import { DialEntityType } from '@/types/dial-entities';
 import { applyToolsetAuthResult } from '@/utils/apply-toolset-auth-result';
 
 const toolset = (id: string, authSettings?: DialToolset['authSettings']): DialToolset => ({
   id,
   reference: id,
   name: 'T',
-  type: 'toolset',
+  type: DialEntityType.Toolset,
   authSettings,
 });
 

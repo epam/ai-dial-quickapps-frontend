@@ -30,7 +30,7 @@ export interface ToolsetAuthResultPayload {
 }
 
 /** One non-primary locale's translated text for a General-step field. */
-export interface LocaleTextEntryDto {
+export interface HostLocaleTextEntry {
   language: string;
   name?: string;
   description?: string;
@@ -54,7 +54,7 @@ export interface LocaleTextEntryDto {
 export interface TriggerSaveGeneralPayload {
   name: string;
   description?: string;
-  locales?: LocaleTextEntryDto[];
+  locales?: HostLocaleTextEntry[];
   primaryLocale?: string;
   iconUrl?: string;
   topics?: string[];

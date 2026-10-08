@@ -2,6 +2,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { DialEntityType } from '@/types/dial-entities';
 import type { DialModel } from '@/types/dial-entities';
 
 import { DefaultModelBlock } from '../DefaultModelBlock';
@@ -41,7 +42,7 @@ const gemini: DialModel = {
   id: 'models/gemini__1.0.3',
   reference: 'gemini',
   name: 'Google Gemini 3.5 Flash Lite',
-  type: 'model',
+  type: DialEntityType.Model,
   version: '1.0.3',
   features: { tools: true },
 };
@@ -179,7 +180,7 @@ describe('DefaultModelBlock', () => {
         ...gemini,
         id: 'applications/bucket/some-agent__1.0.0',
         name: 'Some agent',
-        type: 'application',
+        type: DialEntityType.Application,
       },
     ];
     render({ value: 'applications/bucket/some-agent__1.0.0' });

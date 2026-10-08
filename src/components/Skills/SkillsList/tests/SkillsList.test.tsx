@@ -2,6 +2,7 @@ import { act, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { DialEntityType } from '@/types/dial-entities';
 import type { DialSkill } from '@/types/dial-entities';
 
 import SkillsList from '../SkillsList';
@@ -10,7 +11,7 @@ const makeSkill = (id: string, name: string, overrides: Partial<DialSkill> = {})
   id,
   reference: id,
   name,
-  type: 'skill',
+  type: DialEntityType.Skill,
   ...overrides,
 });
 

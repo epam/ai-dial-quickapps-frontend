@@ -15,7 +15,6 @@ export enum CommonI18nKeys {
   PersonalScope = 'Personal',
   SharedScope = 'Shared',
   OrganizationScope = 'Organization',
-  ToolsetSignInFailed = 'Failed to update toolset credentials',
   LoginScreenTitle = 'Log in to configure your QuickApp',
   LoginScreenDescription = 'Set up instructions, add-ons and settings.',
   LoginScreenAction = 'Log in',

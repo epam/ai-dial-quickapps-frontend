@@ -3,19 +3,16 @@ import {
   ToolsetLoginBodyDtoCredentialsLevelEnum,
   ToolsetLogoutBodyDtoAuthenticationTypeEnum,
 } from '@epam/ai-dial-chat-api-client';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
-import { CommonI18nKeys } from '@/constants/i18n';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
-import { useTranslation } from '@/hooks/use-translation';
 import { type DialToolset, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
 import {
   InboundMessageType,
   OutboundMessageType,
   type ToolsetAuthResultPayload,
 } from '@/types/editor-messages';
-import { Translation } from '@/types/translation';
 import { isOriginAllowed, postToHost } from '@/utils/allowed-origins';
 import { isPublicToolsetId } from '@/utils/api';
 import { toolsetsApi } from '@/utils/chat-api-client';
@@ -38,8 +35,6 @@ export interface UseToolsetCredentialsResult {
   onLogin: (params: { apiKey?: string }) => Promise<void>;
   /** Signs out: OAuth through the host, or deletes the API key. Resolves once done, also on failure. */
   onLogout: () => Promise<void>;
-  /** The last failure, shown by the popup; cleared when a new attempt starts. */
-  error?: string;
 }
 
 /**
@@ -50,14 +45,12 @@ export interface UseToolsetCredentialsResult {
  * promise settles when the host answers. API keys are sent to chat-api
  * directly. The promises never reject: the catalog header fires OAuth login
  * without awaiting it and its API-key popover has no error state, so a
- * failure is reported through `error` instead.
+ * failure just leaves the status as it was.
  * The credentials level is decided from the toolset id, as before.
  */
 export const useToolsetCredentials = (toolset?: DialToolset): UseToolsetCredentialsResult => {
-  const { t } = useTranslation(Translation.Common);
   const { settings } = useAppContext();
   const { applyToolsetAuthResult, refreshToolsets } = useDataContext();
-  const [error, setError] = useState<string>();
   const pendingRef = useRef<PendingHostRequest | null>(null);
 
   // Called unconditionally by the popup; without a toolset nothing is ever requested.
@@ -84,15 +77,13 @@ export const useToolsetCredentials = (toolset?: DialToolset): UseToolsetCredenti
             ? ToolsetAuthStatus.SignedIn
             : ToolsetAuthStatus.SignedOut,
         );
-      } else {
-        setError(t(CommonI18nKeys.ToolsetSignInFailed));
       }
       pending.resolve();
     };
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [isOAuth, settings.allowedOrigins, toolsetId, applyToolsetAuthResult, t]);
+  }, [isOAuth, settings.allowedOrigins, toolsetId, applyToolsetAuthResult]);
 
   const requestFromHost = useCallback(
     (
@@ -112,15 +103,14 @@ export const useToolsetCredentials = (toolset?: DialToolset): UseToolsetCredenti
         await request();
         await refreshToolsets();
       } catch {
-        setError(t(CommonI18nKeys.ToolsetSignInFailed));
+        // A failed request leaves the status as it was; the action stays as it is.
       }
     },
-    [refreshToolsets, t],
+    [refreshToolsets],
   );
 
   const onLogin = useCallback(
     async ({ apiKey }: { apiKey?: string }) => {
-      setError(undefined);
       if (isOAuth) {
         await requestFromHost(
           OutboundMessageType.RequestToolsetLogin,
@@ -144,7 +134,6 @@ export const useToolsetCredentials = (toolset?: DialToolset): UseToolsetCredenti
   );
 
   const onLogout = useCallback(async () => {
-    setError(undefined);
     if (isOAuth) {
       await requestFromHost(
         OutboundMessageType.RequestToolsetLogout,
@@ -164,5 +153,5 @@ export const useToolsetCredentials = (toolset?: DialToolset): UseToolsetCredenti
     );
   }, [callApi, isOAuth, requestFromHost, toolsetId]);
 
-  return { onLogin, onLogout, error };
+  return { onLogin, onLogout };
 };

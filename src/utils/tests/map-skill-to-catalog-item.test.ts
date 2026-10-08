@@ -1,6 +1,7 @@
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { describe, expect, it } from 'vitest';
 
+import { DialEntityType } from '@/types/dial-entities';
 import type { DialSkill } from '@/types/dial-entities';
 import { ResourceScope } from '@/types/resource-scope';
 import { mapSkillToCatalogItem } from '@/utils/map-skill-to-catalog-item';
@@ -20,7 +21,7 @@ const makeSkill = (overrides: Partial<DialSkill> = {}): DialSkill => ({
   id: 'skills/public/web-search',
   reference: 'skills/public/web-search',
   name: 'Web Search',
-  type: 'skill',
+  type: DialEntityType.Skill,
   ...overrides,
 });
 
@@ -85,4 +86,3 @@ describe('mapSkillToCatalogItem', () => {
     });
   });
 });
-

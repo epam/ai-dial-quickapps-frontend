@@ -1,5 +1,5 @@
 import type { LocalizedText } from '@/types/dial-entities';
-import type { LocaleTextEntryDto } from '@/types/editor-messages';
+import type { HostLocaleTextEntry } from '@/types/editor-messages';
 
 /**
  * Resolves a `LocalizedText` value (plain string or per-locale dictionary)
@@ -40,7 +40,7 @@ export const getLocalizedText = (
 export const buildLocalizedText = (
   primaryValue: string | undefined,
   primaryLocale: string | undefined,
-  locales: LocaleTextEntryDto[] | undefined,
+  locales: HostLocaleTextEntry[] | undefined,
   field: 'name' | 'description',
 ): LocalizedText | undefined => {
   const dict: Record<string, string> = {};

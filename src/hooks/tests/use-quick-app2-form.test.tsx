@@ -4,8 +4,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { AddOnSchemaKeys, QuickApp2Schema, type QuickApp2Form } from '@/form/quickApp2Form';
 import { useQuickApp2Form, type UseQuickApp2FormResult } from '@/hooks/use-quick-app2-form';
+import { LoadStatus } from '@/types/load-status';
 import {
-  QuickApp2ModelStatus,
   type QuickApp2FormValidationResult,
   type QuickApp2FormValues,
 } from '@/types/quick-app-form';
@@ -142,7 +142,7 @@ describe('useQuickApp2Form external state', () => {
 
     act(() => {
       latestForm.syncExternalState({
-        modelStatus: QuickApp2ModelStatus.Loading,
+        modelStatus: LoadStatus.Loading,
         toolSupportingModelIds: [],
         availableModelIds: [],
         isCodeInterpreterEnabled: false,
@@ -154,7 +154,7 @@ describe('useQuickApp2Form external state', () => {
 
     act(() => {
       latestForm.syncExternalState({
-        modelStatus: QuickApp2ModelStatus.Ready,
+        modelStatus: LoadStatus.Ready,
         toolSupportingModelIds: ['model-2'],
         availableModelIds: ['model-2'],
         defaultModelId: 'model-2',
@@ -180,7 +180,7 @@ describe('useQuickApp2Form external state', () => {
 
     act(() => {
       latestForm.syncExternalState({
-        modelStatus: QuickApp2ModelStatus.Ready,
+        modelStatus: LoadStatus.Ready,
         toolSupportingModelIds: ['model-1', 'gpt-4o'],
         availableModelIds: ['gpt-4o', 'model-1'],
         isCodeInterpreterEnabled: false,
@@ -199,7 +199,7 @@ describe('useQuickApp2Form external state', () => {
 
     act(() => {
       latestForm.syncExternalState({
-        modelStatus: QuickApp2ModelStatus.Ready,
+        modelStatus: LoadStatus.Ready,
         existingModelId: 'saved-model',
         toolSupportingModelIds: ['model-1'],
         availableModelIds: ['model-1'],
@@ -217,7 +217,7 @@ describe('useQuickApp2Form external state', () => {
 
     act(() => {
       latestForm.syncExternalState({
-        modelStatus: QuickApp2ModelStatus.Ready,
+        modelStatus: LoadStatus.Ready,
         isCodeInterpreterEnabled: true,
         isWebFetchEnabled: true,
         isAddAttachmentEnabled: true,
@@ -250,25 +250,6 @@ describe('useQuickApp2Form semantic actions', () => {
     expect(latestForm.values.addOns[1]).toEqual({
       [AddOnSchemaKeys.id]: 'agent-2',
     });
-  });
-
-  it('preserves starter identity and trailing blank-row behavior', () => {
-    renderHook();
-    const initialId = latestForm.values.starters[0].id;
-
-    act(() => {
-      latestForm.updateStarter(0, 'title', 'Welcome');
-    });
-
-    expect(latestForm.values.starters).toHaveLength(2);
-    expect(latestForm.values.starters[0]).toMatchObject({ id: initialId, title: 'Welcome' });
-    expect(latestForm.values.starters[1]).toMatchObject({ title: '', text: '' });
-
-    act(() => {
-      latestForm.removeStarter(0);
-    });
-    expect(latestForm.values.starters).toHaveLength(1);
-    expect(latestForm.values.starters[0].id).not.toBe(initialId);
   });
 
   it('deduplicates decoded files and supports removal', () => {

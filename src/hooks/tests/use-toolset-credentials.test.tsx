@@ -2,11 +2,11 @@ import { act, type FC } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CommonI18nKeys } from '@/constants/i18n';
 import {
   useToolsetCredentials,
   type UseToolsetCredentialsResult,
 } from '@/hooks/use-toolset-credentials';
+import { DialEntityType } from '@/types/dial-entities';
 import { type DialToolset, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
 
 const HOST = 'https://host';
@@ -35,7 +35,7 @@ const OAUTH: DialToolset = {
   id: 'toolsets/public/figma',
   reference: 'toolsets/public/figma',
   name: 'Figma',
-  type: 'toolset',
+  type: DialEntityType.Toolset,
   authSettings: {
     authenticationType: ToolsetAuthType.OAuth,
     authStatus: ToolsetAuthStatus.SignedOut,
@@ -113,10 +113,9 @@ describe('useToolsetCredentials — OAuth through the host', () => {
       expect.objectContaining({ toolsetId: OAUTH.id }),
       ToolsetAuthStatus.SignedIn,
     );
-    expect(latest.error).toBeUndefined();
   });
 
-  it('settles with an error on a failed result, without rejecting', async () => {
+  it('settles on a failed result without rejecting or changing the status', async () => {
     await render(OAUTH);
 
     let login = { isSettled: false };
@@ -126,7 +125,6 @@ describe('useToolsetCredentials — OAuth through the host', () => {
     await postFromHost({ type: 'TOOLSET_LOGIN_RESULT', toolsetId: OAUTH.id, success: false });
 
     expect(login.isSettled).toBe(true);
-    expect(latest.error).toBe(CommonI18nKeys.ToolsetSignInFailed);
     expect(dataContext.applyToolsetAuthResult).not.toHaveBeenCalled();
   });
 
@@ -203,13 +201,12 @@ describe('useToolsetCredentials — API key through chat-api', () => {
     });
   });
 
-  it('reports a failed request through `error` and still resolves', async () => {
+  it('resolves on a failed request and leaves the status unchanged', async () => {
     toolsetsApi.loginToolset.mockRejectedValue(new Error('401'));
     await render(PRIVATE_API_KEY);
 
     await act(async () => latest.onLogin({ apiKey: 'wrong' }));
 
-    expect(latest.error).toBe(CommonI18nKeys.ToolsetSignInFailed);
     expect(dataContext.refreshToolsets).not.toHaveBeenCalled();
   });
 });

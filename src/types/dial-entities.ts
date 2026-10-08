@@ -49,11 +49,18 @@ export interface DialAIEntityModel {
   [key: string]: unknown;
 }
 
+export enum DialEntityType {
+  Model = 'model',
+  Application = 'application',
+  Toolset = 'toolset',
+  Skill = 'skill',
+}
+
 export interface DialModel {
   id: string;
   reference: string;
   name: LocalizedText;
-  type: 'model' | 'application';
+  type: DialEntityType.Model | DialEntityType.Application;
   version?: string;
   iconUrl?: string;
   applicationTypeSchemaId?: string;
@@ -80,7 +87,7 @@ export interface DialToolset {
   id: string;
   reference: string;
   name: LocalizedText;
-  type: 'toolset';
+  type: DialEntityType.Toolset;
   version?: string;
   iconUrl?: string;
   mcp?: boolean;
@@ -124,7 +131,7 @@ export interface DialSkill {
   id: string;
   reference: string;
   name: string;
-  type: 'skill';
+  type: DialEntityType.Skill;
   description?: string;
   /** DIAL Core bucket and bucket-relative path, used to address the skill's files. */
   bucket?: string;

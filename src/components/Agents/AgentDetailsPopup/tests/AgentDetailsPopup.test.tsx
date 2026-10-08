@@ -2,17 +2,20 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { DialEntityType } from '@/types/dial-entities';
 import type { DialModel } from '@/types/dial-entities';
 import { DialAppTransportType } from '@/types/quick-apps';
 
 import { AgentDetailsPopup } from '../AgentDetailsPopup';
 
-const { searchParams, requestApplicationCredentials, authState, deploymentsApi } = vi.hoisted(() => ({
-  deploymentsApi: { getDeploymentDetails: vi.fn(), getDeploymentLimits: vi.fn() },
-  searchParams: new Map<string, string>(),
-  requestApplicationCredentials: vi.fn(),
-  authState: { isRequired: false, lastAppId: undefined as string | undefined },
-}));
+const { searchParams, requestApplicationCredentials, authState, deploymentsApi } = vi.hoisted(
+  () => ({
+    deploymentsApi: { getDeploymentDetails: vi.fn(), getDeploymentLimits: vi.fn() },
+    searchParams: new Map<string, string>(),
+    requestApplicationCredentials: vi.fn(),
+    authState: { isRequired: false, lastAppId: undefined as string | undefined },
+  }),
+);
 
 vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({ language: 'en-US', t: (key: string) => key }),
@@ -43,7 +46,10 @@ vi.mock('@/components/Agents/DialAppConfigurationModal/DialAppConfigurationModal
     onClose: () => void;
   }) => (
     <div role="dialog" aria-label="Transport">
-      <button type="button" onClick={() => (onSave(DialAppTransportType.ChatCompletion), onClose())}>
+      <button
+        type="button"
+        onClick={() => (onSave(DialAppTransportType.ChatCompletion), onClose())}
+      >
         Apply chat completion
       </button>
     </div>
@@ -54,7 +60,7 @@ const MCP_APP: DialModel = {
   id: 'applications/public/research',
   reference: 'applications/public/research',
   name: 'Research Agent',
-  type: 'application',
+  type: DialEntityType.Application,
   version: '2.1',
   mcp: true,
   description: 'Finds **sources**.',
@@ -65,19 +71,19 @@ const MODEL: DialModel = {
   id: 'gpt-4o',
   reference: 'gpt-4o',
   name: 'GPT-4o',
-  type: 'model',
+  type: DialEntityType.Model,
   mcp: true,
 };
 
 const APP_DETAILS = {
   id: MCP_APP.id,
-  type: 'application',
+  type: DialEntityType.Application,
   applicationDetails: { owner: 'Research Lab', features: { tools: true } },
 };
 
 const MODEL_DETAILS = {
   id: MODEL.id,
-  type: 'model',
+  type: DialEntityType.Model,
   modelDetails: {
     owner: 'OpenAI',
     pricing: { unit: 'token', prompt: '0.000005', completion: '0.000015' },
@@ -129,8 +135,7 @@ const getButtonByText = (text: string) =>
 
 const getTab = (name: string) =>
   [...document.querySelectorAll('[role="tab"]')].find((tab) => tab.textContent === name) as
-    | HTMLElement
-    | undefined;
+    HTMLElement | undefined;
 
 const getTabNames = () =>
   [...document.querySelectorAll('[role="tab"]')].map((tab) => tab.textContent);

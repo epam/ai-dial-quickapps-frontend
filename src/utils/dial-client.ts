@@ -15,7 +15,7 @@ import type {
   LocalizedText,
   ToolsetAuthSettings,
 } from '@/types/dial-entities';
-import type { LocaleTextEntryDto } from '@/types/editor-messages';
+import { DialEntityType } from '@/types/dial-entities';
 import type { QuickApp2Config } from '@/types/quick-apps';
 import { decodeApiUrl, isHiddenDialFolderId, isPublicToolsetId } from '@/utils/api';
 import {
@@ -95,7 +95,7 @@ const mapDeploymentToDialModel = (entity: DeploymentItemDto): DialModel => {
     id,
     reference: id,
     name: toDisplayName(entity.displayName, id),
-    type: entity.type === 'application' ? 'application' : 'model',
+    type: entity.type === 'application' ? DialEntityType.Application : DialEntityType.Model,
     version: entity.displayVersion,
     iconUrl: entity.iconUrl,
     applicationTypeSchemaId: entity.applicationTypeSchemaId,
@@ -123,7 +123,7 @@ const mapToolsetToDialToolset = (entity: DialToolsetDto): DialToolset => {
     id,
     reference: entity.reference ?? id,
     name: toDisplayName(entity.displayName, id),
-    type: 'toolset',
+    type: DialEntityType.Toolset,
     version: entity.displayVersion,
     iconUrl: entity.iconUrl,
     // Toolsets are inherently MCP entities in this app's domain — chat-api's
@@ -407,7 +407,7 @@ export const saveDialApp = async (
       inputAttachmentTypes: app.inputAttachmentTypes as string[] | undefined,
       maxInputAttachments: app.maxInputAttachments as number | undefined,
       applicationProperties: encodeApplicationPropertiesForApi(applicationProperties) as object,
-      locales: general?.locales as LocaleTextEntryDto[] | undefined,
+      locales: general?.locales,
       primaryLocale: general?.primaryLocale,
     },
   });
@@ -457,7 +457,7 @@ export const mapCoreToDialSkill = (item: CoreSkillItem): DialSkill => {
     id,
     reference: id,
     name: item.name,
-    type: 'skill',
+    type: DialEntityType.Skill,
     description: item.description,
     bucket: item.bucket,
     path: item.path,

@@ -1,4 +1,5 @@
 import type { QuickApp2Form } from '@/form/quickApp2Form';
+import type { LoadStatus } from '@/types/load-status';
 
 export type QuickApp2FormValues = Omit<QuickApp2Form, 'maxInputAttachments'> & {
   maxInputAttachments?: number | '';
@@ -13,15 +14,8 @@ export interface QuickApp2FormUpdateOptions {
   shouldDirty?: boolean;
 }
 
-export enum QuickApp2ModelStatus {
-  Idle = 'idle',
-  Loading = 'loading',
-  Ready = 'ready',
-  Error = 'error',
-}
-
 export interface QuickApp2FormExternalState {
-  modelStatus: QuickApp2ModelStatus;
+  modelStatus: LoadStatus;
   toolSupportingModelIds?: string[];
   availableModelIds?: string[];
   existingModelId?: string;
@@ -43,5 +37,4 @@ interface QuickApp2FormValidationFailure {
 }
 
 export type QuickApp2FormValidationResult =
-  | QuickApp2FormValidationSuccess
-  | QuickApp2FormValidationFailure;
+  QuickApp2FormValidationSuccess | QuickApp2FormValidationFailure;

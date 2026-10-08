@@ -15,7 +15,7 @@ The dialog's accessible name SHALL be the toolset name.
 - OAuth, signed out: **Log in** (`quickAppEditor` `LoginToolsetAction`); signed in: **Log out** (`LogoutToolsetAction`).
 - API key, no key: **API key** (`ApiKeyLabel`); key on file: **Change API key** (`ToolsetChangeApiKeyAction`). Both open the catalog personal API-key popover to add or delete the key.
 
-**Status banner.** When the toolset is logged out, the `getEntityStatusMessage` text SHALL be shown above the tabs.
+The popup SHALL show no status banner and no sign-in error line: the logged-out state is the header's Log in action, as in the catalog.
 
 **Tabs:** the catalog's details tabs and content, as defined by `catalog-entity-details`, for a catalog `CatalogItem` of type `Toolset`:
 
@@ -56,9 +56,9 @@ The `DetailsHeader` credentials action SHALL start the existing sign-in flows, t
 
 - **OAuth Log in:** post `{ type: REQUEST_TOOLSET_LOGIN, toolsetId }` to the host (`postToHost`). As in the catalog, the action shows no in-progress state for OAuth.
   - On a matching `TOOLSET_LOGIN_RESULT` with `success: true`, the popup SHALL apply it with `DataContext.applyToolsetAuthResult`.
-  - On `success: false`, it SHALL show `common` `ToolsetSignInFailed`.
+  - On `success: false`, nothing SHALL change: the action stays Log in.
 - **OAuth Log out:** the same with `REQUEST_TOOLSET_LOGOUT` / `TOOLSET_LOGOUT_RESULT`, started directly from the action (`onRequestLogout`), with no confirmation step.
-- **API key add / delete:** the catalog personal API-key popover calls `toolsetsApi.loginToolset` (with the key) / `logoutToolset`, at the credentials level `USER` for a public toolset and `GLOBAL` otherwise, then `refreshToolsets`. A failure SHALL show `ToolsetSignInFailed`.
+- **API key add / delete:** the catalog personal API-key popover calls `toolsetsApi.loginToolset` (with the key) / `logoutToolset`, at the credentials level `USER` for a public toolset and `GLOBAL` otherwise, then `refreshToolsets`. A failed request SHALL leave the status unchanged.
 
 After a successful result, the details popup SHALL stay open. Its header action and the row item's badge SHALL reflect the new status from `DataContext`. Messages from origins outside `allowedOrigins`, and results for other toolset ids, SHALL be ignored. Read-only and shared applications SHALL NOT render the credentials action.
 
@@ -71,7 +71,7 @@ After a successful result, the details popup SHALL stay open. Its header action 
 #### Scenario: OAuth login fails
 
 - **WHEN** the host replies with `success: false`
-- **THEN** the popup SHALL show "Failed to update toolset credentials" and Log in SHALL be enabled again
+- **THEN** the popup SHALL show no error and the action SHALL stay Log in
 
 #### Scenario: API key toolset
 

@@ -2,15 +2,16 @@ import { act, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { DialEntityType } from '@/types/dial-entities';
 import { ApplicationStatus, type DialModel } from '@/types/dial-entities';
 
 import AgentsList from '../AgentsList';
 
 const makeAgent = (id: string, name: string, overrides: Partial<DialModel> = {}) =>
-  ({ id, reference: id, name, type: 'application', ...overrides }) as DialModel;
+  ({ id, reference: id, name, type: DialEntityType.Application, ...overrides }) as DialModel;
 
 const RESEARCH = makeAgent('applications/public/research', 'Research Agent', { version: '2.1' });
-const GPT = makeAgent('gpt-4o', 'GPT-4o', { type: 'model' });
+const GPT = makeAgent('gpt-4o', 'GPT-4o', { type: DialEntityType.Model });
 const OFFLINE = makeAgent('applications/public/offline', 'Offline', {
   functionStatus: ApplicationStatus.Undeployed,
 });

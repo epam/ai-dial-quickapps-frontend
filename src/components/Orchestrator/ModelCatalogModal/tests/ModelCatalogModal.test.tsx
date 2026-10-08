@@ -3,6 +3,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 
 import type { CatalogItem } from '@epam/ai-dial-catalog';
+import { DialEntityType } from '@/types/dial-entities';
 import type { DialModel } from '@/types/dial-entities';
 
 import { ModelCatalogModal } from '../ModelCatalogModal';
@@ -163,7 +164,7 @@ const makeModel = (overrides: Partial<DialModel>): DialModel => ({
   id: 'models/gemini__1.0.3',
   reference: 'gemini',
   name: 'Gemini',
-  type: 'model',
+  type: DialEntityType.Model,
   version: '1.0.3',
   features: { tools: true },
   ...overrides,
@@ -190,7 +191,7 @@ const noTools = makeModel({ id: 'models/no-tools__1.0.0', name: 'No tools', feat
 const agent = makeModel({
   id: 'applications/bucket/some-agent__1.0.0',
   name: 'Some agent',
-  type: 'application',
+  type: DialEntityType.Application,
 });
 
 let root: Root;

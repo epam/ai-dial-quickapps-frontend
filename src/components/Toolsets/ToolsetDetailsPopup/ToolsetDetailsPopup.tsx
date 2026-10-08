@@ -1,7 +1,7 @@
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { FC, useCallback, useMemo } from 'react';
 
-import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
 import { useEntityDetails } from '@/hooks/use-entity-details';
 import { useScopeLabels } from '@/hooks/use-scope-labels';
@@ -11,7 +11,6 @@ import { type DialToolset, ToolsetAuthType } from '@/types/dial-entities';
 import { Translation } from '@/types/translation';
 import { getCatalogFolder, getEntityScopeInfo } from '@/utils/entity-scope';
 import { getAddOnDisplay } from '@/utils/get-add-on-display';
-import { getEntityStatus, getEntityStatusMessage } from '@/utils/get-entity-status';
 import { mapToolsetToCatalogItem } from '@/utils/map-toolset-to-catalog-item';
 
 import { AddOnDetailsPopup } from '@/components/common/AddOnDetailsPopup/AddOnDetailsPopup';
@@ -41,7 +40,6 @@ export const ToolsetDetailsPopup: FC<ToolsetDetailsPopupProps> = ({
   onClose,
 }) => {
   const { t, language } = useTranslation(Translation.QuickAppEditor);
-  const { t: tCommon } = useTranslation(Translation.Common);
   const { userBucket } = useDataContext();
   const scopeLabels = useScopeLabels();
   const credentials = useToolsetCredentials(toolset);
@@ -70,16 +68,6 @@ export const ToolsetDetailsPopup: FC<ToolsetDetailsPopupProps> = ({
     [listingItem, details],
   );
 
-  const banner =
-    toolset == null
-      ? undefined
-      : getEntityStatusMessage(
-          getEntityStatus(toolset, toolsetId),
-          true,
-          tCommon,
-          tCommon(CommonI18nKeys.ToolsetEntityType),
-        );
-
   const handleDelete = useCallback(() => {
     onRemove(toolsetId);
     onClose();
@@ -93,7 +81,6 @@ export const ToolsetDetailsPopup: FC<ToolsetDetailsPopupProps> = ({
       iconUrl={iconUrl}
       folder={folder}
       credentials={toolset && needsAuthentication && !isReadonly ? credentials : undefined}
-      banner={credentials.error ?? banner}
       item={item}
       detailsStatus={status}
       onRetry={retry}

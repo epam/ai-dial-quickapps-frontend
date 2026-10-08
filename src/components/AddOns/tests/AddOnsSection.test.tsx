@@ -2,6 +2,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { DialEntityType } from '@/types/dial-entities';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { AddOnSchemaKeys } from '@/form/quickApp2Form';
 import type { DialModel, DialToolset } from '@/types/dial-entities';
@@ -14,13 +15,13 @@ const FIGMA: DialToolset = {
   id: 'toolsets/public/figma',
   reference: 'toolsets/public/figma',
   name: 'Figma',
-  type: 'toolset',
+  type: DialEntityType.Toolset,
 };
 const RESEARCH: DialModel = {
   id: 'applications/public/research',
   reference: 'applications/public/research',
   name: 'Research',
-  type: 'application',
+  type: DialEntityType.Application,
 };
 
 vi.mock('@/hooks/use-translation', () => ({

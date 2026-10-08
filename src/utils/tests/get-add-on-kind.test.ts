@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { DialEntityType } from '@/types/dial-entities';
 import { AddOnSchemaKeys } from '@/form/quickApp2Form';
 import { AddOnKind } from '@/types/add-on-kind';
 import type { DialModel, DialToolset } from '@/types/dial-entities';
@@ -14,7 +15,7 @@ const toolset = (id: string, name = id): DialToolset => ({
   id,
   reference: id,
   name,
-  type: 'toolset',
+  type: DialEntityType.Toolset,
 });
 
 const deployment = (id: string, type: DialModel['type']): DialModel => ({
@@ -30,9 +31,9 @@ const entry = (id: string, extra: Partial<AddOnEntry> = {}): AddOnEntry => ({
 });
 
 const FIGMA = toolset('toolsets/public/figma', 'Figma');
-const RESEARCH = deployment('applications/public/research-agent', 'application');
-const GPT = deployment('gpt-4o', 'model');
-const MCP_AGENT = deployment('applications/public/mcp-agent', 'application');
+const RESEARCH = deployment('applications/public/research-agent', DialEntityType.Application);
+const GPT = deployment('gpt-4o', DialEntityType.Model);
+const MCP_AGENT = deployment('applications/public/mcp-agent', DialEntityType.Application);
 
 const ENTITY_MAP = buildAddOnEntityMap([GPT, RESEARCH], [FIGMA], [MCP_AGENT], 'en');
 

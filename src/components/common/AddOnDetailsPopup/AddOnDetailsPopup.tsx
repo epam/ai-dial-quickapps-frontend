@@ -67,8 +67,6 @@ export interface AddOnDetailsPopupProps {
   credentials?: AddOnDetailsCredentials;
   /** This app's own buttons under the header, e.g. an agent's Connection. */
   actions?: ReactNode;
-  /** A status message shown above the tabs. */
-  banner?: ReactNode;
   /**
    * The entity as a catalog item, with `details` once loaded. It decides the
    * tabs exactly as the chat catalog does. Undefined when the entity is no
@@ -90,7 +88,7 @@ export interface AddOnDetailsPopupProps {
 
 /**
  * The shell shared by the skill, toolset and agent details popups: identity
- * header with the folder line, an optional action row and banner, the
+ * header with the folder line, an optional action row, the
  * catalog's details tabs, and the Delete (detach from the app) / Close
  * footer. Tabs and their content are the chat catalog's own components, so
  * each entity reads exactly as it does in the catalog.
@@ -103,7 +101,6 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
   folder,
   credentials,
   actions,
-  banner,
   item,
   detailsStatus,
   onRetry,
@@ -337,7 +334,6 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
       {actions && (
         <div className="flex shrink-0 flex-wrap items-center gap-2 ps-[60px]">{actions}</div>
       )}
-      {banner && <div className="dial-small-text shrink-0 text-error">{banner}</div>}
       {renderBody()}
     </Popup>
   );

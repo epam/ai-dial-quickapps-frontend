@@ -12,11 +12,11 @@ import { useScopeLabels } from '@/hooks/use-scope-labels';
 import { useSearchParams } from '@/hooks/use-search-params';
 import { useTranslation } from '@/hooks/use-translation';
 import type { DialModel } from '@/types/dial-entities';
+import { DialEntityType } from '@/types/dial-entities';
 import type { DialAppTransportType } from '@/types/quick-apps';
 import { Translation } from '@/types/translation';
 import { getCatalogFolder } from '@/utils/entity-scope';
 import { getAddOnDisplay } from '@/utils/get-add-on-display';
-import { getEntityStatus, getEntityStatusMessage } from '@/utils/get-entity-status';
 import {
   canConfigureAgentTransport,
   mapAgentToCatalogItem,
@@ -63,14 +63,16 @@ export const AgentDetailsPopup: FC<AgentDetailsPopupProps> = ({
   const [isConfiguring, setIsConfiguring] = useState(false);
 
   const { name, version, iconUrl } = getAddOnDisplay(agentId, agent, language);
-  const isModel = agent?.type === 'model';
+  const isModel = agent?.type === DialEntityType.Model;
   const isEditable = !isReadonly && agent != null;
   const canConfigure = isEditable && canConfigureAgentTransport(agent);
   // Same gate as before the redesign: the host advertises credential forms
   // with `applicationCredentials=true`, and only apps behind auth need them.
   const isCredentialsMode = searchParams.get('applicationCredentials') === 'true';
   const needsAuthentication = useApplicationAuthentication(
-    isEditable && isCredentialsMode && agent?.type === 'application' ? agentId : undefined,
+    isEditable && isCredentialsMode && agent?.type === DialEntityType.Application
+      ? agentId
+      : undefined,
   );
 
   const folder = useMemo(
@@ -90,16 +92,6 @@ export const AgentDetailsPopup: FC<AgentDetailsPopupProps> = ({
     () => (listingItem == null ? undefined : { ...listingItem, details }),
     [listingItem, details],
   );
-
-  const banner =
-    agent == null
-      ? undefined
-      : getEntityStatusMessage(
-          getEntityStatus(agent, agentId),
-          true,
-          tCommon,
-          tCommon(CommonI18nKeys.AgentEntityType),
-        );
 
   const handleDelete = useCallback(() => {
     onRemove(agentId);
@@ -139,7 +131,6 @@ export const AgentDetailsPopup: FC<AgentDetailsPopupProps> = ({
         iconUrl={iconUrl}
         folder={folder}
         actions={actions || undefined}
-        banner={banner}
         item={item}
         detailsStatus={status}
         onRetry={retry}

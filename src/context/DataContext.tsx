@@ -16,6 +16,7 @@ import type {
   ToolsetsMap,
 } from '@/types/dial-entities';
 import { ToolsetAuthStatus } from '@/types/dial-entities';
+import { LoadStatus } from '@/types/load-status';
 import { InboundMessageType, ToolsetAuthResultPayload } from '@/types/editor-messages';
 import { applyToolsetAuthResult } from '@/utils/apply-toolset-auth-result';
 import { useAuthContext } from '@/context/AuthContext';
@@ -54,7 +55,7 @@ interface DataState {
   userBucket?: string;
   favoriteIds: Set<string>;
   favoritesError?: string;
-  status: 'idle' | 'loading' | 'ready' | 'error';
+  status: LoadStatus;
   error?: string;
 }
 
@@ -86,13 +87,13 @@ const initialState: DataState = {
   skillsMap: {},
   files: [],
   favoriteIds: new Set(),
-  status: 'idle',
+  status: LoadStatus.Idle,
 };
 
 function reducer(state: DataState, action: DataAction): DataState {
   switch (action.type) {
     case 'LOADING':
-      return { ...state, status: 'loading' };
+      return { ...state, status: LoadStatus.Loading };
     case 'MODELS_LOADED': {
       const modelsMap = Object.fromEntries(action.payload.map((m) => [m.id, m]));
       return { ...state, models: action.payload, modelsMap };
@@ -130,9 +131,9 @@ function reducer(state: DataState, action: DataAction): DataState {
     case 'FAVORITES_LOADED':
       return { ...state, favoriteIds: action.payload.ids, favoritesError: action.payload.error };
     case 'READY':
-      return { ...state, status: 'ready' };
+      return { ...state, status: LoadStatus.Ready };
     case 'ERROR':
-      return { ...state, status: 'error', error: action.payload };
+      return { ...state, status: LoadStatus.Error, error: action.payload };
     default:
       return state;
   }
@@ -155,7 +156,10 @@ interface DataContextValue extends DataState {
    * the host's own report of the toolset's fresh auth status directly,
    * avoiding a race with the list endpoint's own cache/propagation delay.
    */
-  applyToolsetAuthResult: (payload: ToolsetAuthResultPayload, fallbackStatus: ToolsetAuthStatus) => void;
+  applyToolsetAuthResult: (
+    payload: ToolsetAuthResultPayload,
+    fallbackStatus: ToolsetAuthStatus,
+  ) => void;
   refreshAll: () => void;
 }
 

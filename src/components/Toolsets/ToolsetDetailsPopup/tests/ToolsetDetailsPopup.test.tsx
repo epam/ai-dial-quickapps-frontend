@@ -3,6 +3,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { CatalogItemCredentials } from '@epam/ai-dial-catalog';
+import { DialEntityType } from '@/types/dial-entities';
 import { type DialToolset, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
 
 import { ToolsetDetailsPopup } from '../ToolsetDetailsPopup';
@@ -62,7 +63,7 @@ const FIGMA: DialToolset = {
   id: 'toolsets/public/figma',
   reference: 'toolsets/public/figma',
   name: 'Figma',
-  type: 'toolset',
+  type: DialEntityType.Toolset,
   version: '1.0.0',
   description: 'Reads and edits **design** files.',
   updatedAt: Date.UTC(2025, 9, 7, 12),
@@ -84,7 +85,7 @@ const API_KEY_TOOLSET: DialToolset = {
 
 const FIGMA_DETAILS = {
   id: FIGMA.id,
-  type: 'toolset',
+  type: DialEntityType.Toolset,
   toolsetDetails: {
     owner: 'Figma Inc.',
     catalogProperties: { provider: 'Figma' },
@@ -216,11 +217,12 @@ describe('ToolsetDetailsPopup', () => {
     expect(dialog?.querySelector('strong')?.textContent).toBe('design');
   });
 
-  it('explains a signed-out toolset above the tabs, with no badge on the header icon', async () => {
+  it('shows a signed-out toolset by its Log in action only: no badge and no status banner', async () => {
     await render();
 
     expect(getDialog('Figma')?.querySelector('[data-testid="badge"]')).toBeNull();
-    expect(getDialog('Figma')?.textContent).toContain('Logged out toolset.');
+    expect(getDialog('Figma')?.textContent).not.toContain('Logged out toolset.');
+    expect(getButtonByText('Log in')).toBeTruthy();
   });
 
   it('shows the catalog Specification on Overview', async () => {
@@ -253,13 +255,13 @@ describe('ToolsetDetailsPopup', () => {
     expect(getDialog('Figma')).toBeTruthy();
   });
 
-  it('reports a failed login and lets the user try again', async () => {
+  it('keeps Log in after a failed login, with no error line', async () => {
     await render();
 
     await click(getButtonByText('Log in'));
     await postFromHost({ type: 'TOOLSET_LOGIN_RESULT', toolsetId: FIGMA.id, success: false });
 
-    expect(getDialog('Figma')?.textContent).toContain('Failed to update toolset credentials');
+    expect(getDialog('Figma')?.textContent).not.toContain('Failed to update toolset credentials');
     expect(getButtonByText('Log in')?.disabled).toBe(false);
   });
 

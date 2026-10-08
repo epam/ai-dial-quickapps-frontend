@@ -123,6 +123,5 @@
       "closeConfirm": "Close",
       "closeCancel": "Cancel"
     }
-  },
-  "Failed to update toolset credentials": "Failed to update toolset credentials"
+  }
 }

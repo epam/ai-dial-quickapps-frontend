@@ -1,6 +1,7 @@
 import { AddOnSchemaKeys, type AddOnEntry } from '@/form/quickApp2Form';
 import { AddOnKind } from '@/types/add-on-kind';
 import type { DialModel, DialToolset } from '@/types/dial-entities';
+import { DialEntityType } from '@/types/dial-entities';
 import { isApplicationId, isToolsetId } from '@/utils/api';
 import { getLocalizedText } from '@/utils/get-localized-text';
 
@@ -49,7 +50,7 @@ export const getAddOnKind = (entry: AddOnEntry, entityMap: AddOnEntityMap): AddO
   const entity = entityMap[id];
 
   if (entity) {
-    return entity.type === 'model' || entity.type === 'application'
+    return entity.type === DialEntityType.Model || entity.type === DialEntityType.Application
       ? AddOnKind.Agent
       : AddOnKind.Toolset;
   }
