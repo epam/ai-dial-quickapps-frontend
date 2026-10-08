@@ -5,13 +5,14 @@ import { useApplicationAuthentication } from '@/hooks/use-application-authentica
 import { useSearchParams } from '@/hooks/use-search-params';
 import { requestApplicationCredentials } from '@/utils/request-application-credentials';
 import { NeutralButton } from '@epam/ai-dial-ui-kit';
-import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
+import { DeploymentIcon } from '@epam/ai-dial-chat-shared';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/use-translation';
 import { DialAppTransportType } from '@/types/quick-apps';
 import { Translation } from '@/types/translation';
 import { getLocalizedText } from '@/utils/get-localized-text';
+import { resolveIconUrl } from '@/utils/resolve-icon-url';
 import { DialPopup, DialPrimaryButton, DialRadioButton, PopupSize } from '@epam/ai-dial-ui-kit';
 
 export interface DialAppConfigurationModalProps {
@@ -20,6 +21,8 @@ export interface DialAppConfigurationModalProps {
   onClose: () => void;
   onSave: (transport: DialAppTransportType) => void;
 }
+
+const ICON_SIZE = 40;
 
 export const DialAppConfigurationModal: FC<DialAppConfigurationModalProps> = ({
   agentId,
@@ -68,7 +71,12 @@ export const DialAppConfigurationModal: FC<DialAppConfigurationModalProps> = ({
       <div className="flex flex-col divide-y divide-tertiary">
         {agent && (
           <div className="flex items-center gap-3 px-6 py-4">
-            <ModelIcon name={agentName} iconUrl={agent.iconUrl} size={40} radius={10} />
+            <DeploymentIcon
+              src={agent.iconUrl ? resolveIconUrl(agent.iconUrl) : undefined}
+              size={ICON_SIZE}
+              initialsName={agentName}
+              styles={{ badgeClassName: 'rounded-[10px]' }}
+            />
             <div className="flex min-w-0 flex-col gap-0.5">
               <span className="dial-small-semi-text truncate text-primary">{agentName}</span>
               {agent.version && (

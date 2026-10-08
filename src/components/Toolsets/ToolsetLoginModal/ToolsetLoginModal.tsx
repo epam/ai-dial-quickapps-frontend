@@ -1,6 +1,6 @@
 import { FC, useCallback, useState } from 'react';
 
-import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
+import { DeploymentIcon } from '@epam/ai-dial-chat-shared';
 import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/use-translation';
@@ -27,6 +27,8 @@ export interface ToolsetLoginModalProps {
   toolset: DialToolset;
   onClose: () => void;
 }
+
+const ICON_SIZE = 40;
 
 /** Public toolsets are signed in per-user, private ones per-workspace — mirrors dial-client.ts's mapAuthSettings. */
 const credentialsLevelFor = (toolsetId: string): ToolsetLoginBodyDtoCredentialsLevelEnum =>
@@ -103,7 +105,11 @@ export const ToolsetLoginModal: FC<ToolsetLoginModalProps> = ({ toolset, onClose
     >
       <div className="flex flex-col gap-4 px-6 py-4">
         <div className="flex items-center gap-3">
-          <ModelIcon name={toolsetName} size={40} radius={10} />
+          <DeploymentIcon
+            size={ICON_SIZE}
+            initialsName={toolsetName}
+            styles={{ badgeClassName: 'rounded-[10px]' }}
+          />
           <span className="dial-small-semi-text text-primary">{toolsetName}</span>
         </div>
 
