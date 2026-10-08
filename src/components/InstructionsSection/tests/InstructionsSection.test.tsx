@@ -1,4 +1,4 @@
-import React, { act, useState } from 'react';
+import { act, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -12,6 +12,7 @@ vi.mock('@/context/ThemeContext', () => ({
 }));
 vi.mock('@epam/ai-dial-ui-kit', () => ({
   EditorThemes: { dark: 'dark', light: 'light' },
+  ErrorText: ({ text }: { text?: string }) => (text ? <span role="alert">{text}</span> : null),
   LazyMarkdownEditor: async () => ({
     MarkdownEditor: ({
       value,
@@ -97,5 +98,19 @@ describe('InstructionsSection', () => {
 
     const editor = container.querySelector('[aria-label="Instructions editor"]');
     expect(editor?.getAttribute('data-show-dragbar')).toBe('false');
+  });
+
+  it('shows the translated error as an alert only when there is one', async () => {
+    await act(async () => root.render(<InstructionsSection value="" onChange={vi.fn()} />));
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+
+    await act(async () =>
+      root.render(
+        <InstructionsSection value="" error="Instructions are required" onChange={vi.fn()} />,
+      ),
+    );
+    expect(container.querySelector('[role="alert"]')?.textContent).toBe(
+      'Instructions are required',
+    );
   });
 });

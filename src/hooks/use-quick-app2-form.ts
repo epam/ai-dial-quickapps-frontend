@@ -100,6 +100,23 @@ const getValidatedResult = (values: QuickApp2FormValues): QuickApp2FormValidatio
   return { isValid: false, errors: getQuickApp2FormErrors(values) };
 };
 
+// Required fields that stay quiet until the user edits them or tries to save, so a
+// new app doesn't open with errors (or get them when another field changes).
+const DEFERRED_FIELDS: (keyof QuickApp2FormValues)[] = ['instructions'];
+
+const getVisibleErrors = (
+  state: FormState,
+  nextValues: QuickApp2FormValues,
+  changedValues: Partial<QuickApp2FormValues>,
+): QuickApp2FormErrors => {
+  const errors = getQuickApp2FormErrors(nextValues);
+  for (const field of DEFERRED_FIELDS) {
+    const isTouched = field in changedValues && !isEqual(state.values[field], nextValues[field]);
+    if (!isTouched && state.errors[field] == null) delete errors[field];
+  }
+  return errors;
+};
+
 const applyValues = (
   state: FormState,
   values: Partial<QuickApp2FormValues>,
@@ -108,7 +125,9 @@ const applyValues = (
   const nextValues = { ...state.values, ...values };
   const nextInitialValues =
     options.shouldDirty === false ? { ...state.initialValues, ...values } : state.initialValues;
-  const nextErrors = options.shouldValidate ? getQuickApp2FormErrors(nextValues) : state.errors;
+  const nextErrors = options.shouldValidate
+    ? getVisibleErrors(state, nextValues, values)
+    : state.errors;
 
   return { ...state, values: nextValues, initialValues: nextInitialValues, errors: nextErrors };
 };
@@ -158,7 +177,7 @@ const reduceFormState = (state: FormState, action: FormAction): FormState => {
       const nextValues = { ...state.values, ...values };
       const nextInitialValues = { ...state.initialValues, ...initialValues };
       const nextErrors = externalState.shouldValidate
-        ? getQuickApp2FormErrors(nextValues)
+        ? getVisibleErrors(state, nextValues, values)
         : state.errors;
 
       if (

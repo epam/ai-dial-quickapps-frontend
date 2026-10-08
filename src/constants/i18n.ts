@@ -72,6 +72,7 @@ export enum QuickAppEditorI18nKeys {
   DefaultModel = 'Default model',
   Instructions = 'Instructions',
   InstructionsPlaceholder = 'Instructions of your application',
+  InstructionsRequired = 'Instructions are required',
   Temperature = 'Temperature',
   TemperaturePrecise = 'Precise',
   TemperatureNeutral = 'Neutral',

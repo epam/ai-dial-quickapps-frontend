@@ -15,7 +15,7 @@ import {
 import { type AnyToolset, ToolsetTypes } from '@/types/quick-apps';
 
 const createForm = (overrides: Partial<QuickApp2Form> = {}): QuickApp2Form => ({
-  instructions: '',
+  instructions: 'Be helpful',
   temperature: 1,
   documentRelativeUrl: [],
   model: 'model-1',
@@ -44,6 +44,20 @@ describe('QuickApp2Schema', () => {
     const result = QuickApp2Schema.safeParse(createForm());
 
     expect(result.success).toBe(true);
+  });
+
+  it('requires non-blank instructions and keeps their whitespace in the parsed data', () => {
+    for (const instructions of ['', '   \n\t']) {
+      const result = QuickApp2Schema.safeParse(createForm({ instructions }));
+      expect(result.success).toBe(false);
+      expect(result.error?.issues[0]).toMatchObject({
+        path: ['instructions'],
+        message: QuickAppEditorI18nKeys.InstructionsRequired,
+      });
+    }
+
+    const result = QuickApp2Schema.safeParse(createForm({ instructions: '  Be helpful\n' }));
+    expect(result.data?.instructions).toBe('  Be helpful\n');
   });
 
   it('rejects a model that is not available', () => {
@@ -168,7 +182,7 @@ describe('getQuickApp2FormData', () => {
     expect(data.model).toBe('model-1');
   });
 
-  it('creates a valid empty-app form with a trailing blank starter', () => {
+  it('creates an empty-app form with a trailing blank starter that requires instructions', () => {
     const data = getQuickApp2FormData(undefined, ['model-1'], ['model-1'], 'model-1');
 
     expect(data).toMatchObject({
@@ -187,7 +201,8 @@ describe('getQuickApp2FormData', () => {
     expect(data.starters).toHaveLength(1);
     expect(data.starters[0]).toMatchObject({ title: '', text: '' });
     expect(data.starters[0].id).toEqual(expect.any(String));
-    expect(QuickApp2Schema.safeParse(data).success).toBe(true);
+    expect(QuickApp2Schema.safeParse(data).success).toBe(false);
+    expect(QuickApp2Schema.safeParse({ ...data, instructions: 'Be helpful' }).success).toBe(true);
   });
 
   it('preserves toolset metadata when converting configured toolsets to form values', () => {
