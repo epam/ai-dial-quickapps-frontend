@@ -166,6 +166,32 @@ vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => {
 
   return { default: SkillsTestSection };
 });
+vi.mock('@/components/KnowledgeBase/KnowledgeBaseRow', () => {
+  const KnowledgeBaseTestRow = ({
+    files,
+    isReadonly,
+    onAddFiles,
+    onRemoveFile,
+  }: {
+    files: string[];
+    isReadonly: boolean;
+    onAddFiles: (files: string[]) => void;
+    onRemoveFile: (file: string) => void;
+  }) => (
+    <div>
+      <output data-testid="knowledge-readonly">{String(isReadonly)}</output>
+      <output data-testid="knowledge-files">{files.join('|')}</output>
+      <button type="button" onClick={() => onAddFiles(['files/abc/a.pdf', 'files/abc/new%20file.pdf'])}>
+        Add knowledge files
+      </button>
+      <button type="button" onClick={() => onRemoveFile('files/abc/a.pdf')}>
+        Remove knowledge file
+      </button>
+    </div>
+  );
+
+  return { default: KnowledgeBaseTestRow };
+});
 vi.mock('@/components/ConversationStarters/ConversationStartersRow', () => {
   const ConversationStartersTestRow = ({
     values,
@@ -590,5 +616,71 @@ describe('QuickApp2Form observable behavior', () => {
     renderForm();
 
     expect(container.querySelector('[data-testid="starters-readonly"]')?.textContent).toBe('true');
+  });
+
+  it('passes saved context files to the Knowledge base row', () => {
+    testContext.appContext.app = {
+      id: 'app',
+      applicationProperties: {
+        contexts: [
+          { type: 'file', url: 'files/abc/a.pdf' },
+          { type: 'file', url: 'files/abc/b.pdf' },
+        ],
+      },
+    };
+
+    renderForm();
+
+    expect(container.querySelector('[data-testid="knowledge-files"]')?.textContent).toBe(
+      'files/abc/a.pdf|files/abc/b.pdf',
+    );
+  });
+
+  it('adds decoded, de-duplicated knowledge files, marks the form dirty and saves them', async () => {
+    testContext.appContext.app = {
+      id: 'app',
+      applicationProperties: { contexts: [{ type: 'file', url: 'files/abc/a.pdf' }] },
+    };
+    const { onSave, onDirtyChange } = renderForm();
+
+    act(() => getButtonByText('Add knowledge files').click());
+
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+    expect(container.querySelector('[data-testid="knowledge-files"]')?.textContent).toBe(
+      'files/abc/a.pdf|files/abc/new file.pdf',
+    );
+
+    await submitForm();
+    expect(onSave.mock.calls[0][0].documentRelativeUrl).toEqual([
+      'files/abc/a.pdf',
+      'files/abc/new file.pdf',
+    ]);
+  });
+
+  it('removes a knowledge file, marks the form dirty and saves the remaining ones', async () => {
+    testContext.appContext.app = {
+      id: 'app',
+      applicationProperties: {
+        contexts: [
+          { type: 'file', url: 'files/abc/a.pdf' },
+          { type: 'file', url: 'files/abc/b.pdf' },
+        ],
+      },
+    };
+    const { onSave, onDirtyChange } = renderForm();
+
+    act(() => getButtonByText('Remove knowledge file').click());
+
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+    await submitForm();
+    expect(onSave.mock.calls[0][0].documentRelativeUrl).toEqual(['files/abc/b.pdf']);
+  });
+
+  it('renders the knowledge base row read-only for a shared app', () => {
+    testContext.appContext.app = { id: 'app', applicationProperties: {}, isShared: true };
+
+    renderForm();
+
+    expect(container.querySelector('[data-testid="knowledge-readonly"]')?.textContent).toBe('true');
   });
 });

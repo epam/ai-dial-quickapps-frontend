@@ -13,6 +13,7 @@ import AgentSkillsFormSection from '@/components/AgentSkills/AgentSkillsFormSect
 import { AddOnRow } from '@/components/AddOns/AddOnRow';
 import { AgentsAndToolsetsField } from '@/components/ContextAndTools/AgentsAndToolsetsField';
 import ConversationStartersRow from '@/components/ConversationStarters/ConversationStartersRow';
+import KnowledgeBaseRow from '@/components/KnowledgeBase/KnowledgeBaseRow';
 import { Section } from '@/components/common/Section/Section';
 
 export interface AddOnsSectionProps {
@@ -23,6 +24,9 @@ export interface AddOnsSectionProps {
   agentsAndToolsets: QuickApp2FormValues['agentsAndToolsets'];
   onAgentsChange: (ids: string[]) => void;
   onConfigureAgent: (id: string, transport: DialAppTransportType) => void;
+  documentRelativeUrl: QuickApp2FormValues['documentRelativeUrl'];
+  onAddDocuments: (documents: string[]) => void;
+  onRemoveDocument: (document: string) => void;
   conversationStarters: ConversationStartersValues;
   onConversationStartersSave: (values: ConversationStartersValues) => void;
 }
@@ -35,6 +39,9 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
   agentsAndToolsets,
   onAgentsChange,
   onConfigureAgent,
+  documentRelativeUrl,
+  onAddDocuments,
+  onRemoveDocument,
   conversationStarters,
   onConversationStartersSave,
 }) => {
@@ -73,6 +80,14 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
             onSelectModalOpenChange={setIsAgentsModalOpen}
           />
         </AddOnRow>
+
+        <KnowledgeBaseRow
+          files={documentRelativeUrl}
+          isReadonly={isReadonly}
+          tooltip={tooltip}
+          onAddFiles={onAddDocuments}
+          onRemoveFile={onRemoveDocument}
+        />
 
         <ConversationStartersRow
           values={conversationStarters}

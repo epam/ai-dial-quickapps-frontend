@@ -7,7 +7,7 @@ import type { QuickApp2FormValues } from '@/types/quick-app-form';
 
 import ContextAndToolsSection from '../ContextAndTools/ContextAndToolsSection';
 
-const LEGACY_FIELDS = ['documentRelativeUrl', 'codeInterpreter', 'addAttachment', 'webFetch'] as const;
+const LEGACY_FIELDS = ['codeInterpreter', 'addAttachment', 'webFetch'] as const;
 
 export interface QuickApp2FormLegacyFieldsProps {
   values: QuickApp2FormValues;

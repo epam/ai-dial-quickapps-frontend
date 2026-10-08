@@ -39,7 +39,8 @@
   only the hook's own tests use since the starters modal edits a local draft
   (`redesign-conversation-starters`). Remove them together with those tests.
 - [ ] Add-ons: the same mock as the starters redesign splits Agents & Toolsets into separate Toolsets
-  and Agents rows and adds a Knowledge base row. Needs its own OpenSpec change.
+  and Agents rows. Needs its own OpenSpec change. (The Knowledge base row is done —
+  `redesign-knowledge-base-addon`.)
 - [ ] ui-kit: `DialDraggableItem` imports a private bundled copy of react-dnd whose `DndProvider` the
   kit does not export, and it has no keyboard support, so consumers can't use it. Ask the kit for an
   exported, keyboard-accessible sortable list; the starters modal uses `@dnd-kit/sortable` meanwhile.
@@ -192,7 +193,7 @@ Update this matrix as each capability is explored, specified, tested, and checke
 ### Context files (file manager)
 
 - utils/dial-files-api.ts (list, upload, download, rename, delete, create-folder, list-shared), hooks/use-dial-file-manager.ts, utils/dial-file-manager.ts,
-  components/common/FilesSelector/**, types/dial-files.ts, dial-file-path.ts, file-download.ts, file-name.ts, decode-file-url.ts, safe-decode-uri.ts
+  components/common/FilesSelector/** (the file-manager modal; the Add-ons row lives in components/KnowledgeBase/), types/dial-files.ts, dial-file-path.ts, file-download.ts, file-name.ts, decode-file-url.ts, safe-decode-uri.ts
 - Standalone top-level concept, no sibling domain → context-files
 
 ### Theming

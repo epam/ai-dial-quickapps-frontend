@@ -5,9 +5,7 @@ import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { useTranslation } from '@/hooks/use-translation';
 import { Translation } from '@/types/translation';
-import { decodeFileUrl } from '@/utils/decode-file-url';
 
-import { FilesSelector } from '@/components/common/FilesSelector/FilesSelector';
 import { FormCollapsibleSection } from '@/components/common/FormCollapsibleSection';
 
 import { CodeInterpreterField } from './CodeInterpreterField';
@@ -39,29 +37,6 @@ const ContextAndToolsSection: FC<ContextAndToolsSectionProps> = ({
       description={t(QuickAppEditorI18nKeys.ContextAndToolsDescription)}
       openByDefault
     >
-      <DialFormItem
-        label={t(QuickAppEditorI18nKeys.ContextFiles)}
-        description={t(QuickAppEditorI18nKeys.ContextFilesInfo)}
-      >
-        <Controller
-          control={control}
-          name="documentRelativeUrl"
-          render={({ field }) => (
-            <FilesSelector
-              files={field.value}
-              readonly={isReadonly}
-              tooltip={tooltip}
-              onRemoveFile={(doc) => field.onChange(field.value.filter((f) => f !== doc))}
-              onAddFiles={(docs) => {
-                const existing = new Set(field.value);
-                const newFiles = docs.map(decodeFileUrl).filter((doc) => !existing.has(doc));
-                field.onChange([...field.value, ...newFiles]);
-              }}
-            />
-          )}
-        />
-      </DialFormItem>
-
       {isCodeInterpreterEnabled && (
         <DialFormItem
           label={t(QuickAppEditorI18nKeys.CodeInterpreter)}

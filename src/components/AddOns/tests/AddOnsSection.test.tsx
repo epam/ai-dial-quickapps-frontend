@@ -26,6 +26,9 @@ vi.mock('@/components/ContextAndTools/AgentsAndToolsetsField', () => ({
     </section>
   ),
 }));
+vi.mock('@/components/KnowledgeBase/KnowledgeBaseRow', () => ({
+  default: () => <section aria-label="Knowledge base row" />,
+}));
 vi.mock('@/components/ConversationStarters/ConversationStartersRow', () => ({
   default: () => <section aria-label="Conversation starters row" />,
 }));
@@ -58,6 +61,9 @@ const renderSection = ({
         agentsAndToolsets={agentsAndToolsets}
         onAgentsChange={vi.fn()}
         onConfigureAgent={vi.fn()}
+        documentRelativeUrl={[]}
+        onAddDocuments={vi.fn()}
+        onRemoveDocument={vi.fn()}
         conversationStarters={{
           starters: [],
           autoSubmit: true,
@@ -87,13 +93,18 @@ describe('AddOnsSection', () => {
     expect(container.querySelector('[aria-expanded]')).toBeNull();
   });
 
-  it('renders the Conversation starters row after the other add-on rows', () => {
+  it('renders the Knowledge base row before Conversation starters, after the other add-on rows', () => {
     renderSection();
 
     const rows = [...container.querySelectorAll('section[aria-label$="row"]')].map((row) =>
       row.getAttribute('aria-label'),
     );
-    expect(rows).toEqual(['Skills row', 'Agents & Toolsets row', 'Conversation starters row']);
+    expect(rows).toEqual([
+      'Skills row',
+      'Agents & Toolsets row',
+      'Knowledge base row',
+      'Conversation starters row',
+    ]);
   });
 
   it('keeps translated Add actions keyboard reachable', () => {
