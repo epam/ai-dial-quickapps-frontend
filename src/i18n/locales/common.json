@@ -1,10 +1,8 @@
 {
   "No context files added": "No context files added",
   "Cancel": "Cancel",
-  "Confirm": "Confirm",
   "Attach": "Attach",
   "Add": "Add",
-  "The {{entityType}} is not available in the Catalog and was added via JSON.": "The {{entityType}} is not available in the Catalog and was added via JSON.",
   "The {{entityType}} is not available and needs to be removed.": "The {{entityType}} is not available and needs to be removed.",
   "Logged out toolset.": "Logged out toolset.",
   "Logged out toolset. Click on the toolset to log in.": "Logged out toolset. Click on the toolset to log in.",
@@ -108,6 +106,5 @@
       "organization": "Organization"
     }
   },
-  "Logged in": "Logged in",
   "Failed to update toolset credentials": "Failed to update toolset credentials"
 }

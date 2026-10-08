@@ -2,10 +2,8 @@
 export enum CommonI18nKeys {
   NoContextFilesAdded = 'No context files added',
   Cancel = 'Cancel',
-  Confirm = 'Confirm',
   Attach = 'Attach',
   Add = 'Add',
-  AddedViaJsonHint = 'The {{entityType}} is not available in the Catalog and was added via JSON.',
   UnavailableEntityRemovalRequired = 'The {{entityType}} is not available and needs to be removed.',
   LoggedOutToolset = 'Logged out toolset.',
   LoggedOutToolsetClickHint = 'Logged out toolset. Click on the toolset to log in.',
@@ -18,7 +16,6 @@ export enum CommonI18nKeys {
   PersonalScope = 'Personal',
   SharedScope = 'Shared',
   OrganizationScope = 'Organization',
-  LoggedInToolset = 'Logged in',
   ToolsetSignInFailed = 'Failed to update toolset credentials',
   RemoveFile = 'Remove file',
   LoginScreenTitle = 'Log in to configure your QuickApp',
