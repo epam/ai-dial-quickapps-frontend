@@ -225,6 +225,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
       <div className="min-w-0 flex flex-col min-h-0 gap-4">
         <InstructionsSection
           value={values.instructions}
+          error={errors.instructions}
           onChange={(value) => setField('instructions', value)}
         />
 

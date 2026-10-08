@@ -60,7 +60,14 @@ The editor SHALL render the existing Instructions editor in a standalone, always
 - **THEN** it SHALL display a visual required marker next to the heading text
 - **AND** the visual marker SHALL be hidden from assistive technology
 - **AND** assistive technology SHALL instead announce a required label translated through the `common` namespace key `(required)`
-- **AND** the marker SHALL be presentational only: it SHALL NOT add form validation, and an application with empty Instructions SHALL remain savable as before
+- **AND** the marker SHALL match the validation described in "Empty Instructions blocks save"
+
+#### Scenario: Empty Instructions blocks save
+- **WHEN** a user saves or auto-save fires while Instructions is empty or only whitespace
+- **THEN** the application SHALL NOT be saved
+- **AND** the Instructions section SHALL show the error translated from the `quickAppEditor` key `Instructions are required`, announced as an alert
+- **AND** the error SHALL NOT be shown on initial load of an application with empty Instructions until the user edits Instructions or attempts to save
+- **AND** non-blank Instructions SHALL be saved exactly as typed, including leading and trailing whitespace
 
 #### Scenario: Instructions value is edited
 - **WHEN** a user edits the Instructions editor

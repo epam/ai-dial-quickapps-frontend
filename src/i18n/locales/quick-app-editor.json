@@ -123,6 +123,7 @@
   "At least one starter is required to enable settings.": "At least one starter is required to enable settings.",
   "Instructions": "Instructions",
   "Instructions of your application": "Instructions of your application",
+  "Instructions are required": "Instructions are required",
   "Temperature": "Temperature",
   "Agents & Toolsets": "Agents & Toolsets",
   "Code Interpreter": "Code Interpreter",

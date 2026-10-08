@@ -78,7 +78,10 @@ export const isValidMaxInputAttachments = (value: unknown): boolean =>
 
 export const QuickApp2Schema = z
   .object({
-    instructions: z.string(),
+    // `refine`, not `trim()`: the saved system prompt must keep its whitespace as typed.
+    instructions: z.string().refine((value) => value.trim().length > 0, {
+      message: QuickAppEditorI18nKeys.InstructionsRequired,
+    }),
     temperature: z.number(),
     documentRelativeUrl: z.array(z.string()),
     model: z.string(),

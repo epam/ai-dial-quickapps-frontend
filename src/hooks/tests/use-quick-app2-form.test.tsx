@@ -12,7 +12,7 @@ import {
 import { DialAppTransportType } from '@/types/quick-apps';
 
 const createValues = (overrides: Partial<QuickApp2FormValues> = {}): QuickApp2FormValues => ({
-  instructions: '',
+  instructions: 'Be helpful',
   temperature: 1,
   documentRelativeUrl: [],
   model: 'model-1',
@@ -80,7 +80,7 @@ describe('useQuickApp2Form values and validation', () => {
     expect(latestForm.isDirty).toBe(true);
 
     act(() => {
-      latestForm.setField('instructions', '');
+      latestForm.setField('instructions', 'Be helpful');
     });
     expect(latestForm.isDirty).toBe(true);
 
