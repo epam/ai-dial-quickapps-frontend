@@ -162,7 +162,6 @@ vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationS
 vi.mock('@/components/QuickApp2FormLegacyFields/QuickApp2FormLegacyFields', () => ({
   default: () => null,
 }));
-vi.mock('@/components/ContextAndTools/ContextAndToolsSection', () => ({ default: () => null }));
 vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => {
   // Stands in for the skill details popup's Delete, which detaches one skill.
   const SkillsTestSection = ({

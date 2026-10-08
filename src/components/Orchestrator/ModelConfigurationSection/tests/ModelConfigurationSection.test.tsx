@@ -63,12 +63,18 @@ const TestForm = ({ isReadonly = false, isProcessLargeFilesAvailable = true }: T
     errors={{}}
     isReadonly={isReadonly}
     isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
+    isCodeInterpreterEnabled={false}
+    isAddAttachmentEnabled={false}
+    isWebFetchEnabled={false}
     advancedSettings={{
       temperature: 0.5,
       maxInputAttachments: undefined,
       timestamp: true,
       fileTools: false,
       processLargeFiles: false,
+      codeInterpreter: false,
+      addAttachment: false,
+      webFetch: false,
     }}
     onAdvancedSettingsSave={vi.fn()}
     attachmentsEnabled

@@ -6,7 +6,7 @@ import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { getQuickApp2FormData } from '@/form/quickApp2Form';
 import { useQuickApp2Form } from '@/hooks/use-quick-app2-form';
-import type { QuickApp2FormValues, QuickApp2ModelStatus } from '@/types/quick-app-form';
+import type { QuickApp2ModelStatus } from '@/types/quick-app-form';
 import { QuickApp2ModelStatus as ModelStatus } from '@/types/quick-app-form';
 import type { TriggerSaveGeneralPayload } from '@/types/editor-messages';
 import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
@@ -20,7 +20,6 @@ import { useTranslation } from '@/hooks/use-translation';
 import AddOnsSection from './AddOns/AddOnsSection';
 import InstructionsSection from './InstructionsSection/InstructionsSection';
 import ModelConfigurationSection from './Orchestrator/ModelConfigurationSection/ModelConfigurationSection';
-import QuickApp2FormLegacyFields from './QuickApp2FormLegacyFields/QuickApp2FormLegacyFields';
 
 export type QuickApp2AllEntitiesMap = Record<
   string,
@@ -164,10 +163,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     return () => window.removeEventListener(DIAL_EDITOR_TRIGGER_SAVE_EVENT, handleTriggerSave);
   }, [handleSubmitForm, isDirty, isReadonly]);
 
-  const handleLegacyValuesChange = useCallback(
-    (legacyValues: Partial<QuickApp2FormValues>) => setValues(legacyValues),
-    [setValues],
-  );
   const advancedSettings = useMemo<AdvancedSettingsValues>(
     () => ({
       temperature: values.temperature,
@@ -175,8 +170,14 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
       timestamp: values.timestamp,
       fileTools: values.fileTools,
       processLargeFiles: values.processLargeFiles,
+      codeInterpreter: values.codeInterpreter,
+      addAttachment: values.addAttachment,
+      webFetch: values.webFetch,
     }),
     [
+      values.addAttachment,
+      values.codeInterpreter,
+      values.webFetch,
       values.fileTools,
       values.maxInputAttachments,
       values.processLargeFiles,
@@ -246,15 +247,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
           onConversationStartersSave={handleConversationStartersSave}
         />
 
-        <QuickApp2FormLegacyFields
-          values={values}
-          isReadonly={isReadonly}
-          tooltip={sharedTooltip}
-          isCodeInterpreterEnabled={!!settings.isCodeInterpreterEnabled}
-          isWebFetchEnabled={!!settings.isWebFetchEnabled}
-          isAddAttachmentEnabled={!!settings.isAddAttachmentEnabled}
-          onValuesChange={handleLegacyValuesChange}
-        />
       </div>
 
       <ModelConfigurationSection
@@ -264,6 +256,9 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         isReadonly={isReadonly}
         tooltip={sharedTooltip}
         isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
+        isCodeInterpreterEnabled={!!settings.isCodeInterpreterEnabled}
+        isAddAttachmentEnabled={!!settings.isAddAttachmentEnabled}
+        isWebFetchEnabled={!!settings.isWebFetchEnabled}
         advancedSettings={advancedSettings}
         onAdvancedSettingsSave={handleAdvancedSettingsSave}
         attachmentsEnabled={values.attachmentsEnabled}
