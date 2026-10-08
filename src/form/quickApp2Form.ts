@@ -50,7 +50,7 @@ import omit from 'lodash-es/omit';
 import sortBy from 'lodash-es/sortBy';
 import { nanoid } from 'nanoid';
 
-const DEFAULT_TEMPERATURE = 1;
+const DEFAULT_TEMPERATURE = 0.5;
 
 export enum AddOnSchemaKeys {
   id = '[schema]:id',
