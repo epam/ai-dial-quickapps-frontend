@@ -80,22 +80,16 @@ The Toolsets row of the Add-ons card SHALL list the attached toolsets in `addOns
 
 Activating a Toolsets row item SHALL open a modal dialog (ui-kit `Popup`, `PopupSize.Lg`) for that toolset.
 
-**Header**, top to bottom:
-
-- the avatar with the logged-out badge;
-- a caption from `quickAppEditor` key `ToolsetTypeLabel` ("Toolset");
-- the name and the version;
-- the folder line (scope label and folder segments, as in the catalog Folder column);
-- a close (×) control labelled by `common` `CloseDialog`.
+**Header:** the catalog `DetailsHeader` from `@epam/ai-dial-catalog`, as `catalog-entity-details` specifies: the icon, the type caption from `quickAppEditor` key `ToolsetTypeLabel` ("Toolset"), the name and the version, and the folder path; plus a close (×) control labelled by `common` `CloseDialog`. The popup avatar SHALL NOT carry the logged-out badge; the row item keeps it.
 
 The dialog's accessible name SHALL be the toolset name.
 
-**Credentials action** (below the header): shown only in an editable application when the toolset needs authentication.
+**Credentials action:** the `DetailsHeader` credentials action, shown only in an editable application when the toolset needs authentication:
 
-- When signed out: a primary button labelled `quickAppEditor` `LoginToolsetAction` ("Log in") with a leading login icon.
-- When signed in: a ghost button labelled `LogoutToolsetAction` ("Log out").
+- OAuth, signed out: **Log in** (`quickAppEditor` `LoginToolsetAction`); signed in: **Log out** (`LogoutToolsetAction`).
+- API key, no key: **API key** (`ApiKeyLabel`); key on file: **Change API key** (`ToolsetChangeApiKeyAction`). Both open the catalog personal API-key popover to add or delete the key.
 
-**Status banner.** When the toolset is logged out, the `getEntityStatusMessage` text SHALL be shown above the tabs.
+The popup SHALL show no status banner and no sign-in error line: the logged-out state is the header's Log in action, as in the catalog.
 
 **Tabs:** the catalog's details tabs and content, as defined by `catalog-entity-details`, for a catalog `CatalogItem` of type `Toolset`:
 
@@ -109,6 +103,8 @@ The popup SHALL open on About. A tab whose data the details lack SHALL NOT be sh
 
 - **Delete** (`quickAppEditor` `RemoveSkillFromApp`, "Delete") at the start edge: a danger, outlined button with a leading trash icon.
 - **Close** (`quickAppEditor` `Close`) at the end edge.
+
+`DetailsHeader` SHALL show no other action: no Use in chat, Share, Publish, Edit, Download or Manage menu.
 
 The popup SHALL be loaded with `React.lazy`, because it imports from `@epam/ai-dial-catalog`.
 
@@ -155,31 +151,31 @@ This app SHALL NOT build Overview rows or tool lists of its own.
 
 ### Requirement: Toolset login from the details popup
 
-The details popup's credentials action SHALL start the existing sign-in flows. The flows themselves SHALL NOT change:
+The `DetailsHeader` credentials action SHALL start the existing sign-in flows, through `useToolsetCredentials` (`src/hooks/use-toolset-credentials.ts`). The flows themselves SHALL NOT change:
 
-- **OAuth Log in:** post `{ type: REQUEST_TOOLSET_LOGIN, toolsetId }` to the host (`postToHost`). While it waits, the button SHALL show `LoggingInToolsetAction` and be disabled.
+- **OAuth Log in:** post `{ type: REQUEST_TOOLSET_LOGIN, toolsetId }` to the host (`postToHost`). As in the catalog, the action shows no in-progress state for OAuth.
   - On a matching `TOOLSET_LOGIN_RESULT` with `success: true`, the popup SHALL apply it with `DataContext.applyToolsetAuthResult`.
-  - On `success: false`, it SHALL show `common` `ToolsetSignInFailed`.
-- **OAuth Log out:** the same with `REQUEST_TOOLSET_LOGOUT` / `TOOLSET_LOGOUT_RESULT` and `LoggingOutToolsetAction`.
-- **API key Log in / Log out:** open the existing API-key popup (`ToolsetLoginModal`, moved to `src/components/Toolsets/ToolsetLoginModal/`). It calls `toolsetsApi.loginToolset` / `logoutToolset` and then `refreshToolsets`.
+  - On `success: false`, nothing SHALL change: the action stays Log in.
+- **OAuth Log out:** the same with `REQUEST_TOOLSET_LOGOUT` / `TOOLSET_LOGOUT_RESULT`, started directly from the action (`onRequestLogout`), with no confirmation step.
+- **API key add / delete:** the catalog personal API-key popover calls `toolsetsApi.loginToolset` (with the key) / `logoutToolset`, at the credentials level `USER` for a public toolset and `GLOBAL` otherwise, then `refreshToolsets`. A failed request SHALL leave the status unchanged.
 
-After a successful result, the details popup SHALL stay open. Its header, badge and action, and the row item's badge, SHALL reflect the new status from `DataContext`. Messages from origins outside `allowedOrigins`, and results for other toolset ids, SHALL be ignored. Read-only and shared applications SHALL NOT render the credentials action.
+After a successful result, the details popup SHALL stay open. Its header action and the row item's badge SHALL reflect the new status from `DataContext`. Messages from origins outside `allowedOrigins`, and results for other toolset ids, SHALL be ignored. Read-only and shared applications SHALL NOT render the credentials action.
 
 #### Scenario: OAuth login succeeds
 
 - **WHEN** the user activates Log in for signed-out OAuth toolset Figma and the host replies `TOOLSET_LOGIN_RESULT { toolsetId: "toolsets/public/figma", success: true }`
 - **THEN** exactly one `REQUEST_TOOLSET_LOGIN` for that id SHALL have been posted
-- **AND** the button SHALL become Log out, and the badge SHALL disappear from the popup avatar and the row item
+- **AND** the action SHALL become Log out, and the badge SHALL disappear from the row item
 
 #### Scenario: OAuth login fails
 
 - **WHEN** the host replies with `success: false`
-- **THEN** the popup SHALL show "Failed to update toolset credentials" and Log in SHALL be enabled again
+- **THEN** the popup SHALL show no error and the action SHALL stay Log in
 
 #### Scenario: API key toolset
 
-- **WHEN** the user activates Log in for a signed-out API-key toolset
-- **THEN** the API-key popup SHALL open over the details popup, and submitting a key SHALL call `POST /api/v1/toolsets/{name}/login` as today
+- **WHEN** the user activates API key for a signed-out API-key toolset and adds a key
+- **THEN** `POST /api/v1/toolsets/{name}/login` SHALL be called with that key, as today
 
 ### Requirement: Remove a toolset from the application
 

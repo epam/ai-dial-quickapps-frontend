@@ -64,13 +64,7 @@ The Agents row SHALL list the attached agents in `addOns` order. It SHALL use th
 
 Activating an Agents row item SHALL open a modal dialog (ui-kit `Popup`, `PopupSize.Lg`).
 
-**Header:** the same layout as the toolset popup:
-
-- the avatar;
-- a caption: `quickAppEditor` `AgentTypeLabel` ("Agent") for applications and MCP agents, `Model` ("Model") for models;
-- the name and version;
-- the folder line;
-- × labelled by `common` `CloseDialog`.
+**Header:** the catalog `DetailsHeader`, as in the toolset popup: the icon, a caption (`quickAppEditor` `AgentTypeLabel` ("Agent") for applications and MCP agents, `Model` ("Model") for models), the name and version, and the folder path; plus × labelled by `common` `CloseDialog`. The header SHALL show no action of its own.
 
 The dialog's accessible name SHALL be the agent name.
 
@@ -79,7 +73,7 @@ The dialog's accessible name SHALL be the agent name.
 - **Connection** (`quickAppEditor` `AgentConnection`, ghost button with a leading settings icon). Shown when the entity is an application that supports MCP (`isDialAiEntityModel` and `doesAgentSupportMcp`). It SHALL open the existing transport dialog (`DialAppConfigurationModal`, moved to `src/components/Agents/DialAppConfigurationModal/`), preselected with the entry's saved `transport`. Saving that dialog SHALL call `configureAgent(id, transport)` (`useQuickApp2Form`) and return to the details popup.
 - **Credentials** (`quickAppEditor` `ApplicationCredentials`, ghost button with a leading key icon). Shown only when the entry URL carries `applicationCredentials=true`, the entity is an application, and `useApplicationAuthentication(id)` reports that it needs authentication. Activating it SHALL call `requestApplicationCredentials(id, allowedOrigins)`, which posts `REQUEST_APPLICATION_CREDENTIALS` to the host as today.
 
-**Status banner.** When the entity is deploying, undeploying, redeploying or undeployed, the `getEntityStatusMessage` text SHALL be shown above the tabs.
+The popup SHALL show no status banner; the deployment status stays on the row item.
 
 **Tabs:** the catalog's details tabs and content, as defined by `catalog-entity-details`, for a catalog `CatalogItem` of type `Model` (models) or `Agent` (applications and MCP agents). The popup SHALL open on About.
 
