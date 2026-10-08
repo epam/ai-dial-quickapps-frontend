@@ -46,7 +46,7 @@ The Toolsets row of the Add-ons card SHALL list the attached toolsets in `addOns
 
 **Details button.** Each item SHALL hold a button named by `quickAppEditor` key `SkillDetails` with `{{name}}` (e.g. "Figma details"). Activating it SHALL open the toolset details popup.
 
-**Remove button.** In an editable application, each item SHALL also hold a remove button at its end: a ui-kit ghost icon button with a trash icon, named by `quickAppEditor` key `RemoveSkill` with `{{name}}`. It SHALL be visible only while the item is hovered or holds keyboard focus, and SHALL stay in the tab order. Activating it SHALL remove that id from `addOns` without opening the popup, and SHALL move focus to the first remaining item in the row. Read-only and shared applications SHALL NOT render it.
+**Remove button.** In an editable application, each item SHALL also hold a remove button at its end: a ui-kit ghost icon button with a trash icon, named by `quickAppEditor` key `RemoveSkill` with `{{name}}`. It SHALL be visible only while the item is hovered or holds keyboard focus (`:focus-visible`), and SHALL stay in the tab order. Focus that returns to the item after a popup is closed with the mouse SHALL NOT reveal it. Activating it SHALL remove that id from `addOns` without opening the popup, and SHALL move focus to the first remaining item in the row. Read-only and shared applications SHALL NOT render it.
 
 **Not rendered.** Items SHALL NOT render a chip box, a tooltip or a configure (gear) button.
 
@@ -63,6 +63,12 @@ The Toolsets row of the Add-ons card SHALL list the attached toolsets in `addOns
 - **WHEN** an attached id `toolsets/public/old-tool` is not in `toolsetsMap`
 - **THEN** its item SHALL show "old-tool" and the `common` `UnavailableEntityRemovalRequired` status text
 - **AND** activating it SHALL open the details popup in its unavailable state
+
+#### Scenario: Remove button hides after the details popup is closed with the mouse
+
+- **WHEN** the user clicks an attached toolset to open its details popup, closes the popup with the mouse (header close control or Close) and the pointer is no longer over the item
+- **THEN** the item's "Remove <name>" button SHALL be hidden, even though focus returned to the item's details button
+- **AND** if the popup is closed with the keyboard, the button SHALL be visible while the details button holds that keyboard focus
 
 #### Scenario: Remove from the row
 

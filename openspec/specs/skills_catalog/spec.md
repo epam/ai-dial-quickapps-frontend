@@ -14,7 +14,7 @@ The Skills row of the Add-ons card SHALL list the application's attached skills 
 
 Each item SHALL hold a button whose accessible name comes from `quickAppEditor` key `SkillDetails` with the skill name interpolated (e.g. "Web Search details"); activating it SHALL open the skill details popup for that skill. Items SHALL NOT render a bordered chip box or a tooltip.
 
-In an editable application, each item SHALL also hold a remove button at its end: a ui-kit 2.0 ghost icon button with a trash icon, named by `quickAppEditor` key `RemoveSkill` with the skill name interpolated (e.g. "Remove Web Search"). It SHALL be visible only while the item is hovered or holds keyboard focus, and SHALL stay in the tab order. Activating it SHALL remove that skill id from `agentSkills` without opening the details popup, and SHALL move focus to the first remaining item. Read-only and shared applications SHALL NOT render it. The list SHALL be read from `DataContext.skillsMap` and SHALL make no chat-api request of its own.
+In an editable application, each item SHALL also hold a remove button at its end: a ui-kit 2.0 ghost icon button with a trash icon, named by `quickAppEditor` key `RemoveSkill` with the skill name interpolated (e.g. "Remove Web Search"). It SHALL be visible only while the item is hovered or holds keyboard focus (`:focus-visible`), and SHALL stay in the tab order. Focus that returns to the item after a popup is closed with the mouse SHALL NOT reveal it. Activating it SHALL remove that skill id from `agentSkills` without opening the details popup, and SHALL move focus to the first remaining item. Read-only and shared applications SHALL NOT render it. The list SHALL be read from `DataContext.skillsMap` and SHALL make no chat-api request of its own.
 
 #### Scenario: Attached skills are listed
 
@@ -33,6 +33,12 @@ In an editable application, each item SHALL also hold a remove button at its end
 - **WHEN** an attached skill id is not in `skillsMap` (deleted, or no longer visible to the user)
 - **THEN** its item SHALL still be listed, using the last id segment as the name
 - **AND** activating it SHALL open the details popup in its unavailable state
+
+#### Scenario: Remove button hides after the details popup is closed with the mouse
+
+- **WHEN** the user clicks an attached skill to open its details popup, closes the popup with the mouse (header close control or Close) and the pointer is no longer over the item
+- **THEN** the item's "Remove <name>" button SHALL be hidden, even though focus returned to the item's details button
+- **AND** if the popup is closed with the keyboard, the button SHALL be visible while the details button holds that keyboard focus
 
 #### Scenario: Remove a skill from the list
 

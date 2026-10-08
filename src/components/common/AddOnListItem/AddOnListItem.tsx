@@ -92,7 +92,7 @@ export const AddOnListItem: FC<AddOnListItemProps> = ({
           size={ElementSize.Small}
           icon={<IconTrash size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} />}
           aria-label={removeLabel}
-          className="shrink-0 opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100"
+          className="shrink-0 opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 group-has-[:focus-visible]:opacity-100"
           onClick={() => onRemove(id)}
         />
       )}
