@@ -9,7 +9,7 @@ import { getLocalizedText } from '@/utils/get-localized-text';
 import { getUpdatedAtTimestamp } from '@/utils/get-updated-at-timestamp';
 import { resolveIconUrl } from '@/utils/resolve-icon-url';
 
-export interface MapModelToCatalogItemOptions {
+interface MapModelToCatalogItemOptions {
   language: string;
   userBucket?: string;
   /** Already-translated scope labels — keeps this util free of i18n. */

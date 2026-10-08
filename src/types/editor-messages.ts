@@ -8,7 +8,7 @@ export enum InboundMessageType {
   ToolsetLogoutResult = 'TOOLSET_LOGOUT_RESULT',
 }
 
-export interface ToolsetCredentials {
+interface ToolsetCredentials {
   authenticationType: 'NONE' | 'API_KEY' | 'OAUTH';
   userStatus?: 'SIGNED_IN' | 'SIGNED_OUT' | 'FAILED';
   globalStatus?: 'SIGNED_IN' | 'SIGNED_OUT' | 'FAILED';

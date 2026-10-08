@@ -49,21 +49,7 @@ export interface WebFetchFeature {
   enabled: boolean;
 }
 
-export enum ToolsetTransportType {
-  HTTP = 'HTTP',
-  SSE = 'SSE',
-}
-
-export interface QuickAppConfig {
-  instructions: string;
-  model: string;
-  temperature: number;
-  web_api_toolset: object;
-  mcp_toolset?: object;
-  document_relative_url?: string[];
-}
-
-export interface FileContext {
+interface FileContext {
   url: string;
   type: ContextType.File;
 }
@@ -82,7 +68,6 @@ export interface DialDeploymentToolset {
 export enum DialAppTransportType {
   MCP = 'mcp',
   ChatCompletion = 'chat-completion',
-  Auto = 'auto',
 }
 
 export interface DialAppToolset {
@@ -96,7 +81,6 @@ export interface MCPToolset {
   name?: string;
   type?: ToolsetTypes.DialMcp;
   deployment_id: string;
-  transport?: ToolsetTransportType;
   description?: string;
 }
 
@@ -105,7 +89,7 @@ export interface CodeInterpreterToolset {
   type: ToolsetTypes.CodeInterpreter;
 }
 
-export interface UnknownTool extends Record<string, unknown> {
+interface UnknownTool extends Record<string, unknown> {
   type?: string;
 }
 
@@ -179,7 +163,7 @@ export function isMcpToolset(toolset: AnyToolset): toolset is MCPToolset {
   return toolset.type === ToolsetTypes.DialMcp;
 }
 
-export function isCodeInterpreterToolset(toolset: AnyToolset): toolset is CodeInterpreterToolset {
+function isCodeInterpreterToolset(toolset: AnyToolset): toolset is CodeInterpreterToolset {
   return (
     toolset.type === ToolsetTypes.CodeInterpreter &&
     (toolset as CodeInterpreterToolset).template_name === CodeInterpreterTemplate.PyInterpreter

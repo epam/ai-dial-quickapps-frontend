@@ -6,7 +6,7 @@ import { ResourceScope } from '@/types/resource-scope';
 import { getCatalogFolder, getEntityScopeInfo } from '@/utils/entity-scope';
 import { getUpdatedAtTimestamp } from '@/utils/get-updated-at-timestamp';
 
-export interface MapSkillToCatalogItemOptions {
+interface MapSkillToCatalogItemOptions {
   userBucket?: string;
   /** Already-translated scope labels — keeps this util free of i18n. */
   scopeLabels: Record<ResourceScope, string>;
@@ -41,19 +41,19 @@ export const mapSkillToCatalogItem = (
   };
 };
 
-export interface SkillOverviewLabels {
+interface SkillOverviewLabels {
   author: string;
   folder: string;
   updated: string;
   version: string;
 }
 
-export interface GetSkillOverviewRowsOptions extends MapSkillToCatalogItemOptions {
+interface GetSkillOverviewRowsOptions extends MapSkillToCatalogItemOptions {
   language: string;
   labels: SkillOverviewLabels;
 }
 
-export interface SkillOverviewRow {
+interface SkillOverviewRow {
   label: string;
   value: string;
 }

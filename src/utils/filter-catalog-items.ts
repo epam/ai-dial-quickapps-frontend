@@ -1,7 +1,7 @@
 import type { CatalogItem } from '@epam/ai-dial-catalog';
 import { filterCatalogItems, sortCatalogItems } from '@epam/ai-dial-catalog/mapping';
 
-export interface CatalogItemsQuery {
+interface CatalogItemsQuery {
   /** Name search, case-insensitive and trimmed. */
   search: string;
   /** Topics to keep; empty keeps every item. */

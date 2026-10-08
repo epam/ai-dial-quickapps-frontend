@@ -27,7 +27,7 @@ describe('applyToolsetAuthResult', () => {
         toolsetId: PUBLIC_ID,
         success: true,
         credentials: {
-          authenticationType: ToolsetAuthType.ApiKey,
+          authenticationType: ToolsetAuthType.OAuth,
           userStatus: ToolsetAuthStatus.SignedIn,
           globalStatus: ToolsetAuthStatus.SignedOut,
           apiKeyHeader: 'X-Key',
@@ -37,7 +37,7 @@ describe('applyToolsetAuthResult', () => {
     );
 
     expect(result.authSettings).toEqual({
-      authenticationType: ToolsetAuthType.ApiKey,
+      authenticationType: ToolsetAuthType.OAuth,
       authStatus: ToolsetAuthStatus.SignedIn,
       apiKeyHeader: 'X-Key',
     });
@@ -82,7 +82,7 @@ describe('applyToolsetAuthResult', () => {
   it('keeps existing settings and uses the fallback status without credentials', () => {
     const result = applyToolsetAuthResult(
       toolset(PRIVATE_ID, {
-        authenticationType: ToolsetAuthType.ApiKey,
+        authenticationType: ToolsetAuthType.OAuth,
         authStatus: ToolsetAuthStatus.SignedIn,
         apiKeyHeader: 'X-Old',
       }),
@@ -91,7 +91,7 @@ describe('applyToolsetAuthResult', () => {
     );
 
     expect(result.authSettings).toEqual({
-      authenticationType: ToolsetAuthType.ApiKey,
+      authenticationType: ToolsetAuthType.OAuth,
       authStatus: ToolsetAuthStatus.SignedOut,
       apiKeyHeader: 'X-Old',
     });

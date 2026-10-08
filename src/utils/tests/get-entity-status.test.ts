@@ -47,8 +47,7 @@ describe('getEntityStatus', () => {
     [undefined, undefined, false],
     [ToolsetAuthType.None, undefined, false],
     [ToolsetAuthType.OAuth, ToolsetAuthStatus.SignedIn, false],
-    [ToolsetAuthType.ApiKey, ToolsetAuthStatus.SignedOut, true],
-    [ToolsetAuthType.OAuth, ToolsetAuthStatus.Failed, true],
+    [ToolsetAuthType.OAuth, ToolsetAuthStatus.SignedOut, true],
   ])(
     'classifies authentication type %s and status %s',
     (authenticationType, authStatus, isLoggedOut) => {
@@ -71,8 +70,8 @@ describe('getEntityStatus', () => {
     [ApplicationStatus.Deploying, false, false, true, false, false],
     [ApplicationStatus.Undeploying, false, false, false, true, false],
     [ApplicationStatus.Redeploying, false, false, false, false, true],
-    [ApplicationStatus.Undeployed, true, true, false, false, false],
-    [ApplicationStatus.Failed, true, true, false, false, false],
+    // Any other status DIAL Core reports (e.g. UNDEPLOYED, FAILED) counts as undeployed.
+    ['UNDEPLOYED' as ApplicationStatus, true, true, false, false, false],
   ])(
     'classifies function status %s',
     (

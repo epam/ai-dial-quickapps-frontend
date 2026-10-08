@@ -11,23 +11,19 @@ export type MaybeLocalizedText = string | LocalizedText | undefined;
 export enum ApplicationStatus {
   Deployed = 'DEPLOYED',
   Deploying = 'DEPLOYING',
-  Undeployed = 'UNDEPLOYED',
   Undeploying = 'UNDEPLOYING',
-  Failed = 'FAILED',
   Redeployed = 'REDEPLOYED',
   Redeploying = 'REDEPLOYING',
 }
 
 export enum ToolsetAuthType {
   OAuth = 'OAUTH',
-  ApiKey = 'API_KEY',
   None = 'NONE',
 }
 
 export enum ToolsetAuthStatus {
   SignedIn = 'SIGNED_IN',
   SignedOut = 'SIGNED_OUT',
-  Failed = 'FAILED',
 }
 
 export interface ToolsetAuthSettings {

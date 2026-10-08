@@ -32,12 +32,12 @@ export interface QuickApp2FormExternalState {
   shouldValidate?: boolean;
 }
 
-export interface QuickApp2FormValidationSuccess {
+interface QuickApp2FormValidationSuccess {
   isValid: true;
   data: QuickApp2Form;
 }
 
-export interface QuickApp2FormValidationFailure {
+interface QuickApp2FormValidationFailure {
   isValid: false;
   errors: QuickApp2FormErrors;
 }
