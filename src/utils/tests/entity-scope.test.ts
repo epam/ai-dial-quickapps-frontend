@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { ResourceScope } from '@/types/resource-scope';
-import { getEntityScopeInfo } from '@/utils/entity-scope';
+import { getCatalogFolder, getEntityScopeInfo } from '@/utils/entity-scope';
 
 const USER_BUCKET = 'user-bucket-123';
 
@@ -114,5 +114,23 @@ describe('getEntityScopeInfo', () => {
     it('returns undefined for a prompt id', () => {
       expect(getEntityScopeInfo('prompts/public/x', USER_BUCKET)).toBeUndefined();
     });
+  });
+});
+
+describe('getCatalogFolder', () => {
+  const SCOPE_LABELS = {
+    [ResourceScope.Personal]: 'Personal',
+    [ResourceScope.Shared]: 'Shared',
+    [ResourceScope.Organization]: 'Organization',
+  };
+
+  it('prefixes the folder path with the scope label', () => {
+    expect(
+      getCatalogFolder({ scope: ResourceScope.Organization, folderPath: ['a', 'b'] }, SCOPE_LABELS),
+    ).toEqual(['Organization', 'a', 'b']);
+  });
+
+  it('is empty when the scope is unknown', () => {
+    expect(getCatalogFolder(undefined, SCOPE_LABELS)).toEqual([]);
   });
 });

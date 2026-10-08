@@ -15,7 +15,7 @@ import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
 import type { DialAIEntityModel, LocalizedText } from '@/types/dial-entities';
 import { Translation } from '@/types/translation';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 
 import AddOnsSection from './AddOns/AddOnsSection';
 import InstructionsSection from './InstructionsSection/InstructionsSection';
@@ -146,11 +146,13 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   useEffect(() => {
     const handleTriggerSave = (event: Event) => {
       const { isAutoSave, ignoreDirty, general } =
-        (event as CustomEvent<{
-          isAutoSave?: boolean;
-          ignoreDirty?: boolean;
-          general?: TriggerSaveGeneralPayload;
-        }>).detail ?? {};
+        (
+          event as CustomEvent<{
+            isAutoSave?: boolean;
+            ignoreDirty?: boolean;
+            general?: TriggerSaveGeneralPayload;
+          }>
+        ).detail ?? {};
       if (isReadonly) return;
       if (isAutoSave && !ignoreDirty && !isDirty) return;
       handleSubmitForm(!!isAutoSave, general);

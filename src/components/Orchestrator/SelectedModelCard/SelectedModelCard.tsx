@@ -1,8 +1,7 @@
 import { FC } from 'react';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { SKELETON_COLOR } from '@/constants/quick-apps';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import type { DialModel } from '@/types/dial-entities';
 import { Translation } from '@/types/translation';
 import { getLocalizedText } from '@/utils/get-localized-text';
@@ -24,6 +23,8 @@ export interface SelectedModelCardProps {
   isDisabled?: boolean;
   error?: string;
 }
+
+const SKELETON_COLOR = 'var(--bg-control-neutral-active, #D1DBEA)';
 
 const CardSkeleton: FC = () => (
   <div className="flex items-center gap-2">

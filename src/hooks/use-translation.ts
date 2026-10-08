@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { useTranslation as useI18nTranslation } from 'react-i18next';
 import type { Translation, TranslationOptions } from '@/types/translation';
 
-export function useTranslation(ns: Translation) {
+export const useTranslation = (ns: Translation) => {
   const { t, i18n } = useI18nTranslation(ns);
 
   const translate = useCallback(
@@ -12,4 +12,4 @@ export function useTranslation(ns: Translation) {
   );
 
   return useMemo(() => ({ t: translate, language: i18n.language }), [translate, i18n.language]);
-}
+};

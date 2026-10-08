@@ -9,10 +9,10 @@ import LoginScreen from '../LoginScreen';
 const openLoginWindow = vi.fn();
 const authState = { isWindowOpen: false };
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({ language: 'en', t: (key: string) => key }),
 }));
-vi.mock('@/hooks/useAuth', () => ({
+vi.mock('@/hooks/use-auth', () => ({
   useAuth: () => ({ openLoginWindow, isWindowOpen: authState.isWindowOpen }),
 }));
 

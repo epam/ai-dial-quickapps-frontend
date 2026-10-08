@@ -4,7 +4,7 @@ import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
 import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import { ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
 import {
   InboundMessageType,

@@ -6,7 +6,7 @@ import EditorClient from '@/components/EditorClient/EditorClient';
 import FullScreenSpinner from '@/components/FullScreenSpinner/FullScreenSpinner';
 import LoginScreen from '@/components/LoginScreen/LoginScreen';
 import { useAuthContext } from '@/context/AuthContext';
-import { useSearchParams } from '@/hooks/useSearchParams';
+import { useSearchParams } from '@/hooks/use-search-params';
 import { AuthErrorReason, AuthProviderInfo, AuthStatus } from '@/types/auth';
 import { AppSettings } from '@/types/dial-entities';
 import { getAuthProviders } from '@/utils/auth-api';

@@ -8,7 +8,7 @@ import ForbiddenPage from '../ForbiddenPage';
 
 const logout = vi.fn<() => Promise<void>>();
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({ language: 'en', t: (key: string) => key }),
 }));
 vi.mock('@/context/AuthContext', () => ({

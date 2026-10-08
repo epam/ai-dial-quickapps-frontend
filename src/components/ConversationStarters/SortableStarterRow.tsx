@@ -14,7 +14,7 @@ import { FC } from 'react';
 
 import { STARTER_TITLE_MAX_LENGTH } from '@/constants/conversation-starters';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import type { StarterField, StarterWithId } from '@/types/conversation-starters';
 import { Translation } from '@/types/translation';
 

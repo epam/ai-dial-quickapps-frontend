@@ -15,13 +15,14 @@
 - [ ] react-hook-form usage - should get rid of it. In progress in change `remove-react-hook-form`:
   the root form and the scalar sections already run on `useQuickApp2Form`; `ContextAndToolsSection`
   and `QuickApp2FormLegacyFields` still use RHF, and the dependency removal (tasks 5.x) is open.
-- [ ] need to review components, some seem to be unnecessary, e.g. AgentSkillsField just proxy SkillsSelectors
+- [ ] need to review components, some seem to be unnecessary. (`AgentSkillsField` → `SkillsSelector` proxy is gone:
+  removed in the `redesign-skills-selection` change.)
 - [x] Extract the model picker popup out of `components/Orchestrator/ModelField.tsx` into its own
   component — now `components/Orchestrator/ModelCatalogModal` (see the `redesign-model-picker-catalog-list` change).
 - [ ] Model picker upstream asks to ai-dial-chat `libs/catalog` / `libs/chat-shared` (from the
   `redesign-model-picker-catalog-list` change):
   - a `Toolbar` prop to hide the grid/list toggle, so the picker can use `Toolbar` instead of its own heading row;
-  - Enter/Space row activation in `ListView` (then drop `hooks/useGridRowKeyboardSelect.ts`);
+  - Enter/Space row activation in `ListView` (then drop `hooks/use-grid-row-keyboard-select.ts`);
   - `enableRtl` in `ListView` — its ag-grid columns do not follow `dir="rtl"` today;
   - a label override for `EntityTypeLabel`, so the Type cell can be localised;
   - a thinner (or configurable) selected-row border in `ListView` — its 2px border shifts the row
@@ -42,6 +43,24 @@
 - [ ] ui-kit: `DialDraggableItem` imports a private bundled copy of react-dnd whose `DndProvider` the
   kit does not export, and it has no keyboard support, so consumers can't use it. Ask the kit for an
   exported, keyboard-accessible sortable list; the starters modal uses `@dnd-kit/sortable` meanwhile.
+- [ ] Skills follow-ups (from the `redesign-skills-selection` change):
+  - chat-api ask: `version` and `tags` on `SkillMetadataItemDto`. The editor already shows them
+    when present (`mapCoreToDialSkill` in `src/utils/dial-client.ts`); until then skills have no
+    version and the Add skill popup's Tags column and From topics stay empty;
+  - resolve the manifest path through `skillsApi.listSkillFiles` for DIAL Core versions that store
+    `SKILL.md` under `files/` (as ai-dial-chat's `resolveSkillManifestFileId` does) — today the
+    Details tab shows its error state there;
+  - optionally list a skill's bundled files in the Details tab (`ContentTab`'s file tree).
+- [ ] Add-ons: `AddOnsSection` opens the Agents & Toolsets modal when the URL has
+  `?agentsAndToolsetsModal=1` (`AgentsAndToolsetsModalQueryParams.Modal` in
+  `src/constants/quick-apps.ts`). Nothing in this repo sets that parameter, and no spec describes it.
+  Confirm whether a host still opens the modal this way. If one does, add the parameter to
+  `host-integration` and keep it as a single named constant instead of a one-member enum. If none
+  does, remove the parameter and the code that reads it.
+- [ ] Themes: `src/context/ThemeContext.tsx` loads themes with `chatApiFetch('/api/themes')`, but
+  `@epam/ai-dial-chat-api-client` has a typed `ThemesApi`. Decide whether to switch to it or keep
+  the raw call as a documented exception (see "API-layer exceptions and configuration keys" below).
+  Switching changes the endpoint, so it needs its own OpenSpec change.
 - [ ] ...
 
 ## Documentation and behavior reconciliation backlog
@@ -116,7 +135,7 @@ Track these dimensions separately for every capability:
 | `toolsets_selection` | No | Yes | Partial | Planned |
 | `toolsets_login` | No | Yes | Partial | Planned |
 | `application_credentials` | No | Yes | Partial | Planned |
-| `skills_catalog` | No | Yes | Partial | Planned |
+| `skills_catalog` | Yes | Yes | Partial | Planned |
 | `orchestrator_model-selection` | Yes | Yes | Partial | Planned |
 | `application_advanced-settings` | Yes | Yes | Partial | Planned |
 | `application_conversation-starters` | Yes | Yes | Partial | Planned |
@@ -155,8 +174,10 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 ### Skills
 
-- `fetchDialSkills` in src/utils/dial-client.ts, src/components/AgentSkills/**, src/components/common/SkillsSelector/**
+- `fetchDialSkills`, `fetchSkillManifest` in src/utils/dial-client.ts, src/components/AgentSkills/**, src/components/Skills/**
 - Proposed: skills_catalog (standalone slug skills also defensible if no sibling ever appears)
+- **Spec written** (`openspec/specs/skills_catalog`, from archived change `redesign-skills-selection`): the attached
+  skills list with its hover remove button, the skill details popup with Delete, and the Add skill popup.
 
 ### Orchestrator / model selection
 
@@ -170,7 +191,7 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 ### Context files (file manager)
 
-- utils/dial-files-api.ts (list, upload, download, rename, delete, create-folder, list-shared), hooks/useDialFileManager.ts,
+- utils/dial-files-api.ts (list, upload, download, rename, delete, create-folder, list-shared), hooks/use-dial-file-manager.ts, utils/dial-file-manager.ts,
   components/common/FilesSelector/**, types/dial-files.ts, dial-file-path.ts, file-download.ts, file-name.ts, decode-file-url.ts, safe-decode-uri.ts
 - Standalone top-level concept, no sibling domain → context-files
 
@@ -182,7 +203,7 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 ### i18n
 
-- src/i18n/**, I18nProvider.tsx, hooks/useTranslation.ts, utils/get-localized-text.ts
+- src/i18n/**, I18nProvider.tsx, hooks/use-translation.ts, utils/get-localized-text.ts
 - Standalone → i18n
 
 ### Feature flags / runtime config

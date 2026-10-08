@@ -1,9 +1,6 @@
+import { AUTH_LOGOUT_URL, AUTH_ME_URL, AUTH_PROVIDERS_URL } from '@/constants/auth';
 import { AuthProviderInfo, UserProfile } from '@/types/auth';
 import { chatApiFetch, resetCsrfToken } from '@/utils/chat-api-fetch';
-
-const AUTH_ME_URL = '/api/v1/auth/me';
-const AUTH_PROVIDERS_URL = '/api/v1/auth/providers';
-const AUTH_LOGOUT_URL = '/api/v1/auth/logout';
 
 export class UnauthorizedError extends Error {
   constructor() {

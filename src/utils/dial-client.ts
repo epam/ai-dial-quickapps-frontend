@@ -15,6 +15,7 @@ import type {
   LocalizedText,
   ToolsetAuthSettings,
 } from '@/types/dial-entities';
+import { SKILL_MANIFEST_FILE } from '@/constants/skills';
 import type { LocaleTextEntryDto } from '@/types/editor-messages';
 import type { QuickApp2Config } from '@/types/quick-apps';
 import { decodeApiUrl, isHiddenDialFolderId, isPublicToolsetId } from '@/utils/api';
@@ -50,6 +51,9 @@ const CHAT_DEPLOYMENT_INTERFACE = ListDeploymentsInterfaceTypeEnum.Chat;
  * alongside the chat-interface deployments fetched via `fetchDialModels`.
  */
 const MCP_DEPLOYMENT_INTERFACE = ListDeploymentsInterfaceTypeEnum.Mcp;
+
+/** chat-api client-config app id whose config QuickApps reads (default model, custom variables). */
+const CLIENT_CONFIG_APP_ID = 'chat-ui';
 
 /**
  * Encode each path segment individually, preserving '/' as a separator.
@@ -296,7 +300,7 @@ const readCustomVariables = (value: unknown): CustomVariables => {
 
 export const fetchAppSettings = async (): Promise<AppSettings> => {
   try {
-    const res = await appConfigApi.getClientConfig({ appId: 'chat-ui' });
+    const res = await appConfigApi.getClientConfig({ appId: CLIENT_CONFIG_APP_ID });
     const custom = readCustomVariables(res.config.customVariables);
     return {
       isCodeInterpreterEnabled: custom.isCodeInterpreterEnabled === true,
@@ -424,16 +428,34 @@ export const fetchDialToolsets = async (): Promise<DialToolset[]> => {
   return res.data.map(mapToolsetToDialToolset).filter((t) => !isHiddenPath(t.id));
 };
 
-const mapCoreToDialSkill = (item: {
+interface CoreSkillItem {
   url: string;
   name: string;
+  bucket?: string;
+  path?: string;
   description?: string;
   author?: string;
   updatedAt?: number;
   isMy?: boolean;
   canEdit?: boolean;
   sharedWithMe?: boolean;
-}): DialSkill => {
+}
+
+/**
+ * chat-api's skill metadata has no version or tags yet; they are read
+ * defensively so the catalog shows them as soon as the listing carries them.
+ */
+const getOptionalSkillFields = (item: CoreSkillItem): Pick<DialSkill, 'version' | 'tags'> => {
+  const extra = item as CoreSkillItem & { version?: unknown; tags?: unknown };
+  return {
+    ...(typeof extra.version === 'string' && extra.version !== '' && { version: extra.version }),
+    ...(Array.isArray(extra.tags) && {
+      tags: extra.tags.filter((tag): tag is string => typeof tag === 'string'),
+    }),
+  };
+};
+
+export const mapCoreToDialSkill = (item: CoreSkillItem): DialSkill => {
   const id = decodeApiUrl(item.url);
   return {
     id,
@@ -441,12 +463,35 @@ const mapCoreToDialSkill = (item: {
     name: item.name,
     type: 'skill',
     description: item.description,
+    bucket: item.bucket,
+    path: item.path,
     updatedAt: item.updatedAt,
     author: item.author,
     isMy: item.isMy,
     canEdit: item.canEdit,
     sharedWithMe: item.sharedWithMe,
+    ...getOptionalSkillFields(item),
   };
+};
+
+/** `skills/{bucket}/{...path}` → bucket + bucket-relative path; ids are already decoded. */
+const getSkillLocation = (skill: DialSkill): { bucket: string; path: string } => {
+  if (skill.bucket && skill.path) return { bucket: skill.bucket, path: skill.path };
+  const [, bucket = '', ...pathSegments] = skill.id.split('/');
+  return { bucket, path: pathSegments.join('/') };
+};
+
+/** Downloads the skill's `SKILL.md` as text. */
+export const fetchSkillManifest = async (
+  skill: DialSkill,
+  signal?: AbortSignal,
+): Promise<string> => {
+  const { bucket, path } = getSkillLocation(skill);
+  const blob = await skillsApi.downloadSkillFile(
+    { bucket, path, filePath: SKILL_MANIFEST_FILE },
+    { signal },
+  );
+  return blob.text();
 };
 
 /** chat-api's own controller already does the personal+public+shared aggregation this app used to replicate against Core directly. */

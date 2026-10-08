@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { QuickApp2Form } from '@/form/quickApp2Form';
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 

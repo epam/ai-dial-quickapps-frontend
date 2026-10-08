@@ -24,8 +24,8 @@ import {
 
 import { CommonI18nKeys, DialFileManagerI18nKeys } from '@/constants/i18n';
 import { useAuthContext } from '@/context/AuthContext';
-import { useDialFileManager } from '@/hooks/useDialFileManager';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useDialFileManager } from '@/hooks/use-dial-file-manager';
+import { useTranslation } from '@/hooks/use-translation';
 import { FileUploadStatus } from '@/types/file-manager';
 import { Translation } from '@/types/translation';
 import { isHiddenPath } from '@/utils/dial-file-path';

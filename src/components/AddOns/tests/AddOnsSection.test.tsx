@@ -6,10 +6,10 @@ import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 
 import { AddOnsSection } from '../AddOnsSection';
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({ t: (key: string) => key, language: 'en' }),
 }));
-vi.mock('@/hooks/useSearchParams', () => ({
+vi.mock('@/hooks/use-search-params', () => ({
   useSearchParams: () => ({ get: () => null }),
 }));
 vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => ({

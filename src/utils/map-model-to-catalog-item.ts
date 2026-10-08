@@ -1,9 +1,10 @@
 import type { CatalogItem } from '@epam/ai-dial-catalog';
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 
+import { MODEL_ROOTS } from '@/constants/dial-paths';
 import type { DialModel } from '@/types/dial-entities';
 import { type EntityScopeInfo, ResourceScope } from '@/types/resource-scope';
-import { getEntityScopeInfo } from '@/utils/entity-scope';
+import { getCatalogFolder, getEntityScopeInfo } from '@/utils/entity-scope';
 import { getLocalizedText } from '@/utils/get-localized-text';
 import { getUpdatedAtTimestamp } from '@/utils/get-updated-at-timestamp';
 import { resolveIconUrl } from '@/utils/resolve-icon-url';
@@ -14,8 +15,6 @@ export interface MapModelToCatalogItemOptions {
   /** Already-translated scope labels — keeps this util free of i18n. */
   scopeLabels: Record<ResourceScope, string>;
 }
-
-const MODEL_ROOTS = new Set(['model', 'models']);
 
 /**
  * Configured models have no bucket segment — chat-api returns them as a bare
@@ -55,7 +54,7 @@ export const mapModelToCatalogItem = (
     description: model.description ?? '',
     topics: model.topics ?? [],
     updatedAt: updatedAt > 0 ? updatedAt : undefined,
-    folder: scopeInfo ? [scopeLabels[scopeInfo.scope], ...scopeInfo.folderPath] : [],
+    folder: getCatalogFolder(scopeInfo, scopeLabels),
     isMyApp: scopeInfo?.scope === ResourceScope.Personal,
     // Required by `CatalogItem`, never shown in the list view.
     lastUsed: '',

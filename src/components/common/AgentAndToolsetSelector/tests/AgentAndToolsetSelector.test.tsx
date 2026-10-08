@@ -7,7 +7,7 @@ import { AgentAndToolsetSelector } from '../AgentAndToolsetSelector';
 vi.mock('@/context/AppContext', () => ({
   useAppContext: () => ({ settings: { allowedOrigins: ['*'] } }),
 }));
-vi.mock('@/hooks/useSearchParams', () => ({
+vi.mock('@/hooks/use-search-params', () => ({
   useSearchParams: () => ({ get: () => null }),
 }));
 vi.mock('@/utils/request-application-credentials', () => ({

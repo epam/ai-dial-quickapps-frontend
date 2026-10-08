@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { DialDeploymentToolsetToolTypes, ToolsetTypes } from '@/constants/quick-apps';
 import { buildQuickApp2Config, getQuickApp2FormData } from '@/form/quickApp2Form';
-import { AnyToolset, QuickApp2Config } from '@/types/quick-apps';
+import {
+  AnyToolset,
+  DialDeploymentToolsetToolTypes,
+  QuickApp2Config,
+  SystemPromptType,
+  ToolsetTypes,
+} from '@/types/quick-apps';
 
 const MODEL_ID = 'gpt-4o';
 
@@ -38,7 +43,7 @@ const createApp = (toolSets: AnyToolset[]) => ({
   applicationProperties: {
     orchestrator: {
       deployment: { deployment_id: MODEL_ID },
-      system_prompt: { type: 'custom', variables: {}, content: 'Be helpful' },
+      system_prompt: { type: SystemPromptType.Custom, variables: {}, content: 'Be helpful' },
     },
     contexts: [],
     tool_sets: toolSets,

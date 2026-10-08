@@ -4,7 +4,7 @@ import { FC, memo, useCallback, useMemo, useState } from 'react';
 
 import { AddOnRow } from '@/components/AddOns/AddOnRow';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
 import { Translation } from '@/types/translation';
 import { isSavedVisibleStarter } from '@/utils/conversation-starters';

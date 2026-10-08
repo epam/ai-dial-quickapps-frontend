@@ -8,7 +8,7 @@ import { IconMessage, IconTrash } from '@tabler/icons-react';
 import { FC, useCallback, useEffect, useRef } from 'react';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import type { StarterWithId } from '@/types/conversation-starters';
 import { Translation } from '@/types/translation';
 

@@ -2,7 +2,7 @@ import { Spinner } from '@epam/ai-dial-ui-kit';
 import { FC } from 'react';
 
 import { CommonI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import { Translation } from '@/types/translation';
 
 const FullScreenSpinner: FC = () => {

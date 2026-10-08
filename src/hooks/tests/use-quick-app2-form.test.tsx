@@ -182,6 +182,25 @@ describe('useQuickApp2Form external state', () => {
     expect(latestForm.isDirty).toBe(false);
   });
 
+  it('pre-selects the first tool-supporting model when no default model is configured', () => {
+    renderHook(createValues({ model: '' }));
+
+    act(() => {
+      latestForm.syncExternalState({
+        modelStatus: QuickApp2ModelStatus.Ready,
+        toolSupportingModelIds: ['model-1', 'gpt-4o'],
+        availableModelIds: ['gpt-4o', 'model-1'],
+        isCodeInterpreterEnabled: false,
+        isWebFetchEnabled: false,
+        isAddAttachmentEnabled: false,
+        shouldValidate: true,
+      });
+    });
+
+    expect(latestForm.values.model).toBe('model-1');
+    expect(latestForm.isDirty).toBe(false);
+  });
+
   it('preserves an existing model when external model lists change', () => {
     renderHook(createValues({ model: 'saved-model' }));
 

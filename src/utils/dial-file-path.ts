@@ -1,6 +1,6 @@
 import type { DialFile } from '@epam/ai-dial-ui-kit';
 import { DialFileNodeType } from '@epam/ai-dial-ui-kit';
-import { DIAL_HIDDEN_FOLDER_MARKER } from '@/constants/dial-files';
+import { DIAL_HIDDEN_FOLDER_MARKER } from '@/constants/dial-paths';
 import { safeDecodeURI } from '@/utils/safe-decode-uri';
 
 export const isHiddenPath = (path: string): boolean => path.includes(DIAL_HIDDEN_FOLDER_MARKER);

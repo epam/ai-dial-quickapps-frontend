@@ -6,7 +6,7 @@ import { ModelIcon } from '@/components/common/ModelIcon/ModelIcon';
 import { TopicsLine } from '@/components/common/TopicsLine/TopicsLine';
 import { EntityScopeLine } from '@/components/common/EntityScopeLine/EntityScopeLine';
 import { CommonI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import { Translation } from '@/types/translation';
 import { getEntityStatus, getEntityStatusMessage } from '@/utils/get-entity-status';
 import { getLocalizedText } from '@/utils/get-localized-text';

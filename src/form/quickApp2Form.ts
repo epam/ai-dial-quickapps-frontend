@@ -3,11 +3,8 @@ import { z } from 'zod';
 z.config({ jitless: true });
 
 import {
-  DEFAULT_QUICK_APPS_MODEL,
-  DialDeploymentToolsetToolTypes,
   ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE,
   REPRESENTATION_TOOLING_FEATURE_VALUE,
-  ToolsetTypes,
   WEB_FETCH_FEATURE_VALUE,
 } from '@/constants/quick-apps';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
@@ -23,14 +20,22 @@ import type { DialAIEntityModel, LocalizedText } from '@/types/dial-entities';
 import { getLocalizedText } from '@/utils/get-localized-text';
 import {
   AnyToolset,
+  CodeInterpreterTemplate,
   CodeInterpreterToolset,
+  ContextType,
   DialAppToolset,
   DialAppTransportType,
   DialDeploymentSimpleTool,
   DialDeploymentToolset,
+  DialDeploymentToolsetName,
+  DialDeploymentToolsetToolTypes,
   DialSkillRef,
   MCPToolset,
   QuickApp2Config,
+  SkillRefType,
+  SystemPromptType,
+  TimestampInjectionStrategy,
+  ToolsetTypes,
   UnknownToolset,
   isDialAppToolset,
   isDialDeploymentSimpleTool,
@@ -43,7 +48,7 @@ import omit from 'lodash-es/omit';
 import sortBy from 'lodash-es/sortBy';
 import { nanoid } from 'nanoid';
 
-export const DEFAULT_TEMPERATURE = 1;
+const DEFAULT_TEMPERATURE = 1;
 
 export enum AgentOrToolsetSchemaKeys {
   id = '[schema]:id',
@@ -173,10 +178,10 @@ export const resolveDefaultModelId = (
   existingModelId?: string,
   toolSupportingModelIds?: string[],
   availableModelIds?: string[],
-  defaultModelId: string = DEFAULT_QUICK_APPS_MODEL,
+  defaultModelId?: string,
 ): string => {
   if (existingModelId) return existingModelId;
-  if (availableModelIds?.includes(defaultModelId)) return defaultModelId;
+  if (defaultModelId && availableModelIds?.includes(defaultModelId)) return defaultModelId;
   return toolSupportingModelIds?.[0] ?? '';
 };
 
@@ -188,7 +193,7 @@ export const getQuickApp2FormData = (
   },
   toolSupportingModelIds?: string[],
   availableModelIds?: string[],
-  defaultModelId: string = DEFAULT_QUICK_APPS_MODEL,
+  defaultModelId?: string,
 ): QuickApp2Form => {
   const appProperties = app?.applicationProperties as QuickApp2Config | undefined;
   const inputAttachmentTypes = (app?.inputAttachmentTypes as string[] | undefined) ?? [];
@@ -242,7 +247,7 @@ export const getQuickApp2FormData = (
     toolSupportingModelIds,
     availableModelIds,
     agentSkills: (appProperties?.skills ?? [])
-      .filter((s): s is DialSkillRef => s.type === 'dial-skill')
+      .filter((s): s is DialSkillRef => s.type === SkillRefType.DialSkill)
       .map((s) => decodeApiUrl(s.url)),
     timestamp,
     processLargeFiles,
@@ -273,11 +278,13 @@ export const buildQuickApp2Config = ({
     .map(({ title, text }) => ({ title, text }));
 
   const skills = data.agentSkills.map((url) => ({
-    type: 'dial-skill' as const,
+    type: SkillRefType.DialSkill,
     url,
   }));
 
-  const timestampFeature = data.timestamp ? { injection_strategy: 'tool_call' as const } : null;
+  const timestampFeature = data.timestamp
+    ? { injection_strategy: TimestampInjectionStrategy.ToolCall }
+    : null;
   const model = allEntitiesMap[data.model];
   const supportsAttachments = !!(model?.inputAttachmentTypes as string[] | undefined)?.length;
 
@@ -286,22 +293,22 @@ export const buildQuickApp2Config = ({
       ...existingConfig?.orchestrator,
       deployment: {
         deployment_id: data.model,
-        parameters: doesModelAllowTemperature(model) ? { temperature: data.temperature } : undefined,
+        parameters: doesModelAllowTemperature(model)
+          ? { temperature: data.temperature }
+          : undefined,
       },
       system_prompt: {
-        type: 'custom',
+        type: SystemPromptType.Custom,
         variables: existingConfig?.orchestrator?.system_prompt?.variables ?? {},
         content: data.instructions,
       },
       ...(supportsAttachments && {
-        attachment_strategy: data.processLargeFiles
-          ? ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE
-          : null,
+        attachment_strategy: data.processLargeFiles ? ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE : null,
       }),
     },
     contexts: data.documentRelativeUrl.map((url) => ({
       url,
-      type: 'file' as const,
+      type: ContextType.File,
     })),
     tool_sets: toolSets,
     conversation_starters: starters.length
@@ -415,7 +422,7 @@ export const getQuickApp2Toolsets = ({
     ...dialMCPToolsets,
     ...dialAppToolsets,
     {
-      name: 'dial-deployment-tool-set',
+      name: DialDeploymentToolsetName.Default,
       type: ToolsetTypes.DialDeployment,
       tools: [...dialDeploymentsToolsets],
     } as DialDeploymentToolset,
@@ -423,7 +430,7 @@ export const getQuickApp2Toolsets = ({
     ...(data.codeInterpreter
       ? [
           {
-            template_name: 'py_interpreter',
+            template_name: CodeInterpreterTemplate.PyInterpreter,
             type: ToolsetTypes.CodeInterpreter,
           } as CodeInterpreterToolset,
         ]

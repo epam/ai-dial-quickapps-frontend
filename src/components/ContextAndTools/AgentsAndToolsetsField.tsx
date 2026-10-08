@@ -4,7 +4,7 @@ import { EntityInfoModal } from '@/components/common/AgentAndToolsetSelector/Ent
 import { useDataContext } from '@/context/DataContext';
 import type { QuickApp2Form } from '@/form/quickApp2Form';
 import { AgentOrToolsetSchemaKeys } from '@/form/quickApp2Form';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import { DialAppTransportType } from '@/types/quick-apps';
 import { Translation } from '@/types/translation';
 import { isDialAiEntityModel } from '@/utils/application';

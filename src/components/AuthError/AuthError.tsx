@@ -3,7 +3,7 @@ import { FC, memo } from 'react';
 
 import AuthStateScreen from '@/components/common/AuthStateScreen/AuthStateScreen';
 import { CommonI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import { AuthErrorReason } from '@/types/auth';
 import { Translation } from '@/types/translation';
 import { DIAL_ICON_SIZE, DIAL_KIT_ICON_STROKE } from '@epam/ai-dial-ui-kit';

@@ -1,3 +1,5 @@
+import type { NotificationVariant } from '@epam/ai-dial-ui-kit';
+
 export enum FileUploadStatus {
   Queued = 'queued',
   Uploading = 'uploading',
@@ -16,4 +18,21 @@ export interface FileUploadEntry {
 export interface FileUploadBatchState {
   files: FileUploadEntry[];
   isOpen: boolean;
+}
+
+export interface FileUploadValidationResult {
+  valid: boolean;
+  message?: string;
+}
+
+export interface FileManagerNotification {
+  variant: NotificationVariant;
+  title?: string;
+  message: string;
+}
+
+/** Where a "Shared with me" root actually lives: its owner's bucket and DIAL Core path. */
+export interface SharedRootMeta {
+  bucket: string;
+  dialCorePath: string;
 }

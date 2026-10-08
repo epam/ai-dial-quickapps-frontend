@@ -5,7 +5,7 @@ import { DialEllipsisTooltip } from '@epam/ai-dial-ui-kit';
 
 import { CommonI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import { ResourceScope } from '@/types/resource-scope';
 import { Translation } from '@/types/translation';
 import { getEntityScopeInfo } from '@/utils/entity-scope';

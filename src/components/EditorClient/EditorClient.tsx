@@ -1,7 +1,7 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import { AppContextProvider, type AppState } from '@/context/AppContext';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import type { MaybeLocalizedText } from '@/types/dial-entities';
 import { Translation } from '@/types/translation';
 import ForbiddenPage from '@/components/ForbiddenPage/ForbiddenPage';
@@ -17,7 +17,6 @@ import { buildLocalizedText } from '@/utils/get-localized-text';
 import { hasQuickAppChanges, type StoredGeneralFields } from '@/utils/has-quick-app-changes';
 import { QuickApp2Form, type QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form';
 import { AUTO_SAVE_INTERVAL_MS, DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
-import { DEFAULT_QUICK_APPS_SCHEMA_2_ID } from '@/constants/quick-apps';
 import {
   InboundMessage,
   InboundMessageType,
@@ -118,11 +117,7 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
           if (cancelled) return;
           allowedOriginsRef.current = settings.allowedOrigins ?? [];
           setAppState({
-            app: app ?? {
-              id: appId,
-              name: '',
-              applicationTypeSchemaId: DEFAULT_QUICK_APPS_SCHEMA_2_ID,
-            },
+            app: app ?? { id: appId, name: '' },
             settings,
             isReady: true,
           });

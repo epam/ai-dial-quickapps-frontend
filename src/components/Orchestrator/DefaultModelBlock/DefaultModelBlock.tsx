@@ -2,7 +2,7 @@ import { FC, lazy, Suspense, useCallback, useState } from 'react';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import { SectionRowVariant } from '@/types/section-row';
 import { Translation } from '@/types/translation';
 import {

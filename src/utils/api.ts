@@ -1,4 +1,4 @@
-import { DIAL_HIDDEN_FOLDER_MARKER } from '@/constants/dial-files';
+import { DIAL_HIDDEN_FOLDER_MARKER, PUBLIC_BUCKET_SEGMENT } from '@/constants/dial-paths';
 
 const PATH_KEY_SEPARATOR = '__';
 
@@ -18,7 +18,6 @@ export const isApplicationId = (id?: string) => id?.startsWith('applications/') 
 export const isToolsetId = (id?: string) => id?.startsWith('toolsets/') ?? false;
 
 const TOOLSETS_ID_PREFIX = 'toolsets/';
-const PUBLIC_BUCKET_SEGMENT = 'public';
 
 /** Whether a toolset id belongs to the `public` bucket (shared with all users), mirroring the legacy `isEntityIdPublic` check. */
 export const isPublicToolsetId = (toolsetId: string): boolean => {

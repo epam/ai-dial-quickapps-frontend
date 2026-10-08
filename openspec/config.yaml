@@ -18,7 +18,7 @@ context: |
     TypeScript imports omit `.js`/`.ts`/`.tsx` extensions (resource files like
     .css/.json keep theirs). Do not change to node16/nodenext.
   - Styling: Tailwind CSS 3
-  - i18n: i18next + react-i18next (namespaces: quickAppEditor, common, settings, chat)
+  - i18n: i18next + react-i18next (namespaces: quickAppEditor, common)
   - Forms: react-hook-form + zod (pending removal — see docs/TECH_DEBT.md)
   - State: React Context (AppContext, DataContext, AuthContext, ThemeContext) + custom hooks
   - Testing: Vitest 4 + jsdom
@@ -136,7 +136,7 @@ rules:
     # auto-load from .claude/rules/*.md and AGENTS.md when matching files are
     # touched. This block governs design decisions only.
     - 'All user-visible strings go through react-i18next useTranslation — pick the
-      correct namespace (quickAppEditor, common, settings, chat).'
+      correct namespace (quickAppEditor, common).'
     - Do not call fetch directly in components — route every DIAL entity call
       through the typed chat-api client (src/utils/chat-api-client.ts,
       dialClient.ts, dial-files-api.ts, etc.), never a hardcoded endpoint.

@@ -2,7 +2,7 @@ import { FC, memo, useCallback, useId, useState } from 'react';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { isValidMaxInputAttachments } from '@/form/quickApp2Form';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import { Translation } from '@/types/translation';
 import { getTemperatureScaleLabelKey } from '@/utils/application';

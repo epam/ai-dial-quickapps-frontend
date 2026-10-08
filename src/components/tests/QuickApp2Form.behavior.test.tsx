@@ -53,7 +53,7 @@ const testContext = vi.hoisted(() => {
   };
 });
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({ language: 'en', t: (key: string) => key }),
 }));
 
@@ -144,7 +144,28 @@ vi.mock('@/components/QuickApp2FormLegacyFields/QuickApp2FormLegacyFields', () =
   default: () => null,
 }));
 vi.mock('@/components/ContextAndTools/ContextAndToolsSection', () => ({ default: () => null }));
-vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => ({ default: () => null }));
+vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => {
+  // Stands in for the skill details popup's Delete, which detaches one skill.
+  const SkillsTestSection = ({
+    value,
+    onChange,
+  }: {
+    value: string[];
+    onChange: (value: string[]) => void;
+  }) => (
+    <div>
+      <output data-testid="skills-value">{value.join('|')}</output>
+      <button
+        type="button"
+        onClick={() => onChange(value.filter((id) => id !== 'skills/public/b'))}
+      >
+        Delete skill b
+      </button>
+    </div>
+  );
+
+  return { default: SkillsTestSection };
+});
 vi.mock('@/components/ConversationStarters/ConversationStartersRow', () => {
   const ConversationStartersTestRow = ({
     values,
@@ -355,6 +376,36 @@ describe('QuickApp2Form observable behavior', () => {
     });
     await triggerSave({ isAutoSave: true, ignoreDirty: true });
     expect(onSave).toHaveBeenCalledTimes(2);
+  });
+
+  it('detaching a skill makes the form dirty and saves the remaining skills', async () => {
+    testContext.appContext.app = {
+      id: 'app',
+      applicationProperties: {
+        skills: ['a', 'b', 'c'].map((name) => ({
+          type: 'dial-skill',
+          url: `skills/public/${name}`,
+        })),
+      },
+    };
+    const { onSave, onDirtyChange } = renderForm();
+
+    expect(container.querySelector('[data-testid="skills-value"]')?.textContent).toBe(
+      'skills/public/a|skills/public/b|skills/public/c',
+    );
+
+    await act(async () => {
+      [...container.querySelectorAll('button')]
+        .find((button) => button.textContent === 'Delete skill b')
+        ?.click();
+      await Promise.resolve();
+    });
+
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+
+    await submitForm();
+
+    expect(onSave.mock.calls[0][0].agentSkills).toEqual(['skills/public/a', 'skills/public/c']);
   });
 
   it('ignores host-triggered saves while read-only', async () => {

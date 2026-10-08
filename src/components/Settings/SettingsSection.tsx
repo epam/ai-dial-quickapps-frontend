@@ -2,7 +2,7 @@ import { IconSettings } from '@tabler/icons-react';
 import { FC, memo, useCallback, useState } from 'react';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/use-translation';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import { SectionRowVariant } from '@/types/section-row';
 import { Translation } from '@/types/translation';
