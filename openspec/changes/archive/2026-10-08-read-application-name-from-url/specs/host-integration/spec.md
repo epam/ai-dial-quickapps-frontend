@@ -1,16 +1,4 @@
-# Host Integration Specification
-
-## Purpose
-
-QuickApps runs embedded inside a host page (typically an `<iframe>`) rather than as a
-standalone site. This capability defines the public contract QuickApps exposes to any
-embedding host: what it reads from its entry URL, what handshake and messages it emits,
-what it accepts from the host, and how it validates the host's origin before trusting or
-targeting it. The contract is host-agnostic — it describes only QuickApps' own observable
-behavior, not any particular host's implementation, so that any compliant host (not only
-ai-dial-chat) can embed QuickApps successfully.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Entry URL query parameters
 
@@ -126,8 +114,8 @@ own identity via a query parameter.
 ### Requirement: Outbound message contract
 
 QuickApps SHALL emit the following outbound message types toward the resolved host,
-each identifying itself with the application name supplied by the entry URL and, where noted,
-carrying the stated payload:
+each identifying itself with the application name supplied by the entry URL and, where
+noted, carrying the stated payload:
 
 - **Ready** — sent once when QuickApps has initialized and can receive host commands.
 - **HeightChange** — sent whenever QuickApps' rendered content height changes, carrying
@@ -167,67 +155,3 @@ carrying the stated payload:
   save or the session logs out
 - **THEN** QuickApps SHALL post `X/readyToSave` or `X/loggedOut` respectively to the
   resolved host
-
-### Requirement: Inbound message contract
-
-QuickApps SHALL accept the following inbound message types from the host and SHALL
-ignore any message whose origin fails the allowed-origin check (see "Origin
-validation") regardless of its type:
-
-- **TriggerSave** / **TriggerAutoSave** — instructs QuickApps to save the current
-  editor state; QuickApps SHALL treat this as equivalent to a locally-triggered save
-  for the purpose of the outbound save-outcome messages above.
-- **Reset** — instructs QuickApps to discard in-progress edits and reload the editor
-  state from scratch.
-- **ToolsetLoginResult** / **ToolsetLogoutResult** — delivers the outcome of a
-  previously requested toolset login/logout back to QuickApps.
-
-#### Scenario: Host requests a save while QuickApps has unsaved changes
-
-- **WHEN** QuickApps receives a TriggerSave or TriggerAutoSave message from an allowed
-  origin
-- **THEN** QuickApps SHALL perform a save of the current editor state and report the
-  outcome via the outbound save-outcome messages
-
-#### Scenario: Host requests a reset
-
-- **WHEN** QuickApps receives a Reset message from an allowed origin
-- **THEN** QuickApps SHALL discard in-progress edits and reload the editor state
-
-### Requirement: Origin validation
-
-QuickApps SHALL validate the origin of every inbound message against a configured
-list of one or more allowed origins before acting on it, and SHALL target outbound
-messages only at those allowed origins (or a resolved host origin, per "Host origin
-resolution") rather than broadcasting unconditionally to any origin.
-
-#### Scenario: Allowed origins are configured as specific origins
-
-- **WHEN** one or more allowed origins other than the wildcard are configured, and an
-  inbound message's origin does not exactly match any of them
-- **THEN** QuickApps SHALL discard the message without acting on it
-
-#### Scenario: Several allowed origins are configured
-
-- **WHEN** more than one specific allowed origin is configured
-- **THEN** QuickApps SHALL accept inbound messages from any of them, and SHALL address
-  each outbound message to every configured origin individually, so that only the
-  embedding host whose origin matches receives it
-
-#### Scenario: Allowed origin is configured as the wildcard or not configured
-
-- **WHEN** the allowed origins include the wildcard (`*`), or none are configured
-- **THEN** QuickApps SHALL accept inbound messages regardless of origin, and SHALL
-  target outbound messages using the wildcard as well
-
-### Requirement: Application credentials request
-
-QuickApps SHALL be able to ask the host to supply credentials for a specific
-application without requiring the host to have pre-loaded them.
-
-#### Scenario: QuickApps needs credentials for an application
-
-- **WHEN** QuickApps determines it needs credentials for a given application id (for
-  example, because `applicationCredentials` mode is active)
-- **THEN** QuickApps SHALL post a RequestApplicationCredentials message carrying that
-  application id to the resolved allowed origin

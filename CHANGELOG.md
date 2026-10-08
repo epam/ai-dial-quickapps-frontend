@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### ⚠ BREAKING CHANGES
+
+- `applicationName` is no longer read from `CUSTOM_CLIENT_VARIABLES`. The host must pass it as
+  the `applicationName` query parameter of the QuickApps entry URL (ai-dial-chat sends the
+  schema's display name). A value left in the env is ignored, and without the parameter the
+  host handshake and `{applicationName}/readyToSave|loggedOut` messages are not sent. Upgrade
+  `ai-dial-chat` (with `pass-application-name-to-quickapps`) **before** deploying this version.
+  One deployed instance can now serve several applications.
+
 ### Changed
 
 - Renamed the Quick App editor i18n locale and namespace from `marketplace` to `quickAppEditor`.

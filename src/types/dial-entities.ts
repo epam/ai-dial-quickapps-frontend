@@ -118,7 +118,6 @@ export interface AppSettings {
   defaultModelId?: string;
   dialAdminHost?: string;
   dialChatHost?: string;
-  applicationName?: string;
 }
 
 export interface DialSkill {
