@@ -12,12 +12,19 @@ import {
 } from '@epam/ai-dial-react-file-manager';
 
 import { DialFileManagerI18nKeys } from '@/constants/i18n';
+import { FileUploadStatus } from '@/types/file-manager';
 import {
   useDialFileManager,
   type UseDialFileManagerOptions,
   type UseDialFileManagerResult,
 } from '@/hooks/use-dial-file-manager';
-import { createFolder, deleteFiles, listFiles, listSharedFiles } from '@/utils/dial-files-api';
+import {
+  createFolder,
+  deleteFiles,
+  listFiles,
+  listSharedFiles,
+  uploadFile,
+} from '@/utils/dial-files-api';
 import { FilesApiNodeType, type ListFilesItem } from '@/types/dial-files';
 
 vi.mock('@/hooks/use-translation', () => ({
@@ -292,5 +299,125 @@ describe('useDialFileManager — mutations', () => {
     );
     expect(latest.path).toBe('/My files');
     expect(latest.isDeleting).toBe(false);
+  });
+});
+
+describe('useDialFileManager — uploads', () => {
+  interface PendingUpload {
+    path: string;
+    signal?: AbortSignal;
+    onProgress?: (percent: number) => void;
+    resolve: () => void;
+    reject: () => void;
+  }
+
+  let pending: PendingUpload[];
+
+  const fileItem = (name: string) => ({ name, fileContent: new File(['x'], name) });
+
+  const statuses = () => latest.uploadBatchState?.files.map((entry) => entry.status);
+
+  const settle = async (name: string, outcome: 'resolve' | 'reject') => {
+    await act(async () => {
+      pending.find((upload) => upload.path.endsWith(name))?.[outcome]();
+    });
+  };
+
+  beforeEach(() => {
+    pending = [];
+    vi.mocked(uploadFile).mockImplementation(
+      (_bucket, path, _file, options) =>
+        new Promise((resolve, reject) => {
+          const upload: PendingUpload = {
+            path,
+            signal: options?.signal,
+            onProgress: options?.onProgress,
+            resolve: () => resolve({} as never),
+            reject: () => reject(new Error('failed')),
+          };
+          options?.signal?.addEventListener('abort', () => reject(new Error('aborted')));
+          pending.push(upload);
+        }),
+    );
+  });
+
+  it('tracks each file to completion and keeps the batch after it ends', async () => {
+    const onNotification = vi.fn();
+    await render({ onNotification });
+
+    await act(async () =>
+      latest.onUploadFiles([fileItem('a.pdf'), fileItem('b.pdf')], '/My files/'),
+    );
+    expect(statuses()).toEqual([FileUploadStatus.Uploading, FileUploadStatus.Uploading]);
+
+    await act(async () => pending[0].onProgress?.(40));
+    expect(latest.uploadBatchState?.files[0].percent).toBe(40);
+
+    await settle('a.pdf', 'resolve');
+    await settle('b.pdf', 'resolve');
+
+    expect(statuses()).toEqual([FileUploadStatus.Completed, FileUploadStatus.Completed]);
+    expect(onNotification).toHaveBeenCalledWith(
+      expect.objectContaining({ variant: NotificationVariant.Success }),
+    );
+
+    act(() => latest.clearUploadBatch());
+    expect(latest.uploadBatchState).toBeNull();
+  });
+
+  it('marks a failed file without stopping the others', async () => {
+    await render();
+
+    await act(async () =>
+      latest.onUploadFiles([fileItem('a.pdf'), fileItem('b.pdf')], '/My files/'),
+    );
+    await settle('a.pdf', 'reject');
+    await settle('b.pdf', 'resolve');
+
+    expect(statuses()).toEqual([FileUploadStatus.Failed, FileUploadStatus.Completed]);
+  });
+
+  it('cancels one file and lets the rest finish', async () => {
+    const onNotification = vi.fn();
+    await render({ onNotification });
+
+    await act(async () =>
+      latest.onUploadFiles([fileItem('a.pdf'), fileItem('b.pdf')], '/My files/'),
+    );
+    const [, second] = latest.uploadBatchState?.files ?? [];
+    await act(async () => latest.cancelUploadItem(second.id));
+    await settle('a.pdf', 'resolve');
+
+    expect(pending[0].signal?.aborted).toBe(false);
+    expect(statuses()).toEqual([FileUploadStatus.Completed, FileUploadStatus.Cancelled]);
+    expect(onNotification).toHaveBeenCalled();
+  });
+
+  it('skips a queued file that is cancelled before it starts', async () => {
+    await render();
+
+    const names = ['a.pdf', 'b.pdf', 'c.pdf', 'd.pdf'];
+    await act(async () => latest.onUploadFiles(names.map(fileItem), '/My files/'));
+    const queued = latest.uploadBatchState?.files[3];
+    expect(queued?.status).toBe(FileUploadStatus.Queued);
+
+    await act(async () => latest.cancelUploadItem(queued?.id ?? ''));
+    for (const name of names.slice(0, 3)) await settle(name, 'resolve');
+
+    expect(uploadFile).toHaveBeenCalledTimes(3);
+    expect(statuses()?.[3]).toBe(FileUploadStatus.Cancelled);
+  });
+
+  it('cancels the whole batch without a notification', async () => {
+    const onNotification = vi.fn();
+    await render({ onNotification });
+
+    await act(async () =>
+      latest.onUploadFiles([fileItem('a.pdf'), fileItem('b.pdf')], '/My files/'),
+    );
+    await act(async () => latest.cancelUpload());
+
+    expect(statuses()).toEqual([FileUploadStatus.Cancelled, FileUploadStatus.Cancelled]);
+    expect(onNotification).not.toHaveBeenCalled();
   });
 });

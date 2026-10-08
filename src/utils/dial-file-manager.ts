@@ -5,11 +5,13 @@ import {
   DialFilePermission,
 } from '@epam/ai-dial-react-file-manager';
 
-import type {
-  FileUploadBatchState,
-  FileUploadEntry,
+import { TransferQueueItemStatus, type TransferQueueItem } from '@epam/ai-dial-ui-kit';
+
+import {
   FileUploadStatus,
-  SharedRootMeta,
+  type FileUploadBatchState,
+  type FileUploadEntry,
+  type SharedRootMeta,
 } from '@/types/file-manager';
 import { FilesApiNodeType, type ListFilesItem } from '@/types/dial-files';
 import { listFiles, listPublicFiles, listSharedFiles } from '@/utils/dial-files-api';
@@ -183,6 +185,29 @@ export const updateUploadEntry = (
   const files = prev.files.map((f, i) => (i === index ? { ...f, ...changes } : f));
   return { ...prev, files };
 };
+
+const TRANSFER_QUEUE_STATUS: Record<FileUploadStatus, TransferQueueItemStatus> = {
+  [FileUploadStatus.Queued]: TransferQueueItemStatus.InProgress,
+  [FileUploadStatus.Uploading]: TransferQueueItemStatus.InProgress,
+  [FileUploadStatus.Completed]: TransferQueueItemStatus.Success,
+  [FileUploadStatus.Failed]: TransferQueueItemStatus.Failed,
+  [FileUploadStatus.Cancelled]: TransferQueueItemStatus.Canceled,
+};
+
+/** Maps an upload batch to kit `TransferQueue` rows; a percentage is shown only while uploading. */
+export const toTransferQueueItems = (batch: FileUploadBatchState): TransferQueueItem[] =>
+  batch.files.map(({ id, name, status, percent }) => ({
+    id,
+    name,
+    status: TRANSFER_QUEUE_STATUS[status],
+    percent: status === FileUploadStatus.Uploading ? percent : undefined,
+  }));
+
+/** True while some file of the batch is still queued or uploading. */
+export const isUploadInProgress = (batch: FileUploadBatchState | null): boolean =>
+  batch?.files.some(
+    ({ status }) => status === FileUploadStatus.Queued || status === FileUploadStatus.Uploading,
+  ) ?? false;
 
 const dialCorePathToRelative = (dialCorePath: string, bucket: string): string => {
   const prefix = `files/${bucket}/`;

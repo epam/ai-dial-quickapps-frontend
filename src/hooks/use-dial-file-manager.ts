@@ -85,6 +85,8 @@ export interface UseDialFileManagerResult {
   ) => Promise<FileUploadValidationResult>;
   uploadBatchState: FileUploadBatchState | null;
   cancelUpload: () => void;
+  /** Cancels one file of the batch: aborts its request, or skips it if it has not started. */
+  cancelUploadItem: (id: string) => void;
   clearUploadBatch: () => void;
   onCreateFolder: (file: DialUploadFileItem, folderPath: string, fileId: string) => Promise<void>;
   onCreateFolderValidate: (name: string, parentFolder: DialFile) => string | null;
@@ -151,7 +153,10 @@ export const useDialFileManager = ({
   const sharedRootMetaRef = useRef<Map<string, SharedRootMeta>>(new Map());
 
   const [uploadBatchState, setUploadBatchState] = useState<FileUploadBatchState | null>(null);
-  const uploadAbortControllerRef = useRef<AbortController | null>(null);
+  // One controller per file of the running batch, keyed by entry id, so a single file can be
+  // cancelled; `isBatchCancelledRef` marks a cancel of the whole batch.
+  const uploadControllersRef = useRef<Map<string, AbortController>>(new Map());
+  const isBatchCancelledRef = useRef(false);
 
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -271,16 +276,16 @@ export const useDialFileManager = ({
     (files: DialUploadFileItem[], destinationFolder: string) => {
       if (files.length === 0) return;
 
-      const controller = new AbortController();
-      uploadAbortControllerRef.current = controller;
-
       const entries: FileUploadEntry[] = files.map((f, i) => ({
         id: `${Date.now()}-${i}`,
         name: f.name,
         status: FileUploadStatus.Queued,
       }));
+      const controllers = new Map(entries.map((entry) => [entry.id, new AbortController()]));
+      uploadControllersRef.current = controllers;
+      isBatchCancelledRef.current = false;
 
-      setUploadBatchState({ files: entries, isOpen: true });
+      setUploadBatchState({ files: entries });
 
       const destinationApiPath = virtualPathToApiPath(destinationFolder, rootLabel);
       const { bucket: uploadBucket, path: uploadBasePath } =
@@ -301,6 +306,7 @@ export const useDialFileManager = ({
           while (nextIndex < files.length) {
             const i = nextIndex++;
             const file = files[i];
+            const controller = controllers.get(entries[i].id) as AbortController;
 
             if (controller.signal.aborted) {
               setUploadBatchState((prev) => updateUploadEntry(prev, i, FileUploadStatus.Cancelled));
@@ -346,7 +352,7 @@ export const useDialFileManager = ({
 
         await Promise.all(Array.from({ length: UPLOAD_CONCURRENCY }, () => worker()));
 
-        if (!controller.signal.aborted) {
+        if (!isBatchCancelledRef.current) {
           if (successCount === 0 && failedCount > 0) {
             onNotification?.({
               variant: NotificationVariant.Error,
@@ -369,8 +375,8 @@ export const useDialFileManager = ({
           return next;
         });
         setRetryCounter((c) => c + 1);
-        uploadAbortControllerRef.current = null;
-        setUploadBatchState(null);
+        // The batch stays in state so its outcome can still be read; the host clears it.
+        if (uploadControllersRef.current === controllers) uploadControllersRef.current = new Map();
       };
 
       void processBatch();
@@ -389,7 +395,12 @@ export const useDialFileManager = ({
   );
 
   const cancelUpload = useCallback(() => {
-    uploadAbortControllerRef.current?.abort();
+    isBatchCancelledRef.current = true;
+    uploadControllersRef.current.forEach((controller) => controller.abort());
+  }, []);
+
+  const cancelUploadItem = useCallback((id: string) => {
+    uploadControllersRef.current.get(id)?.abort();
   }, []);
 
   const onCreateFolder = useCallback(
@@ -795,6 +806,7 @@ export const useDialFileManager = ({
     onValidateUpload,
     uploadBatchState,
     cancelUpload,
+    cancelUploadItem,
     clearUploadBatch,
     onCreateFolder,
     onCreateFolderValidate,

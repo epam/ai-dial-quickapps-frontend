@@ -14,10 +14,7 @@ import {
   type UseDialFileManagerOptions,
   type UseDialFileManagerResult,
 } from '@/hooks/use-dial-file-manager';
-import {
-  useDialFileSources,
-  type UseDialFileSourcesOptions,
-} from '@/hooks/use-dial-file-sources';
+import { useDialFileSources, type UseDialFileSourcesOptions } from '@/hooks/use-dial-file-sources';
 
 vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({ t: (key: string) => key, language: 'en' }),
@@ -51,6 +48,7 @@ const createFake = (label: string, overrides: Partial<UseDialFileManagerResult> 
     onValidateUpload: vi.fn().mockResolvedValue({ valid: true }),
     uploadBatchState: null,
     cancelUpload: vi.fn(),
+    cancelUploadItem: vi.fn(),
     clearUploadBatch: vi.fn(),
     onCreateFolder: vi.fn().mockResolvedValue(undefined),
     onCreateFolderValidate: vi.fn().mockReturnValue(null),
@@ -126,7 +124,7 @@ describe('useDialFileSources — single tabs', () => {
   it('returns the loader of the active tab and enables only that source', async () => {
     await render(DialFileManagerTabs.Organization);
 
-    expect(latest).toBe(org());
+    expect(latest.items).toBe(org().items);
     expect(enabled[DialFileManagerTabs.Organization]).toBe(true);
     expect(enabled[DialFileManagerTabs.Shared]).toBe(false);
   });
@@ -136,7 +134,7 @@ describe('useDialFileSources — single tabs', () => {
     await render(DialFileManagerTabs.MyFiles);
 
     expect(enabled[DialFileManagerTabs.Shared]).toBe(true);
-    expect(latest).toBe(my());
+    expect(latest.items).toBe(my().items);
   });
 });
 
@@ -267,7 +265,7 @@ describe('useDialFileSources — All view', () => {
   });
 
   it('reports busy state and the running upload of any source', async () => {
-    const batch = { files: [], isOpen: true };
+    const batch = { files: [] };
     fakes[DialFileManagerTabs.Shared] = createFake('Shared', {
       isDeleting: true,
       uploadBatchState: batch as never,
@@ -279,15 +277,44 @@ describe('useDialFileSources — All view', () => {
     expect(latest.uploadBatchState).toBe(batch);
   });
 
-  it('retries and cancels uploads on every source', async () => {
+  it('retries and cancels uploads and single files on every source', async () => {
     await render(DialFileManagerTabs.All);
 
     latest.retry();
     latest.cancelUpload();
+    latest.cancelUploadItem('42');
 
     for (const fake of [my(), shared(), org()]) {
       expect(fake.retry).toHaveBeenCalledTimes(1);
       expect(fake.cancelUpload).toHaveBeenCalledTimes(1);
+      expect(fake.cancelUploadItem).toHaveBeenCalledWith('42');
     }
+  });
+});
+
+describe('useDialFileSources — upload queue', () => {
+  it('shows another source upload in a single-source view', async () => {
+    const batch = { files: [] };
+    fakes[DialFileManagerTabs.Shared] = createFake('Shared', { uploadBatchState: batch as never });
+    await render(DialFileManagerTabs.MyFiles);
+
+    expect(latest.uploadBatchState).toBe(batch);
+
+    latest.clearUploadBatch();
+    for (const fake of [my(), shared(), org()]) {
+      expect(fake.clearUploadBatch).toHaveBeenCalledTimes(1);
+    }
+  });
+
+  it('clears the other sources batches when an upload starts', async () => {
+    await render(DialFileManagerTabs.MyFiles);
+    const files = [{ name: 'a.pdf', fileContent: new File(['x'], 'a.pdf') }];
+
+    latest.onUploadFiles(files, '/My files/docs/');
+
+    expect(my().onUploadFiles).toHaveBeenCalledWith(files, '/My files/docs/');
+    expect(my().clearUploadBatch).not.toHaveBeenCalled();
+    expect(shared().clearUploadBatch).toHaveBeenCalledTimes(1);
+    expect(org().clearUploadBatch).toHaveBeenCalledTimes(1);
   });
 });
