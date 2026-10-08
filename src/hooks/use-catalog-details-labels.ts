@@ -97,12 +97,12 @@ export const useCatalogDetailsLabels = (): CatalogDetailsLabels => {
           // The popover's "Delete" removes the API key; the same word as the footer's Delete.
           deleteActionLabel: t(QuickAppEditorI18nKeys.RemoveSkillFromApp),
           deletingStatusLabel: t(QuickAppEditorI18nKeys.ApiKeyDeleting),
-        },
-        entityTypeLabels: {
-          [CatalogEntityType.Skill]: t(QuickAppEditorI18nKeys.SkillTypeLabel),
-          [CatalogEntityType.Toolset]: t(QuickAppEditorI18nKeys.ToolsetTypeLabel),
-          [CatalogEntityType.Agent]: t(QuickAppEditorI18nKeys.AgentTypeLabel),
-          [CatalogEntityType.Model]: t(QuickAppEditorI18nKeys.Model),
+          entityTypeLabels: {
+            [CatalogEntityType.Skill]: t(QuickAppEditorI18nKeys.SkillTypeLabel),
+            [CatalogEntityType.Toolset]: t(QuickAppEditorI18nKeys.ToolsetTypeLabel),
+            [CatalogEntityType.Agent]: t(QuickAppEditorI18nKeys.AgentTypeLabel),
+            [CatalogEntityType.Model]: t(QuickAppEditorI18nKeys.Model),
+          },
         },
       },
       mappers: {

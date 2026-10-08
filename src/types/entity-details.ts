@@ -5,7 +5,6 @@ import type {
   ItemDetailsTexts,
   ToolsLabels,
 } from '@epam/ai-dial-catalog';
-import type { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import type {
   DeploymentLimitsLabels,
   EntityDetailsLabels,
@@ -40,10 +39,8 @@ export interface CatalogTabsLabels {
   markdown: CatalogMarkdownLabels;
   contentFiles: CatalogContentFileLabels;
   connect: CatalogConnectLabels;
-  /** The catalog `DetailsHeader`'s credentials action and personal API-key popover texts. */
+  /** The catalog `DetailsHeader`'s texts: type captions, credentials action and API-key popover. */
   header: ItemDetailsTexts;
-  /** The header's type caption per entity type. */
-  entityTypeLabels: Partial<Record<CatalogEntityType, string>>;
 }
 
 /** Labels of the catalog Connect tab (`ApiTab`). */

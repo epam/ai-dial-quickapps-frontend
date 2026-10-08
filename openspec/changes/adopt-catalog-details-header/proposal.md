@@ -21,6 +21,6 @@ Not breaking: host messages, requests and credentials levels are unchanged.
 
 ## Impact
 
-- Changed: `AddOnDetailsPopup.tsx`, `ToolsetDetailsPopup.tsx`, `AgentDetailsPopup.tsx`, `SkillDetailsPopup.tsx`, new `src/hooks/use-toolset-credentials.ts`, `src/hooks/use-catalog-details-labels.ts`, `src/types/entity-details.ts`, i18n, tests.
+- Changed: `package.json`, `package-lock.json`, `AddOnDetailsPopup.tsx`, `ToolsetDetailsPopup.tsx`, `AgentDetailsPopup.tsx`, `SkillDetailsPopup.tsx`, new `src/hooks/use-toolset-credentials.ts`, `src/hooks/use-catalog-details-labels.ts`, `src/types/entity-details.ts`, i18n, tests.
 - Removed: `ToolsetCredentialsAction.tsx`, `ToolsetLoginModal/ToolsetLoginModal.tsx`, and their now-unused strings.
-- The caption translation needs the catalog release with epam/ai-dial-chat#9343; until then the header shows the raw type (`TOOLSET`).
+- Bumps the `@epam/ai-dial-*` chat libraries to 1.2.0-dev.328, which carry `texts.entityTypeLabels` (epam/ai-dial-chat#9343).

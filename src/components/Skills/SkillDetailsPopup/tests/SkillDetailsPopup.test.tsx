@@ -126,7 +126,7 @@ describe('SkillDetailsPopup', () => {
     await render();
 
     expect(getDialog()?.getAttribute('aria-label')).toBe('User Research');
-    expect(getDialog()?.textContent).toMatch(/skill/i);
+    expect(getDialog()?.textContent).toContain('Skill');
     // The catalog's folder line: a FolderPath nav, one segment per folder.
     const folderPath = getDialog()?.querySelector('nav[aria-label="Folder path"]');
     expect(folderPath?.textContent).toContain('Organization');

@@ -143,12 +143,6 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
     }),
     [item, name, entityType, version, iconUrl, folder],
   );
-  // Built outside the JSX literal so `entityTypeLabels` type-checks against
-  // catalog releases before epam/ai-dial-chat#9343, which ignore it.
-  const headerTexts = useMemo(
-    () => ({ ...labels.header, entityTypeLabels: labels.entityTypeLabels }),
-    [labels],
-  );
   const contentFiles = useContentFileSelection(item, onLoadContentFile, labels.contentFiles.error);
 
   const tabIds = useMemo(
@@ -318,7 +312,7 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
       header={
         <DetailsHeader
           item={headerItem}
-          texts={headerTexts}
+          texts={labels.header}
           isShareVisible={hideHeaderAction}
           isPublishVisible={hideHeaderAction}
           isDownloadVisible={hideHeaderAction}

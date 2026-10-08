@@ -203,8 +203,8 @@ describe('ToolsetDetailsPopup', () => {
     await render();
 
     const dialog = getDialog('Figma');
-    // The catalog header's caption: 'TOOLSET' until the catalog takes entityTypeLabels.
-    expect(dialog?.textContent).toMatch(/toolset/i);
+    expect(dialog?.textContent).toContain('Toolset');
+    expect(dialog?.textContent).not.toContain('TOOLSET');
     expect(dialog?.textContent).toContain('1.0.0');
     expect(dialog?.textContent).toContain('Organization');
     expect(['About', 'Overview', 'Tools'].map((name) => !!getTab(name))).toEqual([
