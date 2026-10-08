@@ -32,7 +32,12 @@ vi.mock('@/utils/dial-files-api', () => ({
 
 const MINE: ListFilesItem[] = [
   { name: 'docs', path: 'files/mine/docs/', nodeType: FilesApiNodeType.Folder, bucket: 'mine' },
-  { name: 'api keys.xls', path: 'files/mine/api keys.xls', nodeType: FilesApiNodeType.Item, bucket: 'mine' },
+  {
+    name: 'api keys.xls',
+    path: 'files/mine/api keys.xls',
+    nodeType: FilesApiNodeType.Item,
+    bucket: 'mine',
+  },
   { name: 'a.pdf', path: 'files/mine/a.pdf', nodeType: FilesApiNodeType.Item, bucket: 'mine' },
   {
     name: 'hidden.txt',
@@ -42,7 +47,12 @@ const MINE: ListFilesItem[] = [
   },
 ];
 const PUBLIC: ListFilesItem[] = [
-  { name: 'spec.pdf', path: 'files/public/spec.pdf', nodeType: FilesApiNodeType.Item, bucket: 'public' },
+  {
+    name: 'spec.pdf',
+    path: 'files/public/spec.pdf',
+    nodeType: FilesApiNodeType.Item,
+    bucket: 'public',
+  },
 ];
 
 // The real file manager and AG Grid are slow to mount, especially on the first render of a file.
@@ -98,8 +108,11 @@ const findButton = (label: string) =>
   [...dialog().querySelectorAll('button')].find(
     (button) => button.textContent?.trim() === label,
   ) as HTMLButtonElement | undefined;
-const rowCheckboxes = () =>
-  [...dialog().querySelectorAll('[role="row"] [role="checkbox"], [role="row"] input[type="checkbox"]')];
+const rowCheckboxes = () => [
+  ...dialog().querySelectorAll(
+    '[role="row"]:not(.ag-opacity-zero) [role="checkbox"], [role="row"]:not(.ag-opacity-zero) input[type="checkbox"]',
+  ),
+];
 
 describe('FileManagerModal shell', () => {
   it('shows the knowledge base title, a close control and no Files heading', async () => {
@@ -108,7 +121,9 @@ describe('FileManagerModal shell', () => {
     expect(dialog().textContent).toContain(DialFileManagerI18nKeys.AddTitle);
     expect(dialog().textContent).not.toContain('dialFileManager.title');
     expect(dialog().textContent).not.toContain('dialFileManager.foldersPanelTitle');
-    expect(dialog().querySelector(`button[aria-label="${DialFileManagerI18nKeys.CloseDialog}"]`)).not.toBeNull();
+    expect(
+      dialog().querySelector(`button[aria-label="${DialFileManagerI18nKeys.CloseDialog}"]`),
+    ).not.toBeNull();
   });
 
   it('offers Cancel and a disabled Add until something is selected', async () => {
@@ -166,13 +181,24 @@ describe('FileManagerModal tabs, search and filters', () => {
   });
 });
 
-// Filtered-out rows linger in the DOM with `ag-opacity-zero` while AG Grid animates them away.
+// Filtered-out rows linger in the DOM with `ag-opacity-zero` while AG Grid animates them away,
+// so the row helpers skip them.
 const rowNames = () =>
   [
     ...dialog().querySelectorAll('.ag-center-cols-container [role="row"]:not(.ag-opacity-zero)'),
-  ].map((row) =>
-    row.querySelector('[col-id="name"]')?.textContent?.trim(),
+  ].map((row) => row.querySelector('[col-id="name"]')?.textContent?.trim());
+
+/** The checkbox of the visible row with this name; AG Grid may render it in a separate pinned row. */
+const rowCheckbox = (name: string) => {
+  const row = [...dialog().querySelectorAll('[role="row"][row-index]:not(.ag-opacity-zero)')].find(
+    (r) => r.querySelector('[col-id="name"]')?.textContent?.trim() === name,
   );
+  const rowIndex = row?.getAttribute('row-index');
+  if (rowIndex == null) return undefined;
+  return dialog().querySelector(
+    `[role="row"][row-index="${rowIndex}"]:not(.ag-opacity-zero) input[type="checkbox"]`,
+  ) as HTMLInputElement | null;
+};
 
 describe('FileManagerModal row selection', () => {
   it('draws a checkbox per row and a select-all in the header', async () => {
@@ -189,7 +215,9 @@ describe('FileManagerModal row selection', () => {
     await until(() => findButton(DialFileManagerI18nKeys.Add)?.disabled === false);
 
     expect(dialog().textContent).not.toContain(DialFileManagerI18nKeys.ItemsSelected);
-    expect(dialog().querySelector(`button[aria-label="${DialFileManagerI18nKeys.ClearSelection}"]`)).toBeNull();
+    expect(
+      dialog().querySelector(`button[aria-label="${DialFileManagerI18nKeys.ClearSelection}"]`),
+    ).toBeNull();
     expect(findButton(DialFileManagerI18nKeys.Download)).toBeUndefined();
   });
 
@@ -250,11 +278,18 @@ describe('FileManagerModal All tab', () => {
     await until(() => rowNames().join() === 'spec.pdf');
 
     expect(rowNames()).toEqual(['spec.pdf']);
-    await until(() => rowCheckboxes().length > 1);
-    await act(async () => (rowCheckboxes()[1] as HTMLInputElement).click());
-    await until(() => findButton(DialFileManagerI18nKeys.Add)?.disabled === false);
+    // Under load the grid may not have wired its selection handlers yet, so re-tick until Add enables.
+    await until(() => {
+      const isAddEnabled = findButton(DialFileManagerI18nKeys.Add)?.disabled === false;
+      const checkbox = rowCheckbox('spec.pdf');
+      if (!isAddEnabled && checkbox != null && !checkbox.checked) {
+        act(() => checkbox.click());
+      }
+      return isAddEnabled;
+    });
+    expect(findButton(DialFileManagerI18nKeys.Add)?.disabled).toBe(false);
     await act(async () => findButton(DialFileManagerI18nKeys.Add)?.click());
-    await flush();
+    await until(() => onClose.mock.calls.length > 0);
 
     expect(onClose).toHaveBeenCalledWith(['files/public/spec.pdf']);
   });
