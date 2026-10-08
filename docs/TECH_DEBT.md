@@ -5,13 +5,10 @@
 - [ ] Test coverage - `@vitest/coverage-v8` is wired up (`vitest.config.ts`), enforced by `npm test`
   (now runs with `--coverage`, so it fails the build below threshold — use `npm run test:watch` for
   a plain watch-mode run without coverage) across all of `src/**/*.{ts,tsx}`. The thresholds are
-  set to the real baseline as of 2026-09-30 (~15% statements, ~7% branches, ~5% functions, ~16%
-  lines) with `autoUpdate: true`, so they ratchet up automatically whenever coverage improves and
-  the build only fails on a regression, not on the size of the remaining gap. **70% is the actual
-  goal, not the current threshold** — most of `components/`, `context/`, and `form/` have no tests
-  at all. Once the auto-updated numbers get close to 70%, raise the long-term target itself (this
-  item) accordingly. Closing the gap is still open work; see `openspec/specs/` /
-  `openspec/changes/` for tracking individual pieces of it as they're picked up.
+  a fixed 70% for statements, functions and lines, maintained by hand (no `autoUpdate`). Branches
+  are at 67.73% as of 2026-10-08, so that threshold is held at 67 until branch coverage reaches
+  70%. Closing the gap is still open work; see `openspec/specs/` / `openspec/changes/` for
+  tracking individual pieces of it as they're picked up.
 - [ ] react-hook-form usage - should get rid of it. In progress in change `remove-react-hook-form`:
   the root form and the scalar sections already run on `useQuickApp2Form`; `ContextAndToolsSection`
   and `QuickApp2FormLegacyFields` still use RHF, and the dependency removal (tasks 5.x) is open.

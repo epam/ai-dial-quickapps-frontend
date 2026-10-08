@@ -7,7 +7,8 @@ import { DialAppTransportType } from '@/types/quick-apps';
 
 import { AgentDetailsPopup } from '../AgentDetailsPopup';
 
-const { searchParams, requestApplicationCredentials, authState } = vi.hoisted(() => ({
+const { searchParams, requestApplicationCredentials, authState, deploymentsApi } = vi.hoisted(() => ({
+  deploymentsApi: { getDeploymentDetails: vi.fn(), getDeploymentLimits: vi.fn() },
   searchParams: new Map<string, string>(),
   requestApplicationCredentials: vi.fn(),
   authState: { isRequired: false, lastAppId: undefined as string | undefined },
@@ -17,8 +18,9 @@ vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({ language: 'en-US', t: (key: string) => key }),
 }));
 vi.mock('@/context/DataContext', () => ({
-  useDataContext: () => ({ userBucket: 'user-bucket' }),
+  useDataContext: () => ({ userBucket: 'user-bucket', skills: [] }),
 }));
+vi.mock('@/utils/chat-api-client', () => ({ deploymentsApi, skillsApi: {} }));
 vi.mock('@/context/AppContext', () => ({
   useAppContext: () => ({ settings: { allowedOrigins: ['https://host'] } }),
 }));
@@ -67,6 +69,23 @@ const MODEL: DialModel = {
   mcp: true,
 };
 
+const APP_DETAILS = {
+  id: MCP_APP.id,
+  type: 'application',
+  applicationDetails: { owner: 'Research Lab', features: { tools: true } },
+};
+
+const MODEL_DETAILS = {
+  id: MODEL.id,
+  type: 'model',
+  modelDetails: {
+    owner: 'OpenAI',
+    pricing: { unit: 'token', prompt: '0.000005', completion: '0.000015' },
+  },
+};
+
+const LIMITS = { dayTokenStats: { total: 1000, used: 250 } };
+
 let root: Root;
 let container: HTMLDivElement;
 const onRemove = vi.fn();
@@ -113,6 +132,9 @@ const getTab = (name: string) =>
     | HTMLElement
     | undefined;
 
+const getTabNames = () =>
+  [...document.querySelectorAll('[role="tab"]')].map((tab) => tab.textContent);
+
 const click = async (element?: HTMLElement) => {
   expect(element).toBeTruthy();
   await act(async () => {
@@ -127,6 +149,12 @@ beforeEach(() => {
   authState.isRequired = false;
   authState.lastAppId = undefined;
   requestApplicationCredentials.mockReset();
+  deploymentsApi.getDeploymentDetails.mockReset();
+  deploymentsApi.getDeploymentDetails.mockImplementation(({ deployment }: { deployment: string }) =>
+    Promise.resolve(deployment === MODEL.id ? MODEL_DETAILS : APP_DETAILS),
+  );
+  deploymentsApi.getDeploymentLimits.mockReset();
+  deploymentsApi.getDeploymentLimits.mockResolvedValue(LIMITS);
   onRemove.mockReset();
   onConfigure.mockReset();
   onClose.mockReset();
@@ -154,15 +182,39 @@ describe('AgentDetailsPopup', () => {
     expect(dialog?.textContent).toContain('Research');
   });
 
-  it('lists folder, version and connection on Overview', async () => {
+  it('shows an application’s catalog Overview, without Pricing or Limits', async () => {
     await render({ transport: DialAppTransportType.ChatCompletion });
+
+    expect(getTabNames()).toEqual(['About', 'Overview']);
+    expect(deploymentsApi.getDeploymentLimits).not.toHaveBeenCalled();
 
     await click(getTab('Overview'));
 
-    const terms = [...document.querySelectorAll('dt')].map((term) => term.textContent);
-    const values = [...document.querySelectorAll('dd')].map((value) => value.textContent);
-    expect(terms).toEqual(['Folder', 'Version', 'Connection']);
-    expect(values).toEqual(['Organization', '2.1', 'Chat Completion']);
+    const panel = document.querySelector('[role="tabpanel"]');
+    expect(panel?.textContent).toContain('Hosted by');
+    expect(panel?.textContent).toContain('Research Lab');
+    expect(panel?.textContent).toContain('Capabilities');
+  });
+
+  it('shows a model’s Pricing and Limits', async () => {
+    await render({ agent: MODEL });
+
+    expect(getTabNames()).toEqual(['About', 'Overview', 'Pricing', 'Limits']);
+
+    await click(getTab('Pricing'));
+    expect(document.querySelector('[role="tabpanel"]')?.textContent).toContain('Token pricing');
+
+    await click(getTab('Limits'));
+    const limits = document.querySelector('[role="tabpanel"]')?.textContent;
+    expect(limits).toContain('Token limits');
+    expect(limits).toContain('Today');
+  });
+
+  it('leaves out Limits when a model’s limits fail', async () => {
+    deploymentsApi.getDeploymentLimits.mockRejectedValueOnce(new Error('403'));
+    await render({ agent: MODEL });
+
+    expect(getTabNames()).toEqual(['About', 'Overview', 'Pricing']);
   });
 
   it('configures the transport and stays open', async () => {
@@ -205,6 +257,7 @@ describe('AgentDetailsPopup', () => {
     expect(dialog?.textContent).toContain('This agent is no longer available');
     expect(getButtonByText('Connection')).toBeUndefined();
     expect(getButtonByText('Delete')).toBeTruthy();
+    expect(deploymentsApi.getDeploymentDetails).not.toHaveBeenCalled();
   });
 
   it('detaches the agent on Delete', async () => {

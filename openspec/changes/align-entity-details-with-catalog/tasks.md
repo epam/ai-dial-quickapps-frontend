@@ -1,10 +1,10 @@
 Slicing strategy: **contract-first, gated on the upstream release, then vertical per entity.**
 
-- §0 is the upstream PR in ai-dial-chat. §1 is the gate: the catalog bump plus confirming the export shapes.
-- §2 adds the data layer: client calls, hooks and labels.
-- §3–§5 move one popup at a time onto catalog content: toolset, then agent/model, then skill. The shared shell changes in §3.
-- §6 is cleanup, RTL and docs.
-- Every slice leaves `npm run lint`, `npm run typecheck` and `npm test` green. Nothing in §2–§6 starts before §1 passes.
+- Â§0 is the upstream PR in ai-dial-chat. Â§1 is the gate: the catalog bump plus confirming the export shapes.
+- Â§2 adds the data layer: client calls, hooks and labels.
+- Â§3â€“Â§5 move one popup at a time onto catalog content: toolset, then agent/model, then skill. The shared shell changes in Â§3.
+- Â§6 is cleanup, RTL and docs.
+- Every slice leaves `npm run lint`, `npm run typecheck` and `npm test` green. Nothing in Â§2â€“Â§6 starts before Â§1 passes.
 
 Before starting, read `AGENTS.md`, `.claude/rules/all-ts.md`, `.claude/rules/all-tsx.md` and `.claude/rules/rtl.md`. Follow these conventions:
 
@@ -18,7 +18,7 @@ Component tests go in `tests/` and use role, label and text queries.
 
 ## 0. Upstream: ai-dial-chat (outside this repo)
 
-- [ ] 0.1 Land the ai-dial-chat change `export-catalog-details-tabs` (branch `feat/catalog-details-tabs-export`, design D1). It:
+- [x] 0.1 Land the ai-dial-chat change `export-catalog-details-tabs` (branch `feat/catalog-details-tabs-export`, design D1). It:
   - exports `AboutTab`, `OverviewTab`, `PricingTab` and `ToolsTab` (+ props, `ToolsLabels`);
   - adds `getCatalogDetailsTabs` to `/mapping`, used by `DetailsPanel`;
   - adds `entityDetailsLabels` / `labels` with `EntityDetailsLabels` and `DEFAULT_ENTITY_DETAILS_LABELS` in `chat-hooks`.
@@ -27,14 +27,14 @@ Component tests go in `tests/` and use role, label and text queries.
 
 ## 1. Gate: bump and confirm the contract
 
-- [ ] 1.1 Bump `@epam/ai-dial-catalog` and add `@epam/ai-dial-chat-hooks` (the same release line) in `package.json`, then run `npm install`. Confirm against the installed `.d.ts`:
+- [x] 1.1 Bump `@epam/ai-dial-catalog` and add `@epam/ai-dial-chat-hooks` (the same release line) in `package.json`, then run `npm install`. Confirm against the installed `.d.ts`:
   - the four tab exports and `getCatalogDetailsTabs` / `CatalogDetailsTab` on `/mapping`;
   - `useCatalogItemDetails` options, including `entityDetailsLabels`;
   - the `CatalogDetailsApi` / `SkillDetailsApi` method shapes;
   - `EntityDetailsLabels`, `DeploymentLimitsLabels`, `SkillOverviewLabels` and `PromptOverviewLabels`.
 
   If anything differs, update design D1/D3/D5 and the tasks below first.
-  - Verification: `npm run typecheck`, `npm test` (nothing should change yet), and `npm run build` (note the bundle size before §3).
+  - Verification: `npm run typecheck`, `npm test` (nothing should change yet), and `npm run build` (note the bundle size before Â§3).
 
 ## 2. Data layer: adapter, labels, hook
 
@@ -42,7 +42,7 @@ Depends on 1.
 
 - [ ] 2.1 Add `src/types/entity-details.ts` with `enum DetailsStatus { Idle = 'idle', Loading = 'loading', Ready = 'ready', Error = 'error' }`.
 - [ ] 2.2 Create `src/utils/catalog-details-api.ts` exporting `createCatalogDetailsApi(): CatalogDetailsApi` over `deploymentsApi` / `skillsApi` from `src/utils/chat-api-client.ts`:
-  - `getDeploymentDetails(id)` → `deploymentsApi.getDeploymentDetails({ deployment: encodeDialPath(id) })`;
+  - `getDeploymentDetails(id)` â†’ `deploymentsApi.getDeploymentDetails({ deployment: encodeDialPath(id) })`;
   - `getDeploymentLimits(id)` likewise;
   - `downloadSkillFile(bucket, path, filePath, signal)` returns the raw `Response` (`skillsApi.downloadSkillFileRaw(...).raw`);
   - `listSkillFiles(params, signal)`;
@@ -56,11 +56,11 @@ Depends on 1.
 - [ ] 2.5 Unit tests:
   - `src/utils/tests/catalog-details-api.test.ts`: request params and id encoding of each adapter method; prompt methods reject.
   - `src/hooks/tests/use-entity-details.test.tsx` (mock the client):
-    - toolset Loading → Ready with overview and tools;
+    - toolset Loading â†’ Ready with overview and tools;
     - model with limits;
     - limits failure keeps the details;
     - skill with overview and promptContent;
-    - details failure → Error → `retry` → Ready;
+    - details failure â†’ Error â†’ `retry` â†’ Ready;
     - stale response dropped;
     - no request without an item;
     - translated labels appear in the overview.
@@ -82,7 +82,7 @@ Depends on 2.
   - delete `ToolsetToolsTab.tsx`, `src/hooks/use-toolset-tools.ts` (+ test), `fetchToolsetToolNames` (+ its dialClient test cases), `getToolsetOverviewRows` and `filterToolNames` (+ their tests), and `src/types/toolset-tools.ts`.
 - [ ] 3.3 Rewrite `src/components/Toolsets/ToolsetDetailsPopup/tests/ToolsetDetailsPopup.test.tsx` (mock the client):
   - About, Overview and Tools appear from a details payload, in catalog order, with translated section titles;
-  - an empty tool list → no Tools tab;
+  - an empty tool list â†’ no Tools tab;
   - loading indicator; failure + Retry;
   - Log in flows unchanged (keep those cases);
   - the unavailable toolset makes no request;
@@ -98,10 +98,10 @@ Depends on 3.
   - keep Connection (transport dialog) and Credentials;
   - delete `getAgentOverviewRows` and its tests, and the Connection Overview row (spec: the transport stays visible through the Connection action).
 - [ ] 4.2 Tests in `src/components/Agents/AgentDetailsPopup/tests/AgentDetailsPopup.test.tsx`:
-  - application → About and Overview;
-  - application without pricing → no Pricing;
-  - model → About, Overview, Pricing and Limits from details + limits;
-  - limits failure → no Limits;
+  - application â†’ About and Overview;
+  - application without pricing â†’ no Pricing;
+  - model â†’ About, Overview, Pricing and Limits from details + limits;
+  - limits failure â†’ no Limits;
   - Connection, Credentials, unavailable, read-only and RTL cases kept.
   - Verification: `npx vitest run src/components/Agents`, `npm run lint`, `npm run typecheck`, then `npm test`.
 
@@ -118,9 +118,9 @@ Depends on 3.
 - [ ] 5.2 Update `src/components/Skills/SkillDetailsPopup/tests/SkillDetailsPopup.test.tsx`:
   - Details shows the description and body without frontmatter;
   - Overview shows Specification (when to use) and Details (author, updated, files);
-  - listing failure → no Overview;
-  - metadata failure → listing author;
-  - manifest failure → Retry;
+  - listing failure â†’ no Overview;
+  - metadata failure â†’ listing author;
+  - manifest failure â†’ Retry;
   - Delete, read-only and RTL cases kept.
 
   Update the skills cases in `src/components/tests/QuickApp2Form.behavior.test.tsx` if they relied on the old manifest mock.
@@ -128,7 +128,7 @@ Depends on 3.
 
 ## 6. Cleanup, RTL, docs, final checks
 
-Depends on 3–5.
+Depends on 3â€“5.
 
 - [ ] 6.1 Delete `src/components/common/EntityAboutTab/` and `src/components/common/OverviewList/` (+ tests) if unused. Remove the now-unused i18n keys from design D5, each after a repo-wide `grep -r` (not `git grep`, which skips untracked files).
 - [ ] 6.2 RTL check: add an RTL case to `ToolsetDetailsPopup.test.tsx` asserting the Overview grid and tab row follow `dir`, and grep the touched files for physical direction classes (`.claude/rules/rtl.md`). File any catalog component that uses physical classes as an upstream issue in `docs/TECH_DEBT.md`, not as a local override.

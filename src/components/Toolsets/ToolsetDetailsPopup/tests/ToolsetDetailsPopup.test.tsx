@@ -9,10 +9,11 @@ import { ToolsetDetailsPopup } from '../ToolsetDetailsPopup';
 
 const HOST = 'https://host';
 
-const { postToHost, fetchToolsetToolNames, dataContext } = vi.hoisted(() => ({
+const { postToHost, deploymentsApi, dataContext } = vi.hoisted(() => ({
   postToHost: vi.fn(),
-  fetchToolsetToolNames: vi.fn(),
+  deploymentsApi: { getDeploymentDetails: vi.fn(), getDeploymentLimits: vi.fn() },
   dataContext: {
+    skills: [],
     applyToolsetAuthResult: vi.fn(),
     refreshToolsets: vi.fn(),
   },
@@ -35,14 +36,12 @@ vi.mock('@/utils/allowed-origins', () => ({
   postToHost,
   isOriginAllowed: (origin: string, allowed: string[] = []) => allowed.includes(origin),
 }));
-vi.mock('@/utils/dial-client', () => ({
-  fetchToolsetToolNames,
-  encodeDialPath: (id: string) => id,
-}));
-vi.mock('@/utils/chat-api-client', () => ({ toolsetsApi: {} }));
+vi.mock('@/utils/dial-client', () => ({ encodeDialPath: (id: string) => id }));
+vi.mock('@/utils/chat-api-client', () => ({ toolsetsApi: {}, skillsApi: {}, deploymentsApi }));
 // The real badge needs the catalog's tooltip layer; this stub keeps its
 // contract: it shows only while the toolset is signed out at every level.
-vi.mock('@epam/ai-dial-catalog', () => ({
+vi.mock('@epam/ai-dial-catalog', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
   CredentialsBadge: ({
     credentials,
     loggedOutLabel,
@@ -79,6 +78,18 @@ const API_KEY_TOOLSET: DialToolset = {
   authSettings: {
     authenticationType: ToolsetAuthType.ApiKey,
     authStatus: ToolsetAuthStatus.SignedOut,
+  },
+};
+
+const FIGMA_DETAILS = {
+  id: FIGMA.id,
+  type: 'toolset',
+  toolsetDetails: {
+    owner: 'Figma Inc.',
+    catalogProperties: { provider: 'Figma' },
+    authSettings: { authenticationType: 'OAUTH' },
+    allowedTools: ['edit_design'],
+    allToolNames: ['evaluate_script', 'get_design_context', 'edit_design'],
   },
 };
 
@@ -158,22 +169,13 @@ const postFromHost = async (data: unknown, origin = HOST) => {
   });
 };
 
-const typeSearch = async (text: string) => {
-  const input = document.querySelector<HTMLInputElement>('input[aria-label="Search..."]');
-  if (!input) throw new Error('search input not found');
-  const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
-  await act(async () => {
-    setValue?.call(input, text);
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-  });
-};
-
 beforeEach(() => {
   (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   postToHost.mockReset();
   dataContext.applyToolsetAuthResult.mockReset();
-  fetchToolsetToolNames.mockReset();
-  fetchToolsetToolNames.mockResolvedValue(['evaluate_script', 'get_design_context', 'edit_design']);
+  deploymentsApi.getDeploymentDetails.mockReset();
+  deploymentsApi.getDeploymentDetails.mockResolvedValue(FIGMA_DETAILS);
+  deploymentsApi.getDeploymentLimits.mockReset();
   onRemove.mockReset();
   onClose.mockReset();
   container = document.createElement('div');
@@ -211,17 +213,17 @@ describe('ToolsetDetailsPopup', () => {
     expect(getDialog('Figma')?.textContent).toContain('Logged out toolset.');
   });
 
-  it('lists authentication, folder, updated date and version on Overview', async () => {
+  it('shows the catalog Specification on Overview', async () => {
     await render();
 
     await click(getTab('Overview'));
 
-    const terms = [...document.querySelectorAll('dt')].map((term) => term.textContent);
-    const values = [...document.querySelectorAll('dd')].map((value) => value.textContent);
-    expect(terms).toEqual(['Authentication', 'Folder', 'Updated', 'Version']);
-    expect(values[0]).toBe('OAuth');
-    expect(values[1]).toBe('Organization');
-    expect(values[3]).toBe('1.0.0');
+    const panel = document.querySelector('[role="tabpanel"]');
+    expect(panel?.textContent).toContain('Specification');
+    expect(panel?.textContent).toContain('Authentication');
+    expect(panel?.textContent).toContain('Provider');
+    expect(panel?.textContent).toContain('Hosted by');
+    expect(panel?.textContent).toContain('Figma Inc.');
   });
 
   it('logs in through the host and reflects the result', async () => {
@@ -281,8 +283,8 @@ describe('ToolsetDetailsPopup', () => {
 
     const dialog = getDialog('gone');
     expect(dialog?.textContent).toContain('This toolset is no longer available');
-    await click(getTab('Tools'));
-    expect(fetchToolsetToolNames).not.toHaveBeenCalled();
+    expect(getTab('About')).toBeUndefined();
+    expect(deploymentsApi.getDeploymentDetails).not.toHaveBeenCalled();
     expect(getButtonByText('Log in')).toBeUndefined();
     expect(getButtonByText('Delete')).toBeTruthy();
   });
@@ -314,65 +316,78 @@ describe('ToolsetDetailsPopup', () => {
   });
 });
 
-describe('ToolsetDetailsPopup Tools tab', () => {
-  const getToolNames = () =>
-    [...document.querySelectorAll('ul[aria-label="Tools"] li')].map((item) => item.textContent);
+describe('ToolsetDetailsPopup catalog details', () => {
+  const getTabNames = () =>
+    [...document.querySelectorAll('[role="tab"]')].map((tab) => tab.textContent);
+  const getPanel = () => document.querySelector('[role="tabpanel"]');
 
-  it('fetches nothing until Tools is selected', async () => {
-    await render();
-    await click(getTab('Overview'));
-
-    expect(fetchToolsetToolNames).not.toHaveBeenCalled();
-  });
-
-  it('lists the tool names with their count', async () => {
-    await render();
-    await click(getTab('Tools'));
-
-    expect(fetchToolsetToolNames).toHaveBeenCalledWith(FIGMA.id, expect.any(AbortSignal));
-    expect(getToolNames()).toEqual(['evaluate_script', 'get_design_context', 'edit_design']);
-    expect(getDialog('Figma')?.textContent).toContain('3 tools');
-  });
-
-  it('narrows the list and the count with search, and says when nothing matches', async () => {
-    await render();
-    await click(getTab('Tools'));
-
-    await typeSearch('design');
-    expect(getToolNames()).toEqual(['get_design_context', 'edit_design']);
-    expect(getDialog('Figma')?.textContent).toContain('2 tools');
-
-    await typeSearch('zzz');
-    expect(getDialog('Figma')?.textContent).toContain('No results found');
-  });
-
-  it('shows a failure with a Retry that loads again', async () => {
-    fetchToolsetToolNames.mockRejectedValueOnce(new Error('boom'));
-    await render();
-    await click(getTab('Tools'));
-
-    expect(getDialog('Figma')?.textContent).toContain('Failed to load tools');
-
-    await click(getButtonByText('Retry'));
-
-    expect(fetchToolsetToolNames).toHaveBeenCalledTimes(2);
-    expect(getToolNames()).toHaveLength(3);
-  });
-
-  it('says when the toolset reports no tools', async () => {
-    fetchToolsetToolNames.mockResolvedValueOnce([]);
-    await render();
-    await click(getTab('Tools'));
-
-    expect(getDialog('Figma')?.textContent).toContain('This toolset reports no tools');
-  });
-
-  it('does not refetch when coming back to Tools', async () => {
+  it('requests the details once, on open, by the toolset id', async () => {
     await render();
     await click(getTab('Tools'));
     await click(getTab('About'));
+
+    expect(deploymentsApi.getDeploymentDetails).toHaveBeenCalledTimes(1);
+    expect(deploymentsApi.getDeploymentDetails).toHaveBeenCalledWith({ deployment: FIGMA.id });
+    expect(deploymentsApi.getDeploymentLimits).not.toHaveBeenCalled();
+  });
+
+  it('lists only the allow-listed tools', async () => {
+    await render();
     await click(getTab('Tools'));
 
-    expect(fetchToolsetToolNames).toHaveBeenCalledTimes(1);
+    expect(getPanel()?.textContent).toContain('edit_design');
+    expect(getPanel()?.textContent).not.toContain('evaluate_script');
+  });
+
+  it('lists every reported tool when there is no allow-list', async () => {
+    deploymentsApi.getDeploymentDetails.mockResolvedValueOnce({
+      ...FIGMA_DETAILS,
+      toolsetDetails: { ...FIGMA_DETAILS.toolsetDetails, allowedTools: [] },
+    });
+    await render();
+    await click(getTab('Tools'));
+
+    expect(getPanel()?.textContent).toContain('evaluate_script');
+    expect(getPanel()?.textContent).toContain('get_design_context');
+  });
+
+  it('shows no Tools tab when the toolset reports no tools', async () => {
+    deploymentsApi.getDeploymentDetails.mockResolvedValueOnce({
+      ...FIGMA_DETAILS,
+      toolsetDetails: { owner: 'Figma Inc.' },
+    });
+    await render();
+
+    expect(getTabNames()).toEqual(['About', 'Overview']);
+  });
+
+  it('shows About alone with a spinner while the details load', async () => {
+    deploymentsApi.getDeploymentDetails.mockReturnValueOnce(new Promise(() => undefined));
+    await render();
+
+    expect(getTabNames()).toEqual(['About']);
+    expect(document.querySelector('[aria-label="Loading details"]')).not.toBeNull();
+  });
+
+  it('keeps About on a failure and loads again on Retry', async () => {
+    deploymentsApi.getDeploymentDetails.mockRejectedValueOnce(new Error('boom'));
+    await render();
+
+    expect(getTabNames()).toEqual(['About']);
+    expect(getDialog('Figma')?.textContent).toContain('Failed to load details');
+
+    await click(getButtonByText('Retry'));
+
+    expect(deploymentsApi.getDeploymentDetails).toHaveBeenCalledTimes(2);
+    expect(getTabNames()).toEqual(['About', 'Overview', 'Tools']);
+  });
+
+  it('lays the tab row out by the document direction', async () => {
+    document.documentElement.dir = 'rtl';
+    await render();
+
+    const tabs = [...document.querySelectorAll('[role="tab"]')];
+    expect(tabs.map((tab) => tab.textContent)).toEqual(['About', 'Overview', 'Tools']);
+    expect(document.querySelector('[role="tablist"]')?.closest('[dir="ltr"]')).toBeNull();
   });
 });

@@ -1,28 +1,46 @@
 import {
+  AboutTab,
+  type CatalogItem,
+  ContentTab,
+  LimitsTab,
+  OverviewTab,
+  PricingTab,
+  ToolsTab,
+} from '@epam/ai-dial-catalog';
+import { CatalogDetailsTab, getCatalogDetailsTabs } from '@epam/ai-dial-catalog/mapping';
+import {
   ButtonAppearance,
   ButtonVariant,
   DIAL_ICON_SIZE,
   DIAL_KIT_ICON_STROKE,
   EntityIdentity,
   EntityType,
+  NeutralButton,
+  NoDataContent,
   Popup,
   PopupSize,
+  Spinner,
   Tabs,
 } from '@epam/ai-dial-ui-kit';
 import { IconFolder, IconTrash } from '@tabler/icons-react';
 import { FC, ReactNode, useCallback, useMemo, useState } from 'react';
 
 import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { useCatalogDetailsLabels } from '@/hooks/use-catalog-details-labels';
 import { useTranslation } from '@/hooks/use-translation';
+import { type AddOnDetailsTab, DetailsStatus } from '@/types/entity-details';
 import { Translation } from '@/types/translation';
 
 const AVATAR_SIZE = 40;
+const LOADING_SPINNER_SIZE = 16;
 
-export interface AddOnDetailsTab {
-  id: string;
-  label: string;
-  panel: ReactNode;
-}
+// The typography the catalog's DetailsPanel renders its Overview with.
+const OVERVIEW_CLASSES = {
+  sectionClassName: 'dial-caption-text',
+  labelClassName: 'dial-small-semi-text',
+  valueClassName: 'dial-small-text',
+  valueTrueClassName: 'dial-small-text',
+};
 
 export interface AddOnDetailsPopupProps {
   entityType: EntityType;
@@ -39,20 +57,29 @@ export interface AddOnDetailsPopupProps {
   actions?: ReactNode;
   /** A status message shown above the tabs. */
   banner?: ReactNode;
-  tabs: AddOnDetailsTab[];
+  /**
+   * The entity as a catalog item, with `details` once loaded. It decides the
+   * tabs exactly as the chat catalog does. Undefined when the entity is no
+   * longer listed.
+   */
+  item?: CatalogItem;
+  detailsStatus: DetailsStatus;
+  onRetry: () => void;
+  /** Replaces the tabs, for an entity that is no longer listed. */
+  unavailableText?: string;
   /** Hides Delete; only Close is offered. */
   isReadonly: boolean;
   deleteLabel: string;
-  onTabChange?: (tabId: string) => void;
   onDelete: () => void;
   onClose: () => void;
 }
 
 /**
- * The shell shared by the toolset and agent details popups: identity header
- * with the folder line, an optional action row and banner, the tabs, and the
- * Delete (detach from the app) / Close footer. Each popup supplies its own
- * tabs and actions.
+ * The shell shared by the skill, toolset and agent details popups: identity
+ * header with the folder line, an optional action row and banner, the
+ * catalog's details tabs, and the Delete (detach from the app) / Close
+ * footer. Tabs and their content are the chat catalog's own components, so
+ * each entity reads exactly as it does in the catalog.
  */
 export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
   entityType,
@@ -64,23 +91,39 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
   avatarBadge,
   actions,
   banner,
-  tabs,
+  item,
+  detailsStatus,
+  onRetry,
+  unavailableText,
   isReadonly,
   deleteLabel,
-  onTabChange,
   onDelete,
   onClose,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
   const { t: tCommon } = useTranslation(Translation.Common);
-  const [activeTabId, setActiveTabId] = useState<string>(tabs[0]?.id ?? '');
+  const { tabs: labels } = useCatalogDetailsLabels();
+  const [selectedTabId, setSelectedTabId] = useState<AddOnDetailsTab>();
+
+  const tabIds = useMemo(
+    () =>
+      item == null
+        ? []
+        : (getCatalogDetailsTabs(item, { isConnectHidden: true }) as AddOnDetailsTab[]),
+    [item],
+  );
+  // Tabs appear as details load; until the chosen one exists, the first shows.
+  const activeTabId =
+    selectedTabId != null && tabIds.includes(selectedTabId) ? selectedTabId : tabIds[0];
 
   const handleTabChange = useCallback(
-    (tabId: string) => {
-      setActiveTabId(tabId);
-      onTabChange?.(tabId);
-    },
-    [onTabChange],
+    (tabId: string) => setSelectedTabId(tabId as AddOnDetailsTab),
+    [],
+  );
+
+  const tabItems = useMemo(
+    () => tabIds.map((id) => ({ id, label: labels.tabs[id] })),
+    [tabIds, labels],
   );
 
   const additionalButtons = useMemo(
@@ -112,8 +155,89 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
     [t, onClose],
   );
 
-  const tabItems = useMemo(() => tabs.map(({ id, label }) => ({ id, label })), [tabs]);
-  const activeTab = tabs.find((tab) => tab.id === activeTabId) ?? tabs[0];
+  const renderPanel = (tabId: AddOnDetailsTab, current: CatalogItem): ReactNode => {
+    const details = current.details;
+    switch (tabId) {
+      case CatalogDetailsTab.About:
+        return <AboutTab content={current.description} topics={current.topics} />;
+      case CatalogDetailsTab.Content:
+        return (
+          <ContentTab
+            content={details?.promptContent?.content ?? ''}
+            description={details?.promptContent?.description ?? current.description}
+          />
+        );
+      case CatalogDetailsTab.Overview:
+        return (
+          // Full-bleed, as in the catalog: section dividers span the popup body.
+          <div className="-mx-6">
+            <OverviewTab
+              sections={details?.overview?.sections}
+              {...OVERVIEW_CLASSES}
+              yesLabel={labels.yes}
+              noLabel={labels.no}
+            />
+          </div>
+        );
+      case CatalogDetailsTab.Pricing:
+        return (
+          <PricingTab
+            pricing={details?.pricing}
+            pricesSectionLabel={labels.pricesSection}
+            characterPricesSectionLabel={labels.characterPricesSection}
+            limitsSectionLabel={labels.usageLimitsSection}
+          />
+        );
+      case CatalogDetailsTab.Limits:
+        return <LimitsTab limits={details?.limits} />;
+      case CatalogDetailsTab.Tools:
+        return <ToolsTab tools={details?.tools} labels={labels.tools} />;
+      default:
+        return null;
+    }
+  };
+
+  const renderBody = () => {
+    if (unavailableText != null || item == null) {
+      return (
+        <div className="min-h-0 flex-1 overflow-y-auto pt-4">
+          <NoDataContent title={unavailableText} />
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <div className="flex shrink-0 items-center gap-2">
+          <Tabs
+            tabs={tabItems}
+            activeTabId={activeTabId ?? ''}
+            onTabChange={handleTabChange}
+            ariaLabel={name}
+            className="min-w-0 flex-1"
+          />
+          {detailsStatus === DetailsStatus.Loading && (
+            <span role="status" className="shrink-0">
+              <Spinner size={LOADING_SPINNER_SIZE} fullWidth={false} ariaLabel={labels.loading} />
+            </span>
+          )}
+        </div>
+        {detailsStatus === DetailsStatus.Error && (
+          <div role="alert" className="flex shrink-0 items-center gap-3 pt-4">
+            <p className="dial-small-text text-error">{labels.failed}</p>
+            <NeutralButton label={labels.retry} onClick={onRetry} />
+          </div>
+        )}
+        <div
+          role="tabpanel"
+          aria-label={activeTabId == null ? undefined : labels.tabs[activeTabId]}
+          className="min-h-0 flex-1 overflow-y-auto pt-4"
+        >
+          {activeTabId != null && renderPanel(activeTabId, item)}
+        </div>
+      </>
+    );
+  };
 
   return (
     <Popup
@@ -162,20 +286,7 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
     >
       {actions && <div className="flex shrink-0 flex-wrap items-center gap-2 pb-4">{actions}</div>}
       {banner && <div className="dial-small-text shrink-0 pb-4 text-error">{banner}</div>}
-      <Tabs
-        tabs={tabItems}
-        activeTabId={activeTab?.id ?? ''}
-        onTabChange={handleTabChange}
-        ariaLabel={name}
-        className="shrink-0"
-      />
-      <div
-        role="tabpanel"
-        aria-label={activeTab?.label}
-        className="min-h-0 flex-1 overflow-y-auto pt-4"
-      >
-        {activeTab?.panel}
-      </div>
+      {renderBody()}
     </Popup>
   );
 };

@@ -1,10 +1,14 @@
 import type { CatalogItem } from '@epam/ai-dial-catalog';
+import {
+  type SkillMetadataItemDto,
+  SkillMetadataItemDtoNodeTypeEnum,
+} from '@epam/ai-dial-chat-api-client';
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 
 import type { DialSkill } from '@/types/dial-entities';
 import { ResourceScope } from '@/types/resource-scope';
 import { getCatalogFolder, getEntityScopeInfo } from '@/utils/entity-scope';
-import { formatUpdatedAtDate, getUpdatedAtTimestamp } from '@/utils/get-updated-at-timestamp';
+import { getUpdatedAtTimestamp } from '@/utils/get-updated-at-timestamp';
 
 export interface MapSkillToCatalogItemOptions {
   userBucket?: string;
@@ -41,36 +45,22 @@ export const mapSkillToCatalogItem = (
   };
 };
 
-export interface SkillOverviewLabels {
-  author: string;
-  folder: string;
-  updated: string;
-  version: string;
-}
-
-export interface GetSkillOverviewRowsOptions extends MapSkillToCatalogItemOptions {
-  language: string;
-  labels: SkillOverviewLabels;
-}
-
-export interface SkillOverviewRow {
-  label: string;
-  value: string;
-}
-
-const FOLDER_SEPARATOR = ' / ';
-
-/** Label/value rows of a skill's Overview tab; rows without a value are left out. */
-export const getSkillOverviewRows = (
-  skill: DialSkill,
-  { userBucket, scopeLabels, language, labels }: GetSkillOverviewRowsOptions,
-): SkillOverviewRow[] => {
-  const folder = getCatalogFolder(getEntityScopeInfo(skill.id, userBucket), scopeLabels);
-  const rows: SkillOverviewRow[] = [
-    { label: labels.author, value: skill.author ?? '' },
-    { label: labels.folder, value: folder.join(FOLDER_SEPARATOR) },
-    { label: labels.updated, value: formatUpdatedAtDate(skill.updatedAt, language) },
-    { label: labels.version, value: skill.version ?? '' },
-  ];
-  return rows.filter((row) => row.value !== '');
+/**
+ * A listed skill back in chat-api's listing shape — the fallback the catalog
+ * skill-details hook reads the author and update time from when the skill's
+ * own metadata request fails.
+ */
+export const mapSkillToMetadataDto = (skill: DialSkill): SkillMetadataItemDto => {
+  const [, bucket = '', ...pathSegments] = skill.id.split('/');
+  return {
+    name: skill.name,
+    url: skill.id,
+    bucket: skill.bucket ?? bucket,
+    path: skill.path ?? pathSegments.join('/'),
+    nodeType: SkillMetadataItemDtoNodeTypeEnum.Item,
+    author: skill.author,
+    updatedAt: getUpdatedAtTimestamp(skill.updatedAt) || undefined,
+    description: skill.description,
+  };
 };
+

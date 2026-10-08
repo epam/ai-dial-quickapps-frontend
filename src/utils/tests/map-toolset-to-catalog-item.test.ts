@@ -5,8 +5,6 @@ import { describe, expect, it } from 'vitest';
 import { type DialToolset, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
 import { ResourceScope } from '@/types/resource-scope';
 import {
-  filterToolNames,
-  getToolsetOverviewRows,
   mapToolsetCredentials,
   mapToolsetToCatalogItem,
 } from '@/utils/map-toolset-to-catalog-item';
@@ -18,15 +16,6 @@ const SCOPE_LABELS = {
 };
 
 const OPTIONS = { language: 'en', userBucket: 'user-bucket', scopeLabels: SCOPE_LABELS };
-
-const LABELS = {
-  authentication: 'Authentication',
-  folder: 'Folder',
-  updated: 'Updated',
-  version: 'Version',
-  oauth: 'OAuth',
-  apiKey: 'API key',
-};
 
 const makeToolset = (overrides: Partial<DialToolset> = {}): DialToolset => ({
   id: 'toolsets/public/figma',
@@ -122,41 +111,3 @@ describe('mapToolsetCredentials', () => {
   });
 });
 
-describe('getToolsetOverviewRows', () => {
-  it('lists authentication, folder, updated date and version', () => {
-    const rows = getToolsetOverviewRows(
-      makeToolset({
-        version: '1.0.0',
-        updatedAt: 1759795200000,
-        authSettings: { authenticationType: ToolsetAuthType.OAuth },
-      }),
-      { ...OPTIONS, labels: LABELS },
-    );
-
-    expect(rows.map((row) => row.label)).toEqual(['Authentication', 'Folder', 'Updated', 'Version']);
-    expect(rows[0].value).toBe('OAuth');
-    expect(rows[1].value).toBe('Organization');
-    expect(rows[3].value).toBe('1.0.0');
-  });
-
-  it('omits rows without a value', () => {
-    const rows = getToolsetOverviewRows(
-      makeToolset({ authSettings: { authenticationType: ToolsetAuthType.None } }),
-      { ...OPTIONS, labels: LABELS },
-    );
-
-    expect(rows).toEqual([{ label: 'Folder', value: 'Organization' }]);
-  });
-});
-
-describe('filterToolNames', () => {
-  const NAMES = ['evaluate_script', 'get_design_context', 'edit_design'];
-
-  it('keeps names containing the trimmed query, ignoring case', () => {
-    expect(filterToolNames(NAMES, '  DESIGN ')).toEqual(['get_design_context', 'edit_design']);
-  });
-
-  it('returns every name for a blank query', () => {
-    expect(filterToolNames(NAMES, '   ')).toEqual(NAMES);
-  });
-});

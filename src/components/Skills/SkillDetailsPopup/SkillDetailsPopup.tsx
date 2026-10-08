@@ -1,28 +1,17 @@
-import {
-  ButtonAppearance,
-  ButtonVariant,
-  DIAL_ICON_SIZE,
-  DIAL_KIT_ICON_STROKE,
-  EntityIdentity,
-  EntityType,
-  NoDataContent,
-  Popup,
-  PopupSize,
-  Tabs,
-} from '@epam/ai-dial-ui-kit';
-import { IconTrash } from '@tabler/icons-react';
-import { FC, useCallback, useMemo, useState } from 'react';
+import { EntityType } from '@epam/ai-dial-ui-kit';
+import { FC, useCallback, useMemo } from 'react';
 
-import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { useDataContext } from '@/context/DataContext';
+import { useEntityDetails } from '@/hooks/use-entity-details';
+import { useScopeLabels } from '@/hooks/use-scope-labels';
 import { useTranslation } from '@/hooks/use-translation';
 import type { DialSkill } from '@/types/dial-entities';
-import { SkillDetailsTabId } from '@/types/skill-details';
 import { Translation } from '@/types/translation';
+import { getCatalogFolder, getEntityScopeInfo } from '@/utils/entity-scope';
+import { mapSkillToCatalogItem } from '@/utils/map-skill-to-catalog-item';
 
-import { SkillDetailsTab } from './SkillDetailsTab';
-import { SkillOverviewTab } from './SkillOverviewTab';
-
-const AVATAR_SIZE = 40;
+import { AddOnDetailsPopup } from '@/components/common/AddOnDetailsPopup/AddOnDetailsPopup';
 
 export interface SkillDetailsPopupProps {
   skillId: string;
@@ -36,8 +25,9 @@ export interface SkillDetailsPopupProps {
 }
 
 /**
- * A skill's details: its rendered manifest and metadata, plus Delete, which
- * detaches the skill from this application (the skill itself is untouched).
+ * A skill's details — the catalog's Details (its rendered `SKILL.md`) and
+ * Overview — plus Delete, which detaches the skill from this application
+ * (the skill itself is untouched).
  */
 export const SkillDetailsPopup: FC<SkillDetailsPopupProps> = ({
   skillId,
@@ -48,97 +38,44 @@ export const SkillDetailsPopup: FC<SkillDetailsPopupProps> = ({
   onClose,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
-  const { t: tCommon } = useTranslation(Translation.Common);
-  const [activeTab, setActiveTab] = useState<string>(SkillDetailsTabId.Details);
+  const { userBucket } = useDataContext();
+  const scopeLabels = useScopeLabels();
 
-  const name = skill?.name ?? fallbackName;
-
-  const tabs = useMemo(
-    () => [
-      { id: SkillDetailsTabId.Details, label: t(QuickAppEditorI18nKeys.SkillDetailsTab) },
-      { id: SkillDetailsTabId.Overview, label: t(QuickAppEditorI18nKeys.SkillOverviewTab) },
-    ],
-    [t],
+  const folder = useMemo(
+    () => getCatalogFolder(getEntityScopeInfo(skillId, userBucket), scopeLabels),
+    [skillId, userBucket, scopeLabels],
   );
 
-  const handleRemove = useCallback(() => {
+  const listingItem = useMemo(
+    () => (skill == null ? undefined : mapSkillToCatalogItem(skill, { userBucket, scopeLabels })),
+    [skill, userBucket, scopeLabels],
+  );
+  const { status, details, retry } = useEntityDetails(listingItem);
+  const item = useMemo(
+    () => (listingItem == null ? undefined : { ...listingItem, details }),
+    [listingItem, details],
+  );
+
+  const handleDelete = useCallback(() => {
     onRemove(skillId);
     onClose();
   }, [onRemove, onClose, skillId]);
 
-  const additionalButtons = useMemo(
-    () =>
-      isReadonly
-        ? undefined
-        : [
-            {
-              label: t(QuickAppEditorI18nKeys.RemoveSkillFromApp),
-              // Design: red (Danger) / Solid / Standard with a leading trash icon.
-              variant: ButtonVariant.Danger,
-              appearance: ButtonAppearance.Solid,
-              iconBefore: <IconTrash size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} />,
-              onClick: handleRemove,
-            },
-          ],
-    [isReadonly, t, handleRemove],
-  );
-
-  const mainButtons = useMemo(
-    () => [
-      {
-        label: t(QuickAppEditorI18nKeys.Close),
-        variant: ButtonVariant.Primary,
-        appearance: ButtonAppearance.Link,
-        onClick: onClose,
-      },
-    ],
-    [t, onClose],
-  );
-
-  const renderPanel = () => {
-    if (activeTab === SkillDetailsTabId.Details) return <SkillDetailsTab skill={skill} />;
-    if (skill == null) return <NoDataContent title={t(QuickAppEditorI18nKeys.SkillUnavailable)} />;
-    return <SkillOverviewTab skill={skill} />;
-  };
-
   return (
-    <Popup
-      open
-      ariaLabel={name}
-      header={
-        <EntityIdentity
-          item={{ type: EntityType.Skill, name, version: skill?.version }}
-          labels={{ type: t(QuickAppEditorI18nKeys.SkillTypeLabel) }}
-          hasFeaturedTag={false}
-          iconSize={AVATAR_SIZE}
-          headingLevel={2}
-          nameClassName="dial-body-semi-text"
-          typeClassName="dial-tiny-semi-text"
-        />
-      }
-      size={PopupSize.Lg}
-      closeAriaLabel={tCommon(CommonI18nKeys.CloseDialog)}
-      bodyClassName="flex max-h-[70vh] flex-col overflow-hidden px-6 pb-5"
-      additionalButtons={additionalButtons}
-      additionalButtonsOnLeft
-      mainButtons={mainButtons}
-      footerDivider
+    <AddOnDetailsPopup
+      entityType={EntityType.Skill}
+      typeLabel={t(QuickAppEditorI18nKeys.SkillTypeLabel)}
+      name={skill?.name ?? fallbackName}
+      version={skill?.version}
+      folder={folder}
+      item={item}
+      detailsStatus={status}
+      onRetry={retry}
+      unavailableText={skill == null ? t(QuickAppEditorI18nKeys.SkillUnavailable) : undefined}
+      isReadonly={isReadonly}
+      deleteLabel={t(QuickAppEditorI18nKeys.RemoveSkillFromApp)}
+      onDelete={handleDelete}
       onClose={onClose}
-    >
-      <Tabs
-        tabs={tabs}
-        activeTabId={activeTab}
-        onTabChange={setActiveTab}
-        ariaLabel={name}
-        className="shrink-0"
-      />
-      <div
-        role="tabpanel"
-        aria-label={tabs.find((tab) => tab.id === activeTab)?.label}
-        className="min-h-0 flex-1 overflow-y-auto pt-4"
-      >
-        {renderPanel()}
-      </div>
-    </Popup>
+    />
   );
 };

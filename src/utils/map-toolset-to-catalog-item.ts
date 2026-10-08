@@ -11,7 +11,7 @@ import { ResourceScope } from '@/types/resource-scope';
 import { isPublicToolsetId } from '@/utils/api';
 import { getCatalogFolder, getEntityScopeInfo } from '@/utils/entity-scope';
 import { getLocalizedText } from '@/utils/get-localized-text';
-import { formatUpdatedAtDate, getUpdatedAtTimestamp } from '@/utils/get-updated-at-timestamp';
+import { getUpdatedAtTimestamp } from '@/utils/get-updated-at-timestamp';
 import { resolveIconUrl } from '@/utils/resolve-icon-url';
 
 export interface MapToolsetToCatalogItemOptions {
@@ -84,61 +84,4 @@ export const mapToolsetToCatalogItem = (
     // Required by `CatalogItem`, never shown in the list view.
     lastUsed: '',
   };
-};
-
-export interface ToolsetOverviewLabels {
-  authentication: string;
-  folder: string;
-  updated: string;
-  version: string;
-  oauth: string;
-  apiKey: string;
-}
-
-export interface GetToolsetOverviewRowsOptions {
-  language: string;
-  userBucket?: string;
-  scopeLabels: Record<ResourceScope, string>;
-  labels: ToolsetOverviewLabels;
-}
-
-export interface OverviewRow {
-  label: string;
-  value: string;
-}
-
-export const CATALOG_FOLDER_SEPARATOR = ' / ';
-
-const getAuthenticationLabel = (
-  authType: ToolsetAuthType | undefined,
-  labels: ToolsetOverviewLabels,
-): string => {
-  if (authType === ToolsetAuthType.OAuth) return labels.oauth;
-  if (authType === ToolsetAuthType.ApiKey) return labels.apiKey;
-  return '';
-};
-
-/** Label/value rows of a toolset's Overview tab; rows without a value are left out. */
-export const getToolsetOverviewRows = (
-  toolset: DialToolset,
-  { language, userBucket, scopeLabels, labels }: GetToolsetOverviewRowsOptions,
-): OverviewRow[] => {
-  const folder = getCatalogFolder(getEntityScopeInfo(toolset.id, userBucket), scopeLabels);
-  const rows: OverviewRow[] = [
-    {
-      label: labels.authentication,
-      value: getAuthenticationLabel(toolset.authSettings?.authenticationType, labels),
-    },
-    { label: labels.folder, value: folder.join(CATALOG_FOLDER_SEPARATOR) },
-    { label: labels.updated, value: formatUpdatedAtDate(toolset.updatedAt, language) },
-    { label: labels.version, value: toolset.version ?? '' },
-  ];
-  return rows.filter((row) => row.value !== '');
-};
-
-/** Tool names containing the trimmed query, case-insensitively; all names for a blank query. */
-export const filterToolNames = (names: readonly string[], query: string): string[] => {
-  const normalized = query.trim().toLowerCase();
-  if (!normalized) return [...names];
-  return names.filter((name) => name.toLowerCase().includes(normalized));
 };

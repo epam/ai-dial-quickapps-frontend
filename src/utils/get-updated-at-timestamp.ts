@@ -10,10 +10,3 @@ export const getUpdatedAtTimestamp = (value?: string | number): number => {
   const time = new Date(value).getTime();
   return Number.isNaN(time) ? 0 : time;
 };
-
-/** An `updatedAt` value as a localized medium date, or `''` when it is missing or unparsable. */
-export const formatUpdatedAtDate = (value: string | number | undefined, language: string): string => {
-  const timestamp = getUpdatedAtTimestamp(value);
-  if (timestamp <= 0) return '';
-  return new Intl.DateTimeFormat(language, { dateStyle: 'medium' }).format(timestamp);
-};
