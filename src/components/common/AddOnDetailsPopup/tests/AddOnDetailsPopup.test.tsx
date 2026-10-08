@@ -4,7 +4,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CatalogContentNodeType, type CatalogItem } from '@epam/ai-dial-catalog';
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
-import { EntityType } from '@epam/ai-dial-ui-kit';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { DetailsStatus } from '@/types/entity-details';
@@ -67,8 +66,7 @@ const render = (props: Partial<AddOnDetailsPopupProps> = {}) => {
   act(() =>
     root.render(
       <AddOnDetailsPopup
-        entityType={EntityType.Skill}
-        typeLabel="Skill"
+        entityType={CatalogEntityType.Skill}
         name="User Research"
         folder={['Organization', 'research']}
         item={listing}
@@ -87,12 +85,10 @@ const render = (props: Partial<AddOnDetailsPopupProps> = {}) => {
 const dialog = () => document.body.querySelector('[role="dialog"]') as HTMLElement;
 
 describe('AddOnDetailsPopup — catalog layout', () => {
-  it('draws the identity with a 52px icon and the folder as a FolderPath', () => {
+  it('renders the catalog header: a 52px icon, the type and the folder path', () => {
     render();
 
-    const folderPath = dialog().querySelector(
-      `nav[aria-label="${QuickAppEditorI18nKeys.FolderPathAriaLabel}"]`,
-    );
+    const folderPath = dialog().querySelector('nav[aria-label="Folder path"]');
     expect(folderPath?.textContent).toContain('Organization');
     expect(folderPath?.textContent).toContain('research');
     expect(dialog().querySelector('[style*="52px"]')).not.toBeNull();
@@ -123,7 +119,7 @@ describe('AddOnDetailsPopup — catalog layout', () => {
       type: CatalogEntityType.Toolset,
       description: '```js\nconst x = 1;\n```',
     } as unknown as CatalogItem;
-    render({ entityType: EntityType.Toolset, item: toolset });
+    render({ entityType: CatalogEntityType.Toolset, item: toolset });
 
     expect(
       dialog().querySelector(`button[aria-label="${QuickAppEditorI18nKeys.MarkdownCopyCode}"]`),
@@ -152,7 +148,7 @@ describe('AddOnDetailsPopup — Connect', () => {
 
   it('shows Connect last with the endpoint when a DIAL Core URL is set', () => {
     appContext.settings.dialCoreExternalUrl = 'https://core.example.com';
-    render({ entityType: EntityType.Toolset, item: toolset });
+    render({ entityType: CatalogEntityType.Toolset, item: toolset });
 
     expect(tabNames().at(-1)).toBe(QuickAppEditorI18nKeys.ConnectTab);
 
@@ -163,8 +159,51 @@ describe('AddOnDetailsPopup — Connect', () => {
   });
 
   it('hides Connect without a DIAL Core URL', () => {
-    render({ entityType: EntityType.Toolset, item: toolset });
+    render({ entityType: CatalogEntityType.Toolset, item: toolset });
 
     expect(tabNames()).not.toContain(QuickAppEditorI18nKeys.ConnectTab);
+  });
+});
+
+describe('AddOnDetailsPopup — catalog header actions', () => {
+  // Owned and editable, so the catalog would offer Share and the Manage menu.
+  const ownedToolset = {
+    ...listing,
+    type: CatalogEntityType.Toolset,
+    isMyApp: true,
+    isEditable: true,
+    credentials: { authenticationType: 'OAUTH', isPublic: true, userStatus: 'SIGNED_OUT' },
+  } as unknown as CatalogItem;
+
+  const buttonLabels = () =>
+    [...dialog().querySelectorAll('button')].map(
+      (button) => button.getAttribute('aria-label') ?? button.textContent?.trim(),
+    );
+
+  it('shows only the credentials action and starts the login with it', () => {
+    const onLogin = vi.fn().mockResolvedValue(undefined);
+    render({
+      entityType: CatalogEntityType.Toolset,
+      item: ownedToolset,
+      credentials: { onLogin, onLogout: vi.fn() },
+    });
+
+    expect(buttonLabels()).toContain(QuickAppEditorI18nKeys.LoginToolsetAction);
+    expect(buttonLabels()).not.toContain('Share');
+    expect(buttonLabels()).not.toContain('Manage');
+    expect(buttonLabels()).not.toContain('Use in chat');
+
+    const login = [...dialog().querySelectorAll('button')].find(
+      (button) => button.textContent?.trim() === QuickAppEditorI18nKeys.LoginToolsetAction,
+    );
+    act(() => login?.click());
+
+    expect(onLogin).toHaveBeenCalledWith({ apiKey: undefined });
+  });
+
+  it('shows no credentials action without credentials handlers', () => {
+    render({ entityType: CatalogEntityType.Toolset, item: ownedToolset });
+
+    expect(buttonLabels()).not.toContain(QuickAppEditorI18nKeys.LoginToolsetAction);
   });
 });

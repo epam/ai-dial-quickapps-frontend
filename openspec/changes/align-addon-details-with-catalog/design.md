@@ -8,7 +8,7 @@
 
 ## Decisions
 
-1. **Identity block = ui-kit `EntityIdentity` configured as the catalog's.** `EntityHeader` renders `item.type` verbatim through `EntityTypeLabel`, which would break the localisation requirement. `EntityIdentity` has the same parts plus `labels.type`. Settings: `iconSize={52}`, `nameClassName="dial-body-semi-text"`, `footer={<FolderPath segments={folder} labelClassName="dial-tiny-text" leafClassName="dial-tiny-semi-text" ariaLabel={…} />}`. The badge overlay box grows to 52 px.
+1. **Identity block — superseded by `adopt-catalog-details-header`.** The header is now the catalog `DetailsHeader`, with the type caption translated through `texts.entityTypeLabels` (epam/ai-dial-chat#9343). The first iteration used the ui-kit `EntityIdentity` configured as the catalog's: `EntityHeader` renders `item.type` verbatim through `EntityTypeLabel`, which would break the localisation requirement. `EntityIdentity` has the same parts plus `labels.type`. Settings: `iconSize={52}`, `nameClassName="dial-body-semi-text"`, `footer={<FolderPath segments={folder} labelClassName="dial-tiny-text" leafClassName="dial-tiny-semi-text" ariaLabel={…} />}`. The badge overlay box grows to 52 px.
 
 2. **Action row** moves into the header column, `ps-[60px]`, rendered only when there are actions (as the catalog's `hasActionRowContent`).
 

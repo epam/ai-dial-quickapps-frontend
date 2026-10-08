@@ -174,7 +174,7 @@ describe('AgentDetailsPopup', () => {
     await render();
 
     const dialog = getDialog('Research Agent');
-    expect(dialog?.textContent).toContain('Agent');
+    expect(dialog?.textContent).toMatch(/agent/i);
     expect(dialog?.textContent).toContain('2.1');
     expect(dialog?.textContent).toContain('Organization');
     expect(getTab('About')?.getAttribute('aria-selected')).toBe('true');
@@ -231,7 +231,7 @@ describe('AgentDetailsPopup', () => {
   it('shows a model with the Model caption and no actions', async () => {
     await render({ agent: MODEL });
 
-    expect(getDialog('GPT-4o')?.textContent).toContain('Model');
+    expect(getDialog('GPT-4o')?.textContent).toMatch(/model/i);
     expect(getButtonByText('Connection')).toBeUndefined();
     expect(getButtonByText('Application credentials')).toBeUndefined();
   });

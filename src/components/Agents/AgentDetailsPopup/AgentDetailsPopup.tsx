@@ -1,4 +1,5 @@
-import { DIAL_ICON_SIZE, DIAL_KIT_ICON_STROKE, EntityType, GhostButton } from '@epam/ai-dial-ui-kit';
+import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
+import { DIAL_ICON_SIZE, DIAL_KIT_ICON_STROKE, GhostButton } from '@epam/ai-dial-ui-kit';
 import { IconKey, IconSettings } from '@tabler/icons-react';
 import { FC, useCallback, useMemo, useState } from 'react';
 
@@ -132,10 +133,7 @@ export const AgentDetailsPopup: FC<AgentDetailsPopupProps> = ({
   return (
     <>
       <AddOnDetailsPopup
-        entityType={isModel ? EntityType.Model : EntityType.Agent}
-        typeLabel={t(
-          isModel ? QuickAppEditorI18nKeys.Model : QuickAppEditorI18nKeys.AgentTypeLabel,
-        )}
+        entityType={isModel ? CatalogEntityType.Model : CatalogEntityType.Agent}
         name={name}
         version={version}
         iconUrl={iconUrl}

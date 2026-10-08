@@ -1,10 +1,11 @@
-import { EntityType } from '@epam/ai-dial-ui-kit';
+import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { FC, useCallback, useMemo } from 'react';
 
 import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
 import { useEntityDetails } from '@/hooks/use-entity-details';
 import { useScopeLabels } from '@/hooks/use-scope-labels';
+import { useToolsetCredentials } from '@/hooks/use-toolset-credentials';
 import { useTranslation } from '@/hooks/use-translation';
 import { type DialToolset, ToolsetAuthType } from '@/types/dial-entities';
 import { Translation } from '@/types/translation';
@@ -14,9 +15,6 @@ import { getEntityStatus, getEntityStatusMessage } from '@/utils/get-entity-stat
 import { mapToolsetToCatalogItem } from '@/utils/map-toolset-to-catalog-item';
 
 import { AddOnDetailsPopup } from '@/components/common/AddOnDetailsPopup/AddOnDetailsPopup';
-import { ToolsetBadge } from '@/components/Toolsets/ToolsetBadge/ToolsetBadge';
-
-import { ToolsetCredentialsAction } from './ToolsetCredentialsAction';
 
 export interface ToolsetDetailsPopupProps {
   toolsetId: string;
@@ -46,6 +44,7 @@ export const ToolsetDetailsPopup: FC<ToolsetDetailsPopupProps> = ({
   const { t: tCommon } = useTranslation(Translation.Common);
   const { userBucket } = useDataContext();
   const scopeLabels = useScopeLabels();
+  const credentials = useToolsetCredentials(toolset);
 
   const { name, version, iconUrl } = getAddOnDisplay(toolsetId, toolset, language);
   const needsAuthentication =
@@ -88,29 +87,17 @@ export const ToolsetDetailsPopup: FC<ToolsetDetailsPopupProps> = ({
 
   return (
     <AddOnDetailsPopup
-      entityType={EntityType.Toolset}
-      typeLabel={t(QuickAppEditorI18nKeys.ToolsetTypeLabel)}
+      entityType={CatalogEntityType.Toolset}
       name={name}
       version={version}
       iconUrl={iconUrl}
       folder={folder}
-      avatarBadge={
-        toolset && (
-          <ToolsetBadge toolset={toolset} label={t(QuickAppEditorI18nKeys.ToolsetLoggedOutBadge)} />
-        )
-      }
-      actions={
-        toolset && needsAuthentication && !isReadonly ? (
-          <ToolsetCredentialsAction toolset={toolset} />
-        ) : undefined
-      }
-      banner={banner}
+      credentials={toolset && needsAuthentication && !isReadonly ? credentials : undefined}
+      banner={credentials.error ?? banner}
       item={item}
       detailsStatus={status}
       onRetry={retry}
-      unavailableText={
-        toolset == null ? t(QuickAppEditorI18nKeys.ToolsetUnavailable) : undefined
-      }
+      unavailableText={toolset == null ? t(QuickAppEditorI18nKeys.ToolsetUnavailable) : undefined}
       isReadonly={isReadonly}
       deleteLabel={t(QuickAppEditorI18nKeys.RemoveSkillFromApp)}
       onDelete={handleDelete}

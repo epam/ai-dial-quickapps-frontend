@@ -9,8 +9,9 @@ import { ToolsetDetailsPopup } from '../ToolsetDetailsPopup';
 
 const HOST = 'https://host';
 
-const { postToHost, deploymentsApi, dataContext } = vi.hoisted(() => ({
+const { postToHost, deploymentsApi, toolsetsApi, dataContext } = vi.hoisted(() => ({
   postToHost: vi.fn(),
+  toolsetsApi: { loginToolset: vi.fn(), logoutToolset: vi.fn() },
   deploymentsApi: { getDeploymentDetails: vi.fn(), getDeploymentLimits: vi.fn() },
   dataContext: {
     skills: [],
@@ -37,7 +38,7 @@ vi.mock('@/utils/allowed-origins', () => ({
   isOriginAllowed: (origin: string, allowed: string[] = []) => allowed.includes(origin),
 }));
 vi.mock('@/utils/dial-client', () => ({ encodeDialPath: (id: string) => id }));
-vi.mock('@/utils/chat-api-client', () => ({ toolsetsApi: {}, skillsApi: {}, deploymentsApi }));
+vi.mock('@/utils/chat-api-client', () => ({ toolsetsApi, skillsApi: {}, deploymentsApi }));
 // The real badge needs the catalog's tooltip layer; this stub keeps its
 // contract: it shows only while the toolset is signed out at every level.
 vi.mock('@epam/ai-dial-catalog', async (importOriginal) => ({
@@ -171,6 +172,14 @@ const postFromHost = async (data: unknown, origin = HOST) => {
 
 beforeEach(() => {
   (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
+  // The catalog API-key popover is a kit Dropdown, which observes its anchor.
+  (globalThis as Record<string, unknown>).IntersectionObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+  toolsetsApi.loginToolset.mockReset();
+  dataContext.refreshToolsets.mockReset();
   postToHost.mockReset();
   dataContext.applyToolsetAuthResult.mockReset();
   deploymentsApi.getDeploymentDetails.mockReset();
@@ -194,7 +203,8 @@ describe('ToolsetDetailsPopup', () => {
     await render();
 
     const dialog = getDialog('Figma');
-    expect(dialog?.textContent).toContain('Toolset');
+    // The catalog header's caption: 'TOOLSET' until the catalog takes entityTypeLabels.
+    expect(dialog?.textContent).toMatch(/toolset/i);
     expect(dialog?.textContent).toContain('1.0.0');
     expect(dialog?.textContent).toContain('Organization');
     expect(['About', 'Overview', 'Tools'].map((name) => !!getTab(name))).toEqual([
@@ -206,10 +216,10 @@ describe('ToolsetDetailsPopup', () => {
     expect(dialog?.querySelector('strong')?.textContent).toBe('design');
   });
 
-  it('badges a signed-out toolset and explains it above the tabs', async () => {
+  it('explains a signed-out toolset above the tabs, with no badge on the header icon', async () => {
     await render();
 
-    expect(getDialog('Figma')?.querySelector('[data-testid="badge"]')).toBeTruthy();
+    expect(getDialog('Figma')?.querySelector('[data-testid="badge"]')).toBeNull();
     expect(getDialog('Figma')?.textContent).toContain('Logged out toolset.');
   });
 
@@ -236,12 +246,10 @@ describe('ToolsetDetailsPopup', () => {
       { type: 'REQUEST_TOOLSET_LOGIN', toolsetId: FIGMA.id },
       [HOST],
     );
-    expect(getButtonByText('Logging in…')?.disabled).toBe(true);
 
     await postFromHost({ type: 'TOOLSET_LOGIN_RESULT', toolsetId: FIGMA.id, success: true });
 
     expect(getButtonByText('Log out')).toBeTruthy();
-    expect(getDialog('Figma')?.querySelector('[data-testid="badge"]')).toBeNull();
     expect(getDialog('Figma')).toBeTruthy();
   });
 
@@ -266,16 +274,35 @@ describe('ToolsetDetailsPopup', () => {
     await postFromHost({ type: 'TOOLSET_LOGIN_RESULT', toolsetId: 'toolsets/x', success: true });
 
     expect(dataContext.applyToolsetAuthResult).not.toHaveBeenCalled();
-    expect(getButtonByText('Logging in…')).toBeTruthy();
+    expect(getButtonByText('Log in')).toBeTruthy();
   });
 
-  it('opens the API-key form for an API-key toolset', async () => {
+  it('adds a personal API key from the catalog popover', async () => {
+    toolsetsApi.loginToolset.mockResolvedValue({});
     await render({ toolset: API_KEY_TOOLSET });
 
-    await click(getButtonByText('Log in'));
+    await click(getButtonByText('API key'));
+    const input = document.querySelector<HTMLInputElement>('input[type="password"]');
+    expect(input).toBeTruthy();
+    await act(async () => {
+      const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+      setValue?.call(input, 'secret-key');
+      input?.dispatchEvent(new Event('input', { bubbles: true }));
+      await flush();
+    });
+    await click(getButtonByText('Add'));
 
     expect(postToHost).not.toHaveBeenCalled();
-    expect(document.querySelector('input[type="password"]')).toBeTruthy();
+    expect(toolsetsApi.loginToolset).toHaveBeenCalledWith({
+      toolsetName: API_KEY_TOOLSET.id,
+      toolsetLoginBodyDto: {
+        url: API_KEY_TOOLSET.id,
+        credentialsLevel: 'USER',
+        authenticationType: 'API_KEY',
+        apiKey: 'secret-key',
+      },
+    });
+    expect(dataContext.refreshToolsets).toHaveBeenCalled();
   });
 
   it('shows an unavailable toolset without a request or an action, but still offers Delete', async () => {

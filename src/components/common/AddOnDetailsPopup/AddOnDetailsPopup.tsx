@@ -2,6 +2,7 @@ import {
   AboutTab,
   ApiTab,
   type CatalogItem,
+  DetailsHeader,
   ContentTab,
   LimitsTab,
   OverviewTab,
@@ -9,14 +10,12 @@ import {
   ToolsTab,
 } from '@epam/ai-dial-catalog';
 import { CatalogDetailsTab, getCatalogDetailsTabs } from '@epam/ai-dial-catalog/mapping';
+import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import {
   ButtonAppearance,
   ButtonVariant,
   DIAL_ICON_SIZE,
   DIAL_KIT_ICON_STROKE,
-  EntityIdentity,
-  EntityType,
-  FolderPath,
   NeutralButton,
   NoDataContent,
   Popup,
@@ -35,11 +34,12 @@ import { useTranslation } from '@/hooks/use-translation';
 import { type AddOnDetailsTab, DetailsStatus } from '@/types/entity-details';
 import { Translation } from '@/types/translation';
 
-// The catalog DetailsPanel header: a 52px icon, so actions indent by it plus the 8px gap.
-const AVATAR_SIZE = 52;
 const LOADING_SKELETON_PARAGRAPH = { rows: 1, width: '72px' };
 
 const loadNoContentFile = async (): Promise<string | undefined> => undefined;
+
+// The catalog header shows Share, Publish and Download unless the host rules them out.
+const hideHeaderAction = (): boolean => false;
 
 // The typography the catalog's DetailsPanel renders its Overview with.
 const OVERVIEW_CLASSES = {
@@ -49,18 +49,23 @@ const OVERVIEW_CLASSES = {
   valueTrueClassName: 'dial-small-text',
 };
 
+/** Sign-in handlers for the catalog header's credentials action (toolsets only). */
+export interface AddOnDetailsCredentials {
+  onLogin: (params: { apiKey?: string }) => Promise<void>;
+  onLogout: () => Promise<void>;
+}
+
 export interface AddOnDetailsPopupProps {
-  entityType: EntityType;
-  /** The type caption, e.g. "Toolset". */
-  typeLabel: string;
+  /** The catalog type, which also picks the header's translated caption. */
+  entityType: CatalogEntityType;
   name: string;
   version?: string;
   iconUrl?: string;
   /** Folder path segments (scope label first); the line is hidden when empty. */
   folder: string[];
-  /** Overlaid on the avatar's bottom-end corner, e.g. the logged-out badge. */
-  avatarBadge?: ReactNode;
-  /** Buttons under the header, e.g. Log in or Connection. */
+  /** Enables the header's credentials action; omitted in a read-only app or without auth. */
+  credentials?: AddOnDetailsCredentials;
+  /** This app's own buttons under the header, e.g. an agent's Connection. */
   actions?: ReactNode;
   /** A status message shown above the tabs. */
   banner?: ReactNode;
@@ -92,12 +97,11 @@ export interface AddOnDetailsPopupProps {
  */
 export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
   entityType,
-  typeLabel,
   name,
   version,
   iconUrl,
   folder,
-  avatarBadge,
+  credentials,
   actions,
   banner,
   item,
@@ -117,6 +121,34 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
   } = useAppContext();
   const { tabs: labels } = useCatalogDetailsLabels();
   const [selectedTabId, setSelectedTabId] = useState<AddOnDetailsTab>();
+
+  // The catalog header shows its owner actions (Share, Edit, Delete in the
+  // Manage menu) from `isMyApp` / `isEditable` alone, so the header gets an
+  // item without them: here an add-on is only detached, from the footer.
+  const headerItem = useMemo(
+    (): CatalogItem => ({
+      ...(item ?? {
+        id: name,
+        name,
+        type: entityType,
+        version: version ?? '',
+        iconUrl,
+        description: '',
+        topics: [],
+        folder,
+        lastUsed: '',
+      }),
+      isMyApp: false,
+      isEditable: false,
+    }),
+    [item, name, entityType, version, iconUrl, folder],
+  );
+  // Built outside the JSX literal so `entityTypeLabels` type-checks against
+  // catalog releases before epam/ai-dial-chat#9343, which ignore it.
+  const headerTexts = useMemo(
+    () => ({ ...labels.header, entityTypeLabels: labels.entityTypeLabels }),
+    [labels],
+  );
   const contentFiles = useContentFileSelection(item, onLoadContentFile, labels.contentFiles.error);
 
   const tabIds = useMemo(
@@ -281,35 +313,23 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
       open
       ariaLabel={name}
       overlayStyle={{ overflow: 'hidden' }}
+      // The catalog's own details header. It brings its own `px-6 py-4`, so
+      // the popup header drops its padding but keeps the close control's.
       header={
-        <div className="relative">
-          <EntityIdentity
-            item={{ type: entityType, name, version, iconUrl }}
-            labels={{ type: typeLabel }}
-            hasFeaturedTag={false}
-            iconSize={AVATAR_SIZE}
-            headingLevel={2}
-            nameClassName="dial-body-semi-text"
-            typeClassName="dial-tiny-semi-text"
-            footer={
-              folder.length > 0 && (
-                <FolderPath
-                  segments={folder}
-                  labelClassName="dial-tiny-text"
-                  leafClassName="dial-tiny-semi-text"
-                  ariaLabel={labels.folderPath}
-                />
-              )
-            }
-          />
-          {avatarBadge && (
-            // A box over the avatar, so the badge lands on its bottom-end corner.
-            <span className="pointer-events-none absolute start-0 top-0 size-[52px] [&>*]:pointer-events-auto">
-              {avatarBadge}
-            </span>
-          )}
-        </div>
+        <DetailsHeader
+          item={headerItem}
+          texts={headerTexts}
+          isShareVisible={hideHeaderAction}
+          isPublishVisible={hideHeaderAction}
+          isDownloadVisible={hideHeaderAction}
+          onLogin={credentials && ((_, { apiKey }) => credentials.onLogin({ apiKey }))}
+          onLogout={credentials && (() => credentials.onLogout())}
+          // The catalog starts an OAuth Log out only through this; it runs directly here.
+          onRequestLogout={credentials && (() => void credentials.onLogout())}
+        />
       }
+      headerClassName="items-start p-0 pe-6 pt-4"
+      titleClassName="me-0 overflow-visible whitespace-normal"
       size={PopupSize.Lg}
       closeAriaLabel={tCommon(CommonI18nKeys.CloseDialog)}
       bodyClassName="flex h-[70vh] flex-col gap-4 overflow-hidden px-6 pb-5"
