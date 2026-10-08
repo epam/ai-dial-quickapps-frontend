@@ -11,7 +11,7 @@ export interface Theme {
   'app-logo': string;
 }
 
-export interface ThemeImages {
+interface ThemeImages {
   'default-addon': string;
   'default-model': string;
   favicon: string;

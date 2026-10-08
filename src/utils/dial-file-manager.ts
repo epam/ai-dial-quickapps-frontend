@@ -16,12 +16,12 @@ import { listFiles, listPublicFiles, listSharedFiles } from '@/utils/dial-files-
 import { safeDecodeURI } from '@/utils/safe-decode-uri';
 
 /** One folder's entries, plus the permissions DIAL reports for the folder itself. */
-export interface FolderListing {
+interface FolderListing {
   items: ListFilesItem[];
   permissions?: string[];
 }
 
-export interface OwnerCoords {
+interface OwnerCoords {
   bucket: string;
   path: string;
 }

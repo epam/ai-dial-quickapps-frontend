@@ -2,7 +2,7 @@ import { isApplicationId, isToolsetId } from '@/utils/api';
 import { ApplicationStatus, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
 import { CommonI18nKeys } from '@/constants/i18n';
 
-export interface EntityStatusFields {
+interface EntityStatusFields {
   functionStatus?: ApplicationStatus;
   authSettings?: {
     authenticationType?: ToolsetAuthType;
@@ -72,7 +72,7 @@ export const getEntityStatus = (entity?: EntityStatusFields, id?: string): Entit
 
 // Transient lifecycle states a deployable entity can be in, in priority
 // order: the first one that's true wins.
-export enum EntityStatusKind {
+enum EntityStatusKind {
   Deploying = 'DEPLOYING',
   Undeploying = 'UNDEPLOYING',
   Redeploying = 'REDEPLOYING',

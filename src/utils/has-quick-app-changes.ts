@@ -17,7 +17,7 @@ export interface StoredGeneralFields {
 
 type FieldDiff = Record<string, { before: unknown; after: unknown }>;
 
-export interface HasQuickAppChangesResult {
+interface HasQuickAppChangesResult {
   hasChanges: boolean;
 }
 

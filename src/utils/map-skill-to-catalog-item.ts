@@ -10,7 +10,7 @@ import { ResourceScope } from '@/types/resource-scope';
 import { getCatalogFolder, getEntityScopeInfo } from '@/utils/entity-scope';
 import { getUpdatedAtTimestamp } from '@/utils/get-updated-at-timestamp';
 
-export interface MapSkillToCatalogItemOptions {
+interface MapSkillToCatalogItemOptions {
   userBucket?: string;
   /** Already-translated scope labels — keeps this util free of i18n. */
   scopeLabels: Record<ResourceScope, string>;

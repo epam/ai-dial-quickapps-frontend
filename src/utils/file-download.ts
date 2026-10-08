@@ -24,7 +24,7 @@ export enum DownloadDestinationType {
   Cancelled = 'cancelled',
 }
 
-export type DownloadDestination =
+type DownloadDestination =
   | { type: DownloadDestinationType.Blob }
   | {
       type: DownloadDestinationType.Stream;

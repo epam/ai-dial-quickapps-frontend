@@ -61,9 +61,8 @@ export enum QuickAppEditorI18nKeys {
   ContextAndToolsDescription = 'Knowledge and capabilities available to the agent: context files, toolsets, and code execution.',
   ContextFiles = 'Context files',
   ContextFilesInfo = 'Files are available to the agent but not used every turn. The agent decides which files to use, when, and which tool to route them to.',
-  ProcessFiles = 'Process files',
   AllowOrchestratorToProcessFiles = 'Allow orchestrator to process files',
-  ProcessFilesDescription = 'Allows the orchestrator to handle attachments by reading file content on demand instead of including all attachment content in the initial prompt. This helps reduce context window usage while preserving access to the files when needed.',
+  ProcessFilesOnDemandDescription = 'Handle attachments by reading file content on demand instead of including all attachment content in the initial prompt.',
   AddAttachment = 'Add attachment',
   AllowTheAgentToAttachFilesToTheResponse = 'Allow the agent to attach files to the response',
   AddAttachmentDescription = 'Enables the orchestrator’s built-in tool for attaching a file to the final response. When enabled, the agent can add a file it produced (e.g. one created via the file tools) to the response’s attachments. When disabled, no attachment tool is exposed to the orchestrator.',
@@ -77,9 +76,9 @@ export enum QuickAppEditorI18nKeys {
   Instructions = 'Instructions',
   InstructionsPlaceholder = 'Instructions of your application',
   Temperature = 'Temperature',
-  TemperatureDescription = 'Higher values will make the output more random, while lower values will make it more focused and deterministic.',
   TemperaturePrecise = 'Precise',
   TemperatureNeutral = 'Neutral',
+  TemperatureValue = 'Temperature value',
   TemperatureCreative = 'Creative',
   CodeInterpreter = 'Code Interpreter',
   CodeInterpreterInfo = 'Allows to build multi-agent applications where agents can generate and safely execute Python code in real-time to perform specific tasks, such as data visualization or analytics.',
@@ -94,7 +93,7 @@ export enum QuickAppEditorI18nKeys {
   SkillDetailsTab = 'Details',
   SkillOverviewTab = 'Overview',
   RemoveSkillFromApp = 'Delete',
-  SkillAuthor = 'Author',
+  SkillAuthor = 'Author',
   SkillUnavailable = 'This skill is no longer available',
   AddSkill = 'Add skill',
   SkillsCatalog = 'Skills catalog',
@@ -125,13 +124,13 @@ export enum QuickAppEditorI18nKeys {
   NoAgentsAvailable = 'No agents available',
   SelectAllAgents = 'Select all agents',
   AgentTypeLabel = 'Agent',
-  AboutTab = 'About',
+  AboutTab = 'About',
   AgentUnavailable = 'This agent is no longer available',
   AgentConnection = 'Connection',
   ToolsetTypeLabel = 'Toolset',
   ToolsTab = 'Tools',
-  DetailsAuthentication = 'Authentication',
-  ToolsetUnavailable = 'This toolset is no longer available',
+  DetailsAuthentication = 'Authentication',
+  ToolsetUnavailable = 'This toolset is no longer available',
   // Catalog details tabs (`catalog-entity-details`). Labels the catalog
   // mappers and tab components take; values match the chat catalog's English.
   PricingTab = 'Pricing',
@@ -198,6 +197,7 @@ export enum QuickAppEditorI18nKeys {
   WhenStarterIsSelected = 'When starter is selected',
   SendPromptToTheChat = 'Send prompt to the chat',
   DeleteStarter = 'Delete starter',
+  RemoveStarter = 'Remove starter {{name}}',
   ReorderStarter = 'Reorder starter {{name}}',
   StarterDragInstructions = 'Press Space to pick up a starter, use the arrow keys to move it, Space to drop, Escape to cancel.',
   StarterPickedUp = 'Picked up starter {{position}} of {{total}}.',
@@ -211,6 +211,7 @@ export enum QuickAppEditorI18nKeys {
   TimeAwareness = 'Time awareness',
   MaxAttachmentsUserCanAdd = 'Maximum attachments amount user can add',
   MaxAttachmentsHint = 'Valid only for the cases when attachments enabled for the agent',
+  MaxAttachmentsPlaceholder = 'Enter the maximum number of attachments',
   MaxAttachmentsInvalid = 'Enter a whole number greater than 0',
   TimeAwarenessDescription = 'Gives the agent the current date and time, helping it understand references like "today," deadlines, and schedules.',
   BuiltInFileTools = 'Built-in file tools',

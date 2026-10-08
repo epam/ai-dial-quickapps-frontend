@@ -7,14 +7,10 @@ export enum MIMEType {
   Plain = 'text/plain',
   /** HTML markup. */
   HTML = 'text/html',
-  /** XHTML markup. */
-  XHTML = 'application/xhtml+xml',
   /** Cascading Style Sheets. */
   CSS = 'text/css',
   /** JavaScript source. */
   JavaScript = 'text/javascript',
-  /** TypeScript source (non-standard but widely used). */
-  TypeScript = 'text/typescript',
   /** CSV spreadsheet data. */
   CSV = 'text/csv',
   /** JSON data (text type, non-standard but widely used). */
@@ -33,10 +29,6 @@ export enum MIMEType {
   ApplicationCSV = 'application/csv',
   /** PDF document. */
   PDF = 'application/pdf',
-  /** ZIP archive. */
-  ZIP = 'application/zip',
-  /** GZIP-compressed data. */
-  GZIP = 'application/gzip',
   /** Arbitrary binary data. */
   OctetStream = 'application/octet-stream',
   /** Plotly chart JSON. */
@@ -83,12 +75,4 @@ export enum MIMEType {
   ICO = 'image/vnd.microsoft.icon',
   /** ICO icon (legacy type). */
   XIcon = 'image/x-icon',
-
-  // Audio
-  /** MPEG audio (`.mp3`). */
-  MP3 = 'audio/mpeg',
-  /** WAV audio. */
-  WAV = 'audio/wav',
-  /** Ogg audio. */
-  OGG = 'audio/ogg',
 }

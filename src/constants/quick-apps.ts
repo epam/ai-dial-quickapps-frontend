@@ -21,3 +21,8 @@ export const REPRESENTATION_TOOLING_FEATURE_VALUE: RepresentationToolingFeature 
 export const WEB_FETCH_FEATURE_VALUE: WebFetchFeature = {
   enabled: true,
 };
+
+/** Orchestrator temperature range and step, shared by the Advanced Settings slider and its value input. */
+export const MIN_TEMPERATURE = 0;
+export const MAX_TEMPERATURE = 1;
+export const TEMPERATURE_STEP = 0.1;

@@ -23,6 +23,8 @@ import {
 export interface SettingsSectionProps {
   isReadonly: boolean;
   advancedSettings: AdvancedSettingsValues;
+  isTemperatureAvailable: boolean;
+  isProcessLargeFilesAvailable: boolean;
   maxInputAttachmentsError?: string;
   onAdvancedSettingsSave: (values: AdvancedSettingsValues) => void;
 }
@@ -30,6 +32,8 @@ export interface SettingsSectionProps {
 const SettingsSection: FC<SettingsSectionProps> = ({
   isReadonly,
   advancedSettings,
+  isTemperatureAvailable,
+  isProcessLargeFilesAvailable,
   maxInputAttachmentsError,
   onAdvancedSettingsSave,
 }) => {
@@ -63,6 +67,8 @@ const SettingsSection: FC<SettingsSectionProps> = ({
         <AdvancedSettingsPopup
           isOpen
           advancedSettings={advancedSettings}
+          isTemperatureAvailable={isTemperatureAvailable}
+          isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
           maxInputAttachmentsError={maxInputAttachmentsError}
           onSave={onAdvancedSettingsSave}
           onClose={handleClose}

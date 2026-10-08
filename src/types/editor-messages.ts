@@ -12,7 +12,7 @@ export enum InboundMessageType {
   ToolsetLogoutResult = 'TOOLSET_LOGOUT_RESULT',
 }
 
-export interface ToolsetCredentials {
+interface ToolsetCredentials {
   authenticationType: ToolsetAuthType;
   userStatus?: ToolsetAuthStatus;
   globalStatus?: ToolsetAuthStatus;

@@ -49,12 +49,7 @@ export interface WebFetchFeature {
   enabled: boolean;
 }
 
-export enum ToolsetTransportType {
-  HTTP = 'HTTP',
-  SSE = 'SSE',
-}
-
-export interface FileContext {
+interface FileContext {
   url: string;
   type: ContextType.File;
 }
@@ -73,7 +68,6 @@ export interface DialDeploymentToolset {
 export enum DialAppTransportType {
   MCP = 'mcp',
   ChatCompletion = 'chat-completion',
-  Auto = 'auto',
 }
 
 export interface DialAppToolset {
@@ -87,7 +81,6 @@ export interface MCPToolset {
   name?: string;
   type?: ToolsetTypes.DialMcp;
   deployment_id: string;
-  transport?: ToolsetTransportType;
   description?: string;
 }
 
@@ -96,7 +89,7 @@ export interface CodeInterpreterToolset {
   type: ToolsetTypes.CodeInterpreter;
 }
 
-export interface UnknownTool extends Record<string, unknown> {
+interface UnknownTool extends Record<string, unknown> {
   type?: string;
 }
 
