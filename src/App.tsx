@@ -15,6 +15,7 @@ import { fetchAppSettings } from '@/utils/dial-client';
 const HomePageContent: FC = () => {
   const searchParams = useSearchParams();
   const provider = searchParams.get('authProvider') ?? undefined;
+  const applicationName = searchParams.get('applicationName') || undefined;
   const { status, user, logout } = useAuthContext();
   const [providers, setProviders] = useState<AuthProviderInfo[] | null>(null);
   const [settings, setSettings] = useState<AppSettings | null>(null);
@@ -39,7 +40,7 @@ const HomePageContent: FC = () => {
   }, []);
 
   useEffect(() => {
-    const { dialAdminHost, dialChatHost, applicationName } = settings ?? {};
+    const { dialAdminHost, dialChatHost } = settings ?? {};
     if (chatVisualizerConnector.current) return;
     if (!settings) return;
     if (!(dialAdminHost || dialChatHost) || !applicationName) {
@@ -68,7 +69,7 @@ const HomePageContent: FC = () => {
       chatVisualizerConnector.current = null;
       connectorTargetRef.current = null;
     };
-  }, [settings]);
+  }, [settings, applicationName]);
 
   // Sent once the editor's own model state has finished loading and is safe
   // to save. Mirrors the same host/appName targeting as sendReadyToInteract,

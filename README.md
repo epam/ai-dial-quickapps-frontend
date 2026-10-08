@@ -214,9 +214,12 @@ These don't map onto a native chat-api concept, so they travel inside `CUSTOM_CL
 | `allowedOrigin`   |    No    | Origin(s) allowed to send/receive `postMessage` events with the editor iframe: one origin, a comma-separated list, or a JSON array. Set to the exact `ai-dial-chat`/admin origins in production; `*` (or unset) accepts any origin — unsafe outside local dev. |
 | `dialAdminHost`   |    No    | Origin of the admin host this app is embedded in. Default target for `@epam/ai-dial-chat-visualizer-connector`.                                                                                                                                                |
 | `dialChatHost`    |    No    | Origin of the `ai-dial-chat` host. Used instead of `dialAdminHost` when the app detects it's embedded directly inside chat (`document.location.ancestorOrigins[0]` matches this value).                                                                        |
-| `applicationName` |    No    | Visualizer name; must match the `title` configured for this app in `ai-dial-chat`'s visualizer settings. Required (with at least one of the hosts above) for the visualizer connector to activate.                                                             |
 
-Example: `CUSTOM_CLIENT_VARIABLES={"allowedOrigin":"https://chat.example.com,https://admin.example.com","dialAdminHost":"https://admin.example.com","applicationName":"QuickApps"}`
+Example: `CUSTOM_CLIENT_VARIABLES={"allowedOrigin":"https://chat.example.com,https://admin.example.com","dialAdminHost":"https://admin.example.com"}`
+
+The application (visualizer) name is not configured here: the host passes it per load as the
+`applicationName` query parameter of the entry URL (see the `host-integration` spec). One
+deployment can therefore serve several applications.
 
 ### OpenTelemetry
 

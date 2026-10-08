@@ -273,7 +273,6 @@ interface CustomVariables {
   allowedOrigins: string[];
   dialAdminHost?: string;
   dialChatHost?: string;
-  applicationName?: string;
   isCodeInterpreterEnabled?: boolean;
   isWebFetchEnabled?: boolean;
   isAddAttachmentEnabled?: boolean;
@@ -290,7 +289,6 @@ const readCustomVariables = (value: unknown): CustomVariables => {
     allowedOrigins: parseAllowedOrigins(record.allowedOrigin),
     dialAdminHost: asString('dialAdminHost'),
     dialChatHost: asString('dialChatHost'),
-    applicationName: asString('applicationName'),
     isCodeInterpreterEnabled: asBoolean('codeInterpreterEnabled'),
     isWebFetchEnabled: asBoolean('webFetchEnabled'),
     isAddAttachmentEnabled: asBoolean('addAttachmentEnabled'),
@@ -310,7 +308,6 @@ export const fetchAppSettings = async (): Promise<AppSettings> => {
       allowedOrigins: custom.allowedOrigins,
       dialAdminHost: custom.dialAdminHost,
       dialChatHost: custom.dialChatHost,
-      applicationName: custom.applicationName,
     };
   } catch {
     return {};
