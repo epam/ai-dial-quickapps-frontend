@@ -3,7 +3,7 @@ import { DIAL_ICON_SIZE, DIAL_KIT_ICON_STROKE, GhostButton } from '@epam/ai-dial
 import { IconKey, IconSettings } from '@tabler/icons-react';
 import { FC, useCallback, useMemo, useState } from 'react';
 
-import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { useApplicationAuthentication } from '@/hooks/use-application-authentication';
@@ -55,7 +55,6 @@ export const AgentDetailsPopup: FC<AgentDetailsPopupProps> = ({
   onClose,
 }) => {
   const { t, language } = useTranslation(Translation.QuickAppEditor);
-  const { t: tCommon } = useTranslation(Translation.Common);
   const { settings } = useAppContext();
   const { userBucket } = useDataContext();
   const searchParams = useSearchParams();
