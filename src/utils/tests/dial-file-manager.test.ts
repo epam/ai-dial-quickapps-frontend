@@ -7,6 +7,8 @@ import {
   type DialFile,
 } from '@epam/ai-dial-react-file-manager';
 
+import { TransferQueueItemStatus } from '@epam/ai-dial-ui-kit';
+
 import { FileUploadStatus, type SharedRootMeta } from '@/types/file-manager';
 import {
   buildFromCache,
@@ -23,6 +25,8 @@ import {
   parseNewFolderVirtualPath,
   resolveOwnerCoords,
   resolveSourceByPath,
+  toTransferQueueItems,
+  isUploadInProgress,
   updateUploadEntry,
 } from '@/utils/dial-file-manager';
 import { listFiles, listPublicFiles, listSharedFiles } from '@/utils/dial-files-api';
@@ -194,7 +198,6 @@ describe('mergeCreatedFolderIntoCache', () => {
 
 describe('updateUploadEntry', () => {
   const batch = {
-    isOpen: true,
     files: [
       { id: '1', name: 'a', status: FileUploadStatus.Queued },
       { id: '2', name: 'b', status: FileUploadStatus.Queued },
@@ -212,6 +215,39 @@ describe('updateUploadEntry', () => {
       FileUploadStatus.Failed,
     );
     expect(updateUploadEntry(null, 0, FileUploadStatus.Failed)).toBeNull();
+  });
+});
+
+describe('toTransferQueueItems', () => {
+  it('maps every upload status and keeps a percentage only while uploading', () => {
+    const batch = {
+      files: [
+        { id: '1', name: 'a', status: FileUploadStatus.Queued },
+        { id: '2', name: 'b', status: FileUploadStatus.Uploading, percent: 40 },
+        { id: '3', name: 'c', status: FileUploadStatus.Completed, percent: 100 },
+        { id: '4', name: 'd', status: FileUploadStatus.Failed },
+        { id: '5', name: 'e', status: FileUploadStatus.Cancelled },
+      ],
+    };
+    expect(toTransferQueueItems(batch)).toEqual([
+      { id: '1', name: 'a', status: TransferQueueItemStatus.InProgress, percent: undefined },
+      { id: '2', name: 'b', status: TransferQueueItemStatus.InProgress, percent: 40 },
+      { id: '3', name: 'c', status: TransferQueueItemStatus.Success, percent: undefined },
+      { id: '4', name: 'd', status: TransferQueueItemStatus.Failed, percent: undefined },
+      { id: '5', name: 'e', status: TransferQueueItemStatus.Canceled, percent: undefined },
+    ]);
+  });
+});
+
+describe('isUploadInProgress', () => {
+  it('is true while a file is queued or uploading', () => {
+    const entry = (status: FileUploadStatus) => ({ files: [{ id: '1', name: 'a', status }] });
+    expect(isUploadInProgress(entry(FileUploadStatus.Queued))).toBe(true);
+    expect(isUploadInProgress(entry(FileUploadStatus.Uploading))).toBe(true);
+    expect(isUploadInProgress(entry(FileUploadStatus.Completed))).toBe(false);
+    expect(isUploadInProgress(entry(FileUploadStatus.Failed))).toBe(false);
+    expect(isUploadInProgress(entry(FileUploadStatus.Cancelled))).toBe(false);
+    expect(isUploadInProgress(null)).toBe(false);
   });
 });
 

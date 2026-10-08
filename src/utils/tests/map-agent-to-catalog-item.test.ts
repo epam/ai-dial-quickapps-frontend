@@ -38,6 +38,14 @@ describe('mapAgentToCatalogItem', () => {
       mapAgentToCatalogItem(makeAgent({ id: 'gpt-4o', type: 'model', name: 'GPT-4o' }), OPTIONS),
     ).toMatchObject({ type: CatalogEntityType.Model, folder: ['Organization'] });
   });
+
+  it('flags MCP agents, so Connect shows their MCP endpoint', () => {
+    expect(mapAgentToCatalogItem(makeAgent({ mcp: true }), OPTIONS).supportsMcp).toBe(true);
+    expect(mapAgentToCatalogItem(makeAgent({ features: { mcp: true } }), OPTIONS).supportsMcp).toBe(
+      true,
+    );
+    expect(mapAgentToCatalogItem(makeAgent(), OPTIONS).supportsMcp).toBe(false);
+  });
 });
 
 describe('canConfigureAgentTransport', () => {
@@ -48,4 +56,3 @@ describe('canConfigureAgentTransport', () => {
     expect(canConfigureAgentTransport(undefined)).toBe(false);
   });
 });
-

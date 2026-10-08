@@ -50,7 +50,7 @@ export const SkillDetailsPopup: FC<SkillDetailsPopupProps> = ({
     () => (skill == null ? undefined : mapSkillToCatalogItem(skill, { userBucket, scopeLabels })),
     [skill, userBucket, scopeLabels],
   );
-  const { status, details, retry } = useEntityDetails(listingItem);
+  const { status, details, retry, onLoadContentFile } = useEntityDetails(listingItem);
   const item = useMemo(
     () => (listingItem == null ? undefined : { ...listingItem, details }),
     [listingItem, details],
@@ -71,6 +71,7 @@ export const SkillDetailsPopup: FC<SkillDetailsPopupProps> = ({
       item={item}
       detailsStatus={status}
       onRetry={retry}
+      onLoadContentFile={onLoadContentFile}
       unavailableText={skill == null ? t(QuickAppEditorI18nKeys.SkillUnavailable) : undefined}
       isReadonly={isReadonly}
       deleteLabel={t(QuickAppEditorI18nKeys.RemoveSkillFromApp)}

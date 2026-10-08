@@ -23,8 +23,10 @@ import {
   type DialFileSourceTab,
 } from '@/utils/dial-file-manager';
 
-export interface UseDialFileSourcesOptions
-  extends Pick<UseDialFileManagerOptions, 'bucket' | 'onNotification' | 'forbiddenSymbolsRegExp'> {
+export interface UseDialFileSourcesOptions extends Pick<
+  UseDialFileManagerOptions,
+  'bucket' | 'onNotification' | 'forbiddenSymbolsRegExp'
+> {
   activeTab: DialFileManagerTabs;
   labels: DialFileSourceLabels;
 }
@@ -120,15 +122,19 @@ export const useDialFileSources = ({
   const onUploadFiles = useCallback(
     (files: DialUploadFileItem[], destinationFolder: string) => {
       const source = resolveSourceByPath(destinationFolder, labels);
-      if (source != null) sources[source].onUploadFiles(files, destinationFolder);
+      if (source == null) return;
+      // One upload queue at a time: a new batch replaces another source's finished one.
+      SOURCE_TABS.filter((tab) => tab !== source).forEach((tab) => sources[tab].clearUploadBatch());
+      sources[source].onUploadFiles(files, destinationFolder);
     },
     [labels, sources],
   );
 
   const onValidateUpload = useCallback(
     (files: DialUploadFileItem[], existingFiles: DialFile[], destinationFolder: string) =>
-      sources[resolveSourceByPath(destinationFolder, labels) ?? DialFileManagerTabs.MyFiles]
-        .onValidateUpload(files, existingFiles, destinationFolder),
+      sources[
+        resolveSourceByPath(destinationFolder, labels) ?? DialFileManagerTabs.MyFiles
+      ].onValidateUpload(files, existingFiles, destinationFolder),
     [labels, sources],
   );
 
@@ -136,9 +142,31 @@ export const useDialFileSources = ({
     SOURCE_TABS.forEach((tab) => sources[tab].cancelUpload());
   }, [sources]);
 
+  const cancelUploadItem = useCallback(
+    (id: string) => {
+      SOURCE_TABS.forEach((tab) => sources[tab].cancelUploadItem(id));
+    },
+    [sources],
+  );
+
   const clearUploadBatch = useCallback(() => {
     SOURCE_TABS.forEach((tab) => sources[tab].clearUploadBatch());
   }, [sources]);
+
+  const uploadBatchState =
+    SOURCE_TABS.map((tab) => sources[tab].uploadBatchState).find(Boolean) ?? null;
+
+  // The upload queue is shared by every view, so it survives a tab switch.
+  const upload = useMemo(
+    () => ({
+      onUploadFiles,
+      uploadBatchState,
+      cancelUpload,
+      cancelUploadItem,
+      clearUploadBatch,
+    }),
+    [onUploadFiles, uploadBatchState, cancelUpload, cancelUploadItem, clearUploadBatch],
+  );
 
   const onCreateFolder = useCallback(
     async (file: DialUploadFileItem, folderPath: string, fileId: string) => {
@@ -158,8 +186,9 @@ export const useDialFileSources = ({
 
   const onRenameValidate = useCallback(
     (value: string, item: DialFile) =>
-      sources[resolveSourceByPath(item.path, labels) ?? DialFileManagerTabs.MyFiles]
-        .onRenameValidate(value, item),
+      sources[
+        resolveSourceByPath(item.path, labels) ?? DialFileManagerTabs.MyFiles
+      ].onRenameValidate(value, item),
     [labels, sources],
   );
 
@@ -207,11 +236,8 @@ export const useDialFileSources = ({
       path: allPath,
       onPathChange,
       retry,
-      onUploadFiles,
       onValidateUpload,
-      uploadBatchState: SOURCE_TABS.map((tab) => sources[tab].uploadBatchState).find(Boolean) ?? null,
-      cancelUpload,
-      clearUploadBatch,
+      ...upload,
       onCreateFolder,
       onCreateFolderValidate,
       isCreatingFolder: SOURCE_TABS.some((tab) => sources[tab].isCreatingFolder),
@@ -240,10 +266,8 @@ export const useDialFileSources = ({
     allPath,
     onPathChange,
     retry,
-    onUploadFiles,
     onValidateUpload,
-    cancelUpload,
-    clearUploadBatch,
+    upload,
     onCreateFolder,
     onCreateFolderValidate,
     onDownloadFiles,
@@ -254,6 +278,11 @@ export const useDialFileSources = ({
     t,
   ]);
 
-  if (isAll) return all;
-  return sources[activeTab as DialFileSourceTab] ?? myFiles;
+  const single = sources[activeTab as DialFileSourceTab] ?? myFiles;
+  const singleView = useMemo(
+    (): UseDialFileManagerResult => ({ ...single, ...upload }),
+    [single, upload],
+  );
+
+  return isAll ? all : singleView;
 };

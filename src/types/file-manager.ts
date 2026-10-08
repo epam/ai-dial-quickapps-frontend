@@ -17,7 +17,6 @@ export interface FileUploadEntry {
 
 export interface FileUploadBatchState {
   files: FileUploadEntry[];
-  isOpen: boolean;
 }
 
 export interface FileUploadValidationResult {

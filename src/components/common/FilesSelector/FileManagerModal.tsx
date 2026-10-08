@@ -3,12 +3,14 @@ import { FC, memo, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import {
   ButtonAppearance,
   ButtonVariant,
-  DialButton,
+  PrimaryButton,
   Popup,
   Spinner,
   NOT_ALLOWED_SYMBOLS_REGEXP,
   NotificationVariant,
   PopupSize,
+  TransferQueue,
+  type TransferQueueLabels,
 } from '@epam/ai-dial-ui-kit';
 
 import {
@@ -26,14 +28,15 @@ import { CommonI18nKeys, DialFileManagerI18nKeys } from '@/constants/i18n';
 import { useAuthContext } from '@/context/AuthContext';
 import { useDialFileSources } from '@/hooks/use-dial-file-sources';
 import { useTranslation } from '@/hooks/use-translation';
-import { FileUploadStatus } from '@/types/file-manager';
 import { Translation } from '@/types/translation';
 import { isHiddenPath } from '@/utils/dial-file-path';
-import type { DialFileSourceLabels } from '@/utils/dial-file-manager';
+import {
+  isUploadInProgress,
+  toTransferQueueItems,
+  type DialFileSourceLabels,
+} from '@/utils/dial-file-manager';
 import { FilesApiNodeType } from '@/types/dial-files';
 import { listFiles } from '@/utils/dial-files-api';
-
-import UploadProgressModal from './UploadProgressModal';
 
 interface FileManagerModalProps {
   isOpen: boolean;
@@ -106,6 +109,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
     onValidateUpload,
     uploadBatchState,
     cancelUpload,
+    cancelUploadItem,
     clearUploadBatch,
     onCreateFolder,
     onCreateFolderValidate,
@@ -237,13 +241,17 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
     onClose([]);
   }, [onClose]);
 
-  const handleUploadCancel = useCallback(() => {
+  // The queue confirms first when files are still uploading or have failed, so closing it
+  // cancels whatever is left and dismisses the batch.
+  const handleUploadQueueClose = useCallback(() => {
     cancelUpload();
     clearUploadBatch();
   }, [cancelUpload, clearUploadBatch]);
 
+  const isUploading = isUploadInProgress(uploadBatchState);
+
   const isOperationInProgress =
-    isDownloading || isDeleting || isRenaming || isCreatingFolder || uploadBatchState != null;
+    isDownloading || isDeleting || isRenaming || isCreatingFolder || isUploading;
 
   const actionLabels = useMemo(() => {
     const labels: Partial<Record<DialFileManagerActions, string>> = {};
@@ -383,16 +391,37 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
     [t],
   );
 
-  const uploadProgressText = useMemo(() => {
-    if (uploadBatchState == null) return '';
-    const done = uploadBatchState.files.filter(
-      (f) => f.status !== FileUploadStatus.Uploading,
-    ).length;
-    return t(DialFileManagerI18nKeys.UploadProgressSummary, {
-      done: String(done),
-      total: String(uploadBatchState.files.length),
-    });
-  }, [uploadBatchState, t]);
+  const uploadQueueItems = useMemo(
+    () => (uploadBatchState == null ? [] : toTransferQueueItems(uploadBatchState)),
+    [uploadBatchState],
+  );
+
+  const uploadQueueLabels = useMemo(
+    (): TransferQueueLabels => ({
+      cancelItemAriaLabel: (name) => t(DialFileManagerI18nKeys.QueueCancelItem, { name }),
+      itemProgressAriaLabel: (name) => t(DialFileManagerI18nKeys.QueueItemProgress, { name }),
+      successLabel: t(DialFileManagerI18nKeys.QueueSuccess),
+      canceledLabel: t(DialFileManagerI18nKeys.QueueCanceled),
+      failedMessage: t(DialFileManagerI18nKeys.QueueFailed),
+      warningMessage: t(DialFileManagerI18nKeys.QueueWarning),
+      queueProgressAriaLabel: t(DialFileManagerI18nKeys.QueueProgress),
+      queueProgressValueText: (completed, total) =>
+        t(DialFileManagerI18nKeys.QueueProgressValue, {
+          completed: String(completed),
+          total: String(total),
+        }),
+      collapseAriaLabel: t(DialFileManagerI18nKeys.QueueCollapse),
+      expandAriaLabel: t(DialFileManagerI18nKeys.QueueExpand),
+      closeAriaLabel: t(DialFileManagerI18nKeys.QueueClose),
+      closeConfirmHeader: t(DialFileManagerI18nKeys.QueueCloseConfirmHeader),
+      closeConfirmDescriptionInProgress: t(DialFileManagerI18nKeys.QueueCloseConfirmInProgress),
+      closeConfirmDescriptionFailed: t(DialFileManagerI18nKeys.QueueCloseConfirmFailed),
+      closeConfirmDescriptionMixed: t(DialFileManagerI18nKeys.QueueCloseConfirmMixed),
+      closeConfirmLabel: t(DialFileManagerI18nKeys.QueueCloseConfirm),
+      closeCancelLabel: t(DialFileManagerI18nKeys.QueueCloseCancel),
+    }),
+    [t],
+  );
 
   const notificationBgClass =
     notification?.variant === NotificationVariant.Error
@@ -444,14 +473,18 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
         {error != null ? (
           <div role="alert" className="flex flex-col items-center gap-4 p-6">
             <p>{t(DialFileManagerI18nKeys.Error)}</p>
-            <DialButton
-              variant={ButtonVariant.Primary}
+            <PrimaryButton
               label={t(DialFileManagerI18nKeys.Retry)}
               onClick={retry}
             />
           </div>
         ) : (
-          <div className="relative flex min-h-0 w-full grow overflow-auto">
+          // Locked while files upload, as the stacked progress modal used to; the queue stays usable.
+          <div
+            className="relative flex min-h-0 w-full grow overflow-auto"
+            inert={isUploading}
+            aria-busy={isUploading}
+          >
             <DialFileManager
               className="min-h-0 w-full grow"
               gridClassName="size-full"
@@ -522,17 +555,21 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
             )}
           </div>
         )}
-      </Popup>
 
-      {uploadBatchState != null && (
-        <UploadProgressModal
-          batchState={uploadBatchState}
-          uploadProgressTitle={t(DialFileManagerI18nKeys.UploadProgressTitle)}
-          uploadProgressText={uploadProgressText}
-          cancelLabel={t(CommonI18nKeys.Cancel)}
-          onCancel={handleUploadCancel}
-        />
-      )}
+        {/* Inside the popup so it stays within its focus trap and outside-click boundary;
+            `fixed` still pins it to the viewport corner since the popup has no transform. */}
+        {uploadBatchState != null && (
+          <div className="fixed bottom-4 end-4 z-10 w-[400px] max-w-[calc(100vw-2rem)]">
+            <TransferQueue
+              title={t(DialFileManagerI18nKeys.UploadProgressTitle)}
+              items={uploadQueueItems}
+              labels={uploadQueueLabels}
+              onCancelItem={cancelUploadItem}
+              onClose={handleUploadQueueClose}
+            />
+          </div>
+        )}
+      </Popup>
     </>
   );
 };

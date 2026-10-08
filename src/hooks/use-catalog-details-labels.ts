@@ -34,6 +34,7 @@ export const useCatalogDetailsLabels = (): CatalogDetailsLabels => {
           [CatalogDetailsTab.Pricing]: t(QuickAppEditorI18nKeys.PricingTab),
           [CatalogDetailsTab.Limits]: t(QuickAppEditorI18nKeys.LimitsTab),
           [CatalogDetailsTab.Tools]: t(QuickAppEditorI18nKeys.ToolsTab),
+          [CatalogDetailsTab.Api]: t(QuickAppEditorI18nKeys.ConnectTab),
         },
         yes: t(QuickAppEditorI18nKeys.OverviewYes),
         no: t(QuickAppEditorI18nKeys.OverviewNo),
@@ -50,6 +51,33 @@ export const useCatalogDetailsLabels = (): CatalogDetailsLabels => {
         loading: t(QuickAppEditorI18nKeys.LoadingDetails),
         failed: t(QuickAppEditorI18nKeys.FailedToLoadDetails),
         retry: t(QuickAppEditorI18nKeys.Retry),
+        markdown: {
+          codeBlockCopyLabel: t(QuickAppEditorI18nKeys.MarkdownCopyCode),
+          codeBlockCopiedLabel: t(QuickAppEditorI18nKeys.MarkdownCopiedCode),
+          codeBlockDownloadLabel: t(QuickAppEditorI18nKeys.MarkdownDownloadCode),
+          tableScrollRegionAriaLabel: t(QuickAppEditorI18nKeys.MarkdownTableScrollRegion),
+          mathScrollRegionAriaLabel: t(QuickAppEditorI18nKeys.MarkdownMathScrollRegion),
+        },
+        folderPath: t(QuickAppEditorI18nKeys.FolderPathAriaLabel),
+        contentFiles: {
+          selector: t(QuickAppEditorI18nKeys.ContentFileSelectorAriaLabel),
+          count: (count: number) =>
+            t(QuickAppEditorI18nKeys.ContentFileCount, { count: String(count) }),
+          loading: t(QuickAppEditorI18nKeys.ContentFileLoading),
+          unsupported: t(QuickAppEditorI18nKeys.ContentFileUnsupported),
+          error: t(QuickAppEditorI18nKeys.ContentFileError),
+        },
+        connect: {
+          resourceSectionLabel: t(QuickAppEditorI18nKeys.ConnectResourceSection),
+          endpointSectionLabel: t(QuickAppEditorI18nKeys.ConnectEndpoint),
+          snippetSectionLabel: t(QuickAppEditorI18nKeys.ConnectSnippetSection),
+          modelIdLabel: t(QuickAppEditorI18nKeys.ConnectModelId),
+          endpointLabel: t(QuickAppEditorI18nKeys.ConnectEndpoint),
+          requestExampleLabel: t(QuickAppEditorI18nKeys.ConnectRequestExample),
+          responseSchemaLabel: t(QuickAppEditorI18nKeys.ConnectResponseSchema),
+          copyAriaLabel: t(QuickAppEditorI18nKeys.ConnectCopy),
+          copiedStatusLabel: t(QuickAppEditorI18nKeys.MarkdownCopiedCode),
+        },
       },
       mappers: {
         entityDetails: {

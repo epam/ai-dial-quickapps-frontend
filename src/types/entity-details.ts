@@ -1,4 +1,9 @@
-import type { CatalogDetailsTab, ToolsLabels } from '@epam/ai-dial-catalog';
+import type {
+  AboutTabProps,
+  ApiTabProps,
+  CatalogDetailsTab,
+  ToolsLabels,
+} from '@epam/ai-dial-catalog';
 import type {
   DeploymentLimitsLabels,
   EntityDetailsLabels,
@@ -15,8 +20,8 @@ export enum DetailsStatus {
   Error = 'error',
 }
 
-/** The tabs a details popup can show — every catalog tab but Connect. */
-export type AddOnDetailsTab = Exclude<CatalogDetailsTab, CatalogDetailsTab.Api>;
+/** The tabs a details popup can show — every catalog tab. */
+export type AddOnDetailsTab = CatalogDetailsTab;
 
 /** Texts the catalog tab components render, in the details popup shell. */
 export interface CatalogTabsLabels {
@@ -30,6 +35,36 @@ export interface CatalogTabsLabels {
   loading: string;
   failed: string;
   retry: string;
+  markdown: CatalogMarkdownLabels;
+  folderPath: string;
+  contentFiles: CatalogContentFileLabels;
+  connect: CatalogConnectLabels;
+}
+
+/** Labels of the catalog Connect tab (`ApiTab`). */
+export type CatalogConnectLabels = Pick<
+  ApiTabProps,
+  | 'resourceSectionLabel'
+  | 'endpointSectionLabel'
+  | 'snippetSectionLabel'
+  | 'modelIdLabel'
+  | 'endpointLabel'
+  | 'requestExampleLabel'
+  | 'responseSchemaLabel'
+  | 'copyAriaLabel'
+  | 'copiedStatusLabel'
+>;
+
+/** Labels of the catalog Markdown renderer; the catalog does not export the type itself. */
+export type CatalogMarkdownLabels = NonNullable<AboutTabProps['markdownLabels']>;
+
+/** Labels of the skill package file selector in the catalog `ContentTab`. */
+export interface CatalogContentFileLabels {
+  selector: string;
+  count: (count: number) => string;
+  loading: string;
+  unsupported: string;
+  error: string;
 }
 
 /** Texts the catalog mappers build Overview and Limits from, in `useCatalogItemDetails`. */

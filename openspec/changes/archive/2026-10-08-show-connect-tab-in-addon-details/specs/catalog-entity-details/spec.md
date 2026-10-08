@@ -1,10 +1,7 @@
-# catalog-entity-details Specification
+# Spec Delta
 
-## Purpose
+## MODIFIED Requirements
 
-The app editor’s skill, toolset and agent details popups show the same tabs, order and content as the DIAL chat catalog. The popups render the catalog’s own tab components, fed by the catalog’s data pipeline (`useCatalogItemDetails` from `@epam/ai-dial-chat-hooks`) over this app’s chat-api client, with every catalog label translated through `quickAppEditor` keys.
-
-## Requirements
 ### Requirement: Catalog tab content in add-on details popups
 
 The skill, toolset and agent details popups SHALL render their tab row and tab panels with the DIAL catalog's own details components from `@epam/ai-dial-catalog`:
@@ -115,43 +112,3 @@ Rendered result:
 - **WHEN** a details response arrives after the popup closed or switched to another entity
 - **THEN** it SHALL be ignored
 
-### Requirement: Details loading and failure
-
-While details load, the popup SHALL show the About tab from the listing (`description`, `topics`). It SHALL show a loading indicator next to the tab row, with accessible label `quickAppEditor` `LoadingDetails`, as `DetailsPanel` does with `isDetailsLoading`. When the details request fails, the popup SHALL keep About, SHALL show `quickAppEditor` `FailedToLoadDetails` with a **Retry** (`quickAppEditor` `Retry`) that repeats the requests, and the header actions and footer SHALL stay usable.
-
-#### Scenario: Loading
-
-- **WHEN** the details request is pending
-- **THEN** About SHALL be shown with the listing description, plus the loading indicator
-- **AND** Delete, Close and the header actions SHALL work
-
-#### Scenario: Failure and retry
-
-- **WHEN** the details request fails
-- **THEN** About SHALL stay visible with the failure message and Retry
-- **AND** activating Retry SHALL request the details again and, on success, add the data-driven tabs
-
-### Requirement: Localised catalog content
-
-Every catalog component and mapper SHALL receive translated text from this app's `quickAppEditor` namespace. No catalog English default SHALL be shown:
-
-- **Tab labels:** `AboutTab`, `SkillDetailsTab`, `SkillOverviewTab`, `PricingTab`, `LimitsTab`, `ToolsTab`.
-- **Overview:** the section titles and spec labels passed to `mapEntityDetailsToCatalogDetails`'s `labels` (e.g. `OverviewCapabilities`, `OverviewSpecification`, `OverviewProvider`, `OverviewHostedBy`, …), `OverviewYes` / `OverviewNo` for boolean values, and the skill overview labels passed to `buildSkillOverview`: `SkillWhenToUse`, `SkillAllowedTools`, `SkillBundledResources`, `SkillAuthor`, `OverviewLastUpdated`, `SkillFileCount`, plus the section titles (`OverviewSpecification`, `SkillTypeLabel`).
-- **Pricing and Limits:** the section labels and the limits row labels passed to `mapDeploymentLimitsDtoToCatalogLimits`.
-- **Markdown:** the code-block and table labels the catalog forwards to its Markdown renderer.
-
-#### Scenario: Translated Overview
-
-- **WHEN** the Overview of a toolset is rendered
-- **THEN** its section titles and spec labels SHALL be the translated `quickAppEditor` values, not the catalog's English defaults
-
-### Requirement: Catalog content accessibility and direction
-
-The catalog tab row SHALL follow the ARIA tabs pattern. Its panels SHALL be reachable with Tab after the header actions and before the footer. They SHALL follow `document.documentElement.dir` as they do in the chat catalog.
-
-#### Scenario: Right-to-left locale
-
-- **WHEN** `document.documentElement.dir` is `rtl`
-- **THEN** the tab row SHALL run About → last tab from right to left
-- **AND** the Overview label column SHALL be at the start (right)
-- **AND** the popup shell SHALL keep Delete at the start and Close at the end

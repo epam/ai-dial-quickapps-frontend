@@ -47,7 +47,6 @@
     "download": "Download",
     "downloading": "Preparing download…",
     "uploadProgressTitle": "Uploading files",
-    "uploadProgressSummary": "{{done}} of {{total}} complete",
     "checkInternetConnection": "Please check your internet connection and try again.",
     "uploadFailed": "Upload failed",
     "uploadSuccess": "The file has been uploaded successfully to “{{parentPath}}”",
@@ -106,7 +105,26 @@
     "add": "Add",
     "searchPlaceholder": "Search in {{folder}}...",
     "addDisabledAtAllRoot": "Open a folder to add files here",
-    "crossSourceMoveNotAllowed": "Items cannot be moved or copied between My files, Shared and Organization"
+    "crossSourceMoveNotAllowed": "Items cannot be moved or copied between My files, Shared and Organization",
+    "transferQueue": {
+      "cancelItem": "Cancel uploading “{{name}}”",
+      "itemProgress": "“{{name}}” uploading",
+      "success": "Completed",
+      "canceled": "Canceled",
+      "failed": "Upload failed",
+      "warning": "Completed with warnings",
+      "progress": "Upload progress",
+      "progressValue": "{{completed}} of {{total}}",
+      "collapse": "Collapse",
+      "expand": "Expand",
+      "close": "Close",
+      "closeConfirmHeader": "Close upload?",
+      "closeConfirmInProgress": "Some files are still uploading. Closing will cancel them.",
+      "closeConfirmFailed": "Some files failed to upload.",
+      "closeConfirmMixed": "Some files are still uploading, and some failed. Closing will cancel the uploads in progress.",
+      "closeConfirm": "Close",
+      "closeCancel": "Cancel"
+    }
   },
   "Failed to update toolset credentials": "Failed to update toolset credentials"
 }

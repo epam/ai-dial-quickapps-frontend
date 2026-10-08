@@ -2,6 +2,7 @@ import type { CatalogItem, CatalogItemDetailsFetchResult } from '@epam/ai-dial-c
 import { useCatalogItemDetails } from '@epam/ai-dial-chat-hooks/catalog';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { useCatalogDetailsLabels } from '@/hooks/use-catalog-details-labels';
 import { DetailsStatus } from '@/types/entity-details';
@@ -12,6 +13,8 @@ export interface UseEntityDetailsResult {
   status: DetailsStatus;
   details?: CatalogItemDetailsFetchResult;
   retry: () => void;
+  /** Loads the text of one file in the open skill's package, for the Details tab file selector. */
+  onLoadContentFile: (fileId: string) => Promise<string | undefined>;
 }
 
 interface DetailsState {
@@ -28,18 +31,19 @@ interface DetailsState {
  * a previous item or attempt is dropped.
  */
 export const useEntityDetails = (item?: CatalogItem): UseEntityDetailsResult => {
+  const { settings } = useAppContext();
   const { skills } = useDataContext();
   const { mappers } = useCatalogDetailsLabels();
   const api = useMemo(() => createCatalogDetailsApi(), []);
   const skillDtos = useMemo(() => skills.map(mapSkillToMetadataDto), [skills]);
 
-  const { onFetchDetails } = useCatalogItemDetails({
+  const { onFetchDetails, onLoadContentFile } = useCatalogItemDetails({
     api,
     skills: skillDtos,
-    // Connect is hidden and credentials come from the toolset listing, so
-    // neither the admin view nor the external URL is needed.
+    // Credentials come from the toolset listing, so the admin view is not
+    // needed. The DIAL Core URL builds the Connect tab's endpoints.
     isAdmin: false,
-    dialCoreExternalUrl: null,
+    dialCoreExternalUrl: settings.dialCoreExternalUrl ?? null,
     skillOverviewLabels: mappers.skillOverview,
     promptOverviewLabels: mappers.promptOverview,
     deploymentLimitsLabels: mappers.deploymentLimits,
@@ -86,8 +90,9 @@ export const useEntityDetails = (item?: CatalogItem): UseEntityDetailsResult => 
 
   const retry = useCallback(() => setAttempt((value) => value + 1), []);
 
-  if (requestKey == null) return { status: DetailsStatus.Idle, retry };
-  if (result?.requestKey !== requestKey) return { status: DetailsStatus.Loading, retry };
-  if (result.details == null) return { status: DetailsStatus.Error, retry };
-  return { status: DetailsStatus.Ready, details: result.details, retry };
+  const actions = { retry, onLoadContentFile };
+  if (requestKey == null) return { status: DetailsStatus.Idle, ...actions };
+  if (result?.requestKey !== requestKey) return { status: DetailsStatus.Loading, ...actions };
+  if (result.details == null) return { status: DetailsStatus.Error, ...actions };
+  return { status: DetailsStatus.Ready, details: result.details, ...actions };
 };
