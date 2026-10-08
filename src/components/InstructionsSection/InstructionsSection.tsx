@@ -8,9 +8,9 @@ import { Translation } from '@/types/translation';
 
 import { Section } from '@/components/common/Section/Section';
 
-import { EditorThemes, LazyMarkdownEditor } from '@epam/ai-dial-ui-kit';
+import { EditorThemes, ErrorText, LazyMarkdownEditor } from '@epam/ai-dial-ui-kit';
 
-const EDITOR_HEIGHT = 120;
+const EDITOR_HEIGHT = 200;
 
 const MarkdownEditor = lazy(async () => ({
   default: (await LazyMarkdownEditor()).MarkdownEditor,
@@ -18,10 +18,11 @@ const MarkdownEditor = lazy(async () => ({
 
 export interface InstructionsSectionProps {
   value: string;
+  error?: string;
   onChange: (value: string) => void;
 }
 
-const InstructionsSection: FC<InstructionsSectionProps> = ({ value, onChange }) => {
+const InstructionsSection: FC<InstructionsSectionProps> = ({ value, error, onChange }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
   const { currentTheme } = useThemeContext();
   const editorTheme = currentTheme?.id === ThemeId.Light ? EditorThemes.light : EditorThemes.dark;
@@ -39,6 +40,7 @@ const InstructionsSection: FC<InstructionsSectionProps> = ({ value, onChange }) 
           showDragbar={false}
         />
       </Suspense>
+      <ErrorText text={error ? t(error) : undefined} />
     </Section>
   );
 };
