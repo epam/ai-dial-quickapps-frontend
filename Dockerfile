@@ -26,6 +26,11 @@ FROM ${CHAT_API_IMAGE} AS runner
 
 COPY --from=builder /app/dist /app/apps/chat/dist
 
+# Patch OS packages the upstream chat-api image ships unpatched (e.g. zlib
+# CVE-2026-85091, fixed in 1.3.2-r1). Drop once the base image picks it up.
+USER root
+RUN apk upgrade --no-cache zlib
+
 USER node
 
 # The deployable QuickApps image uses chat-api's default listener port. Local runners

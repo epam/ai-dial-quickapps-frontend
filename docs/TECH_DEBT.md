@@ -186,7 +186,8 @@ Update this matrix as each capability is explored, specified, tested, and checke
 - **Spec written** (`openspec/specs/orchestrator_model-selection`, from archived change `redesign-default-model-card`); it covers the Default model block
   (selected-model card and the Change action) and, from change `redesign-model-picker-catalog-list`, the
   model picker popup (catalog list, search, From filter, sort, Add/Cancel), and, from change
-  `specify-configuration-controls-and-starters`, the Temperature and Process files controls.
+  `specify-configuration-controls-and-starters`, the Temperature and Process files controls (moved to
+  `application_advanced-settings` by change `move-model-controls-to-advanced-settings`).
 
 ### Context files (file manager)
 
@@ -213,7 +214,7 @@ Update this matrix as each capability is explored, specified, tested, and checke
 ### Advanced settings
 
 - src/components/Settings/** (the Advanced Settings popup; the old src/components/AdvancedSettings/** section was removed)
-- **Spec written** (`openspec/specs/application_advanced-settings`, from change `populate-advanced-settings-popup`): max attachments, Time awareness and Built-in file tools in the popup.
+- **Spec written** (`openspec/specs/application_advanced-settings`, from change `populate-advanced-settings-popup`): max attachments, Time awareness and Built-in file tools in the popup; from change `move-model-controls-to-advanced-settings`, also the orchestrator Temperature slider and Allow orchestrator to process files switch.
 
 ### Conversation starters
 
