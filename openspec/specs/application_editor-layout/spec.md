@@ -94,12 +94,12 @@ The layout change SHALL preserve existing form state ownership, field names, con
 - **AND** the selected toolsets SHALL be listed as defined by `toolsets_selection` ("Attached toolsets list"), and the selected agents as defined by `agents_selection` ("Attached agents list"), with removal, sign-in and configuration available from the rows' trash buttons and details popups
 
 ### Requirement: Add-ons section groups add-on controls
-The editor SHALL render an Add-ons section directly below Instructions. The section SHALL contain, in this order, a Skills row, a Toolsets row, an Agents row and a Conversation starters row (defined by `application_conversation-starters`). Each row SHALL show its title and its action together in a row header. The Skills, Toolsets and Agents Add actions SHALL open that row's selection modal. The Conversation starters action SHALL open the Set up conversation starters modal. The primary content column SHALL NOT render a separate Conversation starters section.
+The editor SHALL render an Add-ons section directly below Instructions. The section SHALL contain, in this order, a Skills row, a Toolsets row, an Agents row, a Knowledge base row (defined by `application_knowledge-base`) and a Conversation starters row (defined by `application_conversation-starters`). Each row SHALL show its title and its action together in a row header. The Skills, Toolsets and Agents Add actions SHALL open that row's selection modal. The Knowledge base Add action SHALL open the file-manager popup. The Conversation starters action SHALL open the Set up conversation starters modal. The primary content column SHALL NOT render a separate Conversation starters section.
 
 #### Scenario: Empty Add-ons section
-- **WHEN** the editor loads with no selected skills, toolsets or agents, and no conversation starters
+- **WHEN** the editor loads with no selected skills, toolsets or agents, no context files, and no conversation starters
 - **THEN** the Add-ons heading SHALL be visible below Instructions
-- **AND** the Skills, Toolsets, Agents and Conversation starters rows SHALL each display their Add action in the row header
+- **AND** the Skills, Toolsets, Agents, Knowledge base and Conversation starters rows SHALL each display their Add action in the row header
 - **AND** no row SHALL display its populated content window
 
 #### Scenario: Add action opens the selection modal
@@ -113,7 +113,7 @@ The editor SHALL render an Add-ons section directly below Instructions. The sect
 
 #### Scenario: Add-on labels and localization
 - **WHEN** the Add-ons section is rendered in any supported locale
-- **THEN** the section and row labels SHALL be translated through the `quickAppEditor` keys `AddOns`, `Skills`, `Toolsets` ("Toolsets"), `Agents` ("Agents") and `ConversationStarters`
+- **THEN** the section and row labels SHALL be translated through the `quickAppEditor` keys `AddOns`, `Skills`, `Toolsets` ("Toolsets"), `Agents` ("Agents"), `KnowledgeBase` and `ConversationStarters`
 - **AND** the empty-row descriptions SHALL use `AgentSkillsDescription`, `ToolsetsDescription` ("External tools and services the agent can call, such as MCP servers.") and `AgentsDescription` ("Sub-agents this agent can delegate tasks to.")
 - **AND** the Add tooltips SHALL use `AddAgentSkills`, `AddToolsets` ("Add toolsets") and `AddAgents` ("Add agents"), or the shared-application tooltip when read-only
 - **AND** the Conversation starters Manage action SHALL use `quickAppEditor` key `Manage`
@@ -307,11 +307,11 @@ The Settings row SHALL own only transient popup visibility in local component st
 - **AND** no additional chat-api request SHALL be made beyond the editor's existing application update
 
 ### Requirement: Advanced Settings controls live only in the popup
-The primary content column SHALL NOT render a standalone Advanced settings (Time awareness) section, a File tools control inside Context and tools, or a max attachments control. These settings SHALL be editable only from the Advanced Settings popup. The primary content column SHALL NOT render a User attachments section; attachment types SHALL be editable only from the Attachments row in Configuration.
+The primary content column SHALL NOT render a standalone Advanced settings (Time awareness) section, a File tools control inside Context and tools, or a max attachments control. These settings SHALL be editable only from the Advanced Settings popup. The primary content column SHALL NOT render a User attachments section; attachment types SHALL be editable only from the Attachments row in Configuration. The primary content column SHALL NOT render a Context files control; context files SHALL be managed only from the Knowledge base row in Add-ons.
 
 #### Scenario: Main column without moved controls
 - **WHEN** the editor renders its primary content column
 - **THEN** no Time awareness switch, File tools switch, or max attachments input SHALL be rendered there
-- **AND** Context and tools SHALL keep its other controls (context files, Code interpreter, Add attachment, Web fetch) with their existing visibility
+- **AND** Context and tools SHALL keep its other controls (Code interpreter, Add attachment, Web fetch) with their existing visibility
 - **AND** no User attachments section or Attachment types control SHALL be rendered there
-
+- **AND** no Context files control SHALL be rendered there

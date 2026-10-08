@@ -1,6 +1,5 @@
 // common.json
 export enum CommonI18nKeys {
-  NoContextFilesAdded = 'No context files added',
   Cancel = 'Cancel',
   Attach = 'Attach',
   Add = 'Add',
@@ -17,7 +16,6 @@ export enum CommonI18nKeys {
   SharedScope = 'Shared',
   OrganizationScope = 'Organization',
   ToolsetSignInFailed = 'Failed to update toolset credentials',
-  RemoveFile = 'Remove file',
   LoginScreenTitle = 'Log in to configure your QuickApp',
   LoginScreenDescription = 'Set up instructions, add-ons and settings.',
   LoginScreenAction = 'Log in',
@@ -55,9 +53,14 @@ export enum QuickAppEditorI18nKeys {
   AddOns = 'Add-ons',
   Skills = 'Skills',
   ContextAndTools = 'Context & Tools',
+  KnowledgeBase = 'Knowledge base',
+  KnowledgeBaseDescription = 'Documentation and resources for your agent.',
+  RemoveKnowledgeBaseItem = 'Remove {{name}} from knowledge base',
+  KnowledgeBasePathLabel = 'Path of {{name}}',
+  KnowledgeBasePersonal = 'Personal',
+  KnowledgeBaseOrganization = 'Organization',
+  KnowledgeBaseShared = 'Shared with me',
   ContextAndToolsDescription = 'Knowledge and capabilities available to the agent: context files, toolsets, and code execution.',
-  ContextFiles = 'Context files',
-  ContextFilesInfo = 'Files are available to the agent but not used every turn. The agent decides which files to use, when, and which tool to route them to.',
   AllowOrchestratorToProcessFiles = 'Allow orchestrator to process files',
   ProcessFilesOnDemandDescription = 'Handle attachments by reading file content on demand instead of including all attachment content in the initial prompt.',
   AddAttachment = 'Add attachment',
@@ -240,12 +243,9 @@ export enum QuickAppEditorI18nKeys {
 
 // common.json — dialFileManager namespace
 export enum DialFileManagerI18nKeys {
-  Title = 'dialFileManager.title',
-  Attach = 'dialFileManager.attach',
   Empty = 'dialFileManager.empty',
   Error = 'dialFileManager.error',
   Retry = 'dialFileManager.retry',
-  FoldersPanelTitle = 'dialFileManager.foldersPanelTitle',
   ClearSelection = 'dialFileManager.clearSelection',
   CloseDialog = 'dialFileManager.closeDialog',
   ShowHiddenFiles = 'dialFileManager.showHiddenFiles',
@@ -306,5 +306,12 @@ export enum DialFileManagerI18nKeys {
   TabMyFiles = 'dialFileManager.tab.myFiles',
   TabShared = 'dialFileManager.tab.shared',
   TabOrganization = 'dialFileManager.tab.organization',
+  TabAll = 'dialFileManager.tab.all',
+  TabsAriaLabel = 'dialFileManager.tabsAriaLabel',
+  AddTitle = 'dialFileManager.addTitle',
+  Add = 'dialFileManager.add',
+  SearchPlaceholder = 'dialFileManager.searchPlaceholder',
+  AddDisabledAtAllRoot = 'dialFileManager.addDisabledAtAllRoot',
+  CrossSourceMoveNotAllowed = 'dialFileManager.crossSourceMoveNotAllowed',
   NoPermissionToCreate = 'dialFileManager.noPermissionToCreate',
 }

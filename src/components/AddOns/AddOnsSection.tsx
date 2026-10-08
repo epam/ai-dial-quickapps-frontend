@@ -13,6 +13,7 @@ import { partitionAddOnIds } from '@/utils/get-add-on-kind';
 import AgentSkillsFormSection from '@/components/AgentSkills/AgentSkillsFormSection';
 import AgentsFormSection from '@/components/Agents/AgentsFormSection/AgentsFormSection';
 import ConversationStartersRow from '@/components/ConversationStarters/ConversationStartersRow';
+import KnowledgeBaseRow from '@/components/KnowledgeBase/KnowledgeBaseRow';
 import ToolsetsFormSection from '@/components/Toolsets/ToolsetsFormSection/ToolsetsFormSection';
 import { Section } from '@/components/common/Section/Section';
 
@@ -24,6 +25,9 @@ export interface AddOnsSectionProps {
   addOns: QuickApp2FormValues['addOns'];
   onAgentsChange: (ids: string[]) => void;
   onConfigureAgent: (id: string, transport: DialAppTransportType) => void;
+  documentRelativeUrl: QuickApp2FormValues['documentRelativeUrl'];
+  onAddDocuments: (documents: string[]) => void;
+  onRemoveDocument: (document: string) => void;
   conversationStarters: ConversationStartersValues;
   onConversationStartersSave: (values: ConversationStartersValues) => void;
 }
@@ -36,6 +40,9 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
   addOns,
   onAgentsChange,
   onConfigureAgent,
+  documentRelativeUrl,
+  onAddDocuments,
+  onRemoveDocument,
   conversationStarters,
   onConversationStartersSave,
 }) => {
@@ -88,6 +95,14 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
           onChange={onAgentsChange}
           transports={transports}
           onConfigure={onConfigureAgent}
+        />
+
+        <KnowledgeBaseRow
+          files={documentRelativeUrl}
+          isReadonly={isReadonly}
+          tooltip={tooltip}
+          onAddFiles={onAddDocuments}
+          onRemoveFile={onRemoveDocument}
         />
 
         <ConversationStartersRow

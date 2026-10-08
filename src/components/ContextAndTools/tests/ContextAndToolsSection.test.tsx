@@ -29,30 +29,12 @@ vi.mock('../CodeInterpreterField', () => ({
   CodeInterpreterField: () => null,
 }));
 
-vi.mock('@/components/common/FilesSelector/FilesSelector', () => ({
-  FilesSelector: ({
-    files,
-    onAddFiles,
-    onRemoveFile,
-  }: {
-    files: string[];
-    onAddFiles: (files: string[]) => void;
-    onRemoveFile: (file: string) => void;
-  }) => (
-    <div>
-      <output data-testid="files">{files.join('|')}</output>
-      <button type="button" data-testid="add-files" onClick={() => onAddFiles(['existing', 'new%20file'])} />
-      <button type="button" data-testid="remove-file" onClick={() => onRemoveFile('existing')} />
-    </div>
-  ),
-}));
-
 import ContextAndToolsSection from '../ContextAndToolsSection';
 
 const FormHarness = ({ areFeaturesEnabled = false }: { areFeaturesEnabled?: boolean }) => {
   const { control } = useForm<QuickApp2Form>({
     defaultValues: {
-      documentRelativeUrl: ['existing'],
+      codeInterpreter: false,
     },
   });
 
@@ -82,27 +64,12 @@ afterEach(() => {
   container.remove();
 });
 
-describe('ContextAndToolsSection file selection', () => {
-  it('decodes new files, deduplicates existing files, and removes selected files', () => {
-    act(() => {
-      root.render(<FormHarness />);
-    });
+describe('ContextAndToolsSection files', () => {
+  it('no longer renders a Context files control', () => {
+    act(() => root.render(<FormHarness areFeaturesEnabled />));
 
-    expect(container.querySelector('[data-testid="files"]')?.textContent).toBe('existing');
-
-    act(() => {
-      container.querySelector('[data-testid="add-files"]')?.dispatchEvent(
-        new MouseEvent('click', { bubbles: true }),
-      );
-    });
-    expect(container.querySelector('[data-testid="files"]')?.textContent).toBe('existing|new file');
-
-    act(() => {
-      container.querySelector('[data-testid="remove-file"]')?.dispatchEvent(
-        new MouseEvent('click', { bubbles: true }),
-      );
-    });
-    expect(container.querySelector('[data-testid="files"]')?.textContent).toBe('new file');
+    expect(container.textContent).not.toContain('ContextFiles');
+    expect(container.textContent).not.toContain('Context files');
   });
 });
 

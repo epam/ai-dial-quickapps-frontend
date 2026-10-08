@@ -35,8 +35,8 @@
 - [ ] Conversation starters: `useQuickApp2Form` still exposes `updateStarter` / `removeStarter`, which
   only the hook's own tests use since the starters modal edits a local draft
   (`redesign-conversation-starters`). Remove them together with those tests.
-- [ ] Add-ons: the same mock as the starters redesign adds a Knowledge base row. Needs its own
-  OpenSpec change. (The Toolsets / Agents split is done in `split-agents-and-toolsets`.)
+- [x] Add-ons: the same mock as the starters redesign is done: the Toolsets / Agents split in
+  `split-agents-and-toolsets` and the Knowledge base row in `redesign-knowledge-base-addon`.
 - [ ] Toolsets / Agents follow-ups (from the `split-agents-and-toolsets` change):
   - chat-api ask: tool descriptions and input schemas in the deployment details
     (`ToolsetDetailsDto` carries names only), so the catalog Tools tab — here and in chat — could
@@ -63,6 +63,18 @@
     snippets — confirm in review; showing it needs `dialCoreExternalUrl` and a Connect label set;
   - the skill Details tab shows only `SKILL.md`; its bundled files (`promptContent.files`) are
     dropped. Wiring the catalog file selector needs `onLoadContentFile` from `useCatalogItemDetails`.
+- [ ] Knowledge base file popup (change `restyle-knowledge-base-file-picker`):
+  - **Search only covers folders already loaded.** The popup search uses the file manager's built-in
+    client-side filter over the tree the user has opened (`FileManagerModal.tsx`, no `onSearchFiles`), so a
+    file in an unopened folder is not found. A real fix needs server-side or recursive search wired through
+    the library's `onSearchFiles` / `searchResults`; `listFiles` supports `recursive`, but `listPublicFiles`
+    and `listSharedFiles` (`src/utils/dial-files-api.ts`) do not, so Shared and Organization need an API
+    change or a client-side crawl first.
+  - **No "+" icon on the popup's Add button.** The target design shows one, but
+    `@epam/ai-dial-react-file-manager` (0.3.0-dev.25) renders a plain `ButtonDropdown` in
+    `DialFileManagerToolbar` with only `label` and `variant`. Needs an icon prop in the library.
+  - **Move/copy between sources is refused under All** (`src/hooks/use-dial-file-sources.ts`): My files,
+    Shared and Organization live in different buckets and the files API has no single cross-bucket move.
 - [ ] ui-kit: `DialDraggableItem` imports a private bundled copy of react-dnd whose `DndProvider` the
   kit does not export, and it has no keyboard support, so consumers can't use it. Ask the kit for an
   exported, keyboard-accessible sortable list; the starters modal uses `@dnd-kit/sortable` meanwhile.
@@ -243,7 +255,7 @@ Update this matrix as each capability is explored, specified, tested, and checke
 ### Context files (file manager)
 
 - utils/dial-files-api.ts (list, upload, download, rename, delete, create-folder, list-shared), hooks/use-dial-file-manager.ts, utils/dial-file-manager.ts,
-  components/common/FilesSelector/**, types/dial-files.ts, dial-file-path.ts, file-download.ts, file-name.ts, decode-file-url.ts, safe-decode-uri.ts
+  components/common/FilesSelector/** (the file-manager modal; the Add-ons row lives in components/KnowledgeBase/), types/dial-files.ts, dial-file-path.ts, file-download.ts, file-name.ts, decode-file-url.ts, safe-decode-uri.ts
 - Standalone top-level concept, no sibling domain → context-files
 
 ### Theming
