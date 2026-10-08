@@ -74,7 +74,7 @@ The open popup's skill id SHALL be local `useState` in the Skills list component
 The Details tab SHALL show the skill's description followed by the rendered Markdown body of the skill's `SKILL.md` manifest. The YAML frontmatter SHALL be stripped from the body.
 
 - **Description:** the frontmatter `description`, falling back to the listing `description`.
-- **Rendering:** the catalog `ContentTab` from `@epam/ai-dial-catalog`, fed `promptContent` from the catalog pipeline (`catalog-entity-details`); the package file tree is not shown.
+- **Rendering:** the catalog `ContentTab` from `@epam/ai-dial-catalog`, fed `promptContent` from the catalog pipeline (`catalog-entity-details`). When the package holds more than one file, the tab SHALL show the catalog file selector above the body, opened on `SKILL.md`; choosing another file SHALL load it through the catalog's `onLoadContentFile` (`GET /api/v1/skills/files/download` with that `filePath`) and render it as Markdown, and choosing `SKILL.md` again SHALL show the manifest body without a request. A file that fails to load SHALL show `quickAppEditor` `ContentFileError`.
 - **Fetch:** the manifest SHALL be fetched only while the popup is open, through `skillsApi.downloadSkillFileRaw` from `@epam/ai-dial-chat-api-client`, by the catalog's `useSkillItemDetails` (inside `useCatalogItemDetails`).
 - **State ownership:** `useEntityDetails` (`src/hooks/use-entity-details.ts`) owns the fetch state. It SHALL ignore a response that arrives after the popup closed or switched skills.
 
@@ -110,7 +110,7 @@ Rendered result: the description "Plan, conduct, and synthesize user research." 
 #### Scenario: Manifest loading
 
 - **WHEN** the manifest request is pending
-- **THEN** the Details tab SHALL show the listing description, and a spinner with accessible label `quickAppEditor` `LoadingDetails` SHALL be shown next to the tab row
+- **THEN** the Details tab SHALL show the listing description, and the loading indicator with accessible label `quickAppEditor` `LoadingDetails` SHALL be shown next to the tab row
 
 #### Scenario: Manifest fails to load
 
@@ -129,6 +129,13 @@ Rendered result: the description "Plan, conduct, and synthesize user research." 
 - **THEN** no manifest request SHALL be made
 - **AND** the Details tab SHALL show `quickAppEditor` `SkillUnavailable` ("This skill is no longer available")
 - **AND** Delete SHALL still be offered in an editable application
+
+
+#### Scenario: Choose another package file
+
+- **WHEN** the skill package holds `SKILL.md` and `reference/guide.md` and the user picks `reference/guide.md` in the file selector
+- **THEN** `GET /api/v1/skills/files/download?bucket={bucket}&path={path}&filePath=reference%2Fguide.md` SHALL be requested once
+- **AND** its Markdown SHALL replace the manifest body in the Details tab
 
 ### Requirement: Skill overview
 
