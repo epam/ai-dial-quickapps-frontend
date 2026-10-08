@@ -41,6 +41,18 @@
 - [ ] Add-ons: the same mock as the starters redesign splits Agents & Toolsets into separate Toolsets
   and Agents rows. Needs its own OpenSpec change. (The Knowledge base row is done —
   `redesign-knowledge-base-addon`.)
+- [ ] Knowledge base file popup (change `restyle-knowledge-base-file-picker`):
+  - **Search only covers folders already loaded.** The popup search uses the file manager's built-in
+    client-side filter over the tree the user has opened (`FileManagerModal.tsx`, no `onSearchFiles`), so a
+    file in an unopened folder is not found. A real fix needs server-side or recursive search wired through
+    the library's `onSearchFiles` / `searchResults`; `listFiles` supports `recursive`, but `listPublicFiles`
+    and `listSharedFiles` (`src/utils/dial-files-api.ts`) do not, so Shared and Organization need an API
+    change or a client-side crawl first.
+  - **No "+" icon on the popup's Add button.** The target design shows one, but
+    `@epam/ai-dial-react-file-manager` (0.3.0-dev.25) renders a plain `ButtonDropdown` in
+    `DialFileManagerToolbar` with only `label` and `variant`. Needs an icon prop in the library.
+  - **Move/copy between sources is refused under All** (`src/hooks/use-dial-file-sources.ts`): My files,
+    Shared and Organization live in different buckets and the files API has no single cross-bucket move.
 - [ ] ui-kit: `DialDraggableItem` imports a private bundled copy of react-dnd whose `DndProvider` the
   kit does not export, and it has no keyboard support, so consumers can't use it. Ask the kit for an
   exported, keyboard-accessible sortable list; the starters modal uses `@dnd-kit/sortable` meanwhile.

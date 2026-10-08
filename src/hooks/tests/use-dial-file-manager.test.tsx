@@ -100,6 +100,22 @@ describe('useDialFileManager — listing', () => {
     expect(latest.isLoading).toBe(true);
   });
 
+  it('defers the first listing while disabled and lists once when enabled', async () => {
+    await render({ isEnabled: false });
+
+    expect(listFiles).not.toHaveBeenCalled();
+    expect(latest.isLoading).toBe(false);
+
+    await render({ isEnabled: true });
+
+    expect(listFiles).toHaveBeenCalledTimes(1);
+    expect(listFiles).toHaveBeenCalledWith({ bucket: 'mine', path: '', permissions: true });
+    expect(rootFolder().items?.map((item) => item.path)).toEqual([
+      '/My files/docs/',
+      '/My files/notes.txt',
+    ]);
+  });
+
   it('enables upload, rename and delete in a writable My files folder', async () => {
     await render();
 

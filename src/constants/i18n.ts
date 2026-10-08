@@ -184,12 +184,9 @@ export enum QuickAppEditorI18nKeys {
 
 // common.json — dialFileManager namespace
 export enum DialFileManagerI18nKeys {
-  Title = 'dialFileManager.title',
-  Attach = 'dialFileManager.attach',
   Empty = 'dialFileManager.empty',
   Error = 'dialFileManager.error',
   Retry = 'dialFileManager.retry',
-  FoldersPanelTitle = 'dialFileManager.foldersPanelTitle',
   ClearSelection = 'dialFileManager.clearSelection',
   CloseDialog = 'dialFileManager.closeDialog',
   ShowHiddenFiles = 'dialFileManager.showHiddenFiles',
@@ -250,5 +247,12 @@ export enum DialFileManagerI18nKeys {
   TabMyFiles = 'dialFileManager.tab.myFiles',
   TabShared = 'dialFileManager.tab.shared',
   TabOrganization = 'dialFileManager.tab.organization',
+  TabAll = 'dialFileManager.tab.all',
+  TabsAriaLabel = 'dialFileManager.tabsAriaLabel',
+  AddTitle = 'dialFileManager.addTitle',
+  Add = 'dialFileManager.add',
+  SearchPlaceholder = 'dialFileManager.searchPlaceholder',
+  AddDisabledAtAllRoot = 'dialFileManager.addDisabledAtAllRoot',
+  CrossSourceMoveNotAllowed = 'dialFileManager.crossSourceMoveNotAllowed',
   NoPermissionToCreate = 'dialFileManager.noPermissionToCreate',
 }

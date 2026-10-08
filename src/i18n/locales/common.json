@@ -38,12 +38,9 @@
   "Clear search": "Clear search",
   "Close dialog": "Close dialog",
   "dialFileManager": {
-    "title": "DIAL file system",
-    "attach": "Attach",
     "empty": "This folder is empty",
     "error": "Failed to load files",
     "retry": "Retry",
-    "foldersPanelTitle": "Files",
     "clearSelection": "Clear selection",
     "closeDialog": "Close dialog",
     "showHiddenFiles": "Show hidden files",
@@ -104,10 +101,17 @@
     "renameInvalidChars": "Name contains invalid characters",
     "renameNameTooLong": "Name must be 255 characters or fewer",
     "tab": {
+      "all": "All",
       "myFiles": "My files",
-      "shared": "Shared with me",
+      "shared": "Shared",
       "organization": "Organization"
-    }
+    },
+    "tabsAriaLabel": "File sources",
+    "addTitle": "Add knowledge base file",
+    "add": "Add",
+    "searchPlaceholder": "Search in {{folder}}...",
+    "addDisabledAtAllRoot": "Open a folder to add files here",
+    "crossSourceMoveNotAllowed": "Items cannot be moved or copied between My files, Shared and Organization"
   },
   "Logged in": "Logged in",
   "Failed to update toolset credentials": "Failed to update toolset credentials"

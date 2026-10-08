@@ -15,12 +15,14 @@ import {
   findFolderByVirtualPath,
   getDownloadFileName,
   getParentApiPath,
+  groupBySource,
   hasDialFileWritePermission,
   mapCorePermissions,
   mergeCreatedFolderIntoCache,
   normalizeVirtualPath,
   parseNewFolderVirtualPath,
   resolveOwnerCoords,
+  resolveSourceByPath,
   updateUploadEntry,
 } from '@/utils/dial-file-manager';
 import { listFiles, listPublicFiles, listSharedFiles } from '@/utils/dial-files-api';
@@ -285,5 +287,50 @@ describe('getDownloadFileName', () => {
     expect(getDownloadFileName([file('a.txt')])).toBe('a.txt');
     expect(getDownloadFileName([file('docs', DialFileNodeType.FOLDER)])).toBe('docs.zip');
     expect(getDownloadFileName([file('a.txt'), file('b.txt')])).toBe('files.zip');
+  });
+});
+
+describe('resolveSourceByPath', () => {
+  const labels = {
+    [DialFileManagerTabs.MyFiles]: 'My files',
+    [DialFileManagerTabs.Shared]: 'Shared',
+    [DialFileManagerTabs.Organization]: 'Organization',
+  };
+
+  it('maps each root label to its section', () => {
+    expect(resolveSourceByPath('/My files', labels)).toBe(DialFileManagerTabs.MyFiles);
+    expect(resolveSourceByPath('/Shared/', labels)).toBe(DialFileManagerTabs.Shared);
+    expect(resolveSourceByPath('Organization', labels)).toBe(DialFileManagerTabs.Organization);
+  });
+
+  it('resolves nested paths and trailing slashes', () => {
+    expect(resolveSourceByPath('/Organization/Design/spec.pdf', labels)).toBe(
+      DialFileManagerTabs.Organization,
+    );
+    expect(resolveSourceByPath('/My files/docs/', labels)).toBe(DialFileManagerTabs.MyFiles);
+  });
+
+  it('does not match a label that is only a prefix of the first segment', () => {
+    expect(resolveSourceByPath('/Shared with me/a.md', labels)).toBeUndefined();
+  });
+
+  it('returns undefined for an unknown path', () => {
+    expect(resolveSourceByPath('/Elsewhere/a.md', labels)).toBeUndefined();
+    expect(resolveSourceByPath('', labels)).toBeUndefined();
+  });
+
+  it('groups mixed items by section and drops unknown ones', () => {
+    const items = [
+      { path: '/My files/a.md' },
+      { path: '/Organization/b.md' },
+      { path: '/My files/docs/c.md' },
+      { path: '/Elsewhere/d.md' },
+    ];
+
+    const groups = groupBySource(items, (item) => item.path, labels);
+
+    expect(groups.get(DialFileManagerTabs.MyFiles)).toEqual([items[0], items[2]]);
+    expect(groups.get(DialFileManagerTabs.Organization)).toEqual([items[1]]);
+    expect(groups.has(DialFileManagerTabs.Shared)).toBe(false);
   });
 });
