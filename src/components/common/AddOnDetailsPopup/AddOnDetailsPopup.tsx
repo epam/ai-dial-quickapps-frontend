@@ -243,6 +243,7 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
     <Popup
       open
       ariaLabel={name}
+      overlayStyle={{ overflow: 'hidden' }}
       header={
         <div className="relative">
           <EntityIdentity
@@ -277,7 +278,7 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
       }
       size={PopupSize.Lg}
       closeAriaLabel={tCommon(CommonI18nKeys.CloseDialog)}
-      bodyClassName="flex max-h-[70vh] flex-col overflow-hidden px-6 pb-5"
+      bodyClassName="flex h-[70vh] flex-col overflow-hidden px-6 pb-5"
       additionalButtons={additionalButtons}
       additionalButtonsOnLeft
       mainButtons={mainButtons}
