@@ -1,4 +1,8 @@
 import type { CatalogItem } from '@epam/ai-dial-catalog';
+import {
+  type SkillMetadataItemDto,
+  SkillMetadataItemDtoNodeTypeEnum,
+} from '@epam/ai-dial-chat-api-client';
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 
 import type { DialSkill } from '@/types/dial-entities';
@@ -41,42 +45,22 @@ export const mapSkillToCatalogItem = (
   };
 };
 
-interface SkillOverviewLabels {
-  author: string;
-  folder: string;
-  updated: string;
-  version: string;
-}
-
-interface GetSkillOverviewRowsOptions extends MapSkillToCatalogItemOptions {
-  language: string;
-  labels: SkillOverviewLabels;
-}
-
-interface SkillOverviewRow {
-  label: string;
-  value: string;
-}
-
-const FOLDER_SEPARATOR = ' / ';
-
-const formatUpdatedAt = (updatedAt: DialSkill['updatedAt'], language: string): string => {
-  const timestamp = getUpdatedAtTimestamp(updatedAt);
-  if (timestamp <= 0) return '';
-  return new Intl.DateTimeFormat(language, { dateStyle: 'medium' }).format(timestamp);
+/**
+ * A listed skill back in chat-api's listing shape — the fallback the catalog
+ * skill-details hook reads the author and update time from when the skill's
+ * own metadata request fails.
+ */
+export const mapSkillToMetadataDto = (skill: DialSkill): SkillMetadataItemDto => {
+  const [, bucket = '', ...pathSegments] = skill.id.split('/');
+  return {
+    name: skill.name,
+    url: skill.id,
+    bucket: skill.bucket ?? bucket,
+    path: skill.path ?? pathSegments.join('/'),
+    nodeType: SkillMetadataItemDtoNodeTypeEnum.Item,
+    author: skill.author,
+    updatedAt: getUpdatedAtTimestamp(skill.updatedAt) || undefined,
+    description: skill.description,
+  };
 };
 
-/** Label/value rows of a skill's Overview tab; rows without a value are left out. */
-export const getSkillOverviewRows = (
-  skill: DialSkill,
-  { userBucket, scopeLabels, language, labels }: GetSkillOverviewRowsOptions,
-): SkillOverviewRow[] => {
-  const folder = getCatalogFolder(getEntityScopeInfo(skill.id, userBucket), scopeLabels);
-  const rows: SkillOverviewRow[] = [
-    { label: labels.author, value: skill.author ?? '' },
-    { label: labels.folder, value: folder.join(FOLDER_SEPARATOR) },
-    { label: labels.updated, value: formatUpdatedAt(skill.updatedAt, language) },
-    { label: labels.version, value: skill.version ?? '' },
-  ];
-  return rows.filter((row) => row.value !== '');
-};

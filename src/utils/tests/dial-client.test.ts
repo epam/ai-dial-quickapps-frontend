@@ -1,22 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import type { DialSkill } from '@/types/dial-entities';
+import { mapCoreToDialSkill } from '../dial-client';
 
-import { fetchSkillManifest, mapCoreToDialSkill } from '../dial-client';
-
-const { downloadSkillFile } = vi.hoisted(() => ({ downloadSkillFile: vi.fn() }));
-
-vi.mock('@/utils/chat-api-client', () => ({
-  skillsApi: { downloadSkillFile },
-}));
-
-const makeSkill = (overrides: Partial<DialSkill> = {}): DialSkill => ({
-  id: 'skills/public/research/user-research',
-  reference: 'skills/public/research/user-research',
-  name: 'User Research',
-  type: 'skill',
-  ...overrides,
-});
+vi.mock('@/utils/chat-api-client', () => ({ skillsApi: {}, deploymentsApi: {} }));
 
 describe('mapCoreToDialSkill', () => {
   it('decodes the url into the id and keeps bucket and path', () => {
@@ -44,31 +30,5 @@ describe('mapCoreToDialSkill', () => {
     });
 
     expect(skill).toMatchObject({ version: '1.4.6', tags: ['Business'] });
-  });
-});
-
-describe('fetchSkillManifest', () => {
-  beforeEach(() => {
-    downloadSkillFile.mockReset();
-    downloadSkillFile.mockResolvedValue(new Blob(['# Manifest']));
-  });
-
-  it('derives bucket and path from the id and returns the manifest text', async () => {
-    const signal = new AbortController().signal;
-
-    await expect(fetchSkillManifest(makeSkill(), signal)).resolves.toBe('# Manifest');
-    expect(downloadSkillFile).toHaveBeenCalledWith(
-      { bucket: 'public', path: 'research/user-research', filePath: 'SKILL.md' },
-      { signal },
-    );
-  });
-
-  it('prefers the bucket and path from the listing', async () => {
-    await fetchSkillManifest(makeSkill({ bucket: 'b', path: 'p/q' }));
-
-    expect(downloadSkillFile).toHaveBeenCalledWith(
-      { bucket: 'b', path: 'p/q', filePath: 'SKILL.md' },
-      { signal: undefined },
-    );
   });
 });

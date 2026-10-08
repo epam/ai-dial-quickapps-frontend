@@ -1,4 +1,8 @@
-import type { ToolsetCredentialsLevel } from '@/types/dial-entities';
+import type {
+  ToolsetAuthStatus,
+  ToolsetAuthType,
+  ToolsetCredentialsLevel,
+} from '@/types/dial-entities';
 
 export enum InboundMessageType {
   TriggerSave = 'TRIGGER_SAVE',
@@ -9,9 +13,9 @@ export enum InboundMessageType {
 }
 
 interface ToolsetCredentials {
-  authenticationType: 'NONE' | 'API_KEY' | 'OAUTH';
-  userStatus?: 'SIGNED_IN' | 'SIGNED_OUT' | 'FAILED';
-  globalStatus?: 'SIGNED_IN' | 'SIGNED_OUT' | 'FAILED';
+  authenticationType: ToolsetAuthType;
+  userStatus?: ToolsetAuthStatus;
+  globalStatus?: ToolsetAuthStatus;
   isPublic?: boolean;
   isManageableByAdmin?: boolean;
   apiKeyHeader?: string;

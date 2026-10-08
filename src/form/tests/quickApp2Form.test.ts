@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import {
-  AgentOrToolsetSchemaKeys,
+  AddOnSchemaKeys,
   buildQuickApp2Config,
   QuickApp2Schema,
-  getAgentsAndToolsetsFormValue,
+  getAddOnsFormValue,
   getQuickApp2FormData,
   getQuickApp2Toolsets,
   isValidMaxInputAttachments,
@@ -15,11 +15,11 @@ import {
 import { type AnyToolset, ToolsetTypes } from '@/types/quick-apps';
 
 const createForm = (overrides: Partial<QuickApp2Form> = {}): QuickApp2Form => ({
-  instructions: '',
+  instructions: 'Be helpful',
   temperature: 1,
   documentRelativeUrl: [],
   model: 'model-1',
-  agentsAndToolsets: [],
+  addOns: [],
   codeInterpreter: false,
   attachmentsEnabled: false,
   inputAttachmentTypes: [],
@@ -44,6 +44,20 @@ describe('QuickApp2Schema', () => {
     const result = QuickApp2Schema.safeParse(createForm());
 
     expect(result.success).toBe(true);
+  });
+
+  it('requires non-blank instructions and keeps their whitespace in the parsed data', () => {
+    for (const instructions of ['', '   \n\t']) {
+      const result = QuickApp2Schema.safeParse(createForm({ instructions }));
+      expect(result.success).toBe(false);
+      expect(result.error?.issues[0]).toMatchObject({
+        path: ['instructions'],
+        message: QuickAppEditorI18nKeys.InstructionsRequired,
+      });
+    }
+
+    const result = QuickApp2Schema.safeParse(createForm({ instructions: '  Be helpful\n' }));
+    expect(result.data?.instructions).toBe('  Be helpful\n');
   });
 
   it('rejects a model that is not available', () => {
@@ -168,15 +182,15 @@ describe('getQuickApp2FormData', () => {
     expect(data.model).toBe('model-1');
   });
 
-  it('creates a valid empty-app form with a trailing blank starter', () => {
+  it('creates an empty-app form with a trailing blank starter that requires instructions', () => {
     const data = getQuickApp2FormData(undefined, ['model-1'], ['model-1'], 'model-1');
 
     expect(data).toMatchObject({
       model: 'model-1',
       instructions: '',
-      temperature: 1,
+      temperature: 0.5,
       documentRelativeUrl: [],
-      agentsAndToolsets: [],
+      addOns: [],
       autoSubmit: true,
       timestamp: true,
       processLargeFiles: false,
@@ -187,7 +201,8 @@ describe('getQuickApp2FormData', () => {
     expect(data.starters).toHaveLength(1);
     expect(data.starters[0]).toMatchObject({ title: '', text: '' });
     expect(data.starters[0].id).toEqual(expect.any(String));
-    expect(QuickApp2Schema.safeParse(data).success).toBe(true);
+    expect(QuickApp2Schema.safeParse(data).success).toBe(false);
+    expect(QuickApp2Schema.safeParse({ ...data, instructions: 'Be helpful' }).success).toBe(true);
   });
 
   it('preserves toolset metadata when converting configured toolsets to form values', () => {
@@ -199,13 +214,13 @@ describe('getQuickApp2FormData', () => {
       },
     ];
 
-    const values = getAgentsAndToolsetsFormValue(toolsets);
+    const values = getAddOnsFormValue(toolsets);
 
     expect(values).toHaveLength(1);
     expect(values[0]).toMatchObject({
-      [AgentOrToolsetSchemaKeys.id]: 'applications/weather',
-      [AgentOrToolsetSchemaKeys.tool]: toolsets[0],
-      [AgentOrToolsetSchemaKeys.isDialDeploymentTool]: false,
+      [AddOnSchemaKeys.id]: 'applications/weather',
+      [AddOnSchemaKeys.tool]: toolsets[0],
+      [AddOnSchemaKeys.isDialDeploymentTool]: false,
     });
   });
 
@@ -215,10 +230,10 @@ describe('getQuickApp2FormData', () => {
       name: 'Weather',
       deployment_id: 'applications/weather',
     } as AnyToolset;
-    const formValue = getAgentsAndToolsetsFormValue([toolset]);
+    const formValue = getAddOnsFormValue([toolset]);
     const simpleToolsets = getQuickApp2Toolsets({
       allEntitiesMap: {},
-      data: createForm({ agentsAndToolsets: formValue }),
+      data: createForm({ addOns: formValue }),
       language: 'en',
     });
     expect(simpleToolsets).toEqual(
@@ -269,10 +284,10 @@ const buildConfig = (
   });
 
 describe('orchestrator temperature and process files', () => {
-  it('defaults the temperature to 1 and process files to off for a new app', () => {
+  it('defaults the temperature to 0.5 and process files to off for a new app', () => {
     const data = getQuickApp2FormData(undefined, ['model-1'], ['model-1'], 'model-1');
 
-    expect(data.temperature).toBe(1);
+    expect(data.temperature).toBe(0.5);
     expect(data.processLargeFiles).toBe(false);
   });
 

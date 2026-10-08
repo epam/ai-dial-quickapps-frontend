@@ -1,4 +1,4 @@
-import React, { act } from 'react';
+import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -17,7 +17,9 @@ vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({
     models: [],
     modelsMap: {},
+    toolsets: [],
     toolsetsMap: {},
+    mcpAgents: [],
     mcpAgentsMap: {},
     status: 'ready',
   }),
@@ -36,7 +38,8 @@ vi.mock('@/components/AddOns/AddOnsSection', () => ({
   default: () => (
     <section aria-label="Add-ons">
       <button type="button">Add Skills</button>
-      <button type="button">Add Agents & Toolsets</button>
+      <button type="button">Add Toolsets</button>
+      <button type="button">Add Agents</button>
     </section>
   ),
 }));

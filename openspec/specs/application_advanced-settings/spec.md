@@ -99,7 +99,7 @@ The popup values SHALL be serialized by the editor's existing application save w
 
 #### Scenario: Defaults on load
 - **WHEN** an application is loaded whose `features` has no `timestamp` key and no `dial_files` key, with no `maxInputAttachments`, no `orchestrator.deployment.parameters.temperature` and no `orchestrator.attachment_strategy`
-- **THEN** the popup SHALL show the temperature at `1.0`, Time awareness on, Built-in file tools off, process files off (when shown), and an empty max attachments input
+- **THEN** the popup SHALL show the temperature at `0.5`, Time awareness on, Built-in file tools off, process files off (when shown), and an empty max attachments input
 
 ### Requirement: Advanced Settings is accessible and direction-aware
 The popup controls SHALL be keyboard-operable and named, and SHALL follow the document direction.
@@ -122,7 +122,7 @@ The popup controls SHALL be keyboard-operable and named, and SHALL follow the do
 - **AND** no icon in the popup body SHALL be mirrored
 
 ### Requirement: Temperature in the popup
-The Advanced Settings popup SHALL show the orchestrator temperature as the first body control, using the kit 2.0 `Slider`, only when the selected model supports temperature. The slider SHALL edit the draft `temperature` value, which is seeded from the form field `temperature` (`useQuickApp2Form`, default `1` via `DEFAULT_TEMPERATURE`, loaded from `application_properties.orchestrator.deployment.parameters.temperature`). The visibility check SHALL be the existing `doesModelAllowTemperature` against `DataContext`'s `modelsMap`, memoised with `useMemo` as today. No other memoisation is required.
+The Advanced Settings popup SHALL show the orchestrator temperature as the first body control, using the kit 2.0 `Slider`, only when the selected model supports temperature. The slider SHALL edit the draft `temperature` value, which is seeded from the form field `temperature` (`useQuickApp2Form`, default `0.5` via `DEFAULT_TEMPERATURE`, loaded from `application_properties.orchestrator.deployment.parameters.temperature`). The visibility check SHALL be the existing `doesModelAllowTemperature` against `DataContext`'s `modelsMap`, memoised with `useMemo` as today. No other memoisation is required.
 
 #### Scenario: Slider presentation
 - **WHEN** the popup opens for a model with `features.temperature: true` and form `temperature` `0.5`

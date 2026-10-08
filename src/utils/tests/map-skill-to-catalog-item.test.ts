@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { DialSkill } from '@/types/dial-entities';
 import { ResourceScope } from '@/types/resource-scope';
-import { getSkillOverviewRows, mapSkillToCatalogItem } from '@/utils/map-skill-to-catalog-item';
+import { mapSkillToCatalogItem } from '@/utils/map-skill-to-catalog-item';
 
 const USER_BUCKET = 'user-bucket-123';
 
@@ -15,8 +15,6 @@ const OPTIONS = {
     [ResourceScope.Organization]: 'Organization',
   },
 };
-
-const LABELS = { author: 'Author', folder: 'Folder', updated: 'Updated', version: 'Version' };
 
 const makeSkill = (overrides: Partial<DialSkill> = {}): DialSkill => ({
   id: 'skills/public/web-search',
@@ -88,34 +86,3 @@ describe('mapSkillToCatalogItem', () => {
   });
 });
 
-describe('getSkillOverviewRows', () => {
-  it('lists author, folder, updated date and version', () => {
-    const rows = getSkillOverviewRows(
-      makeSkill({
-        id: 'skills/public/research/user-research',
-        author: 'jane.doe',
-        updatedAt: Date.UTC(2025, 9, 7, 12),
-        version: '1.4.6',
-      }),
-      { ...OPTIONS, language: 'en-US', labels: LABELS },
-    );
-
-    expect(rows).toEqual([
-      { label: 'Author', value: 'jane.doe' },
-      { label: 'Folder', value: 'Organization / research' },
-      { label: 'Updated', value: 'Oct 7, 2025' },
-      { label: 'Version', value: '1.4.6' },
-    ]);
-  });
-
-  it('omits rows without a value', () => {
-    const rows = getSkillOverviewRows(makeSkill({ id: 'skills/other-bucket/x' }), {
-      ...OPTIONS,
-      userBucket: undefined,
-      language: 'en-US',
-      labels: LABELS,
-    });
-
-    expect(rows).toEqual([]);
-  });
-});

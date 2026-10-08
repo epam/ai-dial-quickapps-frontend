@@ -1,4 +1,4 @@
-import React, { act } from 'react';
+import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
@@ -45,7 +45,9 @@ const testContext = vi.hoisted(() => {
     dataContext: {
       models: [model],
       modelsMap: { [model.id]: model },
+      toolsets: [],
       toolsetsMap: {},
+      mcpAgents: [],
       mcpAgentsMap: {},
       status: 'ready' as 'loading' | 'ready',
     },
@@ -68,11 +70,22 @@ vi.mock('@/context/DataContext', () => ({
 vi.mock('@/components/InstructionsSection/InstructionsSection', () => {
   const InstructionsTestField = ({
     value,
+    error,
     onChange,
   }: {
     value: string;
+    error?: string;
     onChange: (value: string) => void;
-  }) => <input aria-label="Instructions" value={value} onChange={(event) => onChange(event.target.value)} />;
+  }) => (
+    <>
+      <input
+        aria-label="Instructions"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+      {error && <p>{error}</p>}
+    </>
+  );
 
   return { default: InstructionsTestField };
 });
@@ -112,10 +125,16 @@ vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationS
       <button type="button" onClick={() => onInputAttachmentTypesChange(['application/pdf'])}>
         Select PDF
       </button>
-      <input aria-label="Model" value={model} onChange={(event) => onModelChange(event.target.value)} />
+      <input
+        aria-label="Model"
+        value={model}
+        onChange={(event) => onModelChange(event.target.value)}
+      />
       <button
         type="button"
-        onClick={() => onAdvancedSettingsSave({ ...advancedSettings, fileTools: true, maxInputAttachments: 5 })}
+        onClick={() =>
+          onAdvancedSettingsSave({ ...advancedSettings, fileTools: true, maxInputAttachments: 5 })
+        }
       >
         Save changed advanced settings
       </button>
@@ -234,11 +253,16 @@ vi.mock('@/components/ConversationStarters/ConversationStartersRow', () => {
 
 import { QuickApp2Form as QuickApp2FormComponent } from '../QuickApp2Form';
 
+// Instructions are required, so a savable app needs a non-empty system prompt.
+const SAVED_ORCHESTRATOR = { system_prompt: { content: 'Be helpful' } };
+
 let root: Root;
 let container: HTMLDivElement;
 
 const getButtonByText = (text: string) =>
-  [...container.querySelectorAll('button')].find((button) => button.textContent === text) as HTMLButtonElement;
+  [...container.querySelectorAll('button')].find(
+    (button) => button.textContent === text,
+  ) as HTMLButtonElement;
 
 const renderForm = (
   props: { onSave?: Mock<FormSaveHandler>; readonly?: boolean; key?: string } = {},
@@ -290,11 +314,16 @@ const triggerSave = async (detail: { isAutoSave: boolean; ignoreDirty?: boolean 
 
 beforeEach(() => {
   (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
-  testContext.appContext.app = { id: 'app', applicationProperties: {} };
+  testContext.appContext.app = {
+    id: 'app',
+    applicationProperties: { orchestrator: SAVED_ORCHESTRATOR },
+  };
   testContext.dataContext = {
     models: [testContext.model],
     modelsMap: { [testContext.model.id]: testContext.model },
+    toolsets: [],
     toolsetsMap: {},
+    mcpAgents: [],
     mcpAgentsMap: {},
     status: 'ready',
   };
@@ -316,7 +345,7 @@ describe('QuickApp2Form observable behavior', () => {
     expect(onSave).toHaveBeenCalledTimes(1);
     expect(onSave.mock.calls[0][0]).toMatchObject({
       model: 'model-1',
-      instructions: '',
+      instructions: 'Be helpful',
     });
 
     await dispatchInput(
@@ -335,8 +364,26 @@ describe('QuickApp2Form observable behavior', () => {
     await dispatchInput(instructions, 'Updated instructions');
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
 
-    await dispatchInput(instructions, '');
+    await dispatchInput(instructions, 'Be helpful');
     expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it('blocks save with empty instructions and shows the error only after an edit or save', async () => {
+    testContext.appContext.app = { id: 'app', applicationProperties: {} };
+    const { onSave } = renderForm();
+
+    expect(container.textContent).not.toContain(QuickAppEditorI18nKeys.InstructionsRequired);
+
+    await submitForm();
+    expect(onSave).not.toHaveBeenCalled();
+    expect(container.textContent).toContain(QuickAppEditorI18nKeys.InstructionsRequired);
+
+    const instructions = container.querySelector('[aria-label="Instructions"]') as HTMLInputElement;
+    await dispatchInput(instructions, 'Be helpful');
+    expect(container.textContent).not.toContain(QuickAppEditorI18nKeys.InstructionsRequired);
+
+    await submitForm();
+    expect(onSave).toHaveBeenCalledTimes(1);
   });
 
   it('applies saved Advanced Settings to the form and marks it dirty', async () => {
@@ -408,6 +455,7 @@ describe('QuickApp2Form observable behavior', () => {
     testContext.appContext.app = {
       id: 'app',
       applicationProperties: {
+        orchestrator: SAVED_ORCHESTRATOR,
         skills: ['a', 'b', 'c'].map((name) => ({
           type: 'dial-skill',
           url: `skills/public/${name}`,
@@ -460,14 +508,16 @@ describe('QuickApp2Form observable behavior', () => {
       );
     });
 
-    expect((container.querySelector('[aria-label="Instructions"]') as HTMLInputElement).value).toBe('');
+    expect((container.querySelector('[aria-label="Instructions"]') as HTMLInputElement).value).toBe(
+      'Be helpful',
+    );
     expect(onDirtyChange).toHaveBeenLastCalledWith(false);
   });
 
   it('submits the loaded attachment types unchanged', async () => {
     testContext.appContext.app = {
       id: 'app',
-      applicationProperties: {},
+      applicationProperties: { orchestrator: SAVED_ORCHESTRATOR },
       inputAttachmentTypes: ['audio/mpeg', 'image/*'],
     };
     const { onSave, onDirtyChange } = renderForm();
@@ -478,20 +528,24 @@ describe('QuickApp2Form observable behavior', () => {
     expect(onDirtyChange).not.toHaveBeenCalledWith(true);
 
     await submitForm();
-    expect(onSave.mock.calls[0][0]).toMatchObject({ inputAttachmentTypes: ['audio/mpeg', 'image/*'] });
+    expect(onSave.mock.calls[0][0]).toMatchObject({
+      inputAttachmentTypes: ['audio/mpeg', 'image/*'],
+    });
   });
 
   it('submits no attachment types and marks the form dirty after attachments are turned off', async () => {
     testContext.appContext.app = {
       id: 'app',
-      applicationProperties: {},
+      applicationProperties: { orchestrator: SAVED_ORCHESTRATOR },
       inputAttachmentTypes: ['application/pdf'],
     };
     const { onSave, onDirtyChange } = renderForm();
 
     act(() => getButtonByText('Turn attachments off').click());
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
-    expect(container.querySelector('[data-testid="attachments-enabled"]')?.textContent).toBe('false');
+    expect(container.querySelector('[data-testid="attachments-enabled"]')?.textContent).toBe(
+      'false',
+    );
 
     await submitForm();
     expect(onSave.mock.calls[0][0]).toMatchObject({ inputAttachmentTypes: [] });
@@ -532,7 +586,9 @@ describe('QuickApp2Form observable behavior', () => {
     testContext.dataContext = {
       models: [],
       modelsMap: {},
+      toolsets: [],
       toolsetsMap: {},
+      mcpAgents: [],
       mcpAgentsMap: {},
       status: 'loading',
     };
@@ -544,7 +600,9 @@ describe('QuickApp2Form observable behavior', () => {
     testContext.dataContext = {
       models: [testContext.model],
       modelsMap: { [testContext.model.id]: testContext.model },
+      toolsets: [],
       toolsetsMap: {},
+      mcpAgents: [],
       mcpAgentsMap: {},
       status: 'ready',
     };
@@ -558,7 +616,9 @@ describe('QuickApp2Form observable behavior', () => {
       );
     });
 
-    expect((container.querySelector('[aria-label="Model"]') as HTMLInputElement).value).toBe('model-1');
+    expect((container.querySelector('[aria-label="Model"]') as HTMLInputElement).value).toBe(
+      'model-1',
+    );
     expect(onModelReady).toHaveBeenCalled();
   });
 
@@ -566,6 +626,7 @@ describe('QuickApp2Form observable behavior', () => {
     testContext.appContext.app = {
       id: 'app',
       applicationProperties: {
+        orchestrator: SAVED_ORCHESTRATOR,
         conversation_starters: {
           starters: [
             { title: 'B', text: 'b' },
@@ -611,7 +672,11 @@ describe('QuickApp2Form observable behavior', () => {
   });
 
   it('renders the conversation starters row read-only for a shared app', () => {
-    testContext.appContext.app = { id: 'app', applicationProperties: {}, isShared: true };
+    testContext.appContext.app = {
+      id: 'app',
+      applicationProperties: { orchestrator: SAVED_ORCHESTRATOR },
+      isShared: true,
+    };
 
     renderForm();
 
@@ -639,7 +704,10 @@ describe('QuickApp2Form observable behavior', () => {
   it('adds decoded, de-duplicated knowledge files, marks the form dirty and saves them', async () => {
     testContext.appContext.app = {
       id: 'app',
-      applicationProperties: { contexts: [{ type: 'file', url: 'files/abc/a.pdf' }] },
+      applicationProperties: {
+        orchestrator: SAVED_ORCHESTRATOR,
+        contexts: [{ type: 'file', url: 'files/abc/a.pdf' }],
+      },
     };
     const { onSave, onDirtyChange } = renderForm();
 
@@ -661,6 +729,7 @@ describe('QuickApp2Form observable behavior', () => {
     testContext.appContext.app = {
       id: 'app',
       applicationProperties: {
+        orchestrator: SAVED_ORCHESTRATOR,
         contexts: [
           { type: 'file', url: 'files/abc/a.pdf' },
           { type: 'file', url: 'files/abc/b.pdf' },

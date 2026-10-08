@@ -5,7 +5,8 @@ import {
   type WebFetchFeature,
 } from '@/types/quick-apps';
 
-export enum AgentsAndToolsetsModalQueryParams {
+export enum AddOnsModalQueryParams {
+  // Host-facing deep-link name; kept as-is so existing host URLs keep working.
   Modal = 'agentsAndToolsetsModal',
 }
 

@@ -81,5 +81,3 @@ export const getTemperatureScaleLabelKey = (value: number): QuickAppEditorI18nKe
 export const isEntityIdPublic = (entity: { id: string }): boolean =>
   entity.id.startsWith('public/');
 
-export const isDialAiEntityModel = (entity: { type?: string }): boolean =>
-  entity?.type === 'application' || entity?.type === 'model';

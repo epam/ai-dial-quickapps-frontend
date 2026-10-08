@@ -6,16 +6,16 @@ import type { DialSkill } from '@/types/dial-entities';
 
 import { SkillDetailsPopup } from '../SkillDetailsPopup';
 
-const { fetchSkillManifest } = vi.hoisted(() => ({ fetchSkillManifest: vi.fn() }));
+const { skillsApi } = vi.hoisted(() => ({
+  skillsApi: { downloadSkillFileRaw: vi.fn(), listSkillFiles: vi.fn(), getSkillMetadata: vi.fn() },
+}));
 
-vi.mock('@/utils/dial-client', () => ({ fetchSkillManifest }));
-
+vi.mock('@/utils/chat-api-client', () => ({ skillsApi, deploymentsApi: {} }));
 vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({ language: 'en-US', t: (key: string) => key }),
 }));
-
 vi.mock('@/context/DataContext', () => ({
-  useDataContext: () => ({ userBucket: 'user-bucket-123' }),
+  useDataContext: () => ({ userBucket: 'user-bucket-123', skills: [SKILL] }),
 }));
 
 const SKILL: DialSkill = {
@@ -24,7 +24,7 @@ const SKILL: DialSkill = {
   name: 'User Research',
   type: 'skill',
   description: 'Listing description',
-  author: 'jane.doe',
+  author: 'listing.author',
   updatedAt: Date.UTC(2025, 9, 7, 12),
 };
 
@@ -32,11 +32,24 @@ const MANIFEST = [
   '---',
   'name: User Research',
   'description: Plan, conduct, and synthesize user research.',
+  'when_to_use: When a study needs planning.',
   '---',
   '# Interview Guide',
   '',
   'Help plan, execute, and synthesize user research studies.',
 ].join('\n');
+
+const FILES = {
+  items: [
+    {
+      name: 'SKILL.md',
+      path: 'research/user-research/SKILL.md',
+      url: 'skills/public/research/user-research/SKILL.md',
+      bucket: 'public',
+      nodeType: 'item',
+    },
+  ],
+};
 
 let root: Root;
 let container: HTMLDivElement;
@@ -71,6 +84,8 @@ const getTab = (name: string) =>
   [...document.querySelectorAll('[role="tab"]')].find((tab) => tab.textContent === name) as
     HTMLElement | undefined;
 
+const getTabNames = () => [...document.querySelectorAll('[role="tab"]')].map((tab) => tab.textContent);
+
 const click = async (element?: HTMLElement) => {
   expect(element).toBeTruthy();
   await act(async () => {
@@ -81,10 +96,18 @@ const click = async (element?: HTMLElement) => {
 
 beforeEach(() => {
   (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
-  fetchSkillManifest.mockReset();
-  fetchSkillManifest.mockResolvedValue(MANIFEST);
-  onRemove.mockReset();
-  onClose.mockReset();
+  vi.clearAllMocks();
+  skillsApi.downloadSkillFileRaw.mockImplementation(async () => ({ raw: new Response(MANIFEST) }));
+  skillsApi.listSkillFiles.mockResolvedValue(FILES);
+  skillsApi.getSkillMetadata.mockResolvedValue({
+    name: 'user-research',
+    path: 'research/user-research',
+    url: SKILL.id,
+    bucket: 'public',
+    nodeType: 'item',
+    author: 'jane.doe',
+    updatedAt: Date.UTC(2025, 9, 7, 12),
+  });
   container = document.createElement('div');
   document.body.append(container);
   root = createRoot(container);
@@ -97,38 +120,84 @@ afterEach(() => {
 });
 
 describe('SkillDetailsPopup', () => {
-  it('opens a dialog named by the skill on the Details tab', async () => {
+  it('opens a dialog named by the skill on Details, with Overview and the folder line', async () => {
     await render();
 
     expect(getDialog()?.getAttribute('aria-label')).toBe('User Research');
     expect(getDialog()?.textContent).toContain('Skill');
+    expect(getDialog()?.textContent).toContain('Organization / research');
+    expect(getTabNames()).toEqual(['Details', 'Overview']);
     expect(getTab('Details')?.getAttribute('aria-selected')).toBe('true');
-    expect(getTab('Overview')?.getAttribute('aria-selected')).toBe('false');
   });
 
   it('shows the manifest description and rendered body without frontmatter', async () => {
     await render();
 
     const dialog = getDialog();
-    expect(fetchSkillManifest).toHaveBeenCalledWith(SKILL, expect.any(AbortSignal));
+    expect(skillsApi.downloadSkillFileRaw).toHaveBeenCalledWith(
+      { bucket: 'public', path: 'research/user-research', filePath: 'SKILL.md' },
+      { signal: undefined },
+    );
     expect(dialog?.textContent).toContain('Plan, conduct, and synthesize user research.');
     const headings = [...(dialog?.querySelectorAll('h1, h2, h3, h4') ?? [])].map(
       (heading) => heading.textContent,
     );
     expect(headings).toContain('Interview Guide');
     expect(dialog?.textContent).not.toContain('name: User Research');
-    expect(dialog?.textContent).not.toContain('---');
   });
 
-  it('shows author, folder and updated date on Overview, without an absent version', async () => {
+  it('shows the catalog’s Specification and Skill sections on Overview', async () => {
     await render();
 
     await click(getTab('Overview'));
 
-    const terms = [...document.querySelectorAll('dt')].map((term) => term.textContent);
-    const values = [...document.querySelectorAll('dd')].map((value) => value.textContent);
-    expect(terms).toEqual(['Author', 'Folder', 'Updated']);
-    expect(values).toEqual(['jane.doe', 'Organization / research', 'Oct 7, 2025']);
+    const panel = document.querySelector('[role="tabpanel"]');
+    expect(panel?.textContent).toContain('Specification');
+    expect(panel?.textContent).toContain('When to use');
+    expect(panel?.textContent).toContain('When a study needs planning.');
+    expect(panel?.textContent).toContain('Author');
+    expect(panel?.textContent).toContain('jane.doe');
+    expect(panel?.textContent).toContain('Files');
+  });
+
+  it('falls back to the listing author when the skill’s metadata fails', async () => {
+    skillsApi.getSkillMetadata.mockRejectedValueOnce(new Error('403'));
+    await render();
+
+    await click(getTab('Overview'));
+
+    expect(document.querySelector('[role="tabpanel"]')?.textContent).toContain('listing.author');
+  });
+
+  it('hides Overview when the file listing fails', async () => {
+    skillsApi.listSkillFiles.mockRejectedValueOnce(new Error('boom'));
+    await render();
+
+    expect(getTabNames()).toEqual(['Details']);
+    expect(getDialog()?.textContent).toContain('Interview Guide');
+  });
+
+  it('shows a failure with a Retry that loads again', async () => {
+    skillsApi.downloadSkillFileRaw.mockRejectedValueOnce(new Error('boom'));
+    skillsApi.listSkillFiles.mockRejectedValueOnce(new Error('boom'));
+    await render();
+
+    expect(getDialog()?.textContent).toContain('Failed to load details');
+    expect(getDialog()?.textContent).toContain('Listing description');
+
+    await click(getButtonByText('Retry'));
+
+    expect(skillsApi.downloadSkillFileRaw).toHaveBeenCalledTimes(2);
+    expect(getDialog()?.textContent).toContain('Interview Guide');
+    expect(getDialog()?.textContent).not.toContain('Failed to load details');
+  });
+
+  it('shows the loading state while the details are pending', async () => {
+    skillsApi.downloadSkillFileRaw.mockReturnValue(new Promise(() => undefined));
+    await render();
+
+    expect(document.querySelector('[aria-label="Loading details"]')).not.toBeNull();
+    expect(getDialog()?.textContent).toContain('Listing description');
   });
 
   it('detaches the skill and closes on Delete', async () => {
@@ -161,33 +230,10 @@ describe('SkillDetailsPopup', () => {
     expect(onRemove).not.toHaveBeenCalled();
   });
 
-  it('shows the error with a Retry that loads the manifest again', async () => {
-    fetchSkillManifest.mockReset();
-    fetchSkillManifest.mockRejectedValueOnce(new Error('boom')).mockResolvedValueOnce(MANIFEST);
-    await render();
-
-    expect(getDialog()?.textContent).toContain('Failed to load skill content');
-    expect(getDialog()?.textContent).toContain('Listing description');
-
-    await click(getButtonByText('Retry'));
-
-    expect(fetchSkillManifest).toHaveBeenCalledTimes(2);
-    expect(getDialog()?.textContent).toContain('Interview Guide');
-  });
-
-  it('shows the loading state while the manifest is pending', async () => {
-    fetchSkillManifest.mockReset();
-    fetchSkillManifest.mockReturnValue(new Promise(() => undefined));
-    await render();
-
-    expect(document.querySelector('[aria-label="Loading skill content…"]')).not.toBeNull();
-    expect(getDialog()?.textContent).toContain('Listing description');
-  });
-
   it('shows an unavailable skill without requesting it, and still offers Delete', async () => {
     await render({ skill: undefined });
 
-    expect(fetchSkillManifest).not.toHaveBeenCalled();
+    expect(skillsApi.downloadSkillFileRaw).not.toHaveBeenCalled();
     expect(getDialog()?.getAttribute('aria-label')).toBe('user-research');
     expect(getDialog()?.textContent).toContain('This skill is no longer available');
     expect(getButtonByText('Delete')).toBeTruthy();
