@@ -228,7 +228,7 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
       case CatalogDetailsTab.Overview:
         return (
           <OverviewTab
-            sectionContainerClassName="p-0"
+            sectionContainerClassName="p-0 pe-4"
             sections={details?.overview?.sections}
             {...OVERVIEW_CLASSES}
             yesLabel={labels.yes}
