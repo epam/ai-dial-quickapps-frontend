@@ -46,6 +46,11 @@ export const useCatalogDetailsLabels = (): CatalogDetailsLabels => {
           inputRequired: t(QuickAppEditorI18nKeys.ToolsInputRequired),
           annotationKey: t(QuickAppEditorI18nKeys.ToolsAnnotationKey),
           annotationValue: t(QuickAppEditorI18nKeys.ToolsAnnotationValue),
+          searchPlaceholder: t(QuickAppEditorI18nKeys.SearchTools),
+          searchClearLabel: tCommon(CommonI18nKeys.ClearSearch),
+          toolCount: (count: number) =>
+            t(QuickAppEditorI18nKeys.ToolsCount, { count: String(count) }),
+          noResults: t(QuickAppEditorI18nKeys.NoResultsFound),
         },
         pricesSection: t(QuickAppEditorI18nKeys.PricingTokenSection),
         characterPricesSection: t(QuickAppEditorI18nKeys.PricingCharacterSection),

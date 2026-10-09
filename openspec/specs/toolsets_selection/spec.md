@@ -136,9 +136,18 @@ The toolset's **About**, **Overview** and **Tools** content SHALL be the catalog
 
 - **About:** `AboutTab` with the listing `description` and `topics`, shown from the moment the popup opens.
 - **Overview:** `OverviewTab` with the sections `mapEntityDetailsToCatalogDetails` builds from `toolsetDetails`. These are Capabilities (from `features`) and Specification: authentication, provider, vendor, license, knowledge cutoff, parameters, hosted by (`owner`) and creation date, each only when present.
-- **Tools:** `ToolsTab` with the tool definitions the catalog mapper builds from `allowedTools`, or from `allToolNames` when the allow-list is empty.
+- **Tools:** `ToolsTab` with the tool definitions the catalog mapper builds from `allowedTools`, or from `allToolNames` when the allow-list is empty. Above the list, the catalog renders a search field and the number of tools shown. The search filters by tool name or description, ignoring case. When nothing matches, the tab shows a no-results text.
 
-This app SHALL NOT build Overview rows or tool lists of its own.
+This app SHALL NOT build Overview rows, tool lists or tool filtering of its own. The search query is local state inside the catalog's `ToolsTab`, and no context or hook here owns it. No chat-api request is involved: the tab filters the tools already in the loaded details.
+
+The Tools tab's strings come from `useCatalogDetailsLabels`' `tabs.tools`, memoised on the language with the other labels:
+
+- search placeholder and accessible name: `quickAppEditor` → `Search tools...` (`QuickAppEditorI18nKeys.SearchTools`);
+- clear button: `common` → `Clear search` (`CommonI18nKeys.ClearSearch`);
+- count: `quickAppEditor` → `{{count}} tools` (`QuickAppEditorI18nKeys.ToolsCount`);
+- no results: `quickAppEditor` → `No results found` (`QuickAppEditorI18nKeys.NoResultsFound`).
+
+The catalog announces the count in a `role="status"` polite live region, so screen readers hear the result count while typing. The search field takes its accessible name from the placeholder, and its clear button is keyboard-reachable. RTL impact: none for this app. The layout and the field's icon are the catalog's, which uses logical properties, and no directional icon is added.
 
 #### Scenario: Overview from the details
 
@@ -149,6 +158,13 @@ This app SHALL NOT build Overview rows or tool lists of its own.
 
 - **WHEN** the details carry `allowedTools: ["edit_design"]` and three `allToolNames`
 - **THEN** Tools SHALL list only `edit_design`
+
+#### Scenario: Tools count and search
+
+- **WHEN** the user opens the Tools tab of a toolset with 27 tools
+- **THEN** a "Search tools..." field and "27 tools" SHALL be shown above the list
+- **AND** typing part of a tool's name SHALL narrow the list, and the count, to the matching tools
+- **AND** a query that matches no tool SHALL show "No results found" and "0 tools"
 
 #### Scenario: No tools reported
 

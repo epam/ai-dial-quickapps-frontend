@@ -191,6 +191,8 @@ export enum QuickAppEditorI18nKeys {
   ToolsInputRequired = 'Required',
   ToolsAnnotationKey = 'Key',
   ToolsAnnotationValue = 'Value',
+  SearchTools = 'Search tools...',
+  ToolsCount = '{{count}} tools',
   AdvancedSettings = 'Advanced settings',
   Settings = 'Settings',
   Advanced = 'Advanced',
