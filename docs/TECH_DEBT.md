@@ -42,8 +42,8 @@
   - chat-api ask: tool descriptions and input schemas in the deployment details
     (`ToolsetDetailsDto` carries names only), so the catalog Tools tab — here and in chat — could
     show more than names;
-  - move `AddSkillsModal` onto the shared `components/common/AddOnCatalogModal` that the Add
-    toolset / Add agent pickers use, and drop its duplicated list/filter/sort code;
+  - done: `AddSkillsModal` now renders the shared `components/common/AddOnCatalogModal` that the
+    Add toolset / Add agent pickers use, so its own list/filter/sort code is gone;
   - write a `toolsets_login` spec for the host round-trip (`REQUEST_TOOLSET_LOGIN` /
     `TOOLSET_LOGIN_RESULT`); `toolsets_selection` only specifies the popup's Log in entry point.
   - rename the i18n keys Skills, Toolsets and Agents share (`SkillDetails`, `RemoveSkill`, `SelectSkill`,
@@ -60,8 +60,8 @@
     passed yet). Ask upstream for label options, then pass translated ones;
   - the Limits tab renders without a reset line: pass `formatResetTime` in
     `useCatalogDetailsLabels` once the editor has a locale-aware date formatter;
-  - Connect tab: hidden (`isConnectHidden`) on the assumption editors don't need endpoint
-    snippets — confirm in review; showing it needs `dialCoreExternalUrl` and a Connect label set;
+  - done: the Connect tab shows when a DIAL Core URL is configured (`dialCoreExternalUrl`;
+    `isConnectHidden` otherwise), with translated labels — change `show-connect-tab-in-addon-details`;
   - the skill Details tab shows only `SKILL.md`; its bundled files (`promptContent.files`) are
     dropped. Wiring the catalog file selector needs `onLoadContentFile` from `useCatalogItemDetails`.
 - [ ] Knowledge base file popup (change `restyle-knowledge-base-file-picker`):
@@ -111,6 +111,38 @@
     on the form layer. This resolves itself when zod is removed (`remove-react-hook-form`): define
     the form values interface in `src/types/` directly.
 - [ ] ...
+
+## Rollout and live verification
+
+Open items carried over from the Next.js → chat-api migration (`docs/TRANSITION_PLAN.md`, now
+frozen as history). None of them can be checked from this repo's tooling alone: each needs a running
+chat-api, a real admin/chat host, or access outside this repo.
+
+- [ ] **Live spec pass** — walk every `openspec/specs/` capability against a built image embedded in
+  both admin and chat (TRANSITION_PLAN §2.8 exit criteria). Typecheck, lint, tests and build are
+  green, but that is static verification only.
+- [ ] **Session cookie inside the iframe** — chat-api issues the session cookie with `SameSite=Lax`
+  (`OVERLAY_ENABLED` unset). Browsers may treat fetches from a cross-site iframe as cross-site and
+  drop it. Confirm `GET /api/v1/auth/me` and one mutating call succeed embedded in admin and in chat.
+  If they fail, ask ai-dial-chat for a flag that enables `SameSite=None` without `OVERLAY_ENABLED`
+  (TRANSITION_PLAN Phase 0 item 2, Risks).
+- [ ] **CSP enforce** — confirm chat-api's static server replaces the `__DIAL_CSP_NONCE__`
+  placeholder (`vite.config.ts`) with a per-request nonce, run with `CSP_MODE=report-only` and read
+  the violation reports, then switch to `enforce` (TRANSITION_PLAN §2.6).
+- [ ] **CI registry access** — confirm the runners of the reusable `epam/ai-dial-ci` workflows can
+  pull the `ghcr.io/epam/ai-dial-chat-bff` base image and build `--platform=linux/amd64` (the image
+  is amd64-only) (TRANSITION_PLAN Phase 0 item 7). The image tag policy itself is tracked in
+  "Runtime port and image policy" below.
+- [ ] **Provider env var names** — only Keycloak's `AUTH_KEYCLOAK_*` names are verified against a
+  live chat-api. Check Azure AD, Google, Auth0, Okta, Cognito and GitLab, and confirm that the `503`
+  on `GET /api/themes` seen with `THEMES_URL` came from not setting `THEMES_CONFIG_URL`
+  (TRANSITION_PLAN Appendix B).
+- [ ] **`liveChatInteraction` flag** — confirm it is enabled on this integration's chat-api
+  deployment (TRANSITION_PLAN Appendix C.2).
+- [ ] chat-api ask (not blocking): `fetchDialApp` (`src/utils/dial-client.ts`) makes two calls,
+  `getDeploymentDetails` for `applicationProperties` and a `listDeployments` scan for the General
+  fields, because `ApplicationDetailsDto` has no name/description/icon/topics/version. One response
+  carrying both would remove the scan (TRANSITION_PLAN §2.4).
 
 ## Documentation and behavior reconciliation backlog
 
@@ -221,7 +253,8 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 - src/components/Toolsets/** (row, Add toolset picker, details popup with Tools and Log in),
   src/utils/get-add-on-kind.ts, src/utils/map-toolset-to-catalog-item.ts,
-  src/utils/dial-client.ts (`fetchToolsetToolNames`), src/utils/apply-toolset-auth-result.ts, ties to
+  src/hooks/use-entity-details.ts + src/utils/catalog-details-api.ts (details and tool names via the
+  catalog hooks), src/hooks/use-toolset-credentials.ts, src/utils/apply-toolset-auth-result.ts, ties to
   host-integration's RequestToolsetLogin/RequestToolsetLogout. (Historical: the
   `src/app/api/dial-toolsets/{signin,signout}` routes and `components/common/AgentAndToolsetSelector/**`
   are gone.)
@@ -233,7 +266,8 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 ### Skills
 
-- `fetchDialSkills`, `fetchSkillManifest` in src/utils/dial-client.ts, src/components/AgentSkills/**, src/components/Skills/**
+- `fetchDialSkills` in src/utils/dial-client.ts, src/components/AgentSkills/**, src/components/Skills/**;
+  the skill details (`SKILL.md`) load through src/hooks/use-entity-details.ts and ai-dial-chat's catalog hooks
 - Proposed: skills_catalog (standalone slug skills also defensible if no sibling ever appears)
 - **Spec written** (`openspec/specs/skills_catalog`, from archived change `redesign-skills-selection`): the attached
   skills list with its hover remove button, the skill details popup with Delete, and the Add skill popup.

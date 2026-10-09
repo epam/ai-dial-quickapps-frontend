@@ -221,5 +221,7 @@
   "Type": "Type",
   "Required": "Required",
   "Key": "Key",
-  "Value": "Value"
+  "Value": "Value",
+  "Search tools...": "Search tools...",
+  "{{count}} tools": "{{count}} tools"
 }

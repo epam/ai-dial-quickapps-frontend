@@ -227,15 +227,13 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
         );
       case CatalogDetailsTab.Overview:
         return (
-          // Full-bleed, as in the catalog: section dividers span the popup body.
-          <div className="-mx-6">
-            <OverviewTab
-              sections={details?.overview?.sections}
-              {...OVERVIEW_CLASSES}
-              yesLabel={labels.yes}
-              noLabel={labels.no}
-            />
-          </div>
+          <OverviewTab
+            sectionContainerClassName="p-0"
+            sections={details?.overview?.sections}
+            {...OVERVIEW_CLASSES}
+            yesLabel={labels.yes}
+            noLabel={labels.no}
+          />
         );
       case CatalogDetailsTab.Pricing:
         return (
