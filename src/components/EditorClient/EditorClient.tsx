@@ -15,7 +15,7 @@ import { ForbiddenError } from '@/utils/forbidden-error';
 import { decodeDialPath, fetchAppSettings, fetchDialApp, saveDialApp } from '@/utils/dial-client';
 import { buildLocalizedText } from '@/utils/get-localized-text';
 import { hasQuickAppChanges, type StoredGeneralFields } from '@/utils/has-quick-app-changes';
-import { QuickApp2Form, type QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form';
+import { QuickApp2Form, type QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form/QuickApp2Form';
 import { AUTO_SAVE_INTERVAL_MS } from '@/constants/editor';
 import {
   InboundMessage,

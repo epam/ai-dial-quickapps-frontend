@@ -21,7 +21,7 @@ vi.mock('@/hooks/use-translation', () => ({
 vi.mock('@/context/AuthContext', () => ({
   useAuthContext: () => ({ user: { bucket: 'abc' } }),
 }));
-vi.mock('@/components/common/FilesSelector/FileManagerModal', () => ({
+vi.mock('@/components/common/FileManagerModal/FileManagerModal', () => ({
   default: ({ initialFileIds, onClose }: MockModalProps) => (
     <div role="dialog" aria-label="File manager">
       <span>{(initialFileIds ?? []).join(',')}</span>

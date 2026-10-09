@@ -5,7 +5,7 @@ import type { QuickApp2FormValues } from '@/types/quick-app-form';
 import { useTranslation } from '@/hooks/use-translation';
 import { Translation } from '@/types/translation';
 
-import { AddOnRow } from '@/components/AddOns/AddOnRow';
+import { AddOnRow } from '@/components/AddOns/AddOnRow/AddOnRow';
 import SkillsList from '@/components/Skills/SkillsList/SkillsList';
 
 // The picker brings in the catalog list (ag-grid + @epam/ai-dial-catalog),

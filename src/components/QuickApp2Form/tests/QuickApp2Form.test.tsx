@@ -33,7 +33,7 @@ vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationS
 vi.mock('@/components/QuickApp2FormLegacyFields/QuickApp2FormLegacyFields', () => ({
   default: () => null,
 }));
-vi.mock('@/components/AddOns/AddOnsSection', () => ({
+vi.mock('@/components/AddOns/AddOnsSection/AddOnsSection', () => ({
   default: () => (
     <section aria-label="Add-ons">
       <button type="button">Add Skills</button>
@@ -42,7 +42,7 @@ vi.mock('@/components/AddOns/AddOnsSection', () => ({
     </section>
   ),
 }));
-vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => ({ default: () => null }));
+vi.mock('@/components/AgentSkills/AgentSkillsFormSection/AgentSkillsFormSection', () => ({ default: () => null }));
 
 let root: Root;
 let container: HTMLDivElement;

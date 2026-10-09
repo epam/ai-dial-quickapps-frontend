@@ -20,7 +20,7 @@ vi.mock('@/hooks/use-translation', () => ({
       key.replace(/\{\{(\w+)\}\}/g, (_, name: string) => options?.[name] ?? ''),
   }),
 }));
-vi.mock('../ConversationStartersModal', () => ({
+vi.mock('@/components/ConversationStarters/ConversationStartersModal/ConversationStartersModal', () => ({
   default: ({ values, onSave, onClose }: MockModalProps) => (
     <div role="dialog" aria-label="Starters modal">
       <button type="button" onClick={() => onSave(values)}>

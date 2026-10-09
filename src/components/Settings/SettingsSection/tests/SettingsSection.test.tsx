@@ -56,7 +56,7 @@ const MockPopup = ({
   ) : null;
 };
 
-vi.mock('../AdvancedSettingsPopup', () => ({
+vi.mock('@/components/Settings/AdvancedSettingsPopup/AdvancedSettingsPopup', () => ({
   default: (props: MockPopupProps) => <MockPopup {...props} />,
 }));
 vi.mock('@epam/ai-dial-ui-kit', () => ({

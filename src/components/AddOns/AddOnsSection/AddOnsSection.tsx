@@ -10,10 +10,10 @@ import { DialAppTransportType } from '@/types/quick-apps';
 import { Translation } from '@/types/translation';
 import { partitionAddOnIds } from '@/utils/get-add-on-kind';
 
-import AgentSkillsFormSection from '@/components/AgentSkills/AgentSkillsFormSection';
+import AgentSkillsFormSection from '@/components/AgentSkills/AgentSkillsFormSection/AgentSkillsFormSection';
 import AgentsFormSection from '@/components/Agents/AgentsFormSection/AgentsFormSection';
-import ConversationStartersRow from '@/components/ConversationStarters/ConversationStartersRow';
-import KnowledgeBaseRow from '@/components/KnowledgeBase/KnowledgeBaseRow';
+import ConversationStartersRow from '@/components/ConversationStarters/ConversationStartersRow/ConversationStartersRow';
+import KnowledgeBaseRow from '@/components/KnowledgeBase/KnowledgeBaseRow/KnowledgeBaseRow';
 import ToolsetsFormSection from '@/components/Toolsets/ToolsetsFormSection/ToolsetsFormSection';
 import { Section } from '@/components/common/Section/Section';
 

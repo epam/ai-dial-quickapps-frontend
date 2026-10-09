@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vite
 
 import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import type { QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form';
+import type { QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form/QuickApp2Form';
 import type { QuickApp2Form } from '@/form/quickApp2Form';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
@@ -162,7 +162,7 @@ vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationS
 vi.mock('@/components/QuickApp2FormLegacyFields/QuickApp2FormLegacyFields', () => ({
   default: () => null,
 }));
-vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => {
+vi.mock('@/components/AgentSkills/AgentSkillsFormSection/AgentSkillsFormSection', () => {
   // Stands in for the skill details popup's Delete, which detaches one skill.
   const SkillsTestSection = ({
     value,
@@ -184,7 +184,7 @@ vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => {
 
   return { default: SkillsTestSection };
 });
-vi.mock('@/components/KnowledgeBase/KnowledgeBaseRow', () => {
+vi.mock('@/components/KnowledgeBase/KnowledgeBaseRow/KnowledgeBaseRow', () => {
   const KnowledgeBaseTestRow = ({
     files,
     isReadonly,
@@ -213,7 +213,7 @@ vi.mock('@/components/KnowledgeBase/KnowledgeBaseRow', () => {
 
   return { default: KnowledgeBaseTestRow };
 });
-vi.mock('@/components/ConversationStarters/ConversationStartersRow', () => {
+vi.mock('@/components/ConversationStarters/ConversationStartersRow/ConversationStartersRow', () => {
   const ConversationStartersTestRow = ({
     values,
     isReadonly,

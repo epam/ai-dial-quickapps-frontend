@@ -43,7 +43,7 @@ import {
   updateStarterField,
 } from '@/utils/conversation-starters';
 
-import { SortableStarterRow } from './SortableStarterRow';
+import { SortableStarterRow } from '../SortableStarterRow/SortableStarterRow';
 
 const MODIFIERS = [restrictToVerticalAxis];
 // The kit Label is secondary tiny text by default, which reads as disabled; per design the setting

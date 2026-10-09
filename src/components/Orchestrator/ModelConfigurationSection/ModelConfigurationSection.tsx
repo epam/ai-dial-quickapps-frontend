@@ -8,8 +8,8 @@ import { useTranslation } from '@/hooks/use-translation';
 import { Translation } from '@/types/translation';
 import { doesModelAllowTemperature } from '@/utils/application';
 
-import AttachmentsSection from '@/components/Attachments/AttachmentsSection';
-import SettingsSection from '@/components/Settings/SettingsSection';
+import AttachmentsSection from '@/components/Attachments/AttachmentsSection/AttachmentsSection';
+import SettingsSection from '@/components/Settings/SettingsSection/SettingsSection';
 
 import { DefaultModelBlock } from '@/components/Orchestrator/DefaultModelBlock/DefaultModelBlock';
 

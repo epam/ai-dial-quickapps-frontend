@@ -23,7 +23,7 @@ vi.mock('@/components/Orchestrator/DefaultModelBlock/DefaultModelBlock', () => (
     </button>
   ),
 }));
-vi.mock('@/components/Settings/SettingsSection', () => ({
+vi.mock('@/components/Settings/SettingsSection/SettingsSection', () => ({
   default: ({
     isReadonly,
     isTemperatureAvailable,
@@ -41,7 +41,7 @@ vi.mock('@/components/Settings/SettingsSection', () => ({
     />
   ),
 }));
-vi.mock('@/components/Attachments/AttachmentsSection', () => ({
+vi.mock('@/components/Attachments/AttachmentsSection/AttachmentsSection', () => ({
   default: ({ value, isReadonly }: { value: string[]; isReadonly: boolean }) => (
     <div
       data-testid="attachments-section"

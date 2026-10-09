@@ -9,7 +9,7 @@ import { Translation } from '@/types/translation';
 
 import { SectionRow } from '@/components/common/SectionRow/SectionRow';
 
-import AdvancedSettingsPopup from './AdvancedSettingsPopup';
+import AdvancedSettingsPopup from '../AdvancedSettingsPopup/AdvancedSettingsPopup';
 
 import {
   Button,

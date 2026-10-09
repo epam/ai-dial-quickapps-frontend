@@ -2,15 +2,15 @@ import { DIAL_ICON_SIZE, DIAL_KIT_ICON_STROKE } from '@epam/ai-dial-ui-kit';
 import { IconPencil } from '@tabler/icons-react';
 import { FC, memo, useCallback, useMemo, useState } from 'react';
 
-import { AddOnRow } from '@/components/AddOns/AddOnRow';
+import { AddOnRow } from '@/components/AddOns/AddOnRow/AddOnRow';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useTranslation } from '@/hooks/use-translation';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
 import { Translation } from '@/types/translation';
 import { isSavedVisibleStarter } from '@/utils/conversation-starters';
 
-import { ConversationStartersList } from './ConversationStartersList';
-import ConversationStartersModal from './ConversationStartersModal';
+import { ConversationStartersList } from '../ConversationStartersList/ConversationStartersList';
+import ConversationStartersModal from '../ConversationStartersModal/ConversationStartersModal';
 
 export interface ConversationStartersRowProps {
   values: ConversationStartersValues;

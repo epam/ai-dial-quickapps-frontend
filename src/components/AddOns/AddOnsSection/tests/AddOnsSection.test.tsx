@@ -33,13 +33,13 @@ vi.mock('@/hooks/use-search-params', () => ({
 vi.mock('@/hooks/use-add-on-entity-map', () => ({
   useAddOnEntityMap: () => ({ [FIGMA.id]: FIGMA, [RESEARCH.id]: RESEARCH }),
 }));
-vi.mock('@/components/AgentSkills/AgentSkillsFormSection', () => ({
+vi.mock('@/components/AgentSkills/AgentSkillsFormSection/AgentSkillsFormSection', () => ({
   default: () => <section aria-label="Skills row" />,
 }));
-vi.mock('@/components/KnowledgeBase/KnowledgeBaseRow', () => ({
+vi.mock('@/components/KnowledgeBase/KnowledgeBaseRow/KnowledgeBaseRow', () => ({
   default: () => <section aria-label="Knowledge base row" />,
 }));
-vi.mock('@/components/ConversationStarters/ConversationStartersRow', () => ({
+vi.mock('@/components/ConversationStarters/ConversationStartersRow/ConversationStartersRow', () => ({
   default: () => <section aria-label="Conversation starters row" />,
 }));
 

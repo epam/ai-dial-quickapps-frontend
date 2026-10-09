@@ -1,12 +1,12 @@
 import { FC, memo, useCallback, useState } from 'react';
 
-import { AddOnRow } from '@/components/AddOns/AddOnRow';
-import FileManagerModal from '@/components/common/FilesSelector/FileManagerModal';
+import { AddOnRow } from '@/components/AddOns/AddOnRow/AddOnRow';
+import FileManagerModal from '@/components/common/FileManagerModal/FileManagerModal';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useTranslation } from '@/hooks/use-translation';
 import { Translation } from '@/types/translation';
 
-import { KnowledgeBaseList } from './KnowledgeBaseList';
+import { KnowledgeBaseList } from '../KnowledgeBaseList/KnowledgeBaseList';
 
 export interface KnowledgeBaseRowProps {
   files: string[];

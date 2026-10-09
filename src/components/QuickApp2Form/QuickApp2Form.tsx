@@ -15,9 +15,9 @@ import type { DialAIEntityModel, LocalizedText } from '@/types/dial-entities';
 import { Translation } from '@/types/translation';
 import { useTranslation } from '@/hooks/use-translation';
 
-import AddOnsSection from './AddOns/AddOnsSection';
-import InstructionsSection from './InstructionsSection/InstructionsSection';
-import ModelConfigurationSection from './Orchestrator/ModelConfigurationSection/ModelConfigurationSection';
+import AddOnsSection from '../AddOns/AddOnsSection/AddOnsSection';
+import InstructionsSection from '../InstructionsSection/InstructionsSection';
+import ModelConfigurationSection from '../Orchestrator/ModelConfigurationSection/ModelConfigurationSection';
 
 export type QuickApp2AllEntitiesMap = Record<
   string,
