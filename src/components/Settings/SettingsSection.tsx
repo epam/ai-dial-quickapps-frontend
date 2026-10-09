@@ -34,14 +34,8 @@ export interface SettingsSectionProps {
 
 const SettingsSection: FC<SettingsSectionProps> = ({
   isReadonly,
-  advancedSettings,
-  isTemperatureAvailable,
-  isProcessLargeFilesAvailable,
-  isCodeInterpreterEnabled,
-  isAddAttachmentEnabled,
-  isWebFetchEnabled,
-  maxInputAttachmentsError,
   onAdvancedSettingsSave,
+  ...popupProps
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -58,7 +52,11 @@ const SettingsSection: FC<SettingsSectionProps> = ({
           <Button
             label={t(QuickAppEditorI18nKeys.Advanced)}
             iconBefore={
-              <IconSettings size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} aria-hidden="true" />
+              <IconSettings
+                size={DIAL_ICON_SIZE.SM}
+                stroke={DIAL_KIT_ICON_STROKE}
+                aria-hidden="true"
+              />
             }
             variant={ButtonVariant.Primary}
             appearance={ButtonAppearance.Link}
@@ -71,14 +69,8 @@ const SettingsSection: FC<SettingsSectionProps> = ({
       {isPopupOpen && (
         // Mounted only while open so every open re-seeds the popup draft from the form.
         <AdvancedSettingsPopup
+          {...popupProps}
           isOpen
-          advancedSettings={advancedSettings}
-          isTemperatureAvailable={isTemperatureAvailable}
-          isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
-          isCodeInterpreterEnabled={isCodeInterpreterEnabled}
-          isAddAttachmentEnabled={isAddAttachmentEnabled}
-          isWebFetchEnabled={isWebFetchEnabled}
-          maxInputAttachmentsError={maxInputAttachmentsError}
           onSave={onAdvancedSettingsSave}
           onClose={handleClose}
         />
