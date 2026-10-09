@@ -5,8 +5,8 @@
 - [x] Test coverage - `@vitest/coverage-v8` is wired up (`vitest.config.ts`), enforced by `npm test`
       (now runs with `--coverage`, so it fails the build below threshold — use `npm run test:watch` for
       a plain watch-mode run without coverage) across all of `src/**/*.{ts,tsx}`. Every threshold is a
-      fixed 70%, maintained by hand (no `autoUpdate`). As of 2026-10-09: statements 83.1%, branches
-      75.95%, functions 82.21%, lines 84.19%.
+      fixed 70%, maintained by hand (no `autoUpdate`). As of 2026-10-09: statements 90.29%, branches
+      81.2%, functions 89.13%, lines 91.27%.
 - [ ] react-hook-form usage - should get rid of it. In progress in change `remove-react-hook-form`:
       the root form and every section now run on `useQuickApp2Form` (the Context & Tools card moved into the Advanced Settings popup in `move-feature-toggles-to-advanced-settings`);
       only the dependency removal (tasks 5.x) is open.
