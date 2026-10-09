@@ -63,7 +63,7 @@ const AddOnSchema = z.object({
 export type AddOnEntry = z.infer<typeof AddOnSchema>;
 
 const AttachmentTypesSchema = z.array(z.string());
-export const MaxInputAttachmentsSchema = z.preprocess(
+const MaxInputAttachmentsSchema = z.preprocess(
   (value) => (value === '' ? undefined : value),
   z.coerce.number().int().positive().optional(),
 );

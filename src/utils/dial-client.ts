@@ -29,7 +29,6 @@ import {
   toolsetsApi,
 } from '@/utils/chat-api-client';
 import { parseAllowedOrigins } from '@/utils/allowed-origins';
-import { chatApiFetch } from '@/utils/chat-api-fetch';
 import { isHiddenPath } from '@/utils/dial-file-path';
 import { ForbiddenError } from '@/utils/forbidden-error';
 import { getLocalizedText } from '@/utils/get-localized-text';
@@ -476,7 +475,3 @@ export const fetchDialSkills = async (): Promise<DialSkill[]> => {
     .map(mapCoreToDialSkill)
     .filter((skill) => !isHiddenDialFolderId(skill.id));
 };
-
-// kept for callers that still fetch a raw response directly (e.g. resolve-icon-url's
-// `<img>` src, which stays outside the typed client — see resolve-icon-url.ts).
-export { chatApiFetch };
