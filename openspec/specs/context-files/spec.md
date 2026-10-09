@@ -6,9 +6,7 @@ The file manager the editor uses to browse and manage DIAL files — My files, S
 Organization and the combined All view — with listing, permissions, upload, create folder, rename,
 delete, download and path encoding. How the Knowledge base row uses it is in
 `application_knowledge-base`.
-
 ## Requirements
-
 ### Requirement: File manager state ownership
 
 The file manager SHALL be the `FileManagerModal` component (`src/components/common/FileManagerModal/`), rendered with `@epam/ai-dial-react-file-manager`'s `DialFileManager` inside the UI kit `Popup`. It SHALL take `isOpen`, `initialFileIds` and `onClose(fileIds)` from its caller and SHALL introduce no React context. The signed-in user's bucket SHALL come from `useAuthContext().user.bucket`. Listing, cache, permission and operation state SHALL be owned by `useDialFileManager` (`src/hooks/use-dial-file-manager.ts`), one instance per source (My files, Shared, Organization), and `useDialFileSources` (`src/hooks/use-dial-file-sources.ts`) SHALL compose the three instances and expose the active one, or the combined All view, through the same `UseDialFileManagerResult` shape. A source SHALL request nothing until it is first shown, and SHALL keep its loaded folders once it has been shown. My files SHALL request nothing while the user's bucket is unknown. The modal SHALL be wrapped in `React.memo`; the hook's tree (`items`), every callback and every option object passed to `DialFileManager` SHALL be memoised with `useMemo` / `useCallback`, so a parent re-render does not rebuild the tree. How the Knowledge base row opens the popup and consumes its result, and the popup's title, footer, tabs, All view, search, selection and upload-queue presentation, are specified by `application_knowledge-base` and are not repeated here.
@@ -168,7 +166,7 @@ When an upload meets same-named files, the conflict popup of `DialFileManager` S
 
 ### Requirement: Creating folders
 
-A new folder name SHALL be validated in this order, and the first failing rule SHALL report its message: empty or blank → `FolderNameEmpty`; contains `/` or `\` → `FolderNameInvalidChars`; starts with `.` → `FolderNameHidden`; longer than 255 characters → `FolderNameTooLong`; same name as an entry of the parent folder, ignoring case → `FolderConflict`. A valid folder SHALL be created with `POST /api/v1/files/folders` (`filesApi.createFolder`, `CreateFolderDto`), in the owner's bucket when the parent is in Shared, with `parentPath` omitted at the bucket root. On success the folder SHALL be added to the parent's listing, unless a same-named entry is already there, and the current folder SHALL be listed again. On failure an error notification `FolderCreateError` SHALL be shown.
+A new folder name SHALL be validated in this order, and the first failing rule SHALL report its message: empty or blank → `FolderNameEmpty`; contains `/` or `\` → `FolderNameInvalidChars`; exactly `.dial_folder` (the hidden-folder marker) → `FolderNameReserved`; starts with `.` → `FolderNameHidden`; longer than 255 characters → `FolderNameTooLong`; same name as an entry of the parent folder, ignoring case → `FolderConflict`. A valid folder SHALL be created with `POST /api/v1/files/folders` (`filesApi.createFolder`, `CreateFolderDto`), in the owner's bucket when the parent is in Shared, with `parentPath` omitted at the bucket root. On success the folder SHALL be added to the parent's listing, unless a same-named entry is already there, and the current folder SHALL be listed again. On failure an error notification `FolderCreateError` SHALL be shown.
 
 Example:
 
@@ -185,6 +183,11 @@ POST /api/v1/files/folders
 
 - **WHEN** the user enters ``, `a/b`, `.hidden`, a 256-character name or `DOCS` next to an existing `docs`
 - **THEN** the messages SHALL be `FolderNameEmpty`, `FolderNameInvalidChars`, `FolderNameHidden`, `FolderNameTooLong` and `FolderConflict` respectively
+
+#### Scenario: Reserved marker name
+
+- **WHEN** the user enters `.dial_folder`
+- **THEN** the message SHALL be `FolderNameReserved` ("This name is reserved"), not `FolderNameHidden`
 
 #### Scenario: Create at the root
 
@@ -293,12 +296,18 @@ The file manager SHALL work with decoded names internally. A virtual path SHALL 
 
 ### Requirement: Notifications, busy states, direction and accessibility
 
-Notifications from file operations SHALL appear as a banner at the top of the popup body, with an error or success background for those variants and a neutral one otherwise, showing the optional title in semibold above the message; a banner SHALL disappear after four seconds and a new one SHALL replace it. Deleting and renaming SHALL each cover the browser with a busy overlay whose spinner is named `DeletingLabel` or `RenamingLabel` and which is announced politely (`aria-live="polite"`). All text SHALL come from the `common` namespace; the folder chips SHALL be named `TabsAriaLabel` ("File sources") and the popup's close control `CloseDialog`. Direction SHALL follow the document `dir` through the file manager and kit components; the app's own layout SHALL use only logical or direction-agnostic classes (the upload queue anchored with `end-4`, overlays with `inset-0`), and no icon SHALL be mirrored by the app.
+Notifications from file operations SHALL appear as a banner at the top of the popup body, with an error or success background for those variants and a neutral one otherwise, showing the optional title in semibold above the message; a banner SHALL disappear after four seconds and a new one SHALL replace it. The banner SHALL be rendered inside a live region that exists while the popup is open, whether or not a banner is shown (`aria-live="polite"`, `aria-atomic="true"`), so screen readers announce each new banner; an error banner SHALL additionally carry `role="alert"`. Deleting and renaming SHALL each cover the browser with a busy overlay whose spinner is named `DeletingLabel` or `RenamingLabel` and which is announced politely (`aria-live="polite"`). All text SHALL come from the `common` namespace; the folder chips SHALL be named `TabsAriaLabel` ("File sources") and the popup's close control `CloseDialog`. Direction SHALL follow the document `dir` through the file manager and kit components; the app's own layout SHALL use only logical or direction-agnostic classes (the upload queue anchored with `end-4`, overlays with `inset-0`), and no icon SHALL be mirrored by the app.
 
 #### Scenario: Notification auto-dismiss
 
 - **WHEN** a folder creation fails
 - **THEN** the error banner SHALL show "Failed to create folder" and SHALL disappear after four seconds
+
+#### Scenario: Notifications are announced
+
+- **WHEN** the popup is open and a notification appears
+- **THEN** the banner SHALL be inside the popup's polite live region, which was already rendered before the banner appeared
+- **AND** an error banner SHALL have `role="alert"`, and a success banner SHALL NOT
 
 #### Scenario: Busy overlay
 

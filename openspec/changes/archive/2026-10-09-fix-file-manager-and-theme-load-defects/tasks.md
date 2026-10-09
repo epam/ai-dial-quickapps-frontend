@@ -17,7 +17,8 @@ Slicing strategy: **vertical per defect** — each fix lands with the test that 
 - [x] 2.2 In `src/components/common/FileManagerModal/FileManagerModal.tsx`, render the notification
       banner inside an always-present `aria-live="polite"` `aria-atomic="true"` region and give an
       error banner `role="alert"`; add "Notifications are announced" to
-      `src/components/common/FileManagerModal/tests/FileManagerModal.test.tsx`.
+      `src/components/common/FileManagerModal/tests/FileManagerModal.upload.test.tsx` (it mocks
+      the sources hook, so a test can raise a notification).
   - Verification: `npx vitest run src/components/common/FileManagerModal`, then the full `npm test`.
 
 ## 3. Docs
