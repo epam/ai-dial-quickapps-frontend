@@ -9,9 +9,7 @@ what it accepts from the host, and how it validates the host's origin before tru
 targeting it. The contract is host-agnostic — it describes only QuickApps' own observable
 behavior, not any particular host's implementation, so that any compliant host (not only
 ai-dial-chat) can embed QuickApps successfully.
-
 ## Requirements
-
 ### Requirement: Entry URL query parameters
 
 QuickApps SHALL read the following query parameters from its entry URL:
@@ -125,23 +123,25 @@ own identity via a query parameter.
 
 ### Requirement: Outbound message contract
 
-QuickApps SHALL emit the following outbound message types toward the resolved host,
-each identifying itself with the application name supplied by the entry URL and, where noted,
-carrying the stated payload:
+QuickApps SHALL emit the following outbound message types. The typed messages SHALL be posted
+as `{ type, payload? }` (types from `OutboundMessageType`, `src/types/editor-messages.ts`) to the
+allowed origins, per "Origin validation", and SHALL NOT carry the application name; only the host
+handshake and the plain `{applicationName}/…` messages SHALL use the application name supplied by
+the entry URL, and they SHALL be addressed to the resolved host (see "Host origin resolution").
 
-- **Ready** — sent once when QuickApps has initialized and can receive host commands.
+- **Ready** — sent once when the editor mounts, before the application has loaded.
 - **HeightChange** — sent whenever QuickApps' rendered content height changes, carrying
   `{ height }` so the host can size its embedding container.
 - **DirtyState** — sent when the unsaved-changes state of the current editor session
   changes, carrying `{ isDirty }`.
-- **SaveSuccess** — sent when a save completes successfully, carrying the updated
-  application data and whether unsaved changes remain.
-- **SaveError** — sent when a save attempt fails, carrying an error description.
+- **SaveSuccess** — sent when a manual save completes successfully, carrying the updated
+  application data and `hasChanges` (its meaning is defined in `application_editing`).
+- **SaveError** — sent when a save request fails, carrying `{ error }`, the error's message.
 - **AutoSaveComplete** — sent when an automatic (non-user-triggered) save completes.
 - **RequestApplicationCredentials** — sent to ask the host to supply credentials for a
-  given application id.
+  given application id (see "Application credentials request").
 - **RequestToolsetLogin** / **RequestToolsetLogout** — sent to ask the host to run a
-  toolset's login/logout flow on QuickApps' behalf.
+  toolset's login/logout flow on QuickApps' behalf (see `toolsets_login`).
 - **`{applicationName}/readyToSave`** — a plain (non-typed) message sent once the
   editor session is ready to accept a save trigger from the host.
 - **`{applicationName}/loggedOut`** — a plain (non-typed) message sent when QuickApps
@@ -151,15 +151,22 @@ carrying the stated payload:
 
 - **WHEN** the height of QuickApps' rendered content changes
 - **THEN** QuickApps SHALL post a HeightChange message with the new height to the
-  resolved host, so the host can resize the embedding container without QuickApps
+  allowed origins, so the host can resize the embedding container without QuickApps
   needing to know how the host renders it
 
-#### Scenario: A save attempt completes
+#### Scenario: A save request completes
 
-- **WHEN** a save (user-triggered or automatic) finishes
+- **WHEN** a save (user-triggered or automatic) sends its request to chat-api and that request
+  finishes
 - **THEN** QuickApps SHALL post exactly one of AutoSaveComplete, SaveSuccess, or
   SaveError describing the outcome, so the host does not need to infer save state by
   other means
+
+#### Scenario: A save trigger is skipped
+
+- **WHEN** a save trigger is skipped before any request is sent (the cases listed in
+  `application_editing`, such as an auto-save before the first save or an invalid form)
+- **THEN** QuickApps SHALL post no save-outcome message for it
 
 #### Scenario: Plain messages use the name from the entry URL
 
@@ -176,30 +183,34 @@ validation") regardless of its type:
 
 - **TriggerSave** / **TriggerAutoSave** — instructs QuickApps to save the current
   editor state; QuickApps SHALL treat this as equivalent to a locally-triggered save
-  for the purpose of the outbound save-outcome messages above.
-- **Reset** — instructs QuickApps to discard in-progress edits and reload the editor
-  state from scratch.
-- **ToolsetLoginResult** / **ToolsetLogoutResult** — delivers the outcome of a
-  previously requested toolset login/logout back to QuickApps.
+  for the purpose of the outbound save-outcome messages above. When a trigger is skipped is
+  defined in `application_editing`.
+- **Reset** — instructs QuickApps to discard in-progress edits by remounting the editor form
+  with the values loaded when the editor opened; it SHALL NOT refetch the application.
+- **ToolsetLoginResult** / **ToolsetLogoutResult** — delivers the outcome of a toolset
+  login/logout back to QuickApps: the outcome of a login/logout QuickApps requested, and also a
+  login the host ran on its own (see `toolsets_login`).
 
 #### Scenario: Host requests a save while QuickApps has unsaved changes
 
 - **WHEN** QuickApps receives a TriggerSave or TriggerAutoSave message from an allowed
-  origin
+  origin, and `application_editing` does not skip the trigger
 - **THEN** QuickApps SHALL perform a save of the current editor state and report the
   outcome via the outbound save-outcome messages
 
 #### Scenario: Host requests a reset
 
 - **WHEN** QuickApps receives a Reset message from an allowed origin
-- **THEN** QuickApps SHALL discard in-progress edits and reload the editor state
+- **THEN** QuickApps SHALL discard in-progress edits and remount the editor form with the
+  values loaded when the editor opened, without a chat-api request
 
 ### Requirement: Origin validation
 
-QuickApps SHALL validate the origin of every inbound message against a configured
-list of one or more allowed origins before acting on it, and SHALL target outbound
-messages only at those allowed origins (or a resolved host origin, per "Host origin
-resolution") rather than broadcasting unconditionally to any origin.
+QuickApps SHALL validate the origin of every inbound message against the configured list of
+allowed origins (`allowedOrigin`, see `app-configuration`) before acting on it. Typed outbound
+messages SHALL be addressed to each configured allowed origin individually, or to the wildcard
+when the list allows any origin; the host handshake and the plain `{applicationName}/…` messages
+are addressed to the resolved host instead (see "Host origin resolution").
 
 #### Scenario: Allowed origins are configured as specific origins
 
@@ -223,11 +234,13 @@ resolution") rather than broadcasting unconditionally to any origin.
 ### Requirement: Application credentials request
 
 QuickApps SHALL be able to ask the host to supply credentials for a specific
-application without requiring the host to have pre-loaded them.
+application without requiring the host to have pre-loaded them. The conditions for offering
+the request and the hand-over itself are defined in `application_credentials`.
 
-#### Scenario: QuickApps needs credentials for an application
+#### Scenario: User asks for an application's credentials
 
-- **WHEN** QuickApps determines it needs credentials for a given application id (for
-  example, because `applicationCredentials` mode is active)
+- **WHEN** the user activates the Application credentials action of an attached application
+  in credentials mode (see `application_credentials`)
 - **THEN** QuickApps SHALL post a RequestApplicationCredentials message carrying that
-  application id to the resolved allowed origin
+  application id to the allowed origins, per "Origin validation"
+
