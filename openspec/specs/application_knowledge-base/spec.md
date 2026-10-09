@@ -115,11 +115,11 @@ The Knowledge base items SHALL be saved as the application's context files in th
 
 ### Requirement: Knowledge base UI is localized, direction-aware and accessible
 
-All user-visible text SHALL come from the `quickAppEditor` and `common` namespaces and none SHALL be hardcoded. The row SHALL be exposed as a section labelled by its title. Layout SHALL use logical (start/end) alignment; the breadcrumb chevron separators SHALL mirror in right-to-left locales. The trail SHALL have an accessible name (`KnowledgeBasePathLabel`, "Path of {{name}}") and the file icon SHALL be decorative, since the path already names the item.
+All user-visible text SHALL come from the `quickAppEditor` and `common` namespaces and none SHALL be hardcoded. The row SHALL be exposed as a section labelled by its title. Layout SHALL use logical (start/end) alignment; the breadcrumb chevron separators SHALL mirror when the document direction is `rtl`. The trail SHALL have an accessible name (`KnowledgeBasePathLabel`, "Path of {{name}}") and the file icon SHALL be decorative, since the path already names the item.
 
-#### Scenario: Right-to-left locale
+#### Scenario: Right-to-left document
 
-- **WHEN** the editor renders with an RTL locale
+- **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
 - **THEN** items SHALL read right to left with the trash button at the leading-opposite (inline-end) edge
 - **AND** the separators SHALL point in the reading direction
 
@@ -268,9 +268,9 @@ Every selectable row SHALL show a checkbox and the header SHALL show a select-al
 
 All popup text SHALL come from the `common` namespace (`dialFileManager.*`) and none SHALL be hardcoded. The Shared chip SHALL read "Shared". Layout SHALL follow the document direction. The search field and the checkbox column SHALL be keyboard operable and have accessible names.
 
-#### Scenario: Right-to-left locale
+#### Scenario: Right-to-left document
 
-- **WHEN** the popup renders with an RTL locale
+- **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
 - **THEN** the tabs, search row and grid SHALL lay out right to left through the library's direction handling
 - **AND** the Cancel and Add buttons SHALL swap edges with the direction
 
@@ -307,7 +307,7 @@ When the user uploads files from the Knowledge base popup, the popup SHALL show 
 - **THEN** the file browser SHALL NOT accept input and Add SHALL be disabled
 - **AND** when no file is in progress the browser SHALL accept input again
 
-#### Scenario: RTL
+#### Scenario: Right-to-left document
 
-- **WHEN** the document direction is `rtl`
+- **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
 - **THEN** the queue SHALL sit at the bottom-left corner

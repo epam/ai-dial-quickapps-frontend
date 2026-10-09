@@ -197,9 +197,9 @@ Every catalog component and mapper SHALL receive translated text from this app's
 
 The catalog tab row SHALL follow the ARIA tabs pattern. Its panels SHALL be reachable with Tab after the header actions and before the footer. They SHALL follow `document.documentElement.dir` as they do in the chat catalog.
 
-#### Scenario: Right-to-left locale
+#### Scenario: Right-to-left document
 
-- **WHEN** `document.documentElement.dir` is `rtl`
+- **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
 - **THEN** the tab row SHALL run About → last tab from right to left
 - **AND** the Overview label column SHALL be at the start (right)
 - **AND** the popup shell SHALL keep Delete at the start and Close at the end

@@ -307,7 +307,7 @@ Notifications from file operations SHALL appear as a banner at the top of the po
 
 #### Scenario: Right-to-left document
 
-- **WHEN** the document direction is `rtl`
+- **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
 - **THEN** the popup SHALL render without errors
 - **AND** the upload queue SHALL sit at the inline-end corner
 

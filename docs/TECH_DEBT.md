@@ -172,9 +172,10 @@ OpenSpec change).
 - [x] **i18n and RTL docs** — `.claude/rules/rtl.md` and AGENTS.md now describe the real layout
       (per-namespace locale files, `i18n.dir()`, no language selector, English only so `dir` is
       `ltr` in production, `index.html`'s `lang="en"` as the pre-mount default).
-- [ ] **RTL wording in specs** — many specs still describe RTL as user-visible though no RTL
-      locale ships (see "RTL and i18n status" below). `buildLocalizedText` drops the primary value
-      when `primaryLocale` is missing.
+- [x] **RTL wording in specs** — every RTL scenario is now conditional on the document direction
+      being `rtl` and notes that no RTL locale ships yet (see the `i18n` spec).
+- [ ] **`buildLocalizedText` drops the primary value** when `primaryLocale` is missing but
+      `locales` has entries (`get-localized-text.ts:47-55`).
 - [x] **Docs out of date** — README's custom-variable table, credentials wording, RESET,
       TRIGGER_SAVE `display_version`, READY and auto-save text; `host-integration`'s outbound
       targets, save-outcome and Reset wording, credentials trigger and the "never broadcast" vs `*`
@@ -254,8 +255,10 @@ documentation correction.
 - [ ] **API-layer exceptions and configuration keys** — document the deliberate raw wrappers
       for auth, themes, and file transfer, and add all runtime custom flags to the configuration
       documentation and eventual `app-configuration` spec.
-- [ ] **RTL and i18n status** — distinguish the current English/legacy behavior from the future
-      dynamic locale and RTL requirement; do not present deferred behavior as implemented.
+- [x] **RTL and i18n status** — the `i18n` spec states that only English ships (so `dir` is `ltr`),
+      `.claude/rules/rtl.md` and AGENTS.md say the same, and every RTL scenario in the other specs is
+      conditional on the document direction. Choosing the UI language (host, URL or browser) is
+      still unspecified and would be a new change.
 - [x] **Repository conventions and stale comments** — every component, `QuickApp2Form` included,
       lives in its own PascalCase folder with a `tests/` subfolder, and source comments no longer
       refer to next-auth, the old DIAL Core proxy, TRANSITION_PLAN appendices or the merged

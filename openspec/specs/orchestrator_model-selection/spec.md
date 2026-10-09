@@ -190,9 +190,9 @@ The picker SHALL be keyboard operable and follow the document direction.
 - **AND** the list SHALL be exposed as a grid with an accessible name from `quickAppEditor` key `ModelsCatalog`
 - **AND** arrow keys SHALL move focus between rows, and Enter or Space on a focused row SHALL select it as a click does
 
-#### Scenario: Right-to-left locale
+#### Scenario: Right-to-left document
 
-- **WHEN** `document.documentElement.dir` is `rtl`
+- **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
 - **THEN** the heading SHALL be at the start (right) and the sort menu at the end (left); the search precedes the From filter from the right; the list columns SHALL run Name → Tags from right to left; Cancel/Add SHALL be at the end (left)
 - **AND** no icon in the picker SHALL be mirrored (folder, filter funnel, chevron-down, search, check and × are not directional)
 
@@ -316,9 +316,9 @@ The Default model block SHALL keep explicit loading and validation-error states.
 
 The Default model block SHALL follow the document direction.
 
-#### Scenario: Right-to-left locale
+#### Scenario: Right-to-left document
 
-- **WHEN** `document.documentElement.dir` is `rtl`
+- **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
 - **THEN** the heading SHALL be at the start (right) and the **Change** button at the end (left) of the header row
 - **AND** within the card the icon SHALL be at the start side, with the label, name and version following it
 - **AND** the pencil icon SHALL NOT be mirrored

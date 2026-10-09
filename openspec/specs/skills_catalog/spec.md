@@ -369,9 +369,9 @@ The Skills row, Add skill popup and details popup SHALL be keyboard operable, SH
 - **THEN** the tabs SHALL follow the ARIA tabs pattern (arrow keys move between Details and Overview)
 - **AND** Delete and Close SHALL be reachable with Tab and activatable with Enter or Space
 
-#### Scenario: Right-to-left locale
+#### Scenario: Right-to-left document
 
-- **WHEN** `document.documentElement.dir` is `rtl`
+- **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
 - **THEN** Skills row items SHALL run avatar → name → version from right to left, with the trash button at the end (left)
 - **AND** in the Add skill popup the heading SHALL be at the start (right) and the sort menu at the end (left), and the list columns SHALL run selection → Tags from right to left
 - **AND** in the details popup Delete SHALL be at the start (right) and Close at the end (left)
