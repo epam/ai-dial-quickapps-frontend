@@ -1,6 +1,7 @@
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { describe, expect, it } from 'vitest';
 
+import { DialEntityType } from '@/types/dial-entities';
 import type { DialModel } from '@/types/dial-entities';
 import { ResourceScope } from '@/types/resource-scope';
 import { mapModelToCatalogItem } from '@/utils/map-model-to-catalog-item';
@@ -21,7 +22,7 @@ const makeModel = (overrides: Partial<DialModel> = {}): DialModel => ({
   id: 'models/gemini__1.0.3',
   reference: 'gemini',
   name: 'Google Gemini 3.5 Flash Lite',
-  type: 'model',
+  type: DialEntityType.Model,
   version: '1.0.3',
   features: { tools: true },
   ...overrides,

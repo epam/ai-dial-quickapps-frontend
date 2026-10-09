@@ -3,6 +3,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { DialEntityType } from '@/types/dial-entities';
 import type { AddOnCatalogModalProps } from '@/components/common/AddOnCatalogModal/AddOnCatalogModal';
 import type { DialModel } from '@/types/dial-entities';
 
@@ -13,10 +14,10 @@ const { captured } = vi.hoisted(() => ({ captured: { props: undefined as unknown
 const makeAgent = (id: string, name: string, type: DialModel['type']) =>
   ({ id, reference: id, name, type }) as DialModel;
 
-const GPT = makeAgent('gpt-4o', 'GPT-4o', 'model');
-const RESEARCH = makeAgent('applications/public/research', 'Research', 'application');
-const SELF = makeAgent('applications/me/this-app__1.0', 'This app', 'application');
-const MCP = makeAgent('applications/public/mcp-agent', 'MCP agent', 'application');
+const GPT = makeAgent('gpt-4o', 'GPT-4o', DialEntityType.Model);
+const RESEARCH = makeAgent('applications/public/research', 'Research', DialEntityType.Application);
+const SELF = makeAgent('applications/me/this-app__1.0', 'This app', DialEntityType.Application);
+const MCP = makeAgent('applications/public/mcp-agent', 'MCP agent', DialEntityType.Application);
 
 vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({

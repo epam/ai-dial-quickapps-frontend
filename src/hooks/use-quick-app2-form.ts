@@ -2,17 +2,15 @@ import { useCallback, useMemo, useReducer } from 'react';
 import isEqual from 'lodash-es/isEqual';
 
 import { AddOnSchemaKeys, QuickApp2Schema, resolveDefaultModelId } from '@/form/quickApp2Form';
-import { removeStarter, updateStarterField } from '@/utils/conversation-starters';
 import { decodeFileUrl } from '@/utils/decode-file-url';
+import { LoadStatus } from '@/types/load-status';
 import {
-  QuickApp2ModelStatus,
   type QuickApp2FormErrors,
   type QuickApp2FormExternalState,
   type QuickApp2FormUpdateOptions,
   type QuickApp2FormValidationResult,
   type QuickApp2FormValues,
 } from '@/types/quick-app-form';
-import type { StarterField } from '@/types/conversation-starters';
 import type { DialAppTransportType } from '@/types/quick-apps';
 
 type FormAction =
@@ -36,8 +34,6 @@ type FormAction =
   | { type: 'RESET' }
   | { type: 'SET_AGENT_IDS'; ids: string[] }
   | { type: 'CONFIGURE_AGENT'; id: string; transport: DialAppTransportType }
-  | { type: 'UPDATE_STARTER'; index: number; field: StarterField; value: string }
-  | { type: 'REMOVE_STARTER'; index: number }
   | { type: 'ADD_DOCUMENTS'; documents: string[] }
   | { type: 'REMOVE_DOCUMENT'; document: string };
 
@@ -45,7 +41,7 @@ interface FormState {
   values: QuickApp2FormValues;
   initialValues: QuickApp2FormValues;
   errors: QuickApp2FormErrors;
-  modelStatus: QuickApp2ModelStatus;
+  modelStatus: LoadStatus;
 }
 
 export interface UseQuickApp2FormOptions {
@@ -70,8 +66,6 @@ export interface UseQuickApp2FormResult {
   reset: () => void;
   setAgentIds: (ids: string[]) => void;
   configureAgent: (id: string, transport: DialAppTransportType) => void;
-  updateStarter: (index: number, field: StarterField, value: string) => void;
-  removeStarter: (index: number) => void;
   addDocuments: (documents: string[]) => void;
   removeDocument: (document: string) => void;
 }
@@ -240,21 +234,6 @@ const reduceFormState = (state: FormState, action: FormAction): FormState => {
         { shouldValidate: true },
       );
     }
-    case 'UPDATE_STARTER': {
-      const starters = updateStarterField(
-        state.values.starters,
-        action.index,
-        action.field,
-        action.value,
-      );
-      if (starters === state.values.starters) return state;
-      return applyValues(state, { starters }, { shouldValidate: true });
-    }
-    case 'REMOVE_STARTER': {
-      const starters = removeStarter(state.values.starters, action.index);
-      if (starters === state.values.starters) return state;
-      return applyValues(state, { starters }, { shouldValidate: true });
-    }
     case 'ADD_DOCUMENTS': {
       const existing = new Set(state.values.documentRelativeUrl);
       const documents = action.documents
@@ -288,7 +267,7 @@ export const useQuickApp2Form = ({
     values,
     initialValues: values,
     errors: {},
-    modelStatus: QuickApp2ModelStatus.Idle,
+    modelStatus: LoadStatus.Idle,
   }));
 
   const setField = useCallback(
@@ -327,15 +306,6 @@ export const useQuickApp2Form = ({
       dispatch({ type: 'CONFIGURE_AGENT', id, transport }),
     [],
   );
-  const updateStarter = useCallback(
-    (index: number, field: StarterField, value: string) =>
-      dispatch({ type: 'UPDATE_STARTER', index, field, value }),
-    [],
-  );
-  const removeStarter = useCallback(
-    (index: number) => dispatch({ type: 'REMOVE_STARTER', index }),
-    [],
-  );
   const addDocuments = useCallback(
     (documents: string[]) => dispatch({ type: 'ADD_DOCUMENTS', documents }),
     [],
@@ -350,7 +320,7 @@ export const useQuickApp2Form = ({
       values: state.values,
       errors: state.errors,
       isDirty: !isEqual(state.values, state.initialValues),
-      isModelReady: state.modelStatus === QuickApp2ModelStatus.Ready && !!state.values.model,
+      isModelReady: state.modelStatus === LoadStatus.Ready && !!state.values.model,
       setField,
       setValues,
       syncExternalState,
@@ -360,8 +330,6 @@ export const useQuickApp2Form = ({
       reset,
       setAgentIds,
       configureAgent,
-      updateStarter,
-      removeStarter,
       addDocuments,
       removeDocument,
     }),
@@ -376,8 +344,6 @@ export const useQuickApp2Form = ({
       reset,
       setAgentIds,
       configureAgent,
-      updateStarter,
-      removeStarter,
       addDocuments,
       removeDocument,
     ],

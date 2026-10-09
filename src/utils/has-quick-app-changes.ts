@@ -1,7 +1,7 @@
 import isEqual from 'lodash-es/isEqual';
 
 import type { MaybeLocalizedText } from '@/types/dial-entities';
-import type { LocaleTextEntryDto } from '@/types/editor-messages';
+import type { HostLocaleTextEntry } from '@/types/editor-messages';
 import { QuickApp2Config } from '@/types/quick-apps';
 
 export interface StoredGeneralFields {
@@ -11,7 +11,7 @@ export interface StoredGeneralFields {
   topics?: string[];
   display_version?: string;
   /** Carried through to chat-api's `updateApplication` body untouched — not diffed here (a locale change already shows up as a `name`/`description` dict difference). */
-  locales?: LocaleTextEntryDto[];
+  locales?: HostLocaleTextEntry[];
   primaryLocale?: string;
 }
 

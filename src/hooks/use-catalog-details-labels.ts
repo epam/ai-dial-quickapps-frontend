@@ -1,7 +1,8 @@
 import { CatalogDetailsTab } from '@epam/ai-dial-catalog';
+import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { useMemo } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useTranslation } from '@/hooks/use-translation';
 import type { CatalogMapperLabels, CatalogTabsLabels } from '@/types/entity-details';
 import { Translation } from '@/types/translation';
@@ -19,6 +20,7 @@ export interface CatalogDetailsLabels {
  */
 export const useCatalogDetailsLabels = (): CatalogDetailsLabels => {
   const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t: tCommon } = useTranslation(Translation.Common);
 
   return useMemo(() => {
     const author = t(QuickAppEditorI18nKeys.SkillAuthor);
@@ -58,7 +60,6 @@ export const useCatalogDetailsLabels = (): CatalogDetailsLabels => {
           tableScrollRegionAriaLabel: t(QuickAppEditorI18nKeys.MarkdownTableScrollRegion),
           mathScrollRegionAriaLabel: t(QuickAppEditorI18nKeys.MarkdownMathScrollRegion),
         },
-        folderPath: t(QuickAppEditorI18nKeys.FolderPathAriaLabel),
         contentFiles: {
           selector: t(QuickAppEditorI18nKeys.ContentFileSelectorAriaLabel),
           count: (count: number) =>
@@ -77,6 +78,31 @@ export const useCatalogDetailsLabels = (): CatalogDetailsLabels => {
           responseSchemaLabel: t(QuickAppEditorI18nKeys.ConnectResponseSchema),
           copyAriaLabel: t(QuickAppEditorI18nKeys.ConnectCopy),
           copiedStatusLabel: t(QuickAppEditorI18nKeys.MarkdownCopiedCode),
+        },
+        header: {
+          hasPrimaryAction: false,
+          loginActionLabel: t(QuickAppEditorI18nKeys.LoginToolsetAction),
+          logoutActionLabel: t(QuickAppEditorI18nKeys.LogoutToolsetAction),
+          apiKeyActionLabel: t(QuickAppEditorI18nKeys.ApiKeyLabel),
+          changeApiKeyActionLabel: t(QuickAppEditorI18nKeys.ToolsetChangeApiKeyAction),
+          personalApiKeyPanelTitle: t(QuickAppEditorI18nKeys.PersonalApiKeyTitle),
+          personalApiKeyAddedMessage: t(QuickAppEditorI18nKeys.PersonalApiKeyAdded),
+          apiKeyFieldLabel: t(QuickAppEditorI18nKeys.ApiKeyLabel),
+          apiKeyHeaderHint: (header: string) =>
+            t(QuickAppEditorI18nKeys.ApiKeyHeaderHint, { header }),
+          apiKeyRequiredErrorMessage: t(QuickAppEditorI18nKeys.ApiKeyRequired),
+          addApiKeyActionLabel: tCommon(CommonI18nKeys.Add),
+          addingApiKeyStatusLabel: t(QuickAppEditorI18nKeys.ApiKeyAdding),
+          apiKeyAddedLabel: (when: string) => t(QuickAppEditorI18nKeys.ApiKeyAddedWhen, { when }),
+          // The popover's "Delete" removes the API key; the same word as the footer's Delete.
+          deleteActionLabel: t(QuickAppEditorI18nKeys.RemoveSkillFromApp),
+          deletingStatusLabel: t(QuickAppEditorI18nKeys.ApiKeyDeleting),
+          entityTypeLabels: {
+            [CatalogEntityType.Skill]: t(QuickAppEditorI18nKeys.SkillTypeLabel),
+            [CatalogEntityType.Toolset]: t(QuickAppEditorI18nKeys.ToolsetTypeLabel),
+            [CatalogEntityType.Agent]: t(QuickAppEditorI18nKeys.AgentTypeLabel),
+            [CatalogEntityType.Model]: t(QuickAppEditorI18nKeys.Model),
+          },
         },
       },
       mappers: {
@@ -136,5 +162,5 @@ export const useCatalogDetailsLabels = (): CatalogDetailsLabels => {
         },
       },
     };
-  }, [t]);
+  }, [t, tCommon]);
 };

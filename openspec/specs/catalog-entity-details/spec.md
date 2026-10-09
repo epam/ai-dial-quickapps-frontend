@@ -22,7 +22,7 @@ Which tabs show, and in what order, SHALL be decided by the catalog's exported t
 6. **Tools:** shown when `details.tools` is present.
 7. **Connect** (`ApiTab`): shown when `details.api` names a connectable endpoint and the app settings carry `dialCoreExternalUrl`; hidden otherwise (`isConnectHidden`). Its section, field and copy labels SHALL be translated through `quickAppEditor` (`ConnectTab`, `ConnectResourceSection`, `ConnectSnippetSection`, `ConnectModelId`, `ConnectEndpoint` (also the endpoint section title), `ConnectRequestExample`, `ConnectResponseSchema`, `ConnectCopy`, and `MarkdownCopiedCode` for the copied status).
 
-The popup SHALL open on the first tab. The popup shell stays as specified by `skills_catalog`, `toolsets_selection` and `agents_selection`: identity header, folder line, credentials / Connection / Credentials actions, status banner, Delete and Close.
+The popup SHALL open on the first tab. The popup shell stays as specified by `skills_catalog`, `toolsets_selection` and `agents_selection`: the catalog `DetailsHeader` (identity, folder path, toolset credentials action), the Connection / Credentials actions, Delete and Close.
 
 Tab-data state SHALL live in the popup, through the hook `useEntityDetails` (`src/hooks/use-entity-details.ts`) for skills, toolsets, agents and models alike. The hook wraps `useCatalogItemDetails` from `@epam/ai-dial-chat-hooks/catalog`, which dispatches skills to `useSkillItemDetails`. Switching tabs SHALL NOT refetch, and no new context SHALL be introduced. The catalog components SHALL be loaded with the popup through `React.lazy`.
 
@@ -155,3 +155,30 @@ The catalog tab row SHALL follow the ARIA tabs pattern. Its panels SHALL be reac
 - **THEN** the tab row SHALL run About → last tab from right to left
 - **AND** the Overview label column SHALL be at the start (right)
 - **AND** the popup shell SHALL keep Delete at the start and Close at the end
+
+### Requirement: Add-on details popups mirror the catalog details view
+
+The skill, toolset and agent details popups SHALL keep the ui-kit `Popup` shell (Delete at the start, Close at the end of the footer) and SHALL lay out their content as the catalog `DetailsPanel` details view does, with the components it uses:
+
+- **Header:** the catalog `DetailsHeader` from `@epam/ai-dial-catalog`: a 52 px icon, the type caption, the name with the version and the folder path, and the action row. The caption SHALL be translated per entity type through `texts.entityTypeLabels` (`SkillTypeLabel`, `ToolsetTypeLabel`, `AgentTypeLabel`, `Model`). `DetailsHeader` SHALL show only the toolset credentials action (`toolsets_selection`); Use in chat, Share, Publish, Edit, Download and the Manage menu SHALL be hidden.
+- **Actions this app owns** (agent Connection and Credentials) SHALL sit in a row under the header, indented by the icon width plus its gap (`ps-[60px]`).
+- **Sections:** the tab row and the tab panel SHALL follow, separated by the catalog's 16 px gap.
+- **Loading:** the loading indicator next to the tab row SHALL be the ui-kit `Skeleton` (one 72 px line) in a `role="status"` element labelled `quickAppEditor` `LoadingDetails`.
+- **Markdown:** `AboutTab` and `ContentTab` SHALL receive `markdownLabels` translated through `quickAppEditor` (`MarkdownCopyCode`, `MarkdownCopiedCode`, `MarkdownDownloadCode`, `MarkdownTableScrollRegion`, `MarkdownMathScrollRegion`), so no catalog English default is shown.
+- **Content files:** `ContentTab` SHALL receive the package files, the selection and the file-selector labels (`ContentFileSelectorAriaLabel`, `ContentFileCount`, `ContentFileLoading`, `ContentFileUnsupported`), as specified by `skills_catalog`.
+
+#### Scenario: Toolset header
+
+- **WHEN** the details popup opens for logged-out toolset `Figma` in `Organization / Design`
+- **THEN** the catalog header SHALL show a 52 px icon, the caption "Toolset", the name and the folder path "Organization / Design"
+- **AND** its credentials action SHALL be Log in, with no other header action
+
+#### Scenario: Loading skeleton
+
+- **WHEN** details are loading
+- **THEN** a skeleton line with accessible label `LoadingDetails` SHALL be shown next to the tab row
+
+#### Scenario: Translated Markdown controls
+
+- **WHEN** the About tab renders a code block
+- **THEN** its copy control SHALL be labelled with `quickAppEditor` `MarkdownCopyCode`

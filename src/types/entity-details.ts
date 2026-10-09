@@ -2,6 +2,7 @@ import type {
   AboutTabProps,
   ApiTabProps,
   CatalogDetailsTab,
+  ItemDetailsTexts,
   ToolsLabels,
 } from '@epam/ai-dial-catalog';
 import type {
@@ -36,9 +37,10 @@ export interface CatalogTabsLabels {
   failed: string;
   retry: string;
   markdown: CatalogMarkdownLabels;
-  folderPath: string;
   contentFiles: CatalogContentFileLabels;
   connect: CatalogConnectLabels;
+  /** The catalog `DetailsHeader`'s texts: type captions, credentials action and API-key popover. */
+  header: ItemDetailsTexts;
 }
 
 /** Labels of the catalog Connect tab (`ApiTab`). */

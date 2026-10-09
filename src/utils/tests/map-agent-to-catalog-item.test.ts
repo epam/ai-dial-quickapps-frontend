@@ -1,6 +1,7 @@
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { describe, expect, it } from 'vitest';
 
+import { DialEntityType } from '@/types/dial-entities';
 import type { DialModel } from '@/types/dial-entities';
 import { ResourceScope } from '@/types/resource-scope';
 import {
@@ -20,7 +21,7 @@ const makeAgent = (overrides: Partial<DialModel> = {}): DialModel => ({
   id: 'applications/public/research-agent',
   reference: 'applications/public/research-agent',
   name: 'Research Agent',
-  type: 'application',
+  type: DialEntityType.Application,
   ...overrides,
 });
 
@@ -35,7 +36,10 @@ describe('mapAgentToCatalogItem', () => {
 
   it('keeps the Model type for models', () => {
     expect(
-      mapAgentToCatalogItem(makeAgent({ id: 'gpt-4o', type: 'model', name: 'GPT-4o' }), OPTIONS),
+      mapAgentToCatalogItem(
+        makeAgent({ id: 'gpt-4o', type: DialEntityType.Model, name: 'GPT-4o' }),
+        OPTIONS,
+      ),
     ).toMatchObject({ type: CatalogEntityType.Model, folder: ['Organization'] });
   });
 
@@ -52,7 +56,9 @@ describe('canConfigureAgentTransport', () => {
   it('is true only for MCP-capable applications', () => {
     expect(canConfigureAgentTransport(makeAgent({ mcp: true }))).toBe(true);
     expect(canConfigureAgentTransport(makeAgent())).toBe(false);
-    expect(canConfigureAgentTransport(makeAgent({ type: 'model', mcp: true }))).toBe(false);
+    expect(canConfigureAgentTransport(makeAgent({ type: DialEntityType.Model, mcp: true }))).toBe(
+      false,
+    );
     expect(canConfigureAgentTransport(undefined)).toBe(false);
   });
 });

@@ -1,4 +1,4 @@
-import { EntityType } from '@epam/ai-dial-ui-kit';
+import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { FC, useCallback, useMemo } from 'react';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
@@ -63,8 +63,7 @@ export const SkillDetailsPopup: FC<SkillDetailsPopupProps> = ({
 
   return (
     <AddOnDetailsPopup
-      entityType={EntityType.Skill}
-      typeLabel={t(QuickAppEditorI18nKeys.SkillTypeLabel)}
+      entityType={CatalogEntityType.Skill}
       name={skill?.name ?? fallbackName}
       version={skill?.version}
       folder={folder}

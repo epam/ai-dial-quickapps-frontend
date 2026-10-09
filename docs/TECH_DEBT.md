@@ -12,8 +12,9 @@
 - [ ] react-hook-form usage - should get rid of it. In progress in change `remove-react-hook-form`:
   the root form and every section now run on `useQuickApp2Form` (the Context & Tools card moved into the Advanced Settings popup in `move-feature-toggles-to-advanced-settings`);
   only the dependency removal (tasks 5.x) is open.
-- [ ] need to review components, some seem to be unnecessary. (`AgentSkillsField` → `SkillsSelector` proxy is gone:
-  removed in the `redesign-skills-selection` change.)
+- [ ] need to review components, some seem to be unnecessary. No concrete candidate is known right
+  now (the last one, the `AgentSkillsField` → `SkillsSelector` proxy, was removed in
+  `redesign-skills-selection`); name one here before picking this up.
 - [x] Extract the model picker popup out of `components/Orchestrator/ModelField.tsx` into its own
   component — now `components/Orchestrator/ModelCatalogModal` (see the `redesign-model-picker-catalog-list` change).
 - [ ] Model picker upstream asks to ai-dial-chat `libs/catalog` / `libs/chat-shared` (from the
@@ -32,9 +33,9 @@
   `conversation_starters`, but it does not enable the starters settings (that needs both). Needs a
   product decision — either require both fields to save a starter, or enable the settings for any
   non-blank starter (see the `application_conversation-starters` spec, "Partially filled starter").
-- [ ] Conversation starters: `useQuickApp2Form` still exposes `updateStarter` / `removeStarter`, which
-  only the hook's own tests use since the starters modal edits a local draft
-  (`redesign-conversation-starters`). Remove them together with those tests.
+- [x] Conversation starters: `useQuickApp2Form` no longer exposes `updateStarter` / `removeStarter`
+  (only the hook's own tests used them since the starters modal edits a local draft). The starter
+  row behaviour stays covered by `src/utils/tests/conversation-starters.test.ts`.
 - [x] Add-ons: the same mock as the starters redesign is done: the Toolsets / Agents split in
   `split-agents-and-toolsets` and the Knowledge base row in `redesign-knowledge-base-addon`.
 - [ ] Toolsets / Agents follow-ups (from the `split-agents-and-toolsets` change):
@@ -100,19 +101,12 @@
   the raw call as a documented exception (see "API-layer exceptions and configuration keys" below).
   Switching changes the endpoint, so it needs its own OpenSpec change.
 - [ ] `src/types` follow-ups (left over from the constants/types clean-up):
-  - one `LoadStatus` enum (`idle`/`loading`/`ready`/`error`) in `src/types/load-status.ts`, replacing
-    three copies of that set: the string union `status` in `src/context/DataContext.tsx`,
-    `QuickApp2ModelStatus` (`src/types/quick-app-form.ts`) and `ManifestStatus`
-    (`src/types/skill-manifest.ts`). Then drop the string → enum `switch` in
-    `src/components/QuickApp2Form.tsx`;
-  - a `DialEntityType` enum for the `type` discriminant (`'model' | 'application' | 'toolset' |
-    'skill'`) on `DialModel`, `DialToolset` and `DialSkill` (`src/types/dial-entities.ts`). This
-    replaces the literal comparisons in `src/utils/get-add-on-kind.ts`,
-    `src/utils/map-agent-to-catalog-item.ts`, `ModelCatalogModal.tsx` and `src/form/quickApp2Form.ts`
-    (`split-agents-and-toolsets` replaced `components/common/AgentAndToolsetSelector/*`);
-  - rename the host-protocol `LocaleTextEntryDto` (`src/types/editor-messages.ts`), for example to
-    `HostLocaleTextEntry`, so it is not confused with chat-api's DTO of the same name, which
-    `src/utils/dial-client.ts` casts it to;
+  - done: one `LoadStatus` enum (`src/types/load-status.ts`) replaces the `DataContext` string union
+    and `QuickApp2ModelStatus`, and the string → enum `switch` in `QuickApp2Form.tsx` is gone; the
+    `DialEntityType` enum is the `type` discriminant of `DialModel`, `DialToolset` and `DialSkill`;
+    the host-protocol locale entry is now `HostLocaleTextEntry` (its redundant cast in
+    `dial-client.ts` is dropped). chat-api DTO `type` checks in `dial-client.ts` stay string
+    comparisons, since they compare the API's own type;
   - `src/types/quick-app-form.ts` imports `QuickApp2Form` from `@/form/quickApp2Form`, so types depend
     on the form layer. This resolves itself when zod is removed (`remove-react-hook-form`): define
     the form values interface in `src/types/` directly.
@@ -149,8 +143,8 @@ documentation correction.
 - [ ] **Runtime port and image policy** — reconcile the Vite development port with the Docker
   image default, and document whether the floating `development` image/client versions are
   local-only or an accepted deployment policy.
-- [ ] **Coverage status and target** — use one consistent description of the ratcheting
-  baseline, tested scope, and long-term 70% goal; do not describe 70% as the current gate.
+- [x] **Coverage status and target** — the "Test coverage" item above and `vitest.config.ts`
+  now agree: a fixed, hand-maintained 70% gate (branches held at 67 until they reach 70%).
 - [x] **Post-migration source map** — the candidate paths below point to the current `src/`
   tree; the deleted `src/app/api/**` routes are replaced by the chat-api client wrappers that
   took their place.
@@ -192,7 +186,8 @@ Track these dimensions separately for every capability:
 | `toolsets_login` | No | Yes | Partial | Planned |
 | `application_credentials` | No | Yes | Partial | Planned |
 | `skills_catalog` | Yes | Yes | Partial | Planned |
-| `catalog-entity-details` | In change `align-entity-details-with-catalog` | Yes | Yes | Planned |
+| `catalog-entity-details` | Yes | Yes | Yes | Planned |
+| `application_knowledge-base` | Yes | Yes | Partial | Planned |
 | `orchestrator_model-selection` | Yes | Yes | Partial | Planned |
 | `application_advanced-settings` | Yes | Yes | Partial | Planned |
 | `application_conversation-starters` | Yes | Yes | Partial | Planned |
@@ -217,7 +212,8 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 ### Application credentials (recent feature, git log: "feat: support application credentials #140")
 
-- src/utils/request-application-credentials.ts, ContextAndTools/DialAppConfigurationModal.tsx, ties to host-integration's
+- src/utils/request-application-credentials.ts, src/components/Agents/DialAppConfigurationModal/**,
+  src/components/Agents/AgentDetailsPopup/** (credentials mode), ties to host-integration's
   RequestApplicationCredentials message + applicationCredentials query param
 - Proposed: application_credentials (sibling of application_editing)
 

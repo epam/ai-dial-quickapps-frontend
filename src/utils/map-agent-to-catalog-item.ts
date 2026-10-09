@@ -2,6 +2,7 @@ import type { CatalogItem } from '@epam/ai-dial-catalog';
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 
 import type { DialModel } from '@/types/dial-entities';
+import { DialEntityType } from '@/types/dial-entities';
 import { doesAgentSupportMcp } from '@/utils/application';
 import {
   mapModelToCatalogItem,
@@ -14,7 +15,7 @@ import {
  * `getQuickApp2Toolsets`).
  */
 export const canConfigureAgentTransport = (agent?: DialModel): boolean =>
-  agent?.type === 'application' && doesAgentSupportMcp(agent);
+  agent?.type === DialEntityType.Application && doesAgentSupportMcp(agent);
 
 /**
  * Maps an agent — an application, MCP agent or model — to a catalog list row.
@@ -25,7 +26,7 @@ export const mapAgentToCatalogItem = (
   options: MapModelToCatalogItemOptions,
 ): CatalogItem => ({
   ...mapModelToCatalogItem(agent, options),
-  type: agent.type === 'model' ? CatalogEntityType.Model : CatalogEntityType.Agent,
+  type: agent.type === DialEntityType.Model ? CatalogEntityType.Model : CatalogEntityType.Agent,
   // The catalog's rule: an MCP agent's Connect tab shows its MCP endpoint.
   supportsMcp: doesAgentSupportMcp(agent),
 });

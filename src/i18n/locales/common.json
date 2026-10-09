@@ -28,8 +28,6 @@
   "Auth provider {{provider}} is not configured for this app": "Auth provider {{provider}} is not configured for this app",
   "Loading…": "Loading…",
   "(required)": "(required)",
-  "Show password": "Show password",
-  "Hide password": "Hide password",
   "Clear search": "Clear search",
   "Close dialog": "Close dialog",
   "dialFileManager": {
@@ -125,6 +123,5 @@
       "closeConfirm": "Close",
       "closeCancel": "Cancel"
     }
-  },
-  "Failed to update toolset credentials": "Failed to update toolset credentials"
+  }
 }

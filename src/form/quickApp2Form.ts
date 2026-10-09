@@ -17,6 +17,7 @@ import {
 } from '@/utils/application';
 import { decodeApiUrl, encodeApiUrl, isApplicationId, isToolsetId } from '@/utils/api';
 import type { DialAIEntityModel, LocalizedText } from '@/types/dial-entities';
+import { DialEntityType } from '@/types/dial-entities';
 import { getLocalizedText } from '@/utils/get-localized-text';
 import {
   AnyToolset,
@@ -378,8 +379,8 @@ export const getQuickApp2Toolsets = ({
           return acc;
         }
 
-        const isModel = entity.type === 'model';
-        const isApp = entity.type === 'application';
+        const isModel = entity.type === DialEntityType.Model;
+        const isApp = entity.type === DialEntityType.Application;
 
         if (isModel) {
           acc.dialDeploymentsToolsets.push({

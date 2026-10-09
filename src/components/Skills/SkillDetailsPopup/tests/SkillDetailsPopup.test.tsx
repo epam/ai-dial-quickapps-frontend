@@ -2,6 +2,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { DialEntityType } from '@/types/dial-entities';
 import type { DialSkill } from '@/types/dial-entities';
 
 import { SkillDetailsPopup } from '../SkillDetailsPopup';
@@ -23,7 +24,7 @@ const SKILL: DialSkill = {
   id: 'skills/public/research/user-research',
   reference: 'skills/public/research/user-research',
   name: 'User Research',
-  type: 'skill',
+  type: DialEntityType.Skill,
   description: 'Listing description',
   author: 'listing.author',
   updatedAt: Date.UTC(2025, 9, 7, 12),
@@ -85,7 +86,8 @@ const getTab = (name: string) =>
   [...document.querySelectorAll('[role="tab"]')].find((tab) => tab.textContent === name) as
     HTMLElement | undefined;
 
-const getTabNames = () => [...document.querySelectorAll('[role="tab"]')].map((tab) => tab.textContent);
+const getTabNames = () =>
+  [...document.querySelectorAll('[role="tab"]')].map((tab) => tab.textContent);
 
 const click = async (element?: HTMLElement) => {
   expect(element).toBeTruthy();

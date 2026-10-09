@@ -6,8 +6,6 @@ import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { getQuickApp2FormData } from '@/form/quickApp2Form';
 import { useQuickApp2Form } from '@/hooks/use-quick-app2-form';
-import type { QuickApp2ModelStatus } from '@/types/quick-app-form';
-import { QuickApp2ModelStatus as ModelStatus } from '@/types/quick-app-form';
 import type { TriggerSaveGeneralPayload } from '@/types/editor-messages';
 import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import type { QuickApp2Config } from '@/types/quick-apps';
@@ -79,25 +77,12 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     removeDocument,
   } = useQuickApp2Form({ defaultValues });
 
-  const modelStatus = useMemo<QuickApp2ModelStatus>(() => {
-    switch (status) {
-      case 'loading':
-        return ModelStatus.Loading;
-      case 'ready':
-        return ModelStatus.Ready;
-      case 'error':
-        return ModelStatus.Error;
-      default:
-        return ModelStatus.Idle;
-    }
-  }, [status]);
-
   const existingModelId = (app.applicationProperties as QuickApp2Config | undefined)?.orchestrator
     ?.deployment?.deployment_id;
 
   useEffect(() => {
     syncExternalState({
-      modelStatus,
+      modelStatus: status,
       toolSupportingModelIds,
       availableModelIds,
       existingModelId,
@@ -110,8 +95,8 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   }, [
     availableModelIds,
     existingModelId,
-    modelStatus,
     settings.defaultModelId,
+    status,
     settings.isAddAttachmentEnabled,
     settings.isCodeInterpreterEnabled,
     settings.isWebFetchEnabled,
@@ -246,7 +231,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
           conversationStarters={conversationStarters}
           onConversationStartersSave={handleConversationStartersSave}
         />
-
       </div>
 
       <ModelConfigurationSection

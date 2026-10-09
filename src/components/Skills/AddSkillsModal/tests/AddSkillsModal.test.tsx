@@ -3,6 +3,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 
 import type { CatalogItem } from '@epam/ai-dial-catalog';
+import { DialEntityType } from '@/types/dial-entities';
 import type { DialSkill } from '@/types/dial-entities';
 
 import { AddSkillsModal } from '../AddSkillsModal';
@@ -169,7 +170,7 @@ const makeSkill = (id: string, name: string, overrides: Partial<DialSkill> = {})
   id,
   reference: id,
   name,
-  type: 'skill',
+  type: DialEntityType.Skill,
   ...overrides,
 });
 

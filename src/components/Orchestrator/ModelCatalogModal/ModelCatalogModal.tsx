@@ -21,6 +21,8 @@ import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useDataContext } from '@/context/DataContext';
 import { useGridRowKeyboardSelect } from '@/hooks/use-grid-row-keyboard-select';
 import { useTranslation } from '@/hooks/use-translation';
+import { DialEntityType } from '@/types/dial-entities';
+import { LoadStatus } from '@/types/load-status';
 import { ResourceScope } from '@/types/resource-scope';
 import { Translation } from '@/types/translation';
 import { isHiddenDialFolderId } from '@/utils/api';
@@ -68,7 +70,7 @@ export const ModelCatalogModal: FC<ModelCatalogModalProps> = ({ value, onConfirm
   const [sortKey, setSortKey] = useState<string>(CatalogSortKey.RecentlyUpdated);
   const [selectedId, setSelectedId] = useState(value);
 
-  const isReady = status === 'ready';
+  const isReady = status === LoadStatus.Ready;
 
   const scopeLabels = useMemo(
     () => ({
@@ -84,7 +86,10 @@ export const ModelCatalogModal: FC<ModelCatalogModalProps> = ({ value, onConfirm
   const items = useMemo(
     () =>
       models
-        .filter((m) => m.type === 'model' && !!m.features?.tools && !isHiddenDialFolderId(m.id))
+        .filter(
+          (m) =>
+            m.type === DialEntityType.Model && !!m.features?.tools && !isHiddenDialFolderId(m.id),
+        )
         .map((m) => mapModelToCatalogItem(m, { language, userBucket, scopeLabels })),
     [models, language, userBucket, scopeLabels],
   );
@@ -148,7 +153,7 @@ export const ModelCatalogModal: FC<ModelCatalogModalProps> = ({ value, onConfirm
   );
 
   const renderList = (): ReactNode => {
-    if (status === 'loading' || status === 'idle') {
+    if (status === LoadStatus.Loading || status === LoadStatus.Idle) {
       return (
         <div className="flex items-center justify-center py-16">
           <Spinner
@@ -160,7 +165,7 @@ export const ModelCatalogModal: FC<ModelCatalogModalProps> = ({ value, onConfirm
       );
     }
 
-    if (status === 'error') {
+    if (status === LoadStatus.Error) {
       return (
         <div className="flex flex-col items-center justify-center gap-3 py-8">
           <NoDataContent

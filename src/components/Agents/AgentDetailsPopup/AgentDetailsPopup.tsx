@@ -1,8 +1,9 @@
-import { DIAL_ICON_SIZE, DIAL_KIT_ICON_STROKE, EntityType, GhostButton } from '@epam/ai-dial-ui-kit';
+import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
+import { DIAL_ICON_SIZE, DIAL_KIT_ICON_STROKE, GhostButton } from '@epam/ai-dial-ui-kit';
 import { IconKey, IconSettings } from '@tabler/icons-react';
 import { FC, useCallback, useMemo, useState } from 'react';
 
-import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { useApplicationAuthentication } from '@/hooks/use-application-authentication';
@@ -11,11 +12,11 @@ import { useScopeLabels } from '@/hooks/use-scope-labels';
 import { useSearchParams } from '@/hooks/use-search-params';
 import { useTranslation } from '@/hooks/use-translation';
 import type { DialModel } from '@/types/dial-entities';
+import { DialEntityType } from '@/types/dial-entities';
 import type { DialAppTransportType } from '@/types/quick-apps';
 import { Translation } from '@/types/translation';
 import { getCatalogFolder } from '@/utils/entity-scope';
 import { getAddOnDisplay } from '@/utils/get-add-on-display';
-import { getEntityStatus, getEntityStatusMessage } from '@/utils/get-entity-status';
 import {
   canConfigureAgentTransport,
   mapAgentToCatalogItem,
@@ -54,7 +55,6 @@ export const AgentDetailsPopup: FC<AgentDetailsPopupProps> = ({
   onClose,
 }) => {
   const { t, language } = useTranslation(Translation.QuickAppEditor);
-  const { t: tCommon } = useTranslation(Translation.Common);
   const { settings } = useAppContext();
   const { userBucket } = useDataContext();
   const searchParams = useSearchParams();
@@ -62,14 +62,16 @@ export const AgentDetailsPopup: FC<AgentDetailsPopupProps> = ({
   const [isConfiguring, setIsConfiguring] = useState(false);
 
   const { name, version, iconUrl } = getAddOnDisplay(agentId, agent, language);
-  const isModel = agent?.type === 'model';
+  const isModel = agent?.type === DialEntityType.Model;
   const isEditable = !isReadonly && agent != null;
   const canConfigure = isEditable && canConfigureAgentTransport(agent);
   // Same gate as before the redesign: the host advertises credential forms
   // with `applicationCredentials=true`, and only apps behind auth need them.
   const isCredentialsMode = searchParams.get('applicationCredentials') === 'true';
   const needsAuthentication = useApplicationAuthentication(
-    isEditable && isCredentialsMode && agent?.type === 'application' ? agentId : undefined,
+    isEditable && isCredentialsMode && agent?.type === DialEntityType.Application
+      ? agentId
+      : undefined,
   );
 
   const folder = useMemo(
@@ -89,16 +91,6 @@ export const AgentDetailsPopup: FC<AgentDetailsPopupProps> = ({
     () => (listingItem == null ? undefined : { ...listingItem, details }),
     [listingItem, details],
   );
-
-  const banner =
-    agent == null
-      ? undefined
-      : getEntityStatusMessage(
-          getEntityStatus(agent, agentId),
-          true,
-          tCommon,
-          tCommon(CommonI18nKeys.AgentEntityType),
-        );
 
   const handleDelete = useCallback(() => {
     onRemove(agentId);
@@ -132,16 +124,12 @@ export const AgentDetailsPopup: FC<AgentDetailsPopupProps> = ({
   return (
     <>
       <AddOnDetailsPopup
-        entityType={isModel ? EntityType.Model : EntityType.Agent}
-        typeLabel={t(
-          isModel ? QuickAppEditorI18nKeys.Model : QuickAppEditorI18nKeys.AgentTypeLabel,
-        )}
+        entityType={isModel ? CatalogEntityType.Model : CatalogEntityType.Agent}
         name={name}
         version={version}
         iconUrl={iconUrl}
         folder={folder}
         actions={actions || undefined}
-        banner={banner}
         item={item}
         detailsStatus={status}
         onRetry={retry}

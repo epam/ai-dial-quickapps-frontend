@@ -2,6 +2,7 @@ import { CredentialStatus, ToolsetAuthenticationType } from '@epam/ai-dial-catal
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { describe, expect, it } from 'vitest';
 
+import { DialEntityType } from '@/types/dial-entities';
 import { type DialToolset, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
 import { ResourceScope } from '@/types/resource-scope';
 import {
@@ -21,7 +22,7 @@ const makeToolset = (overrides: Partial<DialToolset> = {}): DialToolset => ({
   id: 'toolsets/public/figma',
   reference: 'toolsets/public/figma',
   name: 'Figma',
-  type: 'toolset',
+  type: DialEntityType.Toolset,
   ...overrides,
 });
 
@@ -110,4 +111,3 @@ describe('mapToolsetCredentials', () => {
     ).toBeUndefined();
   });
 });
-
