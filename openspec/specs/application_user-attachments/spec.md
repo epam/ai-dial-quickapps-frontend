@@ -168,8 +168,8 @@ The section component SHALL be wrapped in `React.memo`, and its derived suggesti
 - **WHEN** the editor is read-only
 - **THEN** the switch and the input SHALL be disabled, tags SHALL have no remove control, and form state SHALL NOT change
 
-#### Scenario: Right-to-left locale
-- **WHEN** the active locale is Arabic
+#### Scenario: Right-to-left document
+- **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
 - **THEN** the switch SHALL be at the left (trailing) edge of the row and the title at the right (leading) edge
 - **AND** each suggestion SHALL show its name on the right and its MIME type on the left
 - **AND** no icon SHALL be mirrored

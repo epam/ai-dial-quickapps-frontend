@@ -70,21 +70,26 @@ const ThemeProvider: FC<ThemeProviderProps> = ({ children }) => {
     };
   }, []);
 
-  // Fetch theme configuration — this URL is already chat-api's own native
-  // theme-config endpoint (Appendix A), so only the transport (chatApiFetch
-  // over plain fetch) changes here.
+  // Fetch theme configuration from chat-api's theme-config endpoint, through
+  // chatApiFetch (a deliberate raw call; chat-api-client has a typed ThemesApi).
   useEffect(() => {
+    let isCancelled = false;
     const loadThemes = async () => {
       try {
         const res = await chatApiFetch(THEMES_URL);
-        setConfig((await res.json()) as ThemeConfiguration);
+        if (!res.ok) throw new Error(`Failed to load themes (${res.status})`);
+        const data = (await res.json()) as ThemeConfiguration;
+        if (!isCancelled) setConfig(data);
       } catch {
-        // silently fall back to CSS-var defaults already in globals.css
+        // Silently fall back to the `var(--x, default)` values in tailwind.config.js.
       } finally {
-        setIsLoading(false);
+        if (!isCancelled) setIsLoading(false);
       }
     };
     void loadThemes();
+    return () => {
+      isCancelled = true;
+    };
   }, []);
 
   // Priority: query param > user choice; system resolves to OS preference

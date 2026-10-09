@@ -34,7 +34,7 @@ Use the `@/*` path alias (resolves to `src/`) for all imports that would otherwi
 This repo uses [OpenSpec](https://github.com/Fission-AI/OpenSpec) for spec-driven development. See `docs/TECH_DEBT.md` for why and the rollout status.
 
 - `openspec/config.yaml` — schema, repo context, and the "Specs organization" naming rules.
-- `openspec/specs/` — the current, agreed behaviour, one capability per folder. Written so far: `host-integration`, `auth`. Not every capability has a spec yet — `docs/TECH_DEBT.md`'s "OpenSpec spec creation candidates" list is the first place to check before adding a new spec-id.
+- `openspec/specs/` — the current, agreed behaviour, one capability per folder. Every capability in `docs/TECH_DEBT.md`'s "OpenSpec coverage matrix" has a spec; check that matrix and `openspec/specs/` before adding a new spec-id.
 - `openspec/changes/` — in-flight change proposals (design + delta specs + tasks) before they're archived into `openspec/specs/`.
 
 **New work starts from a spec change, not from code:**
@@ -113,7 +113,7 @@ Place enums in `src/types/` or `src/constants/`.
 
 All UI must support Arabic (`ar`) and any other right-to-left locale. Arabic changes the visual direction of the entire UI.
 
-The `<html dir>` attribute must be set dynamically from `src/components/I18nProvider/I18nProvider.tsx` (mounted in `main.tsx`) when the active locale is RTL. See `.claude/rules/rtl.md` for the full ruleset — it applies to every file.
+The `<html dir>` attribute is set dynamically from `src/components/I18nProvider/I18nProvider.tsx` (mounted in `main.tsx`) through `i18n.dir()`. Only English ships today, so `dir` is `ltr` in production, but every UI change must still work in RTL. See `.claude/rules/rtl.md` for the full ruleset — it applies to every file — and the `i18n` spec for what ships.
 
 ## @epam/ai-dial-ui-kit MCP tools
 

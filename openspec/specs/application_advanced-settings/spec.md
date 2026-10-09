@@ -116,8 +116,8 @@ The popup controls SHALL be keyboard-operable and named, and SHALL follow the do
 - **THEN** the popup SHALL be at most `586px` wide, so the Temperature slider and its value input fit on one row
 - **AND** below the breakpoint it SHALL use the full available width without horizontal overflow
 
-#### Scenario: Right-to-left locale
-- **WHEN** the active locale is RTL
+#### Scenario: Right-to-left document
+- **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
 - **THEN** labels, hints, and switches SHALL align to the logical start edge using logical spacing
 - **AND** the slider SHALL fill from the logical start edge, and the temperature value input SHALL sit on the logical end side of the track
 - **AND** no icon in the popup body SHALL be mirrored

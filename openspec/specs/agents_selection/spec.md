@@ -38,9 +38,9 @@ The Agents row SHALL list the attached agents in `addOns` order. It SHALL use th
 
 **Status line.** Below the name, the item SHALL show the `getEntityStatusMessage` text (read-only wording) when the agent is not found in the catalog, or is deploying, undeploying, redeploying or undeployed.
 
-**Details button.** Each item SHALL hold a button named by `quickAppEditor` key `SkillDetails` with `{{name}}`. Activating it SHALL open the agent details popup.
+**Details button.** Each item SHALL hold a button named by `quickAppEditor` key `AddOnDetails` with `{{name}}`. Activating it SHALL open the agent details popup.
 
-**Remove button.** In an editable application, each item SHALL hold a hover/focus-revealed trash button named by `quickAppEditor` key `RemoveSkill` with `{{name}}`. It SHALL have the same visibility, tab-order, removal and refocus behaviour as the Toolsets row.
+**Remove button.** In an editable application, each item SHALL hold a hover/focus-revealed trash button named by `quickAppEditor` key `RemoveAddOn` with `{{name}}`. It SHALL have the same visibility, tab-order, removal and refocus behaviour as the Toolsets row.
 
 **Not rendered.** Items SHALL NOT render a chip box, a tooltip, or a configure (gear) or credentials button. Those actions live in the details popup.
 
@@ -113,7 +113,7 @@ The popup SHALL open on About.
 
 **Footer:**
 
-- **Delete** (`quickAppEditor` `RemoveSkillFromApp`, "Delete"; danger, outlined, leading trash icon) at the start edge;
+- **Delete** (`quickAppEditor` `RemoveAddOnFromApp`, "Delete"; danger, outlined, leading trash icon) at the start edge;
 - **Close** at the end edge.
 
 The popup SHALL be loaded with `React.lazy`.
@@ -262,7 +262,7 @@ The Agents row's Add action SHALL open the **Add agent** popup. It SHALL match t
   - without the application being edited (`getEntityIdWithoutVersion(app.id)`), so it can't call itself;
   - mapped by `mapAgentToCatalogItem`, with item type `Model` for models and `Agent` otherwise.
 - **List:** `ListView` uses `type={CatalogEntityType.Agent}`, multi-select and `isReadonly`.
-- **Checkbox names:** row checkboxes use `SelectSkill`; select-all uses `SelectAllAgents`.
+- **Checkbox names:** row checkboxes use `SelectAddOn`; select-all uses `SelectAllAgents`.
 - **States:** the loading label is `LoadingAgents`, the error title `FailedToLoadAgents`, and the empty-catalog title `NoAgentsAvailable`.
 - **Pre-check:** only attached agent ids start checked.
 - **Add** SHALL apply `applyCatalogSelection` to the full `addOns` id list:
@@ -304,9 +304,9 @@ The Agents row, the Add agent popup and the agent details popup SHALL be keyboar
 - **THEN** focus SHALL be inside the dialog, the tabs (including Settings) SHALL follow the ARIA tabs pattern, and Credentials, the tab panel's controls, Delete and Close SHALL be reachable with Tab in reading order
 - **AND** in Settings, "Connect via" SHALL be a radio group named "Connect via" whose options are selected with the arrow keys
 
-#### Scenario: Right-to-left locale
+#### Scenario: Right-to-left document
 
-- **WHEN** `document.documentElement.dir` is `rtl`
+- **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
 - **THEN** row items SHALL run avatar → name → version from right to left with the trash button at the end (left)
 - **AND** in the popup Delete SHALL be at the start (right) and Close at the end (left)
 - **AND** the Credentials row and the Settings radio controls SHALL sit at the start (right), using logical properties only

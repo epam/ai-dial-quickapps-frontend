@@ -57,8 +57,8 @@ const SkillsList: FC<SkillsListProps> = ({ value, isReadonly, onRemove }) => {
                 id={id}
                 name={name}
                 version={skill?.version}
-                detailsLabel={t(QuickAppEditorI18nKeys.SkillDetails, { name })}
-                removeLabel={t(QuickAppEditorI18nKeys.RemoveSkill, { name })}
+                detailsLabel={t(QuickAppEditorI18nKeys.AddOnDetails, { name })}
+                removeLabel={t(QuickAppEditorI18nKeys.RemoveAddOn, { name })}
                 onClick={setOpenSkillId}
                 onRemove={isReadonly ? undefined : handleRemove}
               />

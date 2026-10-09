@@ -73,7 +73,7 @@ export const SkillDetailsPopup: FC<SkillDetailsPopupProps> = ({
       onLoadContentFile={onLoadContentFile}
       unavailableText={skill == null ? t(QuickAppEditorI18nKeys.SkillUnavailable) : undefined}
       isReadonly={isReadonly}
-      deleteLabel={t(QuickAppEditorI18nKeys.RemoveSkillFromApp)}
+      deleteLabel={t(QuickAppEditorI18nKeys.RemoveAddOnFromApp)}
       onDelete={handleDelete}
       onClose={onClose}
     />
