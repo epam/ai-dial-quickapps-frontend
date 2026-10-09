@@ -1,3 +1,4 @@
+import { NotificationVariant } from '@epam/ai-dial-ui-kit';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -154,5 +155,38 @@ describe('FileManagerModal upload queue', () => {
 
     expect(clearUploadBatch).not.toHaveBeenCalled();
     expect(document.body.textContent).toContain(DialFileManagerI18nKeys.QueueCloseConfirmHeader);
+  });
+});
+
+describe('FileManagerModal notifications', () => {
+  const liveRegion = () => dialog().querySelector('[aria-live="polite"][aria-atomic="true"]');
+  const notify = (notification: { variant: NotificationVariant; message: string }) => {
+    const { onNotification } = vi.mocked(useDialFileSources).mock.calls[0][0];
+    act(() => onNotification?.(notification));
+  };
+
+  it('renders the polite live region before any notification appears', () => {
+    renderWith(null);
+
+    expect(liveRegion()).not.toBeNull();
+    expect(liveRegion()?.textContent).toBe('');
+  });
+
+  it('announces an error notification as an alert inside the live region', () => {
+    renderWith(null);
+
+    notify({ variant: NotificationVariant.Error, message: 'Failed to create folder' });
+
+    const alert = liveRegion()?.querySelector('[role="alert"]');
+    expect(alert?.textContent).toBe('Failed to create folder');
+  });
+
+  it('announces a success notification politely, without the alert role', () => {
+    renderWith(null);
+
+    notify({ variant: NotificationVariant.Success, message: 'Uploaded' });
+
+    expect(liveRegion()?.textContent).toBe('Uploaded');
+    expect(liveRegion()?.querySelector('[role="alert"]')).toBeNull();
   });
 });

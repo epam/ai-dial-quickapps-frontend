@@ -160,15 +160,16 @@ OpenSpec change).
   - Deleting an ancestor of the open folder moves up only one level.
   - Listings never page past `limit: 1000`.
   - A mixed or fully cancelled upload shows the success message.
-  - Notifications have no live region, and the conflict confirm label is "Attach".
-  - `FolderNameReserved` can never fire.
+  - The conflict confirm label is "Attach".
+  - done (change `fix-file-manager-and-theme-load-defects`): notifications are announced through a
+    live region, and `.dial_folder` reports `FolderNameReserved`.
   - The forbidden-symbols tooltip omits the backslash and control characters the kit also forbids.
   - Sanitizing runs in `onValidateUpload` instead of `prepareUploadFileName`.
 - [ ] **Themes** — a failed theme load leaves a light page with a dark Markdown editor
-      (`InstructionsSection.tsx:28`); `setTheme` has no caller; a non-OK response is not checked;
-      the fetch has no cancelled flag; the fallback comment names a `globals.css` that does not
-      exist. Switching to the typed `ThemesApi` would not change the endpoint (both call
-      `GET /api/themes`), contrary to the Themes item above.
+      (`InstructionsSection.tsx:28`); `setTheme` has no caller. Switching to the typed `ThemesApi`
+      would not change the endpoint (both call `GET /api/themes`), contrary to the Themes item
+      above. (A non-OK response now falls back and a late response after unmount is discarded —
+      change `fix-file-manager-and-theme-load-defects`.)
 - [x] **i18n and RTL docs** — `.claude/rules/rtl.md` and AGENTS.md now describe the real layout
       (per-namespace locale files, `i18n.dir()`, no language selector, English only so `dir` is
       `ltr` in production, `index.html`'s `lang="en"` as the pre-mount default).

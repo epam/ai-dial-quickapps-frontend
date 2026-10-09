@@ -35,8 +35,12 @@ const CONFIG: ThemeConfiguration = {
   },
 };
 
-const jsonResponse = (body: unknown): Response =>
-  ({ json: () => Promise.resolve(body) }) as unknown as Response;
+const jsonResponse = (body: unknown, status = 200): Response =>
+  ({
+    ok: status >= 200 && status < 300,
+    status,
+    json: () => Promise.resolve(body),
+  }) as unknown as Response;
 
 let root: Root;
 let container: HTMLDivElement;
@@ -155,6 +159,8 @@ describe('ThemeProvider', () => {
 
     it('writes no custom property when the body is not JSON', async () => {
       chatApiFetchMock.mockResolvedValue({
+        ok: true,
+        status: 200,
         json: () => Promise.reject(new SyntaxError('Unexpected token <')),
       } as unknown as Response);
 
@@ -164,6 +170,38 @@ describe('ThemeProvider', () => {
       expect(ctx().themes).toEqual([]);
       expect(ctx().currentTheme).toBeUndefined();
       expect(document.documentElement.style.length).toBe(0);
+    });
+
+    it('does not keep an error-status body as the configuration', async () => {
+      chatApiFetchMock.mockResolvedValue(jsonResponse({ ...CONFIG, error: 'unavailable' }, 503));
+
+      await renderProvider();
+
+      expect(ctx().isLoading).toBe(false);
+      expect(ctx().themes).toEqual([]);
+      expect(ctx().currentTheme).toBeUndefined();
+      expect(document.documentElement.style.length).toBe(0);
+    });
+
+    it('discards a response that arrives after the provider unmounts', async () => {
+      let resolveFetch: (res: Response) => void = () => undefined;
+      chatApiFetchMock.mockReturnValue(
+        new Promise<Response>((resolve) => {
+          resolveFetch = resolve;
+        }),
+      );
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      await renderProvider();
+
+      act(() => root.unmount());
+      await act(async () => {
+        resolveFetch(jsonResponse(CONFIG));
+      });
+
+      expect(document.documentElement.style.length).toBe(0);
+      expect(consoleError).not.toHaveBeenCalled();
+      consoleError.mockRestore();
+      root = createRoot(container);
     });
 
     it('exposes no current theme when the configuration has an empty themes array', async () => {
