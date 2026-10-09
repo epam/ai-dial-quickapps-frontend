@@ -11,6 +11,7 @@ import type {
   PromptOverviewLabels,
   SkillOverviewLabels,
 } from '@epam/ai-dial-chat-hooks/catalog';
+import type { ReactNode } from 'react';
 
 /** Load state of an add-on's catalog details (Overview, Pricing, Limits, Tools…). */
 export enum DetailsStatus {
@@ -21,12 +22,24 @@ export enum DetailsStatus {
   Error = 'error',
 }
 
-/** The tabs a details popup can show — every catalog tab. */
-export type AddOnDetailsTab = CatalogDetailsTab;
+/** This app's own details tabs, shown after the catalog tabs. */
+export enum AppDetailsTab {
+  Settings = 'settings',
+}
+
+/** The tabs a details popup can show — every catalog tab, then this app's own. */
+export type AddOnDetailsTab = CatalogDetailsTab | AppDetailsTab;
+
+/** An app-owned details tab, with its label already translated. */
+export interface AddOnAppTab {
+  id: AppDetailsTab;
+  label: string;
+  content: ReactNode;
+}
 
 /** Texts the catalog tab components render, in the details popup shell. */
 export interface CatalogTabsLabels {
-  tabs: Record<AddOnDetailsTab, string>;
+  tabs: Record<CatalogDetailsTab, string>;
   yes: string;
   no: string;
   tools: Partial<ToolsLabels>;

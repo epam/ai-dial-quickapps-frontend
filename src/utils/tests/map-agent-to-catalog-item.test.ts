@@ -5,6 +5,7 @@ import { DialEntityType } from '@/types/dial-entities';
 import type { DialModel } from '@/types/dial-entities';
 import { ResourceScope } from '@/types/resource-scope';
 import {
+  canChooseAgentTransport,
   canConfigureAgentTransport,
   mapAgentToCatalogItem,
 } from '@/utils/map-agent-to-catalog-item';
@@ -60,5 +61,31 @@ describe('canConfigureAgentTransport', () => {
       false,
     );
     expect(canConfigureAgentTransport(undefined)).toBe(false);
+  });
+});
+
+describe('canChooseAgentTransport', () => {
+  const mcpApp = makeAgent({ mcp: true });
+
+  it('is true for an MCP application that also serves chat completion', () => {
+    expect(canChooseAgentTransport(mcpApp, { [mcpApp.id]: mcpApp })).toBe(true);
+  });
+
+  it('is false for an MCP-only application', () => {
+    expect(canChooseAgentTransport(mcpApp, {})).toBe(false);
+  });
+
+  it('is false for an application without MCP', () => {
+    const app = makeAgent();
+    expect(canChooseAgentTransport(app, { [app.id]: app })).toBe(false);
+  });
+
+  it('is false for a model', () => {
+    const model = makeAgent({ id: 'gpt-4o', type: DialEntityType.Model, mcp: true });
+    expect(canChooseAgentTransport(model, { [model.id]: model })).toBe(false);
+  });
+
+  it('is false without an agent', () => {
+    expect(canChooseAgentTransport(undefined, { [mcpApp.id]: mcpApp })).toBe(false);
   });
 });

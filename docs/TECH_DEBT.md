@@ -3,22 +3,22 @@
 - [x] Use typescript-sdk for call to Core instead of hardcoded endpoints
 - [x] Add OpenSpec and start using SDD. `openspec/` is initialised (see `openspec/config.yaml`, `AGENTS.md`'s "Spec-driven development" section) and new work now starts from a spec change. Coverage of old functionality is still in progress — see the coverage matrix below for which capabilities have a spec and the candidates list for what's left.
 - [ ] Test coverage - `@vitest/coverage-v8` is wired up (`vitest.config.ts`), enforced by `npm test`
-  (now runs with `--coverage`, so it fails the build below threshold — use `npm run test:watch` for
-  a plain watch-mode run without coverage) across all of `src/**/*.{ts,tsx}`. The thresholds are
-  a fixed 70% for statements, functions and lines, maintained by hand (no `autoUpdate`). Branches
-  are at 67.73% as of 2026-10-08, so that threshold is held at 67 until branch coverage reaches
-  70%. Closing the gap is still open work; see `openspec/specs/` / `openspec/changes/` for
-  tracking individual pieces of it as they're picked up.
+      (now runs with `--coverage`, so it fails the build below threshold — use `npm run test:watch` for
+      a plain watch-mode run without coverage) across all of `src/**/*.{ts,tsx}`. The thresholds are
+      a fixed 70% for statements, functions and lines, maintained by hand (no `autoUpdate`). Branches
+      are at 67.73% as of 2026-10-08, so that threshold is held at 67 until branch coverage reaches
+      70%. Closing the gap is still open work; see `openspec/specs/` / `openspec/changes/` for
+      tracking individual pieces of it as they're picked up.
 - [ ] react-hook-form usage - should get rid of it. In progress in change `remove-react-hook-form`:
-  the root form and every section now run on `useQuickApp2Form` (the Context & Tools card moved into the Advanced Settings popup in `move-feature-toggles-to-advanced-settings`);
-  only the dependency removal (tasks 5.x) is open.
+      the root form and every section now run on `useQuickApp2Form` (the Context & Tools card moved into the Advanced Settings popup in `move-feature-toggles-to-advanced-settings`);
+      only the dependency removal (tasks 5.x) is open.
 - [ ] need to review components, some seem to be unnecessary. No concrete candidate is known right
-  now (the last one, the `AgentSkillsField` → `SkillsSelector` proxy, was removed in
-  `redesign-skills-selection`); name one here before picking this up.
+      now (the last one, the `AgentSkillsField` → `SkillsSelector` proxy, was removed in
+      `redesign-skills-selection`); name one here before picking this up.
 - [x] Extract the model picker popup out of `components/Orchestrator/ModelField.tsx` into its own
-  component — now `components/Orchestrator/ModelCatalogModal` (see the `redesign-model-picker-catalog-list` change).
+      component — now `components/Orchestrator/ModelCatalogModal` (see the `redesign-model-picker-catalog-list` change).
 - [ ] Model picker upstream asks to ai-dial-chat `libs/catalog` / `libs/chat-shared` (from the
-  `redesign-model-picker-catalog-list` change):
+      `redesign-model-picker-catalog-list` change):
   - a `Toolbar` prop to hide the grid/list toggle, so the picker can use `Toolbar` instead of its own heading row;
   - Enter/Space row activation in `ListView` (then drop `hooks/use-grid-row-keyboard-select.ts`);
   - `enableRtl` in `ListView` — its ag-grid columns do not follow `dir="rtl"` today;
@@ -27,17 +27,17 @@
     content, so `ModelCatalogModal` overrides it via the `_selectedRow_` class prefix; drop that
     override once fixed.
 - [x] Auth screens other than the sign-in prompt - `ForbiddenPage` and `AuthError` now share
-  `LoginScreen`'s layout (`components/common/AuthStateScreen`), use 2.0 buttons and take all copy from
-  `common` i18n keys (see the `redesign-auth-state-screens` change).
+      `LoginScreen`'s layout (`components/common/AuthStateScreen`), use 2.0 buttons and take all copy from
+      `common` i18n keys (see the `redesign-auth-state-screens` change).
 - [ ] Conversation starters: a starter with only a title or only a prompt is saved to
-  `conversation_starters`, but it does not enable the starters settings (that needs both). Needs a
-  product decision — either require both fields to save a starter, or enable the settings for any
-  non-blank starter (see the `application_conversation-starters` spec, "Partially filled starter").
+      `conversation_starters`, but it does not enable the starters settings (that needs both). Needs a
+      product decision — either require both fields to save a starter, or enable the settings for any
+      non-blank starter (see the `application_conversation-starters` spec, "Partially filled starter").
 - [x] Conversation starters: `useQuickApp2Form` no longer exposes `updateStarter` / `removeStarter`
-  (only the hook's own tests used them since the starters modal edits a local draft). The starter
-  row behaviour stays covered by `src/utils/tests/conversation-starters.test.ts`.
+      (only the hook's own tests used them since the starters modal edits a local draft). The starter
+      row behaviour stays covered by `src/utils/tests/conversation-starters.test.ts`.
 - [x] Add-ons: the same mock as the starters redesign is done: the Toolsets / Agents split in
-  `split-agents-and-toolsets` and the Knowledge base row in `redesign-knowledge-base-addon`.
+      `split-agents-and-toolsets` and the Knowledge base row in `redesign-knowledge-base-addon`.
 - [ ] Toolsets / Agents follow-ups (from the `split-agents-and-toolsets` change):
   - chat-api ask: tool descriptions and input schemas in the deployment details
     (`ToolsetDetailsDto` carries names only), so the catalog Tools tab — here and in chat — could
@@ -77,8 +77,8 @@
   - **Move/copy between sources is refused under All** (`src/hooks/use-dial-file-sources.ts`): My files,
     Shared and Organization live in different buckets and the files API has no single cross-bucket move.
 - [ ] ui-kit: `DialDraggableItem` imports a private bundled copy of react-dnd whose `DndProvider` the
-  kit does not export, and it has no keyboard support, so consumers can't use it. Ask the kit for an
-  exported, keyboard-accessible sortable list; the starters modal uses `@dnd-kit/sortable` meanwhile.
+      kit does not export, and it has no keyboard support, so consumers can't use it. Ask the kit for an
+      exported, keyboard-accessible sortable list; the starters modal uses `@dnd-kit/sortable` meanwhile.
 - [ ] Skills follow-ups (from the `redesign-skills-selection` change):
   - chat-api ask: `version` and `tags` on `SkillMetadataItemDto`. The editor already shows them
     when present (`mapCoreToDialSkill` in `src/utils/dial-client.ts`); until then skills have no
@@ -88,18 +88,23 @@
     which still downloads `SKILL.md` at the skill root first, so such skills show the error state;
     fix upstream (download `resolveSkillManifestFileId`'s path) and it applies here too.
 - [ ] Add-ons: `AgentsFormSection` opens the Add agent picker when the URL has
-  `?agentsAndToolsetsModal=1` (`AddOnsModalQueryParams.Modal` in
-  `src/constants/quick-apps.ts`; it opened the merged Agents & Toolsets modal before
-  `split-agents-and-toolsets`). Nothing in this repo sets that parameter, and no spec other than
-  `agents_selection` describes it — confirm with the host owners whether it should open Add agent or
-  Add toolset.
-  Confirm whether a host still opens the modal this way. If one does, add the parameter to
-  `host-integration` and keep it as a single named constant instead of a one-member enum. If none
-  does, remove the parameter and the code that reads it.
+      `?agentsAndToolsetsModal=1` (`AddOnsModalQueryParams.Modal` in
+      `src/constants/quick-apps.ts`; it opened the merged Agents & Toolsets modal before
+      `split-agents-and-toolsets`). Nothing in this repo sets that parameter, and no spec other than
+      `agents_selection` describes it — confirm with the host owners whether it should open Add agent or
+      Add toolset.
+      Confirm whether a host still opens the modal this way. If one does, add the parameter to
+      `host-integration` and keep it as a single named constant instead of a one-member enum. If none
+      does, remove the parameter and the code that reads it.
 - [ ] Themes: `src/context/ThemeContext.tsx` loads themes with `chatApiFetch('/api/themes')`, but
-  `@epam/ai-dial-chat-api-client` has a typed `ThemesApi`. Decide whether to switch to it or keep
-  the raw call as a documented exception (see "API-layer exceptions and configuration keys" below).
-  Switching changes the endpoint, so it needs its own OpenSpec change.
+      `@epam/ai-dial-chat-api-client` has a typed `ThemesApi`. Decide whether to switch to it or keep
+      the raw call as a documented exception (see "API-layer exceptions and configuration keys" below).
+      Switching changes the endpoint, so it needs its own OpenSpec change.
+- [ ] Agent transport default: an MCP-capable application with no saved `transport` is saved as
+      MCP (`?? DialAppTransportType.MCP` in `src/form/quickApp2Form.ts`), and the agent Settings tab
+      shows the same default separately (`src/components/Agents/AgentSettingsTab/AgentSettingsTab.tsx`).
+      The two must stay equal; consider one exported constant, e.g. `DEFAULT_AGENT_TRANSPORT` in
+      `src/constants/`. Left over from change `agent-settings-tab`.
 - [ ] `src/types` follow-ups (left over from the constants/types clean-up):
   - done: one `LoadStatus` enum (`src/types/load-status.ts`) replaces the `DataContext` string union
     and `QuickApp2ModelStatus`, and the string → enum `switch` in `QuickApp2Form.tsx` is gone; the
@@ -119,30 +124,30 @@ frozen as history). None of them can be checked from this repo's tooling alone: 
 chat-api, a real admin/chat host, or access outside this repo.
 
 - [ ] **Live spec pass** — walk every `openspec/specs/` capability against a built image embedded in
-  both admin and chat (TRANSITION_PLAN §2.8 exit criteria). Typecheck, lint, tests and build are
-  green, but that is static verification only.
+      both admin and chat (TRANSITION_PLAN §2.8 exit criteria). Typecheck, lint, tests and build are
+      green, but that is static verification only.
 - [ ] **Session cookie inside the iframe** — chat-api issues the session cookie with `SameSite=Lax`
-  (`OVERLAY_ENABLED` unset). Browsers may treat fetches from a cross-site iframe as cross-site and
-  drop it. Confirm `GET /api/v1/auth/me` and one mutating call succeed embedded in admin and in chat.
-  If they fail, ask ai-dial-chat for a flag that enables `SameSite=None` without `OVERLAY_ENABLED`
-  (TRANSITION_PLAN Phase 0 item 2, Risks).
+      (`OVERLAY_ENABLED` unset). Browsers may treat fetches from a cross-site iframe as cross-site and
+      drop it. Confirm `GET /api/v1/auth/me` and one mutating call succeed embedded in admin and in chat.
+      If they fail, ask ai-dial-chat for a flag that enables `SameSite=None` without `OVERLAY_ENABLED`
+      (TRANSITION_PLAN Phase 0 item 2, Risks).
 - [ ] **CSP enforce** — confirm chat-api's static server replaces the `__DIAL_CSP_NONCE__`
-  placeholder (`vite.config.ts`) with a per-request nonce, run with `CSP_MODE=report-only` and read
-  the violation reports, then switch to `enforce` (TRANSITION_PLAN §2.6).
+      placeholder (`vite.config.ts`) with a per-request nonce, run with `CSP_MODE=report-only` and read
+      the violation reports, then switch to `enforce` (TRANSITION_PLAN §2.6).
 - [ ] **CI registry access** — confirm the runners of the reusable `epam/ai-dial-ci` workflows can
-  pull the `ghcr.io/epam/ai-dial-chat-bff` base image and build `--platform=linux/amd64` (the image
-  is amd64-only) (TRANSITION_PLAN Phase 0 item 7). The image tag policy itself is tracked in
-  "Runtime port and image policy" below.
+      pull the `ghcr.io/epam/ai-dial-chat-bff` base image and build `--platform=linux/amd64` (the image
+      is amd64-only) (TRANSITION_PLAN Phase 0 item 7). The image tag policy itself is tracked in
+      "Runtime port and image policy" below.
 - [ ] **Provider env var names** — only Keycloak's `AUTH_KEYCLOAK_*` names are verified against a
-  live chat-api. Check Azure AD, Google, Auth0, Okta, Cognito and GitLab, and confirm that the `503`
-  on `GET /api/themes` seen with `THEMES_URL` came from not setting `THEMES_CONFIG_URL`
-  (TRANSITION_PLAN Appendix B).
+      live chat-api. Check Azure AD, Google, Auth0, Okta, Cognito and GitLab, and confirm that the `503`
+      on `GET /api/themes` seen with `THEMES_URL` came from not setting `THEMES_CONFIG_URL`
+      (TRANSITION_PLAN Appendix B).
 - [ ] **`liveChatInteraction` flag** — confirm it is enabled on this integration's chat-api
-  deployment (TRANSITION_PLAN Appendix C.2).
+      deployment (TRANSITION_PLAN Appendix C.2).
 - [ ] chat-api ask (not blocking): `fetchDialApp` (`src/utils/dial-client.ts`) makes two calls,
-  `getDeploymentDetails` for `applicationProperties` and a `listDeployments` scan for the General
-  fields, because `ApplicationDetailsDto` has no name/description/icon/topics/version. One response
-  carrying both would remove the scan (TRANSITION_PLAN §2.4).
+      `getDeploymentDetails` for `applicationProperties` and a `listDeployments` scan for the General
+      fields, because `ApplicationDetailsDto` has no name/description/icon/topics/version. One response
+      carrying both would remove the scan (TRANSITION_PLAN §2.4).
 
 ## Documentation and behavior reconciliation backlog
 
@@ -153,41 +158,41 @@ coverage: each item may require a product decision, a spec change, a code change
 documentation correction.
 
 - [ ] **Host entry and authentication contract** — decide whether `authProvider` is optional
-  or required. `openspec/specs/host-integration/spec.md` describes optional provider pinning,
-  while `src/App.tsx` currently shows an error when no provider is present.
+      or required. `openspec/specs/host-integration/spec.md` describes optional provider pinning,
+      while `src/App.tsx` currently shows an error when no provider is present.
 - [ ] **Host message protocol** — reconcile the exact handshake and message contract:
-  application-name prefixes, connector-generated versus manually posted messages, the README's
-  `INIT` claim, and the timing/duplication semantics of `READY`, `readyToSave`, and `loggedOut`.
+      application-name prefixes, connector-generated versus manually posted messages, the README's
+      `INIT` claim, and the timing/duplication semantics of `READY`, `readyToSave`, and `loggedOut`.
 - [ ] **Save, auto-save, and reset semantics** — document the conditions under which saves are
-  ignored, the actual meaning of `SaveSuccess.hasChanges`, and that `RESET` remounts the current
-  state rather than refetching from the API.
+      ignored, the actual meaning of `SaveSuccess.hasChanges`, and that `RESET` remounts the current
+      state rather than refetching from the API.
 - [ ] **Stale General fields on auto-save** — a save without a `general` payload (auto-save)
-  rebuilds `name`/`description`/`iconUrl`/`topics` from the load-time `_rawForSave` snapshot
-  (`src/utils/dial-client.ts` `fetchDialApp`), which is never refreshed after a save. A dirty
-  auto-save after a host Metadata edit can therefore revert those fields. `display_version` is
-  already excluded (see change `fix-quickapp-display-version-save`).
+      rebuilds `name`/`description`/`iconUrl`/`topics` from the load-time `_rawForSave` snapshot
+      (`src/utils/dial-client.ts` `fetchDialApp`), which is never refreshed after a save. A dirty
+      auto-save after a host Metadata edit can therefore revert those fields. `display_version` is
+      already excluded (see change `fix-quickapp-display-version-save`).
 - [ ] **Origin validation defaults** — decide and document behavior while runtime settings are
-  unresolved and when `allowedOrigin` is empty, including the current `*` fallback and its
-  security implications.
+      unresolved and when `allowedOrigin` is empty, including the current `*` fallback and its
+      security implications.
 - [ ] **Authentication error coverage** — reconcile the broad 401/forbidden guarantees in
-  `openspec/specs/auth/spec.md` with the different behavior of generated API calls, auth,
-  themes, configuration, and file upload/download wrappers.
+      `openspec/specs/auth/spec.md` with the different behavior of generated API calls, auth,
+      themes, configuration, and file upload/download wrappers.
 - [ ] **Runtime port and image policy** — reconcile the Vite development port with the Docker
-  image default, and document whether the floating `development` image/client versions are
-  local-only or an accepted deployment policy.
+      image default, and document whether the floating `development` image/client versions are
+      local-only or an accepted deployment policy.
 - [x] **Coverage status and target** — the "Test coverage" item above and `vitest.config.ts`
-  now agree: a fixed, hand-maintained 70% gate (branches held at 67 until they reach 70%).
+      now agree: a fixed, hand-maintained 70% gate (branches held at 67 until they reach 70%).
 - [x] **Post-migration source map** — the candidate paths below point to the current `src/`
-  tree; the deleted `src/app/api/**` routes are replaced by the chat-api client wrappers that
-  took their place.
+      tree; the deleted `src/app/api/**` routes are replaced by the chat-api client wrappers that
+      took their place.
 - [ ] **API-layer exceptions and configuration keys** — document the deliberate raw wrappers
-  for auth, themes, and file transfer, and add all runtime custom flags to the configuration
-  documentation and eventual `app-configuration` spec.
+      for auth, themes, and file transfer, and add all runtime custom flags to the configuration
+      documentation and eventual `app-configuration` spec.
 - [ ] **RTL and i18n status** — distinguish the current English/legacy behavior from the future
-  dynamic locale and RTL requirement; do not present deferred behavior as implemented.
+      dynamic locale and RTL requirement; do not present deferred behavior as implemented.
 - [ ] **Repository conventions and stale comments** — reconcile the documented component path
-  convention with the current flat `src/components/QuickApp2Form.tsx`, and correct comments
-  that still refer to removed endpoints or pre-migration behavior.
+      convention with the current flat `src/components/QuickApp2Form.tsx`, and correct comments
+      that still refer to removed endpoints or pre-migration behavior.
 
 Resolve each observable behavior decision through the normal OpenSpec change workflow. Keep
 pure documentation corrections in the same reconciliation change only when they do not alter
@@ -204,28 +209,28 @@ Track these dimensions separately for every capability:
 - **Behavior verified** — the implementation has been checked against the spec, including
   relevant integration or manual host/API verification where unit tests are insufficient.
 
-| Capability | Spec exists | Source area mapped | Tests exist | Behavior verified |
-| --- | --- | --- | --- | --- |
-| `host-integration` | Yes | Partial | Partial | Reconcile |
-| `auth` | Yes | Partial | Partial | Reconcile |
-| `application_editing` | Partial | Yes | Partial | Planned |
-| `application_editor-layout` | Yes | Yes | Partial | Planned |
-| `application_user-attachments` | Yes | Yes | Partial | Planned |
-| `deployment_docker-image` | Yes | Yes | No | Planned |
-| `context-files` | No | Yes | Partial | Planned |
-| `toolsets_selection` | Yes | Yes | Partial | Planned |
-| `agents_selection` | Yes | Yes | Partial | Planned |
-| `toolsets_login` | No | Yes | Partial | Planned |
-| `application_credentials` | No | Yes | Partial | Planned |
-| `skills_catalog` | Yes | Yes | Partial | Planned |
-| `catalog-entity-details` | Yes | Yes | Yes | Planned |
-| `application_knowledge-base` | Yes | Yes | Partial | Planned |
-| `orchestrator_model-selection` | Yes | Yes | Partial | Planned |
-| `application_advanced-settings` | Yes | Yes | Partial | Planned |
-| `application_conversation-starters` | Yes | Yes | Partial | Planned |
-| `app-configuration` | No | Yes | Partial | Planned |
-| `theming` | No | Yes | Partial | Planned |
-| `i18n` | No | Yes | Partial | Planned |
+| Capability                          | Spec exists | Source area mapped | Tests exist | Behavior verified |
+| ----------------------------------- | ----------- | ------------------ | ----------- | ----------------- |
+| `host-integration`                  | Yes         | Partial            | Partial     | Reconcile         |
+| `auth`                              | Yes         | Partial            | Partial     | Reconcile         |
+| `application_editing`               | Partial     | Yes                | Partial     | Planned           |
+| `application_editor-layout`         | Yes         | Yes                | Partial     | Planned           |
+| `application_user-attachments`      | Yes         | Yes                | Partial     | Planned           |
+| `deployment_docker-image`           | Yes         | Yes                | No          | Planned           |
+| `context-files`                     | No          | Yes                | Partial     | Planned           |
+| `toolsets_selection`                | Yes         | Yes                | Partial     | Planned           |
+| `agents_selection`                  | Yes         | Yes                | Partial     | Planned           |
+| `toolsets_login`                    | No          | Yes                | Partial     | Planned           |
+| `application_credentials`           | No          | Yes                | Partial     | Planned           |
+| `skills_catalog`                    | Yes         | Yes                | Partial     | Planned           |
+| `catalog-entity-details`            | Yes         | Yes                | Yes         | Planned           |
+| `application_knowledge-base`        | Yes         | Yes                | Partial     | Planned           |
+| `orchestrator_model-selection`      | Yes         | Yes                | Partial     | Planned           |
+| `application_advanced-settings`     | Yes         | Yes                | Partial     | Planned           |
+| `application_conversation-starters` | Yes         | Yes                | Partial     | Planned           |
+| `app-configuration`                 | No          | Yes                | Partial     | Planned           |
+| `theming`                           | No          | Yes                | Partial     | Planned           |
+| `i18n`                              | No          | Yes                | Partial     | Planned           |
 
 A spec existing does not imply that it has been verified against the current implementation.
 Update this matrix as each capability is explored, specified, tested, and checked.
@@ -244,9 +249,14 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 ### Application credentials (recent feature, git log: "feat: support application credentials #140")
 
-- src/utils/request-application-credentials.ts, src/components/Agents/DialAppConfigurationModal/**,
+- src/utils/request-application-credentials.ts, src/hooks/use-application-authentication.ts,
   src/components/Agents/AgentDetailsPopup/** (credentials mode), ties to host-integration's
   RequestApplicationCredentials message + applicationCredentials query param
+- The agent-side UI (the Credentials action under the details header, which closes the popup
+  before the host shows its forms) is specified in `agents_selection` "Agent details popup"
+  (change `agent-settings-tab`); the host round trip itself is still unspecified.
+- Possible follow-up: show the credential forms inline (catalog `ApplicationCredentials`), with
+  OAuth through a new host message as toolset login does. Needs a paired ai-dial-chat change.
 - Proposed: application_credentials (sibling of application_editing)
 
 ### Toolsets — selection + host-mediated login/logout

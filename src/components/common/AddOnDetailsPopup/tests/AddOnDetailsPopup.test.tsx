@@ -6,7 +6,7 @@ import { CatalogContentNodeType, type CatalogItem } from '@epam/ai-dial-catalog'
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { DetailsStatus } from '@/types/entity-details';
+import { AppDetailsTab, DetailsStatus } from '@/types/entity-details';
 
 import { AddOnDetailsPopup, type AddOnDetailsPopupProps } from '../AddOnDetailsPopup';
 
@@ -95,10 +95,10 @@ describe('AddOnDetailsPopup — catalog layout', () => {
   });
 
   it('indents the action row under the name', () => {
-    render({ actions: <button type="button">Log in</button> });
+    render({ actions: <button type="button">Application credentials</button> });
 
     const button = [...dialog().querySelectorAll('button')].find(
-      (node) => node.textContent === 'Log in',
+      (node) => node.textContent === 'Application credentials',
     );
     expect(button?.parentElement?.className).toContain('ps-[60px]');
   });
@@ -132,6 +132,68 @@ describe('AddOnDetailsPopup — catalog layout', () => {
     expect(dialog().textContent).toContain('Manifest body');
     expect(dialog().textContent).toContain('SKILL.md');
     expect(dialog().textContent).toContain('2 files');
+  });
+});
+
+describe('AddOnDetailsPopup — app-owned tabs', () => {
+  const agent = {
+    ...listing,
+    id: 'applications/research-agent',
+    type: CatalogEntityType.Agent,
+    description: 'About the agent',
+  } as unknown as CatalogItem;
+  const settingsTab = {
+    id: AppDetailsTab.Settings,
+    label: 'Settings',
+    content: <p>Settings content</p>,
+  };
+
+  const tabNames = () =>
+    [...dialog().querySelectorAll('[role="tab"]')].map((tab) => tab.textContent);
+  const selectedTab = () => dialog().querySelector('[role="tab"][aria-selected="true"]');
+
+  it('lists an app tab after the catalog tabs, with the first tab selected', () => {
+    render({ entityType: CatalogEntityType.Agent, item: agent, appTabs: [settingsTab] });
+
+    expect(tabNames().at(-1)).toBe('Settings');
+    expect(tabNames().length).toBeGreaterThan(1);
+    expect(selectedTab()?.textContent).not.toBe('Settings');
+    expect(dialog().textContent).not.toContain('Settings content');
+  });
+
+  it('shows the app tab content when it is selected', () => {
+    render({ entityType: CatalogEntityType.Agent, item: agent, appTabs: [settingsTab] });
+
+    const tab = [...dialog().querySelectorAll<HTMLElement>('[role="tab"]')].find(
+      (node) => node.textContent === 'Settings',
+    );
+    act(() => tab?.click());
+
+    const panel = dialog().querySelector('[role="tabpanel"]');
+    expect(panel?.getAttribute('aria-label')).toBe('Settings');
+    expect(panel?.textContent).toContain('Settings content');
+  });
+
+  it('renders no app tab while the entity is unavailable', () => {
+    render({
+      entityType: CatalogEntityType.Agent,
+      item: undefined,
+      unavailableText: 'This agent is no longer available',
+      appTabs: [settingsTab],
+    });
+
+    expect(dialog().querySelector('[role="tablist"]')).toBeNull();
+    expect(dialog().textContent).not.toContain('Settings content');
+  });
+
+  it('keeps the selection when an app tab appears later', () => {
+    render({ entityType: CatalogEntityType.Agent, item: agent });
+    const firstTab = selectedTab()?.textContent;
+
+    render({ entityType: CatalogEntityType.Agent, item: agent, appTabs: [settingsTab] });
+
+    expect(tabNames().at(-1)).toBe('Settings');
+    expect(selectedTab()?.textContent).toBe(firstTab);
   });
 });
 

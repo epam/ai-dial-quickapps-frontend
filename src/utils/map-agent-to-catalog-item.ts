@@ -1,7 +1,7 @@
 import type { CatalogItem } from '@epam/ai-dial-catalog';
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 
-import type { DialModel } from '@/types/dial-entities';
+import type { DialModel, ModelsMap } from '@/types/dial-entities';
 import { DialEntityType } from '@/types/dial-entities';
 import { doesAgentSupportMcp } from '@/utils/application';
 import {
@@ -16,6 +16,16 @@ import {
  */
 export const canConfigureAgentTransport = (agent?: DialModel): boolean =>
   agent?.type === DialEntityType.Application && doesAgentSupportMcp(agent);
+
+/**
+ * Whether the transport is a real choice: an MCP-capable application that also
+ * serves chat completion. `modelsMap` holds only the chat-interface deployments
+ * (see fetchDialModels), so presence there is what makes chat completion usable.
+ */
+export const canChooseAgentTransport = (
+  agent: DialModel | undefined,
+  modelsMap: ModelsMap,
+): boolean => agent != null && canConfigureAgentTransport(agent) && modelsMap[agent.id] != null;
 
 /**
  * Maps an agent — an application, MCP agent or model — to a catalog list row.
