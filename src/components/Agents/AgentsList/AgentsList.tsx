@@ -77,8 +77,8 @@ const AgentsList: FC<AgentsListProps> = ({
                 version={version}
                 iconUrl={iconUrl}
                 statusText={statusText}
-                detailsLabel={t(QuickAppEditorI18nKeys.SkillDetails, { name })}
-                removeLabel={t(QuickAppEditorI18nKeys.RemoveSkill, { name })}
+                detailsLabel={t(QuickAppEditorI18nKeys.AddOnDetails, { name })}
+                removeLabel={t(QuickAppEditorI18nKeys.RemoveAddOn, { name })}
                 onClick={setOpenAgentId}
                 onRemove={isReadonly ? undefined : handleRemove}
               />

@@ -46,9 +46,10 @@
     Add toolset / Add agent pickers use, so its own list/filter/sort code is gone;
   - write a `toolsets_login` spec for the host round-trip (`REQUEST_TOOLSET_LOGIN` /
     `TOOLSET_LOGIN_RESULT`); `toolsets_selection` only specifies the popup's Log in entry point.
-  - rename the i18n keys Skills, Toolsets and Agents share (`SkillDetails`, `RemoveSkill`, `SelectSkill`,
-    `SkillOverviewTab`, `SkillDetailsTab`, `SkillAuthor`, `SkillTypeLabel`, `RemoveSkillFromApp`) to
-    generic names, and update `skills_catalog`, `toolsets_selection` and `agents_selection` with them.
+  - done: the i18n keys Skills, Toolsets and Agents share have generic names (`AddOnDetails`,
+    `RemoveAddOn`, `SelectAddOn`, `RemoveAddOnFromApp`, `DetailsTab`, `OverviewTab`), and the
+    `skills_catalog`, `toolsets_selection`, `agents_selection` and `catalog-entity-details` specs use
+    them. `SkillAuthor` and `SkillTypeLabel` keep their names: they label skills only.
 - [ ] Catalog details follow-ups (from the `align-entity-details-with-catalog` change):
   - ai-dial-chat ask: `@epam/ai-dial-chat-hooks/catalog` imports `@epam/ai-dial-attachment-input`
     (`mimeTypesToExtensionLabels`) and `@epam/ai-dial-skill-editor` (`SkillFileNodeKind`) at

@@ -45,7 +45,7 @@ export const AddSkillsModal: FC<AddSkillsModalProps> = ({ value, onConfirm, onCl
       failedToLoad: t(QuickAppEditorI18nKeys.FailedToLoadSkills),
       empty: t(QuickAppEditorI18nKeys.NoAgentSkillsAdded),
       selectAll: t(QuickAppEditorI18nKeys.SelectAllSkills),
-      selectRow: (name) => t(QuickAppEditorI18nKeys.SelectSkill, { name }),
+      selectRow: (name) => t(QuickAppEditorI18nKeys.SelectAddOn, { name }),
     }),
     [t],
   );

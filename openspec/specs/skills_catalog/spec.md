@@ -12,9 +12,9 @@ The Skills row of the Add-ons card SHALL list the application's attached skills 
 - the skill name,
 - the version as secondary text, only when the catalog listing supplies one.
 
-Each item SHALL hold a button whose accessible name comes from `quickAppEditor` key `SkillDetails` with the skill name interpolated (e.g. "Web Search details"); activating it SHALL open the skill details popup for that skill. Items SHALL NOT render a bordered chip box or a tooltip.
+Each item SHALL hold a button whose accessible name comes from `quickAppEditor` key `AddOnDetails` with the skill name interpolated (e.g. "Web Search details"); activating it SHALL open the skill details popup for that skill. Items SHALL NOT render a bordered chip box or a tooltip.
 
-In an editable application, each item SHALL also hold a remove button at its end: a ui-kit 2.0 ghost icon button with a trash icon, named by `quickAppEditor` key `RemoveSkill` with the skill name interpolated (e.g. "Remove Web Search"). It SHALL be visible only while the item is hovered or holds keyboard focus (`:focus-visible`), and SHALL stay in the tab order. Focus that returns to the item after a popup is closed with the mouse SHALL NOT reveal it. Activating it SHALL remove that skill id from `agentSkills` without opening the details popup, and SHALL move focus to the first remaining item. Read-only and shared applications SHALL NOT render it. The list SHALL be read from `DataContext.skillsMap` and SHALL make no chat-api request of its own.
+In an editable application, each item SHALL also hold a remove button at its end: a ui-kit 2.0 ghost icon button with a trash icon, named by `quickAppEditor` key `RemoveAddOn` with the skill name interpolated (e.g. "Remove Web Search"). It SHALL be visible only while the item is hovered or holds keyboard focus (`:focus-visible`), and SHALL stay in the tab order. Focus that returns to the item after a popup is closed with the mouse SHALL NOT reveal it. Activating it SHALL remove that skill id from `agentSkills` without opening the details popup, and SHALL move focus to the first remaining item. Read-only and shared applications SHALL NOT render it. The list SHALL be read from `DataContext.skillsMap` and SHALL make no chat-api request of its own.
 
 #### Scenario: Attached skills are listed
 
@@ -58,9 +58,9 @@ In an editable application, each item SHALL also hold a remove button at its end
 Activating a Skills row item SHALL open a modal dialog (ui-kit 2.0 `Popup`) for that skill. Layout, top to bottom:
 
 - **Header:** the avatar, a caption from `quickAppEditor` key `SkillTypeLabel` ("Skill"), the skill name, and a close (×) control labelled by `common` key `CloseDialog`. The dialog's accessible name SHALL be the skill name.
-- **Tabs:** ui-kit 2.0 `Tabs`, **Details** (`quickAppEditor` key `SkillDetailsTab`) and **Overview** (`quickAppEditor` key `SkillOverviewTab`). The popup SHALL open on Details.
+- **Tabs:** ui-kit 2.0 `Tabs`, **Details** (`quickAppEditor` key `DetailsTab`) and **Overview** (`quickAppEditor` key `OverviewTab`). The popup SHALL open on Details.
 - **Footer:**
-  - **Delete** (`quickAppEditor` key `RemoveSkillFromApp`, label "Delete") at the start edge: a red (danger), outlined, standard-size button with a leading trash icon.
+  - **Delete** (`quickAppEditor` key `RemoveAddOnFromApp`, label "Delete") at the start edge: a red (danger), outlined, standard-size button with a leading trash icon.
   - **Close** (`quickAppEditor` key `Close`) at the end edge.
 
 The open popup's skill id SHALL be local `useState` in the Skills list component. No new context SHALL be introduced.
@@ -360,7 +360,7 @@ The Skills row, Add skill popup and details popup SHALL be keyboard operable, SH
 - **WHEN** the Add skill popup opens
 - **THEN** focus SHALL move into the dialog, and Tab SHALL reach search, From, sort, the list, Cancel and Add in reading order
 - **AND** the list SHALL be exposed as a grid named by `quickAppEditor` key `SkillsCatalog`
-- **AND** each row checkbox SHALL be named by `quickAppEditor` key `SelectSkill` with the skill name interpolated
+- **AND** each row checkbox SHALL be named by `quickAppEditor` key `SelectAddOn` with the skill name interpolated
 - **AND** the select-all checkbox SHALL be named by `quickAppEditor` key `SelectAllSkills` and expose `aria-checked="mixed"` for a partial selection
 
 #### Scenario: Keyboard in the details popup

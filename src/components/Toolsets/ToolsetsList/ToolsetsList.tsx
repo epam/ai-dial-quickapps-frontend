@@ -82,8 +82,8 @@ const ToolsetsList: FC<ToolsetsListProps> = ({ ids, allIds, isReadonly, onChange
                     </Suspense>
                   )
                 }
-                detailsLabel={t(QuickAppEditorI18nKeys.SkillDetails, { name })}
-                removeLabel={t(QuickAppEditorI18nKeys.RemoveSkill, { name })}
+                detailsLabel={t(QuickAppEditorI18nKeys.AddOnDetails, { name })}
+                removeLabel={t(QuickAppEditorI18nKeys.RemoveAddOn, { name })}
                 onClick={setOpenToolsetId}
                 onRemove={isReadonly ? undefined : handleRemove}
               />

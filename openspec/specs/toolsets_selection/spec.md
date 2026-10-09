@@ -44,9 +44,9 @@ The Toolsets row of the Add-ons card SHALL list the attached toolsets in `addOns
 
 **Status line.** Below the name, the item SHALL show the status text from `getEntityStatusMessage` (read-only wording) when the toolset is logged out or is not found in the catalog.
 
-**Details button.** Each item SHALL hold a button named by `quickAppEditor` key `SkillDetails` with `{{name}}` (e.g. "Figma details"). Activating it SHALL open the toolset details popup.
+**Details button.** Each item SHALL hold a button named by `quickAppEditor` key `AddOnDetails` with `{{name}}` (e.g. "Figma details"). Activating it SHALL open the toolset details popup.
 
-**Remove button.** In an editable application, each item SHALL also hold a remove button at its end: a ui-kit ghost icon button with a trash icon, named by `quickAppEditor` key `RemoveSkill` with `{{name}}`. It SHALL be visible only while the item is hovered or holds keyboard focus (`:focus-visible`), and SHALL stay in the tab order. Focus that returns to the item after a popup is closed with the mouse SHALL NOT reveal it. Activating it SHALL remove that id from `addOns` without opening the popup, and SHALL move focus to the first remaining item in the row. Read-only and shared applications SHALL NOT render it.
+**Remove button.** In an editable application, each item SHALL also hold a remove button at its end: a ui-kit ghost icon button with a trash icon, named by `quickAppEditor` key `RemoveAddOn` with `{{name}}`. It SHALL be visible only while the item is hovered or holds keyboard focus (`:focus-visible`), and SHALL stay in the tab order. Focus that returns to the item after a popup is closed with the mouse SHALL NOT reveal it. Activating it SHALL remove that id from `addOns` without opening the popup, and SHALL move focus to the first remaining item in the row. Read-only and shared applications SHALL NOT render it.
 
 **Not rendered.** Items SHALL NOT render a chip box, a tooltip or a configure (gear) button.
 
@@ -107,7 +107,7 @@ The popup SHALL open on About. A tab whose data the details lack SHALL NOT be sh
 
 **Footer:**
 
-- **Delete** (`quickAppEditor` `RemoveSkillFromApp`, "Delete") at the start edge: a danger, outlined button with a leading trash icon.
+- **Delete** (`quickAppEditor` `RemoveAddOnFromApp`, "Delete") at the start edge: a danger, outlined button with a leading trash icon.
 - **Close** (`quickAppEditor` `Close`) at the end edge.
 
 `DetailsHeader` SHALL show no other action: no Use in chat, Share, Publish, Edit, Download or Manage menu.
@@ -221,7 +221,7 @@ The Toolsets row's Add action SHALL open the **Add toolset** popup. It SHALL mat
 - **Rows:** title `quickAppEditor` `AddToolset` ("Add toolset"); heading `ToolsetsCatalog` ("Toolsets catalog"); search placeholder and name `SearchToolsets` ("Search toolsets...").
 - **Content:** the rows are `DataContext.toolsets` without hidden-folder ids and without the application being edited, mapped by `mapToolsetToCatalogItem`. The mapping SHALL carry `credentials`, so `ListView` shows the logged-out badge with the `ToolsetLoggedOutBadge` label.
 - **List:** `ListView` uses `type={CatalogEntityType.Toolset}`, `CatalogSelectionMode.Multiple` and `isReadonly` (no Favorite column).
-- **Checkbox names:** row checkboxes use `SelectSkill` ("Select {{name}}") and select-all uses `SelectAllToolsets`.
+- **Checkbox names:** row checkboxes use `SelectAddOn` ("Select {{name}}") and select-all uses `SelectAllToolsets`.
 - **States:** the loading label is `LoadingToolsets`, the error title `FailedToLoadToolsets`, and the empty-catalog title `NoToolsetsAvailable`.
 - **Pre-check:** only the attached toolset ids start checked.
 - **Add** SHALL apply `applyCatalogSelection(allIds, checkedIds, listedIds)` (`src/utils/apply-catalog-selection.ts`, generalised from `apply-skill-selection.ts`) to the full `addOns` id list:
