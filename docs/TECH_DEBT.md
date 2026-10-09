@@ -188,9 +188,10 @@ documentation correction.
       documentation and eventual `app-configuration` spec.
 - [ ] **RTL and i18n status** — distinguish the current English/legacy behavior from the future
       dynamic locale and RTL requirement; do not present deferred behavior as implemented.
-- [ ] **Stale comments** — correct comments that still refer to removed endpoints or
-      pre-migration behavior. (The component folder convention is now followed: every component,
-      `QuickApp2Form` included, lives in its own PascalCase folder with a `tests/` subfolder.)
+- [x] **Repository conventions and stale comments** — every component, `QuickApp2Form` included,
+      lives in its own PascalCase folder with a `tests/` subfolder, and source comments no longer
+      refer to next-auth, the old DIAL Core proxy, TRANSITION_PLAN appendices or the merged
+      Agents & Toolsets picker.
 
 Resolve each observable behavior decision through the normal OpenSpec change workflow. Keep
 pure documentation corrections in the same reconciliation change only when they do not alter

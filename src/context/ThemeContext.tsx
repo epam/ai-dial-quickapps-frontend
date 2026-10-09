@@ -70,9 +70,8 @@ const ThemeProvider: FC<ThemeProviderProps> = ({ children }) => {
     };
   }, []);
 
-  // Fetch theme configuration — this URL is already chat-api's own native
-  // theme-config endpoint (Appendix A), so only the transport (chatApiFetch
-  // over plain fetch) changes here.
+  // Fetch theme configuration from chat-api's theme-config endpoint, through
+  // chatApiFetch (a deliberate raw call; chat-api-client has a typed ThemesApi).
   useEffect(() => {
     const loadThemes = async () => {
       try {

@@ -46,8 +46,7 @@ const CHAT_DEPLOYMENT_INTERFACE = ListDeploymentsInterfaceTypeEnum.Chat;
 
 /**
  * DIAL Core interface tag for deployments that expose an MCP interface.
- * Used to surface MCP-capable agents in the Agents & Toolsets picker
- * alongside the chat-interface deployments fetched via `fetchDialModels`.
+ * Used to surface MCP-capable agents in the Agents picker alongside the chat-interface deployments fetched via `fetchDialModels`.
  */
 const MCP_DEPLOYMENT_INTERFACE = ListDeploymentsInterfaceTypeEnum.Mcp;
 
@@ -470,7 +469,7 @@ export const mapCoreToDialSkill = (item: CoreSkillItem): DialSkill => {
   };
 };
 
-/** chat-api's own controller already does the personal+public+shared aggregation this app used to replicate against Core directly. */
+/** chat-api's catalog endpoint returns personal, public and shared skills; they are merged into one list here. */
 export const fetchDialSkills = async (): Promise<DialSkill[]> => {
   const res = await skillsApi.listCatalogSkills();
   return [...res.skills, ...res.publicSkills, ...res.sharedWithMe]
