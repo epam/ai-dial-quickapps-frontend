@@ -8,20 +8,24 @@ import { DialAppTransportType } from '@/types/quick-apps';
 
 import { AgentDetailsPopup } from '../AgentDetailsPopup';
 
-const { searchParams, requestApplicationCredentials, authState, deploymentsApi } = vi.hoisted(
-  () => ({
+const { searchParams, requestApplicationCredentials, authState, deploymentsApi, dataContext } =
+  vi.hoisted(() => ({
+    dataContext: {
+      userBucket: 'user-bucket',
+      skills: [],
+      modelsMap: {} as Record<string, unknown>,
+    },
     deploymentsApi: { getDeploymentDetails: vi.fn(), getDeploymentLimits: vi.fn() },
     searchParams: new Map<string, string>(),
     requestApplicationCredentials: vi.fn(),
     authState: { isRequired: false, lastAppId: undefined as string | undefined },
-  }),
-);
+  }));
 
 vi.mock('@/hooks/use-translation', () => ({
   useTranslation: () => ({ language: 'en-US', t: (key: string) => key }),
 }));
 vi.mock('@/context/DataContext', () => ({
-  useDataContext: () => ({ userBucket: 'user-bucket', skills: [] }),
+  useDataContext: () => dataContext,
 }));
 vi.mock('@/utils/chat-api-client', () => ({ deploymentsApi, skillsApi: {} }));
 vi.mock('@/context/AppContext', () => ({
@@ -37,24 +41,6 @@ vi.mock('@/hooks/use-application-authentication', () => ({
   },
 }));
 vi.mock('@/utils/request-application-credentials', () => ({ requestApplicationCredentials }));
-vi.mock('@/components/Agents/DialAppConfigurationModal/DialAppConfigurationModal', () => ({
-  DialAppConfigurationModal: ({
-    onSave,
-    onClose,
-  }: {
-    onSave: (transport: DialAppTransportType) => void;
-    onClose: () => void;
-  }) => (
-    <div role="dialog" aria-label="Transport">
-      <button
-        type="button"
-        onClick={() => (onSave(DialAppTransportType.ChatCompletion), onClose())}
-      >
-        Apply chat completion
-      </button>
-    </div>
-  ),
-}));
 
 const MCP_APP: DialModel = {
   id: 'applications/public/research',
@@ -140,6 +126,11 @@ const getTab = (name: string) =>
 const getTabNames = () =>
   [...document.querySelectorAll('[role="tab"]')].map((tab) => tab.textContent);
 
+const getRadio = (label: string) =>
+  [...document.querySelectorAll<HTMLInputElement>('input[type="radio"]')].find((radio) =>
+    [...(radio.labels ?? [])].some((node) => node.textContent?.trim() === label),
+  );
+
 const click = async (element?: HTMLElement) => {
   expect(element).toBeTruthy();
   await act(async () => {
@@ -151,6 +142,8 @@ const click = async (element?: HTMLElement) => {
 beforeEach(() => {
   (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   searchParams.clear();
+  // The MCP app also serves chat completion, so its transport is a real choice.
+  dataContext.modelsMap = { [MCP_APP.id]: MCP_APP };
   authState.isRequired = false;
   authState.lastAppId = undefined;
   requestApplicationCredentials.mockReset();
@@ -190,7 +183,7 @@ describe('AgentDetailsPopup', () => {
   it('shows an application’s catalog Overview, without Pricing or Limits', async () => {
     await render({ transport: DialAppTransportType.ChatCompletion });
 
-    expect(getTabNames()).toEqual(['About', 'Overview']);
+    expect(getTabNames()).toEqual(['About', 'Overview', 'Settings']);
     expect(deploymentsApi.getDeploymentLimits).not.toHaveBeenCalled();
 
     await click(getTab('Overview'));
@@ -222,22 +215,62 @@ describe('AgentDetailsPopup', () => {
     expect(getTabNames()).toEqual(['About', 'Overview', 'Pricing']);
   });
 
-  it('configures the transport and stays open', async () => {
+  it('lists Settings last, with About still selected', async () => {
     await render();
 
-    await click(getButtonByText('Connection'));
-    await click(getButtonByText('Apply chat completion'));
+    expect(getTabNames().at(-1)).toBe('Settings');
+    expect(getTab('About')?.getAttribute('aria-selected')).toBe('true');
+    expect(getButtonByText('Connection')).toBeUndefined();
+  });
+
+  it('preselects MCP in Settings when no transport is saved', async () => {
+    await render();
+    await click(getTab('Settings'));
+
+    expect(getRadio('MCP')?.checked).toBe(true);
+    expect(getRadio('Chat Completion')?.checked).toBe(false);
+    expect(getRadio('Chat Completion')?.disabled).toBe(false);
+  });
+
+  it('shows the saved transport as checked', async () => {
+    await render({ transport: DialAppTransportType.ChatCompletion });
+    await click(getTab('Settings'));
+
+    expect(getRadio('Chat Completion')?.checked).toBe(true);
+  });
+
+  it('configures the transport at once and stays open on Settings', async () => {
+    await render();
+    await click(getTab('Settings'));
+
+    await click(getRadio('Chat Completion'));
 
     expect(onConfigure).toHaveBeenCalledWith(MCP_APP.id, DialAppTransportType.ChatCompletion);
     expect(getDialog('Research Agent')).toBeTruthy();
-    expect(getDialog('Transport')).toBeUndefined();
+    expect(getTab('Settings')?.getAttribute('aria-selected')).toBe('true');
   });
 
-  it('shows a model with the Model caption and no actions', async () => {
+  it('shows the transport disabled in a read-only application', async () => {
+    await render({ isReadonly: true, transport: DialAppTransportType.ChatCompletion });
+    await click(getTab('Settings'));
+
+    expect(getRadio('Chat Completion')?.checked).toBe(true);
+    expect(getRadio('MCP')?.disabled).toBe(true);
+    expect(getRadio('Chat Completion')?.disabled).toBe(true);
+  });
+
+  it('shows no Settings tab for an MCP-only agent without credentials', async () => {
+    dataContext.modelsMap = {};
+    await render();
+
+    expect(getTabNames()).not.toContain('Settings');
+  });
+
+  it('shows a model with the Model caption and no Settings', async () => {
     await render({ agent: MODEL });
 
     expect(getDialog('GPT-4o')?.textContent).toContain('Model');
-    expect(getButtonByText('Connection')).toBeUndefined();
+    expect(getTabNames()).not.toContain('Settings');
     expect(getButtonByText('Application credentials')).toBeUndefined();
   });
 
@@ -255,12 +288,57 @@ describe('AgentDetailsPopup', () => {
     expect(requestApplicationCredentials).toHaveBeenCalledWith(MCP_APP.id, ['https://host']);
   });
 
-  it('shows an unavailable agent without actions, but still offers Delete', async () => {
+  it('closes the popup when handing over to the host’s credential forms', async () => {
+    authState.isRequired = true;
+    searchParams.set('applicationCredentials', 'true');
+    await render();
+
+    await click(getButtonByText('Application credentials'));
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows Credentials under the header, before the tab row, not in Settings', async () => {
+    authState.isRequired = true;
+    searchParams.set('applicationCredentials', 'true');
+    await render();
+
+    const credentials = getButtonByText('Application credentials') as HTMLElement;
+    const tablist = document.querySelector('[role="tablist"]') as HTMLElement;
+    expect(
+      credentials.compareDocumentPosition(tablist) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+
+    await click(getTab('Settings'));
+    expect(document.querySelector('[role="tabpanel"]')?.textContent).not.toContain(
+      'Application credentials',
+    );
+  });
+
+  it('shows Credentials but no Settings tab for an MCP-only agent behind auth', async () => {
+    dataContext.modelsMap = {};
+    authState.isRequired = true;
+    searchParams.set('applicationCredentials', 'true');
+    await render();
+
+    expect(getTabNames()).not.toContain('Settings');
+    expect(getButtonByText('Application credentials')).toBeTruthy();
+  });
+
+  it('shows no Credentials in a read-only application', async () => {
+    authState.isRequired = true;
+    searchParams.set('applicationCredentials', 'true');
+    await render({ isReadonly: true });
+
+    expect(getButtonByText('Application credentials')).toBeUndefined();
+  });
+
+  it('shows an unavailable agent without Settings, but still offers Delete', async () => {
     await render({ agent: undefined, agentId: 'applications/public/gone' });
 
     const dialog = getDialog('gone');
     expect(dialog?.textContent).toContain('This agent is no longer available');
-    expect(getButtonByText('Connection')).toBeUndefined();
+    expect(getTab('Settings')).toBeUndefined();
     expect(getButtonByText('Delete')).toBeTruthy();
     expect(deploymentsApi.getDeploymentDetails).not.toHaveBeenCalled();
   });
@@ -278,7 +356,7 @@ describe('AgentDetailsPopup', () => {
     await render({ isReadonly: true });
 
     expect(getButtonByText('Delete')).toBeUndefined();
-    expect(getButtonByText('Connection')).toBeUndefined();
+    expect(getButtonByText('Application credentials')).toBeUndefined();
     expect(getButtonByText('Close')).toBeTruthy();
   });
 

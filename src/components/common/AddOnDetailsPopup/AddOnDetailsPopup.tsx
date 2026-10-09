@@ -31,7 +31,7 @@ import { useAppContext } from '@/context/AppContext';
 import { useCatalogDetailsLabels } from '@/hooks/use-catalog-details-labels';
 import { useContentFileSelection } from '@/hooks/use-content-file-selection';
 import { useTranslation } from '@/hooks/use-translation';
-import { type AddOnDetailsTab, DetailsStatus } from '@/types/entity-details';
+import { type AddOnAppTab, type AddOnDetailsTab, DetailsStatus } from '@/types/entity-details';
 import { Translation } from '@/types/translation';
 
 const LOADING_SKELETON_PARAGRAPH = { rows: 1, width: '72px' };
@@ -65,7 +65,7 @@ export interface AddOnDetailsPopupProps {
   folder: string[];
   /** Enables the header's credentials action; omitted in a read-only app or without auth. */
   credentials?: AddOnDetailsCredentials;
-  /** This app's own buttons under the header, e.g. an agent's Connection. */
+  /** This app's own buttons under the header, e.g. an agent's Credentials. */
   actions?: ReactNode;
   /**
    * The entity as a catalog item, with `details` once loaded. It decides the
@@ -73,6 +73,8 @@ export interface AddOnDetailsPopupProps {
    * longer listed.
    */
   item?: CatalogItem;
+  /** This app's own tabs, shown after the catalog tabs, e.g. an agent's Settings. */
+  appTabs?: AddOnAppTab[];
   detailsStatus: DetailsStatus;
   onRetry: () => void;
   /** Loads another file of a skill's package for the Details tab file selector. */
@@ -88,10 +90,11 @@ export interface AddOnDetailsPopupProps {
 
 /**
  * The shell shared by the skill, toolset and agent details popups: identity
- * header with the folder line, an optional action row, the
- * catalog's details tabs, and the Delete (detach from the app) / Close
- * footer. Tabs and their content are the chat catalog's own components, so
- * each entity reads exactly as it does in the catalog.
+ * header with the folder line, an optional action row, the catalog's details
+ * tabs followed by any app-owned tabs, and the Delete (detach from the app) /
+ * Close footer. Catalog
+ * tabs and their content are the chat catalog's own components, so each
+ * entity reads exactly as it does in the catalog.
  */
 export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
   entityType,
@@ -102,6 +105,7 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
   credentials,
   actions,
   item,
+  appTabs,
   detailsStatus,
   onRetry,
   onLoadContentFile = loadNoContentFile,
@@ -142,13 +146,19 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
   );
   const contentFiles = useContentFileSelection(item, onLoadContentFile, labels.contentFiles.error);
 
-  const tabIds = useMemo(
+  const catalogTabIds = useMemo(
     () =>
       item == null
         ? []
         : // Without the DIAL Core URL the catalog would build relative endpoints.
           getCatalogDetailsTabs(item, { isConnectHidden: !dialCoreExternalUrl }),
     [item, dialCoreExternalUrl],
+  );
+  // App tabs follow the catalog's, which keep the catalog's own order.
+  const tabIds = useMemo(
+    (): AddOnDetailsTab[] =>
+      item == null ? [] : [...catalogTabIds, ...(appTabs ?? []).map((tab) => tab.id)],
+    [item, catalogTabIds, appTabs],
   );
   // Tabs appear as details load; until the chosen one exists, the first shows.
   const activeTabId =
@@ -159,9 +169,15 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
     [],
   );
 
+  const getTabLabel = useCallback(
+    (tabId: AddOnDetailsTab): string =>
+      appTabs?.find((tab) => tab.id === tabId)?.label ?? labels.tabs[tabId as CatalogDetailsTab],
+    [appTabs, labels],
+  );
+
   const tabItems = useMemo(
-    () => tabIds.map((id) => ({ id, label: labels.tabs[id] })),
-    [tabIds, labels],
+    () => tabIds.map((id) => ({ id, label: getTabLabel(id) })),
+    [tabIds, getTabLabel],
   );
 
   const additionalButtons = useMemo(
@@ -251,7 +267,7 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
       case CatalogDetailsTab.Api:
         return details?.api == null ? null : <ApiTab api={details.api} {...labels.connect} />;
       default:
-        return null;
+        return appTabs?.find((tab) => tab.id === tabId)?.content ?? null;
     }
   };
 
@@ -288,7 +304,7 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
         )}
         <div
           role="tabpanel"
-          aria-label={activeTabId == null ? undefined : labels.tabs[activeTabId]}
+          aria-label={activeTabId == null ? undefined : getTabLabel(activeTabId)}
           className="min-h-0 flex-1 overflow-y-auto"
         >
           {activeTabId != null && renderPanel(activeTabId, item)}
