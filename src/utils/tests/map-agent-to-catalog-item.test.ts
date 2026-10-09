@@ -4,11 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { DialEntityType } from '@/types/dial-entities';
 import type { DialModel } from '@/types/dial-entities';
 import { ResourceScope } from '@/types/resource-scope';
-import {
-  canChooseAgentTransport,
-  canConfigureAgentTransport,
-  mapAgentToCatalogItem,
-} from '@/utils/map-agent-to-catalog-item';
+import { canChooseAgentTransport, mapAgentToCatalogItem } from '@/utils/map-agent-to-catalog-item';
 
 const SCOPE_LABELS = {
   [ResourceScope.Personal]: 'Personal',
@@ -50,17 +46,6 @@ describe('mapAgentToCatalogItem', () => {
       true,
     );
     expect(mapAgentToCatalogItem(makeAgent(), OPTIONS).supportsMcp).toBe(false);
-  });
-});
-
-describe('canConfigureAgentTransport', () => {
-  it('is true only for MCP-capable applications', () => {
-    expect(canConfigureAgentTransport(makeAgent({ mcp: true }))).toBe(true);
-    expect(canConfigureAgentTransport(makeAgent())).toBe(false);
-    expect(canConfigureAgentTransport(makeAgent({ type: DialEntityType.Model, mcp: true }))).toBe(
-      false,
-    );
-    expect(canConfigureAgentTransport(undefined)).toBe(false);
   });
 });
 

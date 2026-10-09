@@ -10,22 +10,19 @@ import {
 } from '@/utils/map-model-to-catalog-item';
 
 /**
- * Whether an agent's transport (MCP or chat completion) can be chosen: only
- * MCP-capable applications are saved with a `transport` (see
- * `getQuickApp2Toolsets`).
- */
-export const canConfigureAgentTransport = (agent?: DialModel): boolean =>
-  agent?.type === DialEntityType.Application && doesAgentSupportMcp(agent);
-
-/**
- * Whether the transport is a real choice: an MCP-capable application that also
- * serves chat completion. `modelsMap` holds only the chat-interface deployments
- * (see fetchDialModels), so presence there is what makes chat completion usable.
+ * Whether the transport (MCP or chat completion) is a real choice: an
+ * MCP-capable application — only those are saved with a `transport` (see
+ * `getQuickApp2Toolsets`) — that also serves chat completion. `modelsMap` holds
+ * only the chat-interface deployments (see fetchDialModels), so presence there
+ * is what makes chat completion usable.
  */
 export const canChooseAgentTransport = (
   agent: DialModel | undefined,
   modelsMap: ModelsMap,
-): boolean => agent != null && canConfigureAgentTransport(agent) && modelsMap[agent.id] != null;
+): boolean =>
+  agent?.type === DialEntityType.Application &&
+  doesAgentSupportMcp(agent) &&
+  modelsMap[agent.id] != null;
 
 /**
  * Maps an agent — an application, MCP agent or model — to a catalog list row.
