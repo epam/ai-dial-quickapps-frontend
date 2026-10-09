@@ -77,6 +77,3 @@ export const getTemperatureScaleLabelKey = (value: number): QuickAppEditorI18nKe
   if (value > 0.65) return QuickAppEditorI18nKeys.TemperatureCreative;
   return QuickAppEditorI18nKeys.TemperatureNeutral;
 };
-
-export const isEntityIdPublic = (entity: { id: string }): boolean =>
-  entity.id.startsWith('public/');

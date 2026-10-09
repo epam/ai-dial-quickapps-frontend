@@ -30,9 +30,6 @@ vi.mock('@/components/InstructionsSection/InstructionsSection', () => ({
 vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationSection', () => ({
   default: () => <aside aria-label="Configuration">Model Temperature Process files</aside>,
 }));
-vi.mock('@/components/QuickApp2FormLegacyFields/QuickApp2FormLegacyFields', () => ({
-  default: () => null,
-}));
 vi.mock('@/components/AddOns/AddOnsSection/AddOnsSection', () => ({
   default: () => (
     <section aria-label="Add-ons">

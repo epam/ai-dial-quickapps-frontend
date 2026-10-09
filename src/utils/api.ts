@@ -19,7 +19,7 @@ export const isToolsetId = (id?: string) => id?.startsWith('toolsets/') ?? false
 
 const TOOLSETS_ID_PREFIX = 'toolsets/';
 
-/** Whether a toolset id belongs to the `public` bucket (shared with all users), mirroring the legacy `isEntityIdPublic` check. */
+/** Whether a toolset id belongs to the `public` bucket (shared with all users). */
 export const isPublicToolsetId = (toolsetId: string): boolean => {
   if (!toolsetId.startsWith(TOOLSETS_ID_PREFIX)) return false;
   const bucket = toolsetId.slice(TOOLSETS_ID_PREFIX.length).split('/')[0];

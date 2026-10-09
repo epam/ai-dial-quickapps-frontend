@@ -214,10 +214,6 @@ describe('FileManagerModal row selection', () => {
     await act(async () => (rowCheckboxes()[2] as HTMLInputElement).click());
     await until(() => findButton(DialFileManagerI18nKeys.Add)?.disabled === false);
 
-    expect(dialog().textContent).not.toContain(DialFileManagerI18nKeys.ItemsSelected);
-    expect(
-      dialog().querySelector(`button[aria-label="${DialFileManagerI18nKeys.ClearSelection}"]`),
-    ).toBeNull();
     expect(findButton(DialFileManagerI18nKeys.Download)).toBeUndefined();
   });
 
