@@ -25,7 +25,7 @@ import {
 } from '@dnd-kit/sortable';
 import { FC, memo, useCallback, useMemo, useRef, useState } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useTranslation } from '@/hooks/use-translation';
 import {
   StarterSelectionBehavior,
@@ -62,6 +62,7 @@ const ConversationStartersModal: FC<ConversationStartersModalProps> = ({
   onClose,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t: tCommon } = useTranslation(Translation.Common);
   // Seeded once per mount; ConversationStartersRow mounts the modal only while it is open.
   const [draft, setDraft] = useState<ConversationStartersValues>(values);
   const isSettingsDisabled = !hasCompleteStarter(draft.starters);
@@ -193,7 +194,7 @@ const ConversationStartersModal: FC<ConversationStartersModalProps> = ({
       bodyClassName="max-w-full px-6 py-4"
       additionalButtons={[
         {
-          label: t(QuickAppEditorI18nKeys.Close),
+          label: tCommon(CommonI18nKeys.Cancel),
           onClick: onClose,
           variant: ButtonVariant.Primary,
           appearance: ButtonAppearance.Link,
