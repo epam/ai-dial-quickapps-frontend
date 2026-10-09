@@ -23,6 +23,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated application code and developer documentation to use the new namespace consistently.
 - Removed unused i18n enum members and locale entries, and normalized common translation key names.
 
+## [0.3.0-rc.0] - 2026-10-09
+
+### ⚠ BREAKING CHANGES
+
+- The app is now a Vite-built React SPA served by `chat-api`, replacing the standalone Next.js
+  server. The Docker image, every runtime environment variable, the auth provider variables and
+  the OAuth redirect URI path (`/api/auth/callback/<provider>` →
+  `/api/v1/auth/callback/<provider>`) change. See [1.0.0](#100---2026-09-26) below for the full
+  migration steps.
+
+### Changed
+
+- The runtime image is `ghcr.io/epam/ai-dial-chat-bff`, defaulting to the `development` tag; pin a
+  tag for reproducible builds.
+- New apps default the orchestrator temperature to `0.5`; saved values are unchanged.
+- `allowedOrigin` in `CUSTOM_CLIENT_VARIABLES` accepts several origins.
+- Application credentials need a host advertising `applicationCredentials=true`; older hosts just
+  hide the action.
+- Upgraded `@epam/ai-dial-*` chat libraries to `1.2.0-rc.0`, `@epam/ai-dial-ui-kit` to `^0.15.0`
+  and `@epam/ai-dial-react-file-manager` to `^0.3.0`.
+
+### Security
+
+- Patched `zlib` in the runtime image to address CVE-2026-85091.
+
 ## [1.0.0] - 2026-09-26
 
 Migrated the app to a different tech stack: it's no longer a Next.js app with its own
