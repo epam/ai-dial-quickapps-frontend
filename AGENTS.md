@@ -113,7 +113,7 @@ Place enums in `src/types/` or `src/constants/`.
 
 All UI must support Arabic (`ar`) and any other right-to-left locale. Arabic changes the visual direction of the entire UI.
 
-The `<html dir>` attribute must be set dynamically from `src/components/I18nProvider/I18nProvider.tsx` (mounted in `main.tsx`) when the active locale is RTL. See `.claude/rules/rtl.md` for the full ruleset — it applies to every file.
+The `<html dir>` attribute is set dynamically from `src/components/I18nProvider/I18nProvider.tsx` (mounted in `main.tsx`) through `i18n.dir()`. Only English ships today, so `dir` is `ltr` in production, but every UI change must still work in RTL. See `.claude/rules/rtl.md` for the full ruleset — it applies to every file — and the `i18n` spec for what ships.
 
 ## @epam/ai-dial-ui-kit MCP tools
 

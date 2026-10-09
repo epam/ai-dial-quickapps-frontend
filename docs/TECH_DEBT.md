@@ -169,18 +169,19 @@ OpenSpec change).
       the fetch has no cancelled flag; the fallback comment names a `globals.css` that does not
       exist. Switching to the typed `ThemesApi` would not change the endpoint (both call
       `GET /api/themes`), contrary to the Themes item above.
-- [ ] **i18n and RTL docs** — `.claude/rules/rtl.md` / AGENTS.md describe a per-language locale file,
-      an RTL language list in `I18nProvider` and a language selector, none of which exist (`i18n.dir()`
-      is used; files are per namespace); `index.html` hardcodes `lang="en"`; many specs describe RTL
-      as user-visible though no RTL locale ships (see "RTL and i18n status" below).
-      `buildLocalizedText` drops the primary value when `primaryLocale` is missing.
-- [ ] **Docs out of date** — README's custom-variable table (keys do not map 1:1, flags missing),
-      credentials wording (chip / Advanced settings), RESET "last saved state", TRIGGER_SAVE "never
-      includes version"; `host-integration`'s credentials target origin and its "never broadcast"
-      vs the `*` wildcard; `dialClient.ts` in `openspec/config.yaml` and
-      `orchestrator_model-selection`.
-- [ ] **Untested scenarios** — no tests for `EditorClient` (load, save outcomes, auto-save
-      interval), `ThemeContext`, or `DataContext`'s unsolicited login results.
+- [x] **i18n and RTL docs** — `.claude/rules/rtl.md` and AGENTS.md now describe the real layout
+      (per-namespace locale files, `i18n.dir()`, no language selector, English only so `dir` is
+      `ltr` in production, `index.html`'s `lang="en"` as the pre-mount default).
+- [ ] **RTL wording in specs** — many specs still describe RTL as user-visible though no RTL
+      locale ships (see "RTL and i18n status" below). `buildLocalizedText` drops the primary value
+      when `primaryLocale` is missing.
+- [x] **Docs out of date** — README's custom-variable table, credentials wording, RESET,
+      TRIGGER_SAVE `display_version`, READY and auto-save text; `host-integration`'s outbound
+      targets, save-outcome and Reset wording, credentials trigger and the "never broadcast" vs `*`
+      contradiction; `dialClient.ts` in `openspec/config.yaml` and `orchestrator_model-selection`.
+      The origin default itself is still an open decision ("Origin validation defaults" below).
+- [x] **Untested scenarios** — `EditorClient`, `ThemeContext` and `DataContext`'s unsolicited login
+      results now have tests (`src/components/EditorClient/tests/`, `src/context/tests/`).
 
 ## Rollout and live verification
 

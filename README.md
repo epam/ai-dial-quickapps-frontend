@@ -206,16 +206,23 @@ If `DEFAULT_DEPLOYMENT` is not set, or names a deployment the user can't see, th
 
 These don't map onto a native chat-api concept, so they travel inside `CUSTOM_CLIENT_VARIABLES`
 — a single JSON object, passed through untouched to the client via `GET /api/v1/client-config`
-(`src/utils/dial-client.ts`'s `fetchAppSettings`). Keys map 1:1 onto `AppSettings`
-(`src/types/dial-entities.ts`):
+(`src/utils/dial-client.ts`'s `fetchAppSettings`), which reads them into `AppSettings`
+(`src/types/dial-entities.ts`). See the `app-configuration` spec for what each key controls:
 
-| Key               | Required | Description                                                                                                                                                                                                                                                    |
-| ----------------- | :------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `allowedOrigin`   |    No    | Origin(s) allowed to send/receive `postMessage` events with the editor iframe: one origin, a comma-separated list, or a JSON array. Set to the exact `ai-dial-chat`/admin origins in production; `*` (or unset) accepts any origin — unsafe outside local dev. |
-| `dialAdminHost`   |    No    | Origin of the admin host this app is embedded in. Default target for `@epam/ai-dial-chat-visualizer-connector`.                                                                                                                                                |
-| `dialChatHost`    |    No    | Origin of the `ai-dial-chat` host. Used instead of `dialAdminHost` when the app detects it's embedded directly inside chat (`document.location.ancestorOrigins[0]` matches this value).                                                                        |
+| Key                      | Required | Description                                                                                                                                                                                                                                                    |
+| ------------------------ | :------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `allowedOrigin`          |    No    | Origin(s) allowed to send/receive `postMessage` events with the editor iframe: one origin, a comma-separated list, or a JSON array. Set to the exact `ai-dial-chat`/admin origins in production; `*` (or unset) accepts any origin — unsafe outside local dev. |
+| `dialAdminHost`          |    No    | Origin of the admin host this app is embedded in. Default target for `@epam/ai-dial-chat-visualizer-connector`.                                                                                                                                                |
+| `dialChatHost`           |    No    | Origin of the `ai-dial-chat` host. Used instead of `dialAdminHost` when the app detects it's embedded directly inside chat (`document.location.ancestorOrigins[0]` matches this value).                                                                        |
+| `codeInterpreterEnabled` |    No    | Boolean. Offers the Code interpreter setting (read as `isCodeInterpreterEnabled`); off when unset.                                                                                                                                                             |
+| `webFetchEnabled`        |    No    | Boolean. Offers the Web fetch setting (read as `isWebFetchEnabled`); off when unset.                                                                                                                                                                           |
+| `addAttachmentEnabled`   |    No    | Boolean. Offers the Add attachment setting (read as `isAddAttachmentEnabled`); off when unset.                                                                                                                                                                 |
 
-Example: `CUSTOM_CLIENT_VARIABLES={"allowedOrigin":"https://chat.example.com,https://admin.example.com","dialAdminHost":"https://admin.example.com"}`
+`allowedOrigin` is read as `allowedOrigins`. A flag set to anything but the boolean `true` (for
+example the string `"true"`) counts as off, as does every flag when the client-config request
+fails.
+
+Example: `CUSTOM_CLIENT_VARIABLES={"allowedOrigin":"https://chat.example.com,https://admin.example.com","dialAdminHost":"https://admin.example.com","codeInterpreterEnabled":true}`
 
 The application (visualizer) name is not configured here: the host passes it per load as the
 `applicationName` query parameter of the entry URL (see the `host-integration` spec). One
@@ -270,34 +277,34 @@ document.querySelector('iframe').contentWindow.postMessage({ type: 'TRIGGER_SAVE
 
 **Host → iframe**
 
-| Message type        | Payload                                                                                     | Description                                                                                                                                                                                                                                                              |
-| ------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `TRIGGER_SAVE`      | `{ general?: { name: string; description?: string; iconUrl?: string; topics?: string[] } }` | Triggers a manual save. `general` carries the host's current General-step fields for an existing app so they're merged into this single save instead of a separate host-side write; omitted for Preview or for an app created in this session. Never includes `version`. |
-| `TRIGGER_AUTO_SAVE` | `{ ignoreDirty?: boolean }`                                                                 | Triggers an auto-save                                                                                                                                                                                                                                                    |
-| `RESET`             | —                                                                                           | Resets the form to the last saved state                                                                                                                                                                                                                                  |
+| Message type        | Payload                                                                                                                                         | Description                                                                                                                                                                                                                                                                                                                   |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TRIGGER_SAVE`      | `{ general?: { name: string; description?: string; iconUrl?: string; topics?: string[]; display_version?: string; locales?; primaryLocale? } }` | Triggers a manual save. `general` carries the host's current General-step fields for an existing app so they're merged into this single save instead of a separate host-side write (`display_version` is saved as the app's `version`; see `application_editing`); omitted for Preview or for an app created in this session. |
+| `TRIGGER_AUTO_SAVE` | `{ ignoreDirty?: boolean }`                                                                                                                     | Triggers an auto-save                                                                                                                                                                                                                                                                                                         |
+| `RESET`             | —                                                                                                                                               | Remounts the form with the values loaded when the editor opened; it does not refetch the app                                                                                                                                                                                                                                  |
 
-In addition to host-triggered `TRIGGER_AUTO_SAVE` messages, the editor auto-saves itself on a 30-second interval (only when the form is dirty) while mounted — no host action is required.
+In addition to host-triggered `TRIGGER_AUTO_SAVE` messages, the editor auto-saves itself on a 30-second interval while mounted, once the app has been saved at least once, and only when the form is dirty — no host action is required. Auto-saves (host-triggered or not) are skipped until that first save, and an invalid form is not saved; the `application_editing` spec lists when a save is skipped.
 
 **Iframe → host**
 
-| Message type         | Payload                                 | Description                                                                                                   |
-| -------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `READY`              | —                                       | Editor mounted; host should send `INIT`                                                                       |
-| `DIRTY_STATE`        | `{ isDirty: boolean }`                  | Form dirty state changed                                                                                      |
-| `SAVE_SUCCESS`       | `{ updatedApp }`, `hasChanges: boolean` | Save completed successfully; `hasChanges` is `true` if any user-editable field changed versus a no-op re-save |
-| `SAVE_ERROR`         | `{ error: string }`                     | Save failed                                                                                                   |
-| `AUTO_SAVE_COMPLETE` | —                                       | Auto-save completed successfully                                                                              |
-| `HEIGHT_CHANGE`      | `{ height: number }`                    | Editor height changed (for iframe resize)                                                                     |
+| Message type         | Payload                                 | Description                                                                                                                        |
+| -------------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `READY`              | —                                       | Editor mounted (sent before the application has loaded)                                                                            |
+| `DIRTY_STATE`        | `{ isDirty: boolean }`                  | Form dirty state changed                                                                                                           |
+| `SAVE_SUCCESS`       | `{ updatedApp }`, `hasChanges: boolean` | Manual save completed; `hasChanges` compares the saved values with those loaded when the editor opened (see `application_editing`) |
+| `SAVE_ERROR`         | `{ error: string }`                     | Save failed                                                                                                                        |
+| `AUTO_SAVE_COMPLETE` | —                                       | Auto-save completed successfully                                                                                                   |
+| `HEIGHT_CHANGE`      | `{ height: number }`                    | Editor height changed (for iframe resize)                                                                                          |
 
 ## Application credentials in the Chat host
 
 When embedded by a Chat host advertising `applicationCredentials=true` in the iframe URL,
-selected agents load their individual application metadata because deployment lists omit
-`external_services`. Agents requiring authentication expose credentials from their chip
-and Advanced settings. If metadata loading fails, the action remains available so the
-host can display its retry form. The editor sends `{ type: 'REQUEST_APPLICATION_CREDENTIALS', appId }`
-to its configured parent origin. The host opens its shared Catalog credential forms,
-including API keys, OAuth and DIAL-native offline consent. No credentials are passed to
-this editor or saved in the Quick app configuration. Closing the host dialog preserves
-unsaved transport settings. Older hosts do not advertise the query parameter, so this
-action is hidden there.
+an attached agent's details popup loads that application's external services, because
+deployment lists omit `external_services`. When the agent needs authentication, the popup
+shows an Application credentials action under its header; if loading the metadata fails, the
+action stays available so the host can show its retry form. Activating it closes the popup and
+sends `{ type: 'REQUEST_APPLICATION_CREDENTIALS', appId }` to every configured allowed origin.
+The host opens its shared Catalog credential forms, including API keys, OAuth and DIAL-native
+offline consent. No credentials are passed to this editor or saved in the Quick app
+configuration, and the editor's form state is untouched. Older hosts do not advertise the
+query parameter, so the action is hidden there. See the `application_credentials` spec.

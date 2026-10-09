@@ -75,7 +75,7 @@ context: |
   - `src/types/` — TypeScript types, interfaces, enums
   - `src/utils/` — pure utility functions, kebab-case filenames matching their
     primary export, no `.utils` suffix — including the chat-api client layer
-    (chat-api-client.ts, chat-api-fetch.ts, auth-api.ts, dialClient.ts,
+    (chat-api-client.ts, chat-api-fetch.ts, auth-api.ts, dial-client.ts,
     dial-files-api.ts, user-config.ts)
   - `src/constants/` — app-wide constants, including i18n key enums
 
@@ -139,7 +139,7 @@ rules:
       correct namespace (quickAppEditor, common).'
     - Do not call fetch directly in components — route every DIAL entity call
       through the typed chat-api client (src/utils/chat-api-client.ts,
-      dialClient.ts, dial-files-api.ts, etc.), never a hardcoded endpoint.
+      dial-client.ts, dial-files-api.ts, etc.), never a hardcoded endpoint.
     - Fetch inside useEffect with a cancelled flag to prevent setState-on-unmount warnings
     - Context value must be wrapped in useMemo — prevents all consumers re-rendering
       on every parent render

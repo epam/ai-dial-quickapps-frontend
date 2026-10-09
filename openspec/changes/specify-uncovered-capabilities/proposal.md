@@ -35,7 +35,12 @@ no production code changes:
    tracking, save gating, the auto-save interval, the save request and its outcome messages,
    the meaning of `SaveSuccess.hasChanges`, `RESET`, and the top-level `application_properties`
    shape (pointing at the spec that owns each section).
-3. `docs/TECH_DEBT.md`: coverage matrix, candidates list, and the behaviour that drafting found
+3. `host-integration`: MODIFIED wording where it contradicts the code (outbound targets and Ready
+   timing, skipped saves, Reset, unsolicited toolset login results, Origin validation, the
+   credentials request), pointing at the new specs.
+4. Tests for the scenarios that had none (`EditorClient`, `ThemeContext`, `DataContext`), and
+   README / `rtl.md` / AGENTS.md / `openspec/config.yaml` corrections.
+5. `docs/TECH_DEBT.md`: coverage matrix, candidates list, and the behaviour that drafting found
    to be a likely bug or to contradict another document, recorded for a decision instead of
    being specified.
 
@@ -51,9 +56,8 @@ endorses a bug.
 - Put toolset login into `toolsets_selection` and credentials into `agents_selection` — rejected:
   both are host round trips with their own message contracts; the selection specs keep the UI
   entry points and reference the new specs.
-- Add tests for every untested scenario in this change — deferred: the drafts list which
-  scenarios lack tests (notably `EditorClient`, `ThemeContext`, `DataContext`), recorded as a
-  follow-up so this change stays documentation-only.
+- Leave the untested scenarios for later — rejected: `EditorClient`, `ThemeContext` and
+  `DataContext` had no tests at all, and new tests are what confirm the specs match the code.
 
 ## Non-goals
 
@@ -61,13 +65,13 @@ endorses a bug.
 - Settling any item of TECH_DEBT's "Documentation and behavior reconciliation backlog"
   (origin defaults, host message protocol, stale General fields, RTL status); the specs
   describe the code and reference `host-integration` where those items live.
-- Rewording RTL scenarios in existing specs, or the README.
+- Rewording the RTL scenarios in existing specs (recorded in TECH_DEBT).
 
 ## Acceptance criteria
 
 - `openspec validate specify-uncovered-capabilities --strict` passes.
 - Every scenario is true of the current code (each requirement was checked against the source).
-- `npm test`, `npm run lint` and `npm run typecheck` still pass (no code changes).
+- `npm test`, `npm run lint` and `npm run typecheck` pass, with the new tests.
 - `docs/TECH_DEBT.md`'s matrix shows a spec for every capability in this change, and its
   findings list holds the discrepancies the drafts found.
 
@@ -76,7 +80,9 @@ endorses a bug.
 - New capabilities: `toolsets_login`, `application_credentials`, `context-files`, `theming`,
   `i18n`, `app-configuration`.
 - `application_editing`: ADDED requirements only (existing requirements unchanged).
-- `docs/TECH_DEBT.md` updates. No production code or test changes.
+- `host-integration`: MODIFIED requirements (documentation corrections, no behaviour change).
+- New tests; README, `rtl.md`, AGENTS.md, `openspec/config.yaml` and `docs/TECH_DEBT.md` updates.
+  No production code changes.
 
 ## Capabilities
 
@@ -98,10 +104,13 @@ endorses a bug.
 ### Modified Capabilities
 
 - `application_editing`: adds the editor lifecycle requirements.
+- `host-integration`: corrects the outbound, inbound, origin-validation and credentials-request
+  wording to match the code.
 
 ## Impact
 
-- **Code:** none.
+- **Code:** none in production. New tests: `src/components/EditorClient/tests/EditorClient.test.tsx`,
+  `src/context/tests/ThemeContext.test.tsx`, `src/context/tests/DataContext.test.tsx`.
 - **API / chat-api:** none; the specs name the endpoints already called.
 - **Auth / host integration:** none; the specs reference `auth` and `host-integration`.
 - **i18n:** no new strings. **RTL:** none.

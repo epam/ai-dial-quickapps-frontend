@@ -249,7 +249,7 @@ When the loaded application has no stored orchestrator model (`application_prope
 2. otherwise the first tool-supporting model, in loaded-deployment order,
 3. otherwise no model (empty value).
 
-The configured default model id SHALL come only from chat-api's client config: `GET /api/v1/client-config?appId=chat-ui` (`appConfigApi.getClientConfig({ appId: 'chat-ui' })`), field `config.defaultDeploymentId` (`ClientConfigDto.defaultDeploymentId?: string | null`), exposed to the form as `AppSettings.defaultModelId` by `fetchAppSettings` in `src/utils/dialClient.ts`. The SPA SHALL NOT contain a hardcoded deployment id used as a default or fallback.
+The configured default model id SHALL come only from chat-api's client config: `GET /api/v1/client-config?appId=chat-ui` (`appConfigApi.getClientConfig({ appId: 'chat-ui' })`), field `config.defaultDeploymentId` (`ClientConfigDto.defaultDeploymentId?: string | null`), exposed to the form as `AppSettings.defaultModelId` by `fetchAppSettings` in `src/utils/dial-client.ts`. The SPA SHALL NOT contain a hardcoded deployment id used as a default or fallback.
 
 Example response (relevant part only):
 

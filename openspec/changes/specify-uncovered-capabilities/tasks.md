@@ -38,8 +38,28 @@ behaviour is left out of the spec and recorded in `docs/TECH_DEBT.md` instead of
 - [x] 2.2 Validate: `openspec validate specify-uncovered-capabilities --strict`; `npm test`,
       `npm run lint` and `npm run typecheck` still pass.
 
-## 3. Follow-ups (out of scope, recorded in `docs/TECH_DEBT.md`)
+## 3. Tests
 
-- Tests for the scenarios the drafts marked untested, chiefly `EditorClient` (load, save
-  outcomes, auto-save interval), `ThemeContext`, and `DataContext`'s unsolicited login results.
-- A decision on each finding in TECH_DEBT's new findings section.
+- [x] 3.1 `src/components/EditorClient/tests/EditorClient.test.tsx`: load outcomes, READY on
+      mount, save trigger gating, save outcome messages, auto-save interval, Reset.
+  - Verification: `npx vitest run src/components/EditorClient`.
+- [x] 3.2 `src/context/tests/ThemeContext.test.tsx`: `theming` requirements 1–7.
+  - Verification: `npx vitest run src/context/tests/ThemeContext.test.tsx`.
+- [x] 3.3 `src/context/tests/DataContext.test.tsx`: `toolsets_login` "Unsolicited host login
+      results", the initial catalog load and a favorites failure.
+  - Verification: `npx vitest run src/context/tests/DataContext.test.tsx`, then the full `npm test`.
+
+## 4. Documentation corrections
+
+- [x] 4.1 `specs/host-integration/spec.md` (MODIFIED): outbound message targets and Ready timing,
+      skipped saves post no outcome, Reset remounts without a refetch, unsolicited toolset login
+      results, the Origin validation wording, the credentials trigger and target.
+  - Verification: `openspec validate specify-uncovered-capabilities --strict`.
+- [x] 4.2 README (custom variables, postMessage protocol, application credentials),
+      `.claude/rules/rtl.md` and AGENTS.md (locale layout, `i18n.dir()`, English only),
+      `dialClient.ts` → `dial-client.ts` in `openspec/config.yaml` and
+      `orchestrator_model-selection`.
+
+## 5. Follow-ups (out of scope, recorded in `docs/TECH_DEBT.md`)
+
+- A decision on each open finding in TECH_DEBT's findings section.
