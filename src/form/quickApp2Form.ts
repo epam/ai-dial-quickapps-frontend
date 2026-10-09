@@ -3,6 +3,7 @@ import { z } from 'zod';
 z.config({ jitless: true });
 
 import {
+  DEFAULT_AGENT_TRANSPORT,
   ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE,
   REPRESENTATION_TOOLING_FEATURE_VALUE,
   WEB_FETCH_FEATURE_VALUE,
@@ -25,7 +26,6 @@ import {
   CodeInterpreterToolset,
   ContextType,
   DialAppToolset,
-  DialAppTransportType,
   DialDeploymentSimpleTool,
   DialDeploymentToolset,
   DialDeploymentToolsetName,
@@ -389,7 +389,7 @@ export const getQuickApp2Toolsets = ({
             type: ToolsetTypes.DialApp,
             deployment_id: encodeApiUrl(entity.id),
             ...(doesAgentSupportMcp(entity) && {
-              transport: (toolData as DialAppToolset).transport ?? DialAppTransportType.MCP,
+              transport: (toolData as DialAppToolset).transport ?? DEFAULT_AGENT_TRANSPORT,
             }),
           });
         } else {

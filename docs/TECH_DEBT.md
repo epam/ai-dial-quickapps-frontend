@@ -100,11 +100,9 @@
       `@epam/ai-dial-chat-api-client` has a typed `ThemesApi`. Decide whether to switch to it or keep
       the raw call as a documented exception (see "API-layer exceptions and configuration keys" below).
       Switching changes the endpoint, so it needs its own OpenSpec change.
-- [ ] Agent transport default: an MCP-capable application with no saved `transport` is saved as
-      MCP (`?? DialAppTransportType.MCP` in `src/form/quickApp2Form.ts`), and the agent Settings tab
-      shows the same default separately (`src/components/Agents/AgentSettingsTab/AgentSettingsTab.tsx`).
-      The two must stay equal; consider one exported constant, e.g. `DEFAULT_AGENT_TRANSPORT` in
-      `src/constants/`. Left over from change `agent-settings-tab`.
+- [x] Agent transport default: the save (`src/form/quickApp2Form.ts`) and the agent Settings tab
+      (`AgentSettingsTab`) both read `DEFAULT_AGENT_TRANSPORT` (`src/constants/quick-apps.ts`), so an
+      MCP-capable application with no saved `transport` shows and saves the same value.
 - [ ] `src/types` follow-ups (left over from the constants/types clean-up):
   - done: one `LoadStatus` enum (`src/types/load-status.ts`) replaces the `DataContext` string union
     and `QuickApp2ModelStatus`, and the string → enum `switch` in `QuickApp2Form.tsx` is gone; the
