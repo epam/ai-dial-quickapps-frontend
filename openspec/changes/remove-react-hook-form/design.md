@@ -2,7 +2,7 @@
 
 ## Context
 
-See `proposal.md` for motivation and scope. The current form owner is `src/components/QuickApp2Form.tsx:76-178,180-277`, which creates one RHF form with `zodResolver(QuickApp2Schema)` and coordinates model loading, feature flags, dirty state, host-triggered save, JSON/simple toolset views, and MIME-tag recovery. Seven section components receive RHF `Control`/`FieldErrors` and contain 17 active `Controller` instances. The schema, defaults, and serialization in `src/form/quickApp2Form.ts:48-141,193-463` are already independent of RHF.
+See `proposal.md` for motivation and scope. The current form owner is `src/components/QuickApp2Form/QuickApp2Form.tsx:76-178,180-277`, which creates one RHF form with `zodResolver(QuickApp2Schema)` and coordinates model loading, feature flags, dirty state, host-triggered save, JSON/simple toolset views, and MIME-tag recovery. Seven section components receive RHF `Control`/`FieldErrors` and contain 17 active `Controller` instances. The schema, defaults, and serialization in `src/form/quickApp2Form.ts:48-141,193-463` are already independent of RHF.
 
 The replacement must preserve the existing host-facing behavior consumed by `EditorClient.tsx`, including dirty notifications and the `DIAL_EDITOR_TRIGGER_SAVE_EVENT` save path. It must also preserve controlled third-party input contracts and raw editing values such as an empty attachment-count input.
 

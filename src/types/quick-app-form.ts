@@ -38,3 +38,10 @@ interface QuickApp2FormValidationFailure {
 
 export type QuickApp2FormValidationResult =
   QuickApp2FormValidationSuccess | QuickApp2FormValidationFailure;
+
+export enum AddOnSchemaKeys {
+  id = '[schema]:id',
+  tool = '[schema]:tool',
+  isDialDeploymentTool = '[schema]:isDialDeploymentTool',
+  name = '[schema]:name',
+}

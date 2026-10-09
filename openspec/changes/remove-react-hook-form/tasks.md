@@ -5,10 +5,10 @@ Slicing strategy: **risk-first, then vertical migration**. First characterize th
 ## 1. Characterize the Existing Form Contract
 
 - [x] 1.1 Add focused tests for `QuickApp2Schema`, `getQuickApp2FormData`, and the existing form's observable validation behavior, covering valid data, invalid JSON-view data, unavailable/tool-unsupported models, and empty/invalid/valid `maxInputAttachments`; verify the relevant existing Vitest suites pass and run `npm run lint` and `npm run typecheck`.
-  - **Verification:** Run the new schema/controller tests under `src/form/tests/` and the existing `src/components/tests/QuickApp2Form.test.tsx`; confirm Zod error paths and invalid submissions are captured without changing production code.
+  - **Verification:** Run the new schema/controller tests under `src/form/tests/` and the existing `src/components/QuickApp2Form/tests/QuickApp2Form.test.tsx`; confirm Zod error paths and invalid submissions are captured without changing production code.
 
 - [x] 1.2 Add characterization coverage for dirty state, ordinary submit, host-triggered save, clean/dirty autosave, `ignoreDirty`, read-only behavior, host reset, and asynchronous model resolution; verify the tests describe observable callbacks and host messages rather than RHF internals, and run `npm run lint` and `npm run typecheck`.
-  - **Verification:** Run `src/components/tests/QuickApp2Form.test.tsx` plus the new focused tests for `EditorClient`/form orchestration; confirm invalid submit never calls `onSave` and reset restores the initial baseline.
+  - **Verification:** Run `src/components/QuickApp2Form/tests/QuickApp2Form.test.tsx` plus the new focused tests for `EditorClient`/form orchestration; confirm invalid submit never calls `onSave` and reset restores the initial baseline.
 
 - [x] 1.3 Add characterization coverage for starter-row identity and trailing-blank behavior, agents/toolsets metadata preservation, JSON/simple-view conversion, file add/remove deduplication, invalid MIME-tag rollback, and controlled value propagation; verify the existing component tests and new focused tests pass, and run `npm run lint` and `npm run typecheck`.
   - **Verification:** Run the affected component tests for `ConversationStarters`, `ContextAndTools`, and `UserAttachments`; assert generated IDs and `[schema]:*` metadata are preserved.
@@ -19,15 +19,15 @@ Slicing strategy: **risk-first, then vertical migration**. First characterize th
   - **Verification:** Add and run `src/hooks/tests/use-quick-app2-form.test.tsx`; cover initial values, field updates, dirty transitions, valid/invalid submit, nested Zod issue paths, and preservation of raw intermediate values.
 
 - [x] 2.2 Implement controller actions for asynchronous model availability/resolution, feature-gated field cleanup, and model-ready timing without changing `EditorClient`'s host contract; verify async and feature-flag tests pass and run `npm run lint` and `npm run typecheck`.
-  - **Verification:** Extend `src/hooks/tests/use-quick-app2-form.test.tsx` and `src/components/tests/QuickApp2Form.test.tsx`; assert saved model precedence, default/fallback model selection, validation intent for external updates, and disabled feature values.
+  - **Verification:** Extend `src/hooks/tests/use-quick-app2-form.test.tsx` and `src/components/QuickApp2Form/tests/QuickApp2Form.test.tsx`; assert saved model precedence, default/fallback model selection, validation intent for external updates, and disabled feature values.
 
 - [x] 2.3 Implement semantic controller actions for agents/toolsets, JSON/simple-view transitions, starter arrays, file lists, and MIME-tag error/recovery state; verify reducer tests cover atomic updates, stable IDs, metadata, and rollback, and run `npm run lint` and `npm run typecheck`.
   - **Verification:** Extend `src/hooks/tests/use-quick-app2-form.test.tsx` and run the affected `ConversationStarters`, `ContextAndTools`, and `UserAttachments` tests; assert JSON errors, simple-view reconstruction, MIME remount/reset signaling, and array invariants.
 
 ## 3. Migrate the Editor Root and Scalar Sections
 
-- [x] 3.1 Replace RHF ownership in `src/components/QuickApp2Form.tsx` with `useQuickApp2Form`, preserving both native submit and `DIAL_EDITOR_TRIGGER_SAVE_EVENT`, dirty notifications, model-ready behavior, read-only checks, and derived selectors; verify root form tests pass and run `npm run lint` and `npm run typecheck`.
-  - **Verification:** Run `src/components/tests/QuickApp2Form.test.tsx` and `src/hooks/tests/use-quick-app2-form.test.tsx`; confirm `onSave`, `onDirtyChange`, and `onModelReady` receive the same observable results for valid, invalid, clean, dirty, and reset flows.
+- [x] 3.1 Replace RHF ownership in `src/components/QuickApp2Form/QuickApp2Form.tsx` with `useQuickApp2Form`, preserving both native submit and `DIAL_EDITOR_TRIGGER_SAVE_EVENT`, dirty notifications, model-ready behavior, read-only checks, and derived selectors; verify root form tests pass and run `npm run lint` and `npm run typecheck`.
+  - **Verification:** Run `src/components/QuickApp2Form/tests/QuickApp2Form.test.tsx` and `src/hooks/tests/use-quick-app2-form.test.tsx`; confirm `onSave`, `onDirtyChange`, and `onModelReady` receive the same observable results for valid, invalid, clean, dirty, and reset flows.
 
 - [x] 3.2 Migrate `InstructionsSection`, `AdvancedSettingsSection`, `AgentSkillsFormSection`, and `ModelConfigurationSection` from RHF `Control`/`Controller` to typed value/change/error/blur adapters while preserving rich editor, model, temperature, toggle, and read-only behavior; update their tests and run `npm run lint` and `npm run typecheck`.
   - **Verification:** Run `src/components/InstructionsSection/tests/InstructionsSection.test.tsx`, `src/components/Orchestrator/ModelConfigurationSection/tests/ModelConfigurationSection.test.tsx`, and the affected section tests; confirm values propagate in both directions and validation errors remain associated with the same fields.
@@ -42,13 +42,13 @@ Slicing strategy: **risk-first, then vertical migration**. First characterize th
   - **Note:** the in-flight change `redesign-conversation-starters` replaces this section with an Add-ons row and a draft modal; land the migration there rather than on the old section.
 
 - [x] 4.4 Move user attachments off RHF — done in change `move-attachments-to-settings` (epam/ai-dial-quickapps-frontend#199):
-  - `UserAttachmentsSection` is deleted and replaced by an Attachments row in Configuration (`src/components/Attachments/AttachmentsSection.tsx`), driven by `useQuickApp2Form` (`inputAttachmentTypes` plus the form-only `attachmentsEnabled`).
+  - `UserAttachmentsSection` is deleted and replaced by an Attachments row in Configuration (`src/components/Attachments/AttachmentsSection/AttachmentsSection.tsx`), driven by `useQuickApp2Form` (`inputAttachmentTypes` plus the form-only `attachmentsEnabled`).
   - `inputAttachmentTypes` is out of `QuickApp2FormLegacyFields`' `LEGACY_FIELDS`, together with the attachment error bridge.
   - `attachmentTypesResetKey`, `setAttachmentTypes` and the MIME regex are removed from the controller. That change dropped MIME validation by design (parity with the DIAL admin app), so the "invalid-tag rollback" characterization in 1.3 / 2.3 no longer applies.
   - Max attachments already moved to the Advanced Settings popup (`populate-advanced-settings-popup`).
   - **Not a pure refactor:** the UI and validation changed under that change's own specs (`application_user-attachments`, `application_editor-layout`).
 
-- [ ] 4.3 Update `src/components/tests/QuickApp2Form.test.tsx`, `src/components/InstructionsSection/tests/InstructionsSection.test.tsx`, and `src/components/Orchestrator/ModelConfigurationSection/tests/ModelConfigurationSection.test.tsx` to remove RHF test fixtures and exercise the project-owned adapter contracts; verify no test imports RHF and run `npm run lint` and `npm run typecheck`.
+- [ ] 4.3 Update `src/components/QuickApp2Form/tests/QuickApp2Form.test.tsx`, `src/components/InstructionsSection/tests/InstructionsSection.test.tsx`, and `src/components/Orchestrator/ModelConfigurationSection/tests/ModelConfigurationSection.test.tsx` to remove RHF test fixtures and exercise the project-owned adapter contracts; verify no test imports RHF and run `npm run lint` and `npm run typecheck`.
   - **Verification:** Run all three named Vitest files and repository search for `react-hook-form`/`@hookform/resolvers`; only dependency cleanup references or planning documents may remain.
 
 ## 5. Remove the Dependency and Document Completion

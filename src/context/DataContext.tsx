@@ -1,9 +1,10 @@
-import React, {
+import {
   createContext,
   useCallback,
   useContext,
   useEffect,
   useMemo,
+  type ReactNode,
   useReducer,
 } from 'react';
 
@@ -90,7 +91,7 @@ const initialState: DataState = {
   status: LoadStatus.Idle,
 };
 
-function reducer(state: DataState, action: DataAction): DataState {
+const reducer = (state: DataState, action: DataAction): DataState => {
   switch (action.type) {
     case 'LOADING':
       return { ...state, status: LoadStatus.Loading };
@@ -137,7 +138,7 @@ function reducer(state: DataState, action: DataAction): DataState {
     default:
       return state;
   }
-}
+};
 
 interface DataContextValue extends DataState {
   /** `models`, stamped with `isUserFavorite`/`isStarred` from `favoriteIds`. */
@@ -175,7 +176,11 @@ const DataContext = createContext<DataContextValue>({
   refreshAll: () => undefined,
 });
 
-export function DataContextProvider({ children }: { children: React.ReactNode }) {
+interface DataContextProviderProps {
+  children: ReactNode;
+}
+
+export const DataContextProvider = ({ children }: DataContextProviderProps) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { isReady, settings } = useAppContext();
   // The user's bucket comes from `/api/v1/auth/me` (already fetched by
@@ -184,11 +189,12 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
   const { user } = useAuthContext();
   const bucket = user?.bucket;
 
-  const loadAll = useCallback(() => {
+  const loadAll = useCallback(async () => {
     dispatch({ type: 'LOADING' });
-    const favorites = fetchFavoriteIds()
-      .then((ids) => ({ ids }))
-      .catch((err: unknown) => {
+    const loadFavorites = async (): Promise<{ ids: Set<string>; error?: string }> => {
+      try {
+        return { ids: await fetchFavoriteIds() };
+      } catch (err: unknown) {
         // A genuinely-empty config is already resolved to an empty set inside
         // fetchFavoriteIds (404 case). Anything that lands here is a real
         // failure (network/auth/parse) — report it distinctly instead of
@@ -196,50 +202,50 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
         const message = err instanceof Error ? err.message : 'Failed to load favorites';
         console.error('[DataContext] failed to load favorites:', message);
         return { ids: new Set<string>(), error: message };
-      });
-    Promise.all([
-      fetchDialModels(),
-      fetchDialToolsets(),
-      fetchDialMcpAgents(),
-      fetchDialSkills(),
-      favorites,
-    ])
-      .then(([modelsRaw, toolsets, mcpAgentsRaw, skills, favoritesPayload]) => {
-        // The `mcp` deployment interface also returns entries that are
-        // already present as chat models/applications — for those, fold the
-        // mcp flag into the existing chat-interface entry (so it's still
-        // configurable for MCP transport) instead of discarding it, then
-        // drop the now-redundant mcp-interface copy so the picker doesn't
-        // show duplicates. Entries also present as toolsets are dropped
-        // outright, since toolsets are shown from `fetchDialToolsets`.
-        const mcpIds = new Set(mcpAgentsRaw.map((a) => a.id));
-        const models = modelsRaw.map((m) =>
-          mcpIds.has(m.id) ? { ...m, mcp: true, features: { ...m.features, mcp: true } } : m,
-        );
-        const existingIds = new Set([...models.map((m) => m.id), ...toolsets.map((t) => t.id)]);
-        const mcpAgents = mcpAgentsRaw.filter((agent) => !existingIds.has(agent.id));
+      }
+    };
+    try {
+      const [modelsRaw, toolsets, mcpAgentsRaw, skills, favoritesPayload] = await Promise.all([
+        fetchDialModels(),
+        fetchDialToolsets(),
+        fetchDialMcpAgents(),
+        fetchDialSkills(),
+        loadFavorites(),
+      ]);
+      // The `mcp` deployment interface also returns entries that are
+      // already present as chat models/applications — for those, fold the
+      // mcp flag into the existing chat-interface entry (so it's still
+      // configurable for MCP transport) instead of discarding it, then
+      // drop the now-redundant mcp-interface copy so the picker doesn't
+      // show duplicates. Entries also present as toolsets are dropped
+      // outright, since toolsets are shown from `fetchDialToolsets`.
+      const mcpIds = new Set(mcpAgentsRaw.map((a) => a.id));
+      const models = modelsRaw.map((m) =>
+        mcpIds.has(m.id) ? { ...m, mcp: true, features: { ...m.features, mcp: true } } : m,
+      );
+      const existingIds = new Set([...models.map((m) => m.id), ...toolsets.map((t) => t.id)]);
+      const mcpAgents = mcpAgentsRaw.filter((agent) => !existingIds.has(agent.id));
 
-        dispatch({ type: 'MODELS_LOADED', payload: models });
-        dispatch({ type: 'TOOLSETS_LOADED', payload: toolsets });
-        dispatch({ type: 'MCP_AGENTS_LOADED', payload: mcpAgents });
-        dispatch({ type: 'SKILLS_LOADED', payload: skills });
-        dispatch({ type: 'FAVORITES_LOADED', payload: favoritesPayload });
-        // Dispatched before READY so chips rendered from saved config get
-        // their scope label with the rest of the data (no label flash).
-        dispatch({ type: 'BUCKET_LOADED', payload: bucket });
-        dispatch({ type: 'READY' });
-      })
-      .catch((err: unknown) => {
-        dispatch({
-          type: 'ERROR',
-          payload: err instanceof Error ? err.message : 'Failed to load data',
-        });
+      dispatch({ type: 'MODELS_LOADED', payload: models });
+      dispatch({ type: 'TOOLSETS_LOADED', payload: toolsets });
+      dispatch({ type: 'MCP_AGENTS_LOADED', payload: mcpAgents });
+      dispatch({ type: 'SKILLS_LOADED', payload: skills });
+      dispatch({ type: 'FAVORITES_LOADED', payload: favoritesPayload });
+      // Dispatched before READY so chips rendered from saved config get
+      // their scope label with the rest of the data (no label flash).
+      dispatch({ type: 'BUCKET_LOADED', payload: bucket });
+      dispatch({ type: 'READY' });
+    } catch (err: unknown) {
+      dispatch({
+        type: 'ERROR',
+        payload: err instanceof Error ? err.message : 'Failed to load data',
       });
+    }
   }, [bucket]);
 
   useEffect(() => {
     if (!isReady) return;
-    loadAll();
+    void loadAll();
   }, [isReady, loadAll]);
 
   // The host can push TOOLSET_LOGIN_RESULT proactively — e.g. a user signs
@@ -341,8 +347,6 @@ export function DataContextProvider({ children }: { children: React.ReactNode })
       {children}
     </DataContext.Provider>
   );
-}
+};
 
-export function useDataContext(): DataContextValue {
-  return useContext(DataContext);
-}
+export const useDataContext = (): DataContextValue => useContext(DataContext);

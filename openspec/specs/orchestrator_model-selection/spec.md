@@ -259,7 +259,7 @@ Example response (relevant part only):
 
 A stored model SHALL never be replaced by the pre-selection. The pre-selected value SHALL become the form's initial value: it SHALL NOT mark the form dirty, and it SHALL be persisted only when the application is saved.
 
-The `model` value is owned by the editor form state (`useQuickApp2Form` in `src/hooks/use-quick-app2-form.ts`). The loaded deployments come from `DataContext`, and the settings come from the editor's app state. The model id lists passed to the form are memoised with `useMemo` in `src/components/QuickApp2Form.tsx`. The pre-selection has no user-visible strings, UI, accessibility or RTL surface of its own.
+The `model` value is owned by the editor form state (`useQuickApp2Form` in `src/hooks/use-quick-app2-form.ts`). The loaded deployments come from `DataContext`, and the settings come from the editor's app state. The model id lists passed to the form are memoised with `useMemo` in `src/components/QuickApp2Form/QuickApp2Form.tsx`. The pre-selection has no user-visible strings, UI, accessibility or RTL surface of its own.
 
 #### Scenario: Configured default is available
 

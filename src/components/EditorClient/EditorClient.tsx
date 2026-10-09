@@ -15,22 +15,15 @@ import { ForbiddenError } from '@/utils/forbidden-error';
 import { decodeDialPath, fetchAppSettings, fetchDialApp, saveDialApp } from '@/utils/dial-client';
 import { buildLocalizedText } from '@/utils/get-localized-text';
 import { hasQuickAppChanges, type StoredGeneralFields } from '@/utils/has-quick-app-changes';
-import { QuickApp2Form, type QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form';
-import { AUTO_SAVE_INTERVAL_MS, DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
+import { QuickApp2Form, type QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form/QuickApp2Form';
+import { AUTO_SAVE_INTERVAL_MS } from '@/constants/editor';
 import {
   InboundMessage,
   InboundMessageType,
   OutboundMessageType,
   TriggerSaveGeneralPayload,
 } from '@/types/editor-messages';
-
-const dispatchTriggerSave = (detail: {
-  isAutoSave: boolean;
-  ignoreDirty?: boolean;
-  general?: TriggerSaveGeneralPayload;
-}) => {
-  window.dispatchEvent(new CustomEvent(DIAL_EDITOR_TRIGGER_SAVE_EVENT, { detail }));
-};
+import { dispatchTriggerSave } from '@/utils/dispatch-trigger-save';
 
 interface EditorInnerProps {
   appState: AppState;
@@ -87,7 +80,7 @@ interface EditorClientProps {
   onReadyToSave?: () => void;
 }
 
-export default function EditorClient({ onReadyToSave }: EditorClientProps) {
+const EditorClient = ({ onReadyToSave }: EditorClientProps) => {
   const { language } = useTranslation(Translation.Common);
   const [appState, setAppState] = useState<AppState | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -110,28 +103,31 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
     let cancelled = false;
     const rawAppId = new URLSearchParams(window.location.search).get('id');
     const appId = rawAppId ? decodeDialPath(rawAppId) : null;
+    const initialize = async (id: string) => {
+      try {
+        const [app, settings] = await Promise.all([fetchDialApp(id), fetchAppSettings()]);
+        if (cancelled) return;
+        allowedOriginsRef.current = settings.allowedOrigins ?? [];
+        setAppState({
+          app: app ?? { id, name: '' },
+          settings,
+          isReady: true,
+        });
+        setHasSavedOnce(!!app);
+      } catch (err: unknown) {
+        isInitializedRef.current = false;
+        if (cancelled) return;
+        if (err instanceof ForbiddenError) {
+          setIsForbidden(true);
+          return;
+        }
+        setError(err instanceof Error ? err.message : 'Initialization failed');
+      }
+    };
+
     if (appId && !isInitializedRef.current) {
       isInitializedRef.current = true;
-      Promise.all([fetchDialApp(appId), fetchAppSettings()])
-        .then(([app, settings]) => {
-          if (cancelled) return;
-          allowedOriginsRef.current = settings.allowedOrigins ?? [];
-          setAppState({
-            app: app ?? { id: appId, name: '' },
-            settings,
-            isReady: true,
-          });
-          setHasSavedOnce(!!app);
-        })
-        .catch((err: unknown) => {
-          isInitializedRef.current = false;
-          if (cancelled) return;
-          if (err instanceof ForbiddenError) {
-            setIsForbidden(true);
-            return;
-          }
-          setError(err instanceof Error ? err.message : 'Initialization failed');
-        });
+      void initialize(appId);
     }
 
     const handleMessage = (event: MessageEvent) => {
@@ -147,7 +143,7 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
           const generalFromHost = isAutoSave ? undefined : msg.general;
           dispatchTriggerSave({
             isAutoSave,
-            ignoreDirty: isAutoSave ? msg.payload?.ignoreDirty : undefined,
+            shouldIgnoreDirty: isAutoSave ? msg.payload?.ignoreDirty : undefined,
             general: generalFromHost,
           });
           break;
@@ -337,4 +333,6 @@ export default function EditorClient({ onReadyToSave }: EditorClientProps) {
       </DataContextProvider>
     </AppContextProvider>
   );
-}
+};
+
+export default EditorClient;

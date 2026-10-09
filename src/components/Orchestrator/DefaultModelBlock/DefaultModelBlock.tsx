@@ -27,7 +27,7 @@ const ModelCatalogModal = lazy(async () => ({
 interface DefaultModelBlockProps {
   value: string;
   onChange: (modelId: string) => void;
-  disabled?: boolean;
+  isDisabled?: boolean;
   tooltip?: string;
   error?: string;
 }
@@ -35,7 +35,7 @@ interface DefaultModelBlockProps {
 export const DefaultModelBlock: FC<DefaultModelBlockProps> = ({
   value,
   onChange,
-  disabled,
+  isDisabled,
   tooltip,
   error,
 }) => {
@@ -71,7 +71,7 @@ export const DefaultModelBlock: FC<DefaultModelBlockProps> = ({
           }
           label={t(QuickAppEditorI18nKeys.Change)}
           onClick={handleOpen}
-          disabled={disabled || isLoading}
+          disabled={isDisabled || isLoading}
           tooltipProps={tooltip ? { tooltip } : undefined}
         />
       }
@@ -81,7 +81,7 @@ export const DefaultModelBlock: FC<DefaultModelBlockProps> = ({
           modelId={value}
           model={selectedModel}
           isLoading={isLoading}
-          isDisabled={disabled}
+          isDisabled={isDisabled}
           error={error}
         />
       </div>

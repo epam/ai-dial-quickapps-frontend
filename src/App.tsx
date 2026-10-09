@@ -24,7 +24,15 @@ const HomePageContent: FC = () => {
   const connectorTargetRef = useRef<{ host: string; applicationName: string } | null>(null);
 
   useEffect(() => {
-    void getAuthProviders().then(setProviders);
+    const loadProviders = async () => {
+      try {
+        setProviders(await getAuthProviders());
+      } catch (err: unknown) {
+        // Providers stay unknown, so the spinner keeps showing, as before.
+        console.error('[App] failed to load auth providers:', err);
+      }
+    };
+    void loadProviders();
   }, []);
 
   useEffect(() => {
@@ -34,9 +42,9 @@ const HomePageContent: FC = () => {
   }, [user, provider, logout]);
 
   useEffect(() => {
-    void fetchAppSettings().then((s) => {
-      setSettings(s);
-    });
+    // fetchAppSettings never rejects: a failed load resolves to `{}`.
+    const loadSettings = async () => setSettings(await fetchAppSettings());
+    void loadSettings();
   }, []);
 
   useEffect(() => {

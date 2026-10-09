@@ -190,9 +190,9 @@ documentation correction.
       documentation and eventual `app-configuration` spec.
 - [ ] **RTL and i18n status** — distinguish the current English/legacy behavior from the future
       dynamic locale and RTL requirement; do not present deferred behavior as implemented.
-- [ ] **Repository conventions and stale comments** — reconcile the documented component path
-      convention with the current flat `src/components/QuickApp2Form.tsx`, and correct comments
-      that still refer to removed endpoints or pre-migration behavior.
+- [ ] **Stale comments** — correct comments that still refer to removed endpoints or
+      pre-migration behavior. (The component folder convention is now followed: every component,
+      `QuickApp2Form` included, lives in its own PascalCase folder with a `tests/` subfolder.)
 
 Resolve each observable behavior decision through the normal OpenSpec change workflow. Keep
 pure documentation corrections in the same reconciliation change only when they do not alter
@@ -239,7 +239,7 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 ### Application editing/persistence (survives migration — core domain logic)
 
-- src/components/EditorClient/EditorClient.tsx, src/components/QuickApp2Form.tsx, src/form/**, src/utils/application.ts,
+- src/components/EditorClient/EditorClient.tsx, src/components/QuickApp2Form/QuickApp2Form.tsx, src/form/**, src/utils/application.ts,
   has-quick-app-changes.ts, get-updated-at-timestamp.ts
 - Covers: load/save/auto-save lifecycle, dirty-state tracking, application_properties serialization
 - Proposed: application_editing (leaves room for a sibling below)
@@ -295,7 +295,7 @@ Update this matrix as each capability is explored, specified, tested, and checke
 ### Context files (file manager)
 
 - utils/dial-files-api.ts (list, upload, download, rename, delete, create-folder, list-shared), hooks/use-dial-file-manager.ts, utils/dial-file-manager.ts,
-  components/common/FilesSelector/** (the file-manager modal; the Add-ons row lives in components/KnowledgeBase/), types/dial-files.ts, dial-file-path.ts, file-download.ts, file-name.ts, decode-file-url.ts, safe-decode-uri.ts
+  components/common/FileManagerModal/** (the file-manager modal; the Add-ons row lives in components/KnowledgeBase/), types/dial-files.ts, dial-file-path.ts, file-download.ts, file-name.ts, decode-file-url.ts, safe-decode-uri.ts
 - Standalone top-level concept, no sibling domain → context-files
 
 ### Theming

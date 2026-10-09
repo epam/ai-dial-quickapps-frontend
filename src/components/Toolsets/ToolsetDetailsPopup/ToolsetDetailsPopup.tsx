@@ -45,7 +45,7 @@ export const ToolsetDetailsPopup: FC<ToolsetDetailsPopupProps> = ({
   const credentials = useToolsetCredentials(toolset);
 
   const { name, version, iconUrl } = getAddOnDisplay(toolsetId, toolset, language);
-  const needsAuthentication =
+  const isAuthenticationRequired =
     toolset?.authSettings != null &&
     toolset.authSettings.authenticationType !== ToolsetAuthType.None;
 
@@ -80,7 +80,7 @@ export const ToolsetDetailsPopup: FC<ToolsetDetailsPopupProps> = ({
       version={version}
       iconUrl={iconUrl}
       folder={folder}
-      credentials={toolset && needsAuthentication && !isReadonly ? credentials : undefined}
+      credentials={toolset && isAuthenticationRequired && !isReadonly ? credentials : undefined}
       item={item}
       detailsStatus={status}
       onRetry={retry}
