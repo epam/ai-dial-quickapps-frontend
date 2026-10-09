@@ -143,7 +143,7 @@ const EditorClient = ({ onReadyToSave }: EditorClientProps) => {
           const generalFromHost = isAutoSave ? undefined : msg.general;
           dispatchTriggerSave({
             isAutoSave,
-            ignoreDirty: isAutoSave ? msg.payload?.ignoreDirty : undefined,
+            shouldIgnoreDirty: isAutoSave ? msg.payload?.ignoreDirty : undefined,
             general: generalFromHost,
           });
           break;

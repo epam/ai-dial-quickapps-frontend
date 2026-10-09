@@ -60,7 +60,7 @@ const createFake = (label: string, overrides: Partial<UseDialFileManagerResult> 
     onRenameValidate: vi.fn().mockReturnValue(null),
     onMoveToFiles: vi.fn(),
     isRenaming: false,
-    uploadEnabled: true,
+    isUploadEnabled: true,
     isNewButtonDisabled: false,
     disabledNewButtonTooltip: 'no permission',
     visibleColumns: [],
@@ -96,8 +96,8 @@ beforeEach(() => {
   (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   fakes = {
     [DialFileManagerTabs.MyFiles]: createFake('My files'),
-    [DialFileManagerTabs.Shared]: createFake('Shared', { uploadEnabled: false }),
-    [DialFileManagerTabs.Organization]: createFake('Organization', { uploadEnabled: false }),
+    [DialFileManagerTabs.Shared]: createFake('Shared', { isUploadEnabled: false }),
+    [DialFileManagerTabs.Organization]: createFake('Organization', { isUploadEnabled: false }),
   };
   enabled = {};
   onNotification = vi.fn<NonNullable<UseDialFileSourcesOptions['onNotification']>>();
@@ -247,11 +247,11 @@ describe('useDialFileSources — All view', () => {
 
   it('takes permissions from the source of the current folder', async () => {
     await render(DialFileManagerTabs.All);
-    expect(latest.uploadEnabled).toBe(true);
+    expect(latest.isUploadEnabled).toBe(true);
 
     await act(async () => latest.onPathChange('/Shared/team/'));
 
-    expect(latest.uploadEnabled).toBe(false);
+    expect(latest.isUploadEnabled).toBe(false);
   });
 
   it('disables the Add menu with a hint when no source folder is open', async () => {
@@ -260,7 +260,7 @@ describe('useDialFileSources — All view', () => {
     await act(async () => latest.onPathChange(undefined));
 
     expect(latest.isNewButtonDisabled).toBe(true);
-    expect(latest.uploadEnabled).toBe(false);
+    expect(latest.isUploadEnabled).toBe(false);
     expect(latest.disabledNewButtonTooltip).toBe(DialFileManagerI18nKeys.AddDisabledAtAllRoot);
   });
 

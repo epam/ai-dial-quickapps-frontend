@@ -129,7 +129,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
     onMoveToFiles,
     onRenameValidate,
     isRenaming,
-    uploadEnabled,
+    isUploadEnabled,
     isNewButtonDisabled,
     disabledNewButtonTooltip,
     visibleColumns,
@@ -501,7 +501,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
               treeOptions={treeOptions}
               toolbarOptions={toolbarOptions}
               emptyStateTitle={t(DialFileManagerI18nKeys.Empty)}
-              uploadEnabled={uploadEnabled}
+              uploadEnabled={isUploadEnabled}
               sharedWithMeIds={sharedWithMeIds}
               onUploadFiles={onUploadFiles}
               onValidateUpload={onValidateUpload}
@@ -512,7 +512,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
               onMoveToFiles={onMoveToFiles}
               onRenameValidate={onRenameValidate}
               renameValidationMessages={renameValidationMessages}
-              isRenameFileAvailable={uploadEnabled}
+              isRenameFileAvailable={isUploadEnabled}
               deleteConfirmationOptions={deleteConfirmationOptions}
               conflictResolutionPopupOptions={conflictResolutionPopupOptions}
               forbiddenSymbolsRegExp={NOT_ALLOWED_SYMBOLS_REGEXP}

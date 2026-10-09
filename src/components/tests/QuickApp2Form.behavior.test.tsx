@@ -96,7 +96,7 @@ vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationS
     onModelChange,
     advancedSettings,
     onAdvancedSettingsSave,
-    attachmentsEnabled,
+    isAttachmentsEnabled,
     onAttachmentsEnabledChange,
     inputAttachmentTypes,
     onInputAttachmentTypesChange,
@@ -106,14 +106,14 @@ vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationS
     onModelChange: (value: string) => void;
     advancedSettings: AdvancedSettingsValues;
     onAdvancedSettingsSave: (values: AdvancedSettingsValues) => void;
-    attachmentsEnabled: boolean;
+    isAttachmentsEnabled: boolean;
     onAttachmentsEnabledChange: (isEnabled: boolean) => void;
     inputAttachmentTypes: string[];
     onInputAttachmentTypesChange: (mimeTypes: string[]) => void;
     errors: Record<string, string | undefined>;
   }) => (
     <div>
-      <output data-testid="attachments-enabled">{String(attachmentsEnabled)}</output>
+      <output data-testid="attachments-enabled">{String(isAttachmentsEnabled)}</output>
       <output data-testid="attachment-value">{inputAttachmentTypes.join('|')}</output>
       <output data-testid="attachment-error">{errors.inputAttachmentTypes ?? ''}</output>
       <button type="button" onClick={() => onAttachmentsEnabledChange(true)}>
@@ -199,7 +199,10 @@ vi.mock('@/components/KnowledgeBase/KnowledgeBaseRow', () => {
     <div>
       <output data-testid="knowledge-readonly">{String(isReadonly)}</output>
       <output data-testid="knowledge-files">{files.join('|')}</output>
-      <button type="button" onClick={() => onAddFiles(['files/abc/a.pdf', 'files/abc/new%20file.pdf'])}>
+      <button
+        type="button"
+        onClick={() => onAddFiles(['files/abc/a.pdf', 'files/abc/new%20file.pdf'])}
+      >
         Add knowledge files
       </button>
       <button type="button" onClick={() => onRemoveFile('files/abc/a.pdf')}>
@@ -264,7 +267,7 @@ const getButtonByText = (text: string) =>
   ) as HTMLButtonElement;
 
 const renderForm = (
-  props: { onSave?: Mock<FormSaveHandler>; readonly?: boolean; key?: string } = {},
+  props: { onSave?: Mock<FormSaveHandler>; isReadonly?: boolean; key?: string } = {},
 ) => {
   const onSave = props.onSave ?? vi.fn<FormSaveHandler>();
   const onDirtyChange = vi.fn();
@@ -277,7 +280,7 @@ const renderForm = (
         onSave={onSave}
         onDirtyChange={onDirtyChange}
         onModelReady={onModelReady}
-        readonly={props.readonly}
+        isReadonly={props.isReadonly}
       />,
     );
   });
@@ -304,7 +307,7 @@ const submitForm = async () => {
   });
 };
 
-const triggerSave = async (detail: { isAutoSave: boolean; ignoreDirty?: boolean }) => {
+const triggerSave = async (detail: { isAutoSave: boolean; shouldIgnoreDirty?: boolean }) => {
   await act(async () => {
     window.dispatchEvent(new CustomEvent(DIAL_EDITOR_TRIGGER_SAVE_EVENT, { detail }));
     await Promise.resolve();
@@ -446,7 +449,7 @@ describe('QuickApp2Form observable behavior', () => {
       );
       await Promise.resolve();
     });
-    await triggerSave({ isAutoSave: true, ignoreDirty: true });
+    await triggerSave({ isAutoSave: true, shouldIgnoreDirty: true });
     expect(onSave).toHaveBeenCalledTimes(2);
   });
 
@@ -482,7 +485,7 @@ describe('QuickApp2Form observable behavior', () => {
   });
 
   it('ignores host-triggered saves while read-only', async () => {
-    const { onSave } = renderForm({ readonly: true });
+    const { onSave } = renderForm({ isReadonly: true });
 
     await triggerSave({ isAutoSave: false });
 

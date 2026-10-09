@@ -25,7 +25,7 @@ export interface ModelConfigurationSectionProps {
   isWebFetchEnabled: boolean;
   advancedSettings: AdvancedSettingsValues;
   onAdvancedSettingsSave: (values: AdvancedSettingsValues) => void;
-  attachmentsEnabled: boolean;
+  isAttachmentsEnabled: boolean;
   onAttachmentsEnabledChange: (isEnabled: boolean) => void;
   inputAttachmentTypes: string[];
   onInputAttachmentTypesChange: (mimeTypes: string[]) => void;
@@ -43,7 +43,7 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
   isWebFetchEnabled,
   advancedSettings,
   onAdvancedSettingsSave,
-  attachmentsEnabled,
+  isAttachmentsEnabled,
   onAttachmentsEnabledChange,
   inputAttachmentTypes,
   onInputAttachmentTypesChange,
@@ -65,7 +65,7 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
         <DefaultModelBlock
           value={model}
           onChange={onModelChange}
-          disabled={isReadonly}
+          isDisabled={isReadonly}
           tooltip={tooltip}
           error={errors.model}
         />
@@ -83,7 +83,7 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
         />
 
         <AttachmentsSection
-          isEnabled={attachmentsEnabled}
+          isEnabled={isAttachmentsEnabled}
           value={inputAttachmentTypes}
           error={errors.inputAttachmentTypes}
           isReadonly={isReadonly}

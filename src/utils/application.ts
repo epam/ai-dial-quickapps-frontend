@@ -34,7 +34,7 @@ export const getQuickAppItemNameFromConfig = (
       (item as DialAppToolset).name ||
       decodeApiUrl(
         parseEntityApiKey(splitEntityId(item.deployment_id).name, {
-          parseVersion: true,
+          shouldParseVersion: true,
         }).name,
       )
     );
@@ -43,7 +43,7 @@ export const getQuickAppItemNameFromConfig = (
   if (isApplicationId(item.deployment_id)) {
     return decodeApiUrl(
       parseEntityApiKey(splitEntityId(item.deployment_id).name, {
-        parseVersion: true,
+        shouldParseVersion: true,
       }).name,
     );
   }
@@ -80,4 +80,3 @@ export const getTemperatureScaleLabelKey = (value: number): QuickAppEditorI18nKe
 
 export const isEntityIdPublic = (entity: { id: string }): boolean =>
   entity.id.startsWith('public/');
-

@@ -64,7 +64,7 @@ export interface TriggerSaveGeneralPayload {
 /** The `detail` of the window-level trigger-save event the form listens for. */
 export interface TriggerSaveEventDetail {
   isAutoSave?: boolean;
-  ignoreDirty?: boolean;
+  shouldIgnoreDirty?: boolean;
   general?: TriggerSaveGeneralPayload;
 }
 

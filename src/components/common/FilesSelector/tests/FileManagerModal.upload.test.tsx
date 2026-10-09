@@ -54,7 +54,7 @@ const sources = (uploadBatchState: FileUploadBatchState | null) =>
     onRenameValidate: vi.fn(),
     onMoveToFiles: vi.fn(),
     isRenaming: false,
-    uploadEnabled: true,
+    isUploadEnabled: true,
     isNewButtonDisabled: false,
     disabledNewButtonTooltip: '',
     visibleColumns: [],

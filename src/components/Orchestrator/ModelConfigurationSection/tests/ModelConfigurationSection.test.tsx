@@ -17,8 +17,8 @@ vi.mock('@/utils/application', () => ({
     model.allowTemperature !== false,
 }));
 vi.mock('@/components/Orchestrator/DefaultModelBlock/DefaultModelBlock', () => ({
-  DefaultModelBlock: ({ disabled }: { disabled?: boolean }) => (
-    <button type="button" disabled={disabled}>
+  DefaultModelBlock: ({ isDisabled }: { isDisabled?: boolean }) => (
+    <button type="button" disabled={isDisabled}>
       Model picker
     </button>
   ),
@@ -77,7 +77,7 @@ const TestForm = ({ isReadonly = false, isProcessLargeFilesAvailable = true }: T
       webFetch: false,
     }}
     onAdvancedSettingsSave={vi.fn()}
-    attachmentsEnabled
+    isAttachmentsEnabled
     onAttachmentsEnabledChange={vi.fn()}
     inputAttachmentTypes={['application/pdf']}
     onInputAttachmentTypesChange={vi.fn()}
@@ -87,7 +87,8 @@ const TestForm = ({ isReadonly = false, isProcessLargeFilesAvailable = true }: T
 let root: Root;
 let container: HTMLDivElement;
 
-const getSettings = () => container.querySelector('[data-testid="settings-section"]') as HTMLElement;
+const getSettings = () =>
+  container.querySelector('[data-testid="settings-section"]') as HTMLElement;
 
 beforeEach(() => {
   (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;

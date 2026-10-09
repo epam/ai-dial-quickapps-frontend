@@ -34,14 +34,14 @@ interface QuickApp2FormProps {
   onDirtyChange?: (isDirty: boolean) => void;
   /** Called once a model is resolved for the form — either the app's saved model or the default. */
   onModelReady?: () => void;
-  readonly?: boolean;
+  isReadonly?: boolean;
 }
 
 export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   onSave,
   onDirtyChange,
   onModelReady,
-  readonly,
+  isReadonly: isReadonlyProp,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
   const { app, settings } = useAppContext();
@@ -55,7 +55,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   const sharedTooltip = app.isShared
     ? t(QuickAppEditorI18nKeys.CannotChangeSharedApp, { context: 'field' })
     : undefined;
-  const isReadonly = readonly || !!app.isShared;
+  const isReadonly = isReadonlyProp || !!app.isShared;
   const defaultValues = getQuickApp2FormData(
     app,
     toolSupportingModelIds,
@@ -131,10 +131,10 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
 
   useEffect(() => {
     const handleTriggerSave = (event: Event) => {
-      const { isAutoSave, ignoreDirty, general } =
+      const { isAutoSave, shouldIgnoreDirty, general } =
         (event as CustomEvent<TriggerSaveEventDetail>).detail ?? {};
       if (isReadonly) return;
-      if (isAutoSave && !ignoreDirty && !isDirty) return;
+      if (isAutoSave && !shouldIgnoreDirty && !isDirty) return;
       handleSubmitForm(!!isAutoSave, general);
     };
 
@@ -239,7 +239,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         isWebFetchEnabled={!!settings.isWebFetchEnabled}
         advancedSettings={advancedSettings}
         onAdvancedSettingsSave={handleAdvancedSettingsSave}
-        attachmentsEnabled={values.attachmentsEnabled}
+        isAttachmentsEnabled={values.attachmentsEnabled}
         onAttachmentsEnabledChange={handleAttachmentsEnabledChange}
         inputAttachmentTypes={values.inputAttachmentTypes}
         onInputAttachmentTypesChange={handleInputAttachmentTypesChange}

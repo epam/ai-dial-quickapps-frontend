@@ -248,7 +248,7 @@ export const useDialFileSources = ({
       onRenameValidate,
       onMoveToFiles,
       isRenaming: SOURCE_TABS.some((tab) => sources[tab].isRenaming),
-      uploadEnabled: hasOwner && current.uploadEnabled,
+      isUploadEnabled: hasOwner && current.isUploadEnabled,
       isNewButtonDisabled: !hasOwner || current.isNewButtonDisabled,
       disabledNewButtonTooltip: hasOwner
         ? current.disabledNewButtonTooltip
