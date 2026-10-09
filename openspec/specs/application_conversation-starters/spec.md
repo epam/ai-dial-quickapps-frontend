@@ -41,7 +41,7 @@ A starter is **saved-visible** when its title or its prompt is non-blank (the sa
 
 ### Requirement: Set up conversation starters modal
 
-Add and Manage SHALL open a modal dialog (kit `Popup`) titled with `quickAppEditor` key `SetUpConversationStarters` ("Set up conversation starters"). It SHALL have a header close control named by `CloseConversationStarters`, a header divider, a footer divider, a **Close** footer action (`Close`, link appearance) and a **Save** footer action (`Save`, neutral). Its body SHALL contain the starters list followed by the starters settings.
+Add and Manage SHALL open a modal dialog (kit `Popup`) titled with `quickAppEditor` key `SetUpConversationStarters` ("Set up conversation starters"). It SHALL have a header close control named by `CloseConversationStarters`, a header divider, a footer divider, a **Cancel** footer action (`common` key `Cancel`, link appearance) and a **Save** footer action (`Save`, neutral). Its body SHALL contain the starters list followed by the starters settings.
 
 On open, the modal SHALL seed a local draft from the current form values `starters`, `introText`, `autoSubmit` and `chatMessageInputDisabled`. Edits SHALL change only the draft. The modal SHALL change the form state only on Save.
 
@@ -51,9 +51,9 @@ On open, the modal SHALL seed a local draft from the current form values `starte
 - **THEN** the list SHALL show that starter followed by one blank row
 - **AND** the settings SHALL show the same Intro message, behaviour and switch values
 
-#### Scenario: Close without saving
+#### Scenario: Cancel without saving
 
-- **WHEN** the user edits the draft and then activates Close, the header close control, Escape or outside dismissal
+- **WHEN** the user edits the draft and then activates Cancel, the header close control, Escape or outside dismissal
 - **THEN** the modal SHALL close
 - **AND** no form value or dirty state SHALL change
 - **AND** reopening the modal SHALL show the form values, not the discarded draft
