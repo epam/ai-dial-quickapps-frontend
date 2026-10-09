@@ -2,13 +2,11 @@
 
 - [x] Use typescript-sdk for call to Core instead of hardcoded endpoints
 - [x] Add OpenSpec and start using SDD. `openspec/` is initialised (see `openspec/config.yaml`, `AGENTS.md`'s "Spec-driven development" section) and new work now starts from a spec change. Coverage of old functionality is still in progress — see the coverage matrix below for which capabilities have a spec and the candidates list for what's left.
-- [ ] Test coverage - `@vitest/coverage-v8` is wired up (`vitest.config.ts`), enforced by `npm test`
+- [x] Test coverage - `@vitest/coverage-v8` is wired up (`vitest.config.ts`), enforced by `npm test`
       (now runs with `--coverage`, so it fails the build below threshold — use `npm run test:watch` for
-      a plain watch-mode run without coverage) across all of `src/**/*.{ts,tsx}`. The thresholds are
-      a fixed 70% for statements, functions and lines, maintained by hand (no `autoUpdate`). Branches
-      are at 67.73% as of 2026-10-08, so that threshold is held at 67 until branch coverage reaches
-      70%. Closing the gap is still open work; see `openspec/specs/` / `openspec/changes/` for
-      tracking individual pieces of it as they're picked up.
+      a plain watch-mode run without coverage) across all of `src/**/*.{ts,tsx}`. Every threshold is a
+      fixed 70%, maintained by hand (no `autoUpdate`). As of 2026-10-09: statements 83.1%, branches
+      75.95%, functions 82.21%, lines 84.19%.
 - [ ] react-hook-form usage - should get rid of it. In progress in change `remove-react-hook-form`:
       the root form and every section now run on `useQuickApp2Form` (the Context & Tools card moved into the Advanced Settings popup in `move-feature-toggles-to-advanced-settings`);
       only the dependency removal (tasks 5.x) is open.
@@ -180,7 +178,7 @@ documentation correction.
       image default, and document whether the floating `development` image/client versions are
       local-only or an accepted deployment policy.
 - [x] **Coverage status and target** — the "Test coverage" item above and `vitest.config.ts`
-      now agree: a fixed, hand-maintained 70% gate (branches held at 67 until they reach 70%).
+      now agree: a fixed, hand-maintained 70% gate on every metric.
 - [x] **Post-migration source map** — the candidate paths below point to the current `src/`
       tree; the deleted `src/app/api/**` routes are replaced by the chat-api client wrappers that
       took their place.

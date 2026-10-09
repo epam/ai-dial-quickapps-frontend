@@ -22,12 +22,10 @@ export default defineConfig({
         // Bootstrap only (providers/router wiring), not worth unit-testing.
         'src/main.tsx',
       ],
-      // Fixed 70% gate, edited by hand only (no `autoUpdate`). Branches sit
-      // below it (67.73% as of 2026-10-08), so that one is held at 67 until
-      // branch coverage reaches 70 — then raise it too.
+      // Fixed 70% gate on every metric, edited by hand only (no `autoUpdate`).
       thresholds: {
         statements: 70,
-        branches: 67,
+        branches: 70,
         functions: 70,
         lines: 70,
       },
