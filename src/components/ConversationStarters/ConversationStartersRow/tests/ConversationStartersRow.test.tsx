@@ -113,6 +113,12 @@ describe('ConversationStartersRow', () => {
     );
   });
 
+  it('mirrors the starter message icon for right-to-left locales', () => {
+    renderRow({ values: createValues([{ id: 'a', title: 'A', text: 'a' }, blankStarter]) });
+
+    expect(container.querySelector('li svg')?.getAttribute('class')).toContain('rtl:scale-x-[-1]');
+  });
+
   it('opens the modal from the action and closes it again', () => {
     renderRow();
 
