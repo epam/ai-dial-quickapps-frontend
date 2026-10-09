@@ -52,11 +52,8 @@ import {
   renameFiles,
   uploadFile,
 } from '@/utils/dial-files-api';
-import {
-  DownloadDestinationType,
-  prepareDownloadDestination,
-  triggerBrowserDownload,
-} from '@/utils/file-download';
+import { prepareDownloadDestination, triggerBrowserDownload } from '@/utils/file-download';
+import { DownloadDestinationType } from '@/types/dial-files';
 import { sanitizeFileName } from '@/utils/file-name';
 import { safeDecodeURI } from '@/utils/safe-decode-uri';
 

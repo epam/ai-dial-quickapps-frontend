@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DialEntityType } from '@/types/dial-entities';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { AddOnSchemaKeys } from '@/form/quickApp2Form';
+import { AddOnSchemaKeys } from '@/types/quick-app-form';
 import type { DialModel, DialToolset } from '@/types/dial-entities';
 
 import { AddOnsSection } from '../AddOnsSection';
@@ -39,9 +39,12 @@ vi.mock('@/components/AgentSkills/AgentSkillsFormSection/AgentSkillsFormSection'
 vi.mock('@/components/KnowledgeBase/KnowledgeBaseRow/KnowledgeBaseRow', () => ({
   default: () => <section aria-label="Knowledge base row" />,
 }));
-vi.mock('@/components/ConversationStarters/ConversationStartersRow/ConversationStartersRow', () => ({
-  default: () => <section aria-label="Conversation starters row" />,
-}));
+vi.mock(
+  '@/components/ConversationStarters/ConversationStartersRow/ConversationStartersRow',
+  () => ({
+    default: () => <section aria-label="Conversation starters row" />,
+  }),
+);
 
 interface ListStubProps {
   ids: string[];

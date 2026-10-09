@@ -1,7 +1,7 @@
 import { FC, memo, useMemo } from 'react';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { AddOnSchemaKeys } from '@/form/quickApp2Form';
+import { AddOnSchemaKeys } from '@/types/quick-app-form';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
 import type { QuickApp2FormValues } from '@/types/quick-app-form';
 import { useAddOnEntityMap } from '@/hooks/use-add-on-entity-map';

@@ -42,7 +42,6 @@ vi.mock('@/utils/dial-files-api', () => ({
   uploadFile: vi.fn(),
 }));
 vi.mock('@/utils/file-download', () => ({
-  DownloadDestinationType: { Cancelled: 'cancelled' },
   prepareDownloadDestination: vi.fn(),
   triggerBrowserDownload: vi.fn(),
 }));

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { DialEntityType } from '@/types/dial-entities';
-import { AddOnSchemaKeys } from '@/form/quickApp2Form';
+import { AddOnSchemaKeys } from '@/types/quick-app-form';
 import { AddOnKind } from '@/types/add-on-kind';
 import type { DialModel, DialToolset } from '@/types/dial-entities';
 import {

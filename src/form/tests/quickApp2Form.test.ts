@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import {
-  AddOnSchemaKeys,
   buildQuickApp2Config,
   QuickApp2Schema,
   getAddOnsFormValue,
@@ -12,6 +11,7 @@ import {
   resolveDefaultModelId,
   type QuickApp2Form,
 } from '@/form/quickApp2Form';
+import { AddOnSchemaKeys } from '@/types/quick-app-form';
 import { type AnyToolset, ToolsetTypes } from '@/types/quick-apps';
 
 const createForm = (overrides: Partial<QuickApp2Form> = {}): QuickApp2Form => ({

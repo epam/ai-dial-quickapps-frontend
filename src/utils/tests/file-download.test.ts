@@ -1,10 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  DownloadDestinationType,
-  prepareDownloadDestination,
-  triggerBrowserDownload,
-} from '@/utils/file-download';
+import { prepareDownloadDestination, triggerBrowserDownload } from '@/utils/file-download';
+import { DownloadDestinationType } from '@/types/dial-files';
 
 type PickerWindow = Window & { showSaveFilePicker?: unknown };
 

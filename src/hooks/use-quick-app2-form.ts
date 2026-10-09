@@ -1,7 +1,8 @@
 import { useCallback, useMemo, useReducer } from 'react';
 import isEqual from 'lodash-es/isEqual';
 
-import { AddOnSchemaKeys, QuickApp2Schema, resolveDefaultModelId } from '@/form/quickApp2Form';
+import { QuickApp2Schema, resolveDefaultModelId } from '@/form/quickApp2Form';
+import { AddOnSchemaKeys } from '@/types/quick-app-form';
 import { decodeFileUrl } from '@/utils/decode-file-url';
 import { LoadStatus } from '@/types/load-status';
 import {
