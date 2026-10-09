@@ -7,6 +7,7 @@ import {
   Popup,
   Spinner,
   NOT_ALLOWED_SYMBOLS_REGEXP,
+  mergeClasses,
   NotificationVariant,
   PopupSize,
   TransferQueue,
@@ -49,6 +50,13 @@ interface Notification {
   title?: string;
   message: string;
 }
+
+// Error and Success get their own background; every other variant uses the neutral one.
+const NOTIFICATION_BG_CLASSES: Partial<Record<NotificationVariant, string>> = {
+  [NotificationVariant.Error]: 'bg-error',
+  [NotificationVariant.Success]: 'bg-success',
+};
+const DEFAULT_NOTIFICATION_BG_CLASS = 'bg-layer-sunken';
 
 const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, onClose }) => {
   const { t } = useTranslation(Translation.Common);
@@ -304,10 +312,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
     [actionLabels, t, tabs, activeTab, handleTabChangeWithReset],
   );
 
-  const currentFolderName = useMemo(
-    () => path.split('/').filter(Boolean).pop() ?? '',
-    [path],
-  );
+  const currentFolderName = useMemo(() => path.split('/').filter(Boolean).pop() ?? '', [path]);
   const navigationPanelOptions = useMemo(
     () => ({
       searchable: true,
@@ -424,11 +429,8 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
   );
 
   const notificationBgClass =
-    notification?.variant === NotificationVariant.Error
-      ? 'bg-error'
-      : notification?.variant === NotificationVariant.Success
-        ? 'bg-success'
-        : 'bg-layer-sunken';
+    (notification && NOTIFICATION_BG_CLASSES[notification.variant]) ??
+    DEFAULT_NOTIFICATION_BG_CLASS;
 
   return (
     <>
@@ -461,7 +463,10 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
       >
         {notification != null && (
           <div
-            className={`dial-small-text flex flex-col gap-1 px-6 py-3 text-primary ${notificationBgClass}`}
+            className={mergeClasses(
+              'dial-small-text flex flex-col gap-1 px-6 py-3 text-primary',
+              notificationBgClass,
+            )}
           >
             {notification.title != null && (
               <span className="font-semibold">{notification.title}</span>
@@ -473,10 +478,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
         {error != null ? (
           <div role="alert" className="flex flex-col items-center gap-4 p-6">
             <p>{t(DialFileManagerI18nKeys.Error)}</p>
-            <PrimaryButton
-              label={t(DialFileManagerI18nKeys.Retry)}
-              onClick={retry}
-            />
+            <PrimaryButton label={t(DialFileManagerI18nKeys.Retry)} onClick={retry} />
           </div>
         ) : (
           // Locked while files upload, as the stacked progress modal used to; the queue stays usable.

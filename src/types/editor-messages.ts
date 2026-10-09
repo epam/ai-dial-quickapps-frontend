@@ -61,6 +61,13 @@ export interface TriggerSaveGeneralPayload {
   display_version?: string;
 }
 
+/** The `detail` of the window-level trigger-save event the form listens for. */
+export interface TriggerSaveEventDetail {
+  isAutoSave?: boolean;
+  ignoreDirty?: boolean;
+  general?: TriggerSaveGeneralPayload;
+}
+
 export enum OutboundMessageType {
   Ready = 'READY',
   DirtyState = 'DIRTY_STATE',

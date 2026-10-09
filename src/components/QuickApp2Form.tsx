@@ -6,7 +6,7 @@ import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { getQuickApp2FormData } from '@/form/quickApp2Form';
 import { useQuickApp2Form } from '@/hooks/use-quick-app2-form';
-import type { TriggerSaveGeneralPayload } from '@/types/editor-messages';
+import type { TriggerSaveEventDetail, TriggerSaveGeneralPayload } from '@/types/editor-messages';
 import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import type { QuickApp2Config } from '@/types/quick-apps';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
@@ -132,13 +132,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   useEffect(() => {
     const handleTriggerSave = (event: Event) => {
       const { isAutoSave, ignoreDirty, general } =
-        (
-          event as CustomEvent<{
-            isAutoSave?: boolean;
-            ignoreDirty?: boolean;
-            general?: TriggerSaveGeneralPayload;
-          }>
-        ).detail ?? {};
+        (event as CustomEvent<TriggerSaveEventDetail>).detail ?? {};
       if (isReadonly) return;
       if (isAutoSave && !ignoreDirty && !isDirty) return;
       handleSubmitForm(!!isAutoSave, general);
