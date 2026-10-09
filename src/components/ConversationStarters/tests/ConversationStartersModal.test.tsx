@@ -2,7 +2,7 @@ import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
 
 import ConversationStartersModal from '../ConversationStartersModal';
@@ -277,11 +277,11 @@ describe('ConversationStartersModal', () => {
     expect(getSwitch().getAttribute('aria-checked')).toBe('true');
   });
 
-  it('discards the draft on Close and the header close control', () => {
+  it('discards the draft on Cancel and the header close control', () => {
     const { onSave, onClose } = renderModal();
 
     typeInto(getTitleInputs()[0], 'Unsaved');
-    click(getButton(QuickAppEditorI18nKeys.Close));
+    click(getButton(CommonI18nKeys.Cancel));
     click(getButton(QuickAppEditorI18nKeys.CloseConversationStarters));
 
     expect(onClose).toHaveBeenCalledTimes(2);
