@@ -42,8 +42,9 @@
     show more than names;
   - done: `AddSkillsModal` now renders the shared `components/common/AddOnCatalogModal` that the
     Add toolset / Add agent pickers use, so its own list/filter/sort code is gone;
-  - write a `toolsets_login` spec for the host round-trip (`REQUEST_TOOLSET_LOGIN` /
-    `TOOLSET_LOGIN_RESULT`); `toolsets_selection` only specifies the popup's Log in entry point.
+  - done: `toolsets_login` specifies the host round-trip (`REQUEST_TOOLSET_LOGIN` /
+    `TOOLSET_LOGIN_RESULT`, change `specify-uncovered-capabilities`); `toolsets_selection` keeps the
+    popup's Log in entry point.
   - done: the i18n keys Skills, Toolsets and Agents share have generic names (`AddOnDetails`,
     `RemoveAddOn`, `SelectAddOn`, `RemoveAddOnFromApp`, `DetailsTab`, `OverviewTab`), and the
     `skills_catalog`, `toolsets_selection`, `agents_selection` and `catalog-entity-details` specs use
@@ -113,6 +114,73 @@
     on the form layer. This resolves itself when zod is removed (`remove-react-hook-form`): define
     the form values interface in `src/types/` directly.
 - [ ] ...
+
+## Findings from `specify-uncovered-capabilities`
+
+Behaviour found while writing the specs that looks unintended or contradicts another document.
+None of it is specified as intended; each needs a decision (and, for a behaviour change, its own
+OpenSpec change).
+
+- [ ] **Disabled flag strips stored features** — when `isCodeInterpreterEnabled` /
+      `isWebFetchEnabled` / `isAddAttachmentEnabled` is off (including when the client-config
+      call fails and resolves to `{}`), `useQuickApp2Form` forces the value to `false` without
+      dirtying the form, and the next save removes the stored code-interpreter toolset,
+      `web_fetch` or `representation_tooling` (`use-quick-app2-form.ts:159-170`,
+      `quickApp2Form.ts:325-326,422-429`). Possible data loss.
+- [ ] **Load-time baseline is never refreshed after a save** — `appState` is set once
+      (`EditorClient.tsx:111`), so after a successful save the form stays dirty and auto-save
+      keeps re-saving, a second no-edit save still reports `SaveSuccess.hasChanges: true`, and
+      `RESET` reverts to load-time values. Overlaps "Save, auto-save, and reset semantics" and
+      "Stale General fields on auto-save" below.
+- [ ] **Ignored saves post no outcome** — a not-yet-saved auto-save, a clean auto-save, a
+      validation failure and a read-only form all end silently, while `host-integration` says a
+      save always ends in exactly one outcome message.
+- [ ] **`application_properties` keys outside the editor's six are dropped on save**
+      (`quickApp2Form.ts:289-328`; chat-api replaces the stored object).
+- [ ] **General summary lookup misses encoded ids** — `fetchApplicationSummary` compares the
+      decoded id with the encoded listing id (`dial-client.ts:325`), so description, icon,
+      topics and version load empty for such apps.
+- [ ] **Read-only mode is unreachable** — `app.isShared` is never set and `isReadonly` is never
+      passed (`QuickApp2Form.tsx:58`), yet `application_editor-layout` and
+      `application_user-attachments` specify a read-only editor.
+- [ ] **SaveError text** — chat-api rejections surface the client's generic "Response returned
+      an error code"; the 'Save failed' / 'Initialization failed' fallbacks are hard-coded English.
+- [ ] **Client config fetched twice** — `App.tsx:46` and `EditorClient.tsx:108` each load it;
+      one failing gives the handshake and the editor different settings.
+- [ ] **Application credentials stay "required" after sign-in** — any non-empty external-services
+      list counts, including `authenticationType: NONE` and already-authenticated services
+      (`dial-client.ts:162`).
+- [ ] **Toolset login promises can hang** — no timeout when the host never answers, and a second
+      request overwrites the pending one so the first never settles
+      (`use-toolset-credentials.ts:94`); `DataContext`'s value is not memoised, so the listener
+      re-subscribes every render. An unsolicited `TOOLSET_LOGOUT_RESULT` is not applied.
+- [ ] **File manager**:
+  - Copy is listed in `application_knowledge-base` but `onCopyFiles` is never passed.
+  - A folder or multi-item download opens the save picker before it fails, leaving an open writable.
+  - Deleting an ancestor of the open folder moves up only one level.
+  - Listings never page past `limit: 1000`.
+  - A mixed or fully cancelled upload shows the success message.
+  - Notifications have no live region, and the conflict confirm label is "Attach".
+  - `FolderNameReserved` can never fire.
+  - The forbidden-symbols tooltip omits the backslash and control characters the kit also forbids.
+  - Sanitizing runs in `onValidateUpload` instead of `prepareUploadFileName`.
+- [ ] **Themes** — a failed theme load leaves a light page with a dark Markdown editor
+      (`InstructionsSection.tsx:28`); `setTheme` has no caller; a non-OK response is not checked;
+      the fetch has no cancelled flag; the fallback comment names a `globals.css` that does not
+      exist. Switching to the typed `ThemesApi` would not change the endpoint (both call
+      `GET /api/themes`), contrary to the Themes item above.
+- [ ] **i18n and RTL docs** — `.claude/rules/rtl.md` / AGENTS.md describe a per-language locale file,
+      an RTL language list in `I18nProvider` and a language selector, none of which exist (`i18n.dir()`
+      is used; files are per namespace); `index.html` hardcodes `lang="en"`; many specs describe RTL
+      as user-visible though no RTL locale ships (see "RTL and i18n status" below).
+      `buildLocalizedText` drops the primary value when `primaryLocale` is missing.
+- [ ] **Docs out of date** — README's custom-variable table (keys do not map 1:1, flags missing),
+      credentials wording (chip / Advanced settings), RESET "last saved state", TRIGGER_SAVE "never
+      includes version"; `host-integration`'s credentials target origin and its "never broadcast"
+      vs the `*` wildcard; `dialClient.ts` in `openspec/config.yaml` and
+      `orchestrator_model-selection`.
+- [ ] **Untested scenarios** — no tests for `EditorClient` (load, save outcomes, auto-save
+      interval), `ThemeContext`, or `DataContext`'s unsolicited login results.
 
 ## Rollout and live verification
 
@@ -211,24 +279,24 @@ Track these dimensions separately for every capability:
 | ----------------------------------- | ----------- | ------------------ | ----------- | ----------------- |
 | `host-integration`                  | Yes         | Partial            | Partial     | Reconcile         |
 | `auth`                              | Yes         | Partial            | Partial     | Reconcile         |
-| `application_editing`               | Partial     | Yes                | Partial     | Planned           |
+| `application_editing`               | Yes         | Yes                | Partial     | Planned           |
 | `application_editor-layout`         | Yes         | Yes                | Partial     | Planned           |
 | `application_user-attachments`      | Yes         | Yes                | Partial     | Planned           |
 | `deployment_docker-image`           | Yes         | Yes                | No          | Planned           |
-| `context-files`                     | No          | Yes                | Partial     | Planned           |
+| `context-files`                     | Yes         | Yes                | Partial     | Planned           |
 | `toolsets_selection`                | Yes         | Yes                | Partial     | Planned           |
 | `agents_selection`                  | Yes         | Yes                | Partial     | Planned           |
-| `toolsets_login`                    | No          | Yes                | Partial     | Planned           |
-| `application_credentials`           | No          | Yes                | Partial     | Planned           |
+| `toolsets_login`                    | Yes         | Yes                | Partial     | Planned           |
+| `application_credentials`           | Yes         | Yes                | Partial     | Planned           |
 | `skills_catalog`                    | Yes         | Yes                | Partial     | Planned           |
 | `catalog-entity-details`            | Yes         | Yes                | Yes         | Planned           |
 | `application_knowledge-base`        | Yes         | Yes                | Partial     | Planned           |
 | `orchestrator_model-selection`      | Yes         | Yes                | Partial     | Planned           |
 | `application_advanced-settings`     | Yes         | Yes                | Partial     | Planned           |
 | `application_conversation-starters` | Yes         | Yes                | Partial     | Planned           |
-| `app-configuration`                 | No          | Yes                | Partial     | Planned           |
-| `theming`                           | No          | Yes                | Partial     | Planned           |
-| `i18n`                              | No          | Yes                | Partial     | Planned           |
+| `app-configuration`                 | Yes         | Yes                | Partial     | Planned           |
+| `theming`                           | Yes         | Yes                | Partial     | Planned           |
+| `i18n`                              | Yes         | Yes                | Partial     | Planned           |
 
 A spec existing does not imply that it has been verified against the current implementation.
 Update this matrix as each capability is explored, specified, tested, and checked.
@@ -241,9 +309,10 @@ Update this matrix as each capability is explored, specified, tested, and checke
   has-quick-app-changes.ts, get-updated-at-timestamp.ts
 - Covers: load/save/auto-save lifecycle, dirty-state tracking, application_properties serialization
 - Proposed: application_editing (leaves room for a sibling below)
-- Started in `openspec/specs/application_editing/spec.md` (change `fix-quickapp-display-version-save`), which only covers how host-supplied General-step
-  fields (including `display_version` → `version`) are persisted on save. The rest of the lifecycle is
-  still uncovered.
+- **Spec written** (`openspec/specs/application_editing`): the General-step fields on save (change
+  `fix-quickapp-display-version-save`), and the load, dirty-state, save, auto-save and reset
+  lifecycle plus the top-level `application_properties` shape (change
+  `specify-uncovered-capabilities`).
 
 ### Application credentials (recent feature, git log: "feat: support application credentials #140")
 
@@ -252,7 +321,8 @@ Update this matrix as each capability is explored, specified, tested, and checke
   RequestApplicationCredentials message + applicationCredentials query param
 - The agent-side UI (the Credentials action under the details header, which closes the popup
   before the host shows its forms) is specified in `agents_selection` "Agent details popup"
-  (change `agent-settings-tab`); the host round trip itself is still unspecified.
+  (change `agent-settings-tab`); the detection and host round trip are in `application_credentials`
+  (change `specify-uncovered-capabilities`).
 - Possible follow-up: show the credential forms inline (catalog `ApplicationCredentials`), with
   OAuth through a new host message as toolset login does. Needs a paired ai-dial-chat change.
 - Proposed: application_credentials (sibling of application_editing)
@@ -270,7 +340,7 @@ Update this matrix as each capability is explored, specified, tested, and checke
 - Proposed: toolsets_selection, toolsets_login (this is the domain your original naming example already named)
 - **Spec written** (`openspec/specs/toolsets_selection`, from archived change `split-agents-and-toolsets`) and its sibling
   `agents_selection` (src/components/Agents/**, src/utils/map-agent-to-catalog-item.ts). The
-  `toolsets_login` host round-trip is still unspecified.
+  `toolsets_login` host round-trip is specified too (change `specify-uncovered-capabilities`).
 
 ### Skills
 
@@ -295,22 +365,28 @@ Update this matrix as each capability is explored, specified, tested, and checke
 - utils/dial-files-api.ts (list, upload, download, rename, delete, create-folder, list-shared), hooks/use-dial-file-manager.ts, utils/dial-file-manager.ts,
   components/common/FileManagerModal/** (the file-manager modal; the Add-ons row lives in components/KnowledgeBase/), types/dial-files.ts, dial-file-path.ts, file-download.ts, file-name.ts, decode-file-url.ts, safe-decode-uri.ts
 - Standalone top-level concept, no sibling domain → context-files
+- **Spec written** (`openspec/specs/context-files`, change `specify-uncovered-capabilities`); the
+  Knowledge base popup's own behaviour stays in `application_knowledge-base`.
 
 ### Theming
 
 - context/ThemeContext.tsx (fetches chat-api's `/api/themes` via utils/chat-api-fetch.ts), utils/apply-theme-colors.ts, resolve-icon-url.ts, ties to
   host-integration's theme query param
 - Standalone → theming
+- **Spec written** (`openspec/specs/theming`, change `specify-uncovered-capabilities`).
 
 ### i18n
 
 - src/i18n/**, I18nProvider.tsx, hooks/use-translation.ts, utils/get-localized-text.ts
 - Standalone → i18n
+- **Spec written** (`openspec/specs/i18n`, change `specify-uncovered-capabilities`): English is the
+  only shipped locale, so `dir` is always `ltr` today.
 
 ### Feature flags / runtime config
 
 - utils/user-config.ts, `fetchAppSettings` in utils/dial-client.ts, utils/auth-api.ts (session / current user)
-- Standalone → app-configuration (name's debatable — open to a better slug)
+- Standalone → app-configuration
+- **Spec written** (`openspec/specs/app-configuration`, change `specify-uncovered-capabilities`).
 
 ### Advanced settings
 
