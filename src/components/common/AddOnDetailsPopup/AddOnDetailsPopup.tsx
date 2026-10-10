@@ -24,7 +24,8 @@ import {
   Tabs,
 } from '@epam/ai-dial-ui-kit';
 import { IconTrash } from '@tabler/icons-react';
-import { FC, ReactNode, useCallback, useMemo, useState } from 'react';
+import type { SkillFileContent } from '@epam/ai-dial-chat-hooks/skill-editor';
+import { FC, lazy, ReactNode, Suspense, useCallback, useMemo, useState } from 'react';
 
 import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useAppContext } from '@/context/AppContext';
@@ -36,7 +37,11 @@ import { Translation } from '@/types/translation';
 
 const LOADING_SKELETON_PARAGRAPH = { rows: 1, width: '72px' };
 
-const loadNoContentFile = async (): Promise<string | undefined> => undefined;
+// The attachment canvas brings in pdf.js, the OOXML renderer and syntax
+// highlighting, so it loads when the first package file is picked.
+const SkillFilePreview = lazy(async () => ({
+  default: (await import('@/components/SkillFilePreview/SkillFilePreview')).SkillFilePreview,
+}));
 
 // The catalog header shows Share, Publish and Download unless the host rules them out.
 const hideHeaderAction = (): boolean => false;
@@ -77,8 +82,8 @@ export interface AddOnDetailsPopupProps {
   appTabs?: AddOnAppTab[];
   detailsStatus: DetailsStatus;
   onRetry: () => void;
-  /** Loads another file of a skill's package for the Details tab file selector. */
-  onLoadContentFile?: (fileId: string) => Promise<string | undefined>;
+  /** Downloads a picked file of a skill's package for the Details tab preview. */
+  onLoadSkillDetailsFile?: (fileId: string) => Promise<SkillFileContent>;
   /** Replaces the tabs, for an entity that is no longer listed. */
   unavailableText?: string;
   /** Hides Delete; only Close is offered. */
@@ -108,7 +113,7 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
   appTabs,
   detailsStatus,
   onRetry,
-  onLoadContentFile = loadNoContentFile,
+  onLoadSkillDetailsFile,
   unavailableText,
   isReadonly,
   deleteLabel,
@@ -144,7 +149,25 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
     }),
     [item, name, entityType, version, iconUrl, folder],
   );
-  const contentFiles = useContentFileSelection(item, onLoadContentFile, labels.contentFiles.error);
+  const contentFiles = useContentFileSelection(item);
+  const { pickedFile } = contentFiles;
+  // The base file shows the details' manifest body; any other pick, its canvas preview.
+  const filePreviewContent =
+    pickedFile == null || onLoadSkillDetailsFile == null ? undefined : (
+      <Suspense
+        fallback={
+          <p role="status" className="dial-small-text m-0">
+            {labels.contentFiles.loading}
+          </p>
+        }
+      >
+        <SkillFilePreview
+          fileId={pickedFile.id}
+          fileName={pickedFile.name}
+          onLoadFile={onLoadSkillDetailsFile}
+        />
+      </Suspense>
+    );
 
   const catalogTabIds = useMemo(
     () =>
@@ -228,8 +251,7 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
             files={details?.promptContent?.files}
             selectedFileId={contentFiles.selectedFileId}
             onSelectFile={contentFiles.onSelectFile}
-            filePreview={contentFiles.filePreview}
-            isFileLoading={contentFiles.isFileLoading}
+            filePreviewContent={filePreviewContent}
             expandedFolderIds={contentFiles.expandedFolderIds}
             onToggleFolder={contentFiles.onToggleFolder}
             isFileSelectorOpen={contentFiles.isFileSelectorOpen}
