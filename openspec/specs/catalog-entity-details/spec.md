@@ -217,7 +217,44 @@ The skill, toolset and agent details popups SHALL keep the ui-kit `Popup` shell 
   the catalog's 16 px gap.
 - **Loading:** the loading indicator next to the tab row SHALL be the ui-kit `Skeleton` (one 72 px line) in a `role="status"` element labelled `quickAppEditor` `LoadingDetails`.
 - **Markdown:** `AboutTab` and `ContentTab` SHALL receive `markdownLabels` translated through `quickAppEditor` (`MarkdownCopyCode`, `MarkdownCopiedCode`, `MarkdownDownloadCode`, `MarkdownTableScrollRegion`, `MarkdownMathScrollRegion`), so no catalog English default is shown.
-- **Content files:** `ContentTab` SHALL receive the package files, the selection and the file-selector labels (`ContentFileSelectorAriaLabel`, `ContentFileCount`, `ContentFileLoading`, `ContentFileUnsupported`), as specified by `skills_catalog`.
+- **Content files:** `ContentTab` SHALL receive the package files, the selection and the file-selector labels (`ContentFileSelectorAriaLabel`, `ContentFileCount`, `ContentFileLoading`, `ContentFileUnsupported`), as specified by `skills_catalog`. While a file other than the base file is picked, `ContentTab` SHALL receive the attachment-canvas preview in `filePreviewContent`.
+- **File preview:** the preview SHALL be a `role="group"` region named by the picked file's name. Its canvas SHALL receive every label translated through `quickAppEditor`, so no English default from the canvas is shown:
+  - `unsupportedLabel` → `ContentFileUnsupported`;
+  - `loadErrorLabel` → `ContentFileError`;
+  - `forbiddenErrorLabel` → `ContentFileForbidden`;
+  - `htmlFrameBlockedLabel` → `HtmlPreviewBlocked`;
+  - `htmlOpenInNewTabLabel` → `OpenInNewTab`;
+  - `pdfThumbnailsLabel` → `PdfThumbnails`;
+  - `pdfShowThumbnailsLabel` → `PdfShowThumbnails`;
+  - `pdfHideThumbnailsLabel` → `PdfHideThumbnails`;
+  - `pdfPageNumberLabel` → `PdfPageNumber`;
+  - `pdfContentLoadingLabel` → `PdfViewerLoading`, `pdfContentErrorLabel` → `PdfViewerError`, `pdfContentRetryLabel` → `Retry`;
+  - `codeContentLoadingLabel` → `CodeHighlightingLoading`, `codeContentErrorLabel` → `CodeHighlightingError`, `codeContentRetryLabel` → `Retry`;
+  - `xlsxFormulaLabel` → `SpreadsheetFormula`;
+  - `tableCopyLabel` → `ConnectCopy`, `tableCopiedLabel` → `MarkdownCopiedCode`, `tableDownloadCsvLabel` → `TableDownloadCsv`;
+  - the code-block and scroll-region labels reuse `MarkdownCopyCode`, `MarkdownCopiedCode`, `MarkdownDownloadCode`, `MarkdownTableScrollRegion` and `MarkdownMathScrollRegion`.
+
+  The visualizer and cited-location labels are not passed: a skill file never opens a custom visualizer or carries citations.
+
+  The code-block theme SHALL follow the active app theme (dark or light). The preview SHALL fill the tab panel's height and own its own scrolling. The canvas PDF toolbar SHALL be hidden, as in the chat catalog.
+
+New `quickAppEditor` keys (each key is its English text):
+
+| Key                       | English                                       |
+| ------------------------- | --------------------------------------------- |
+| `ContentFileForbidden`    | You don't have permission to access this file |
+| `HtmlPreviewBlocked`      | This page cannot be displayed in preview      |
+| `OpenInNewTab`            | Open in new tab                               |
+| `PdfThumbnails`           | Thumbnails                                    |
+| `PdfShowThumbnails`       | Show thumbnails                               |
+| `PdfHideThumbnails`       | Hide thumbnails                               |
+| `PdfPageNumber`           | Page number                                   |
+| `PdfViewerLoading`        | Loading the PDF viewer…                       |
+| `PdfViewerError`          | Failed to load the PDF viewer                 |
+| `CodeHighlightingLoading` | Loading syntax highlighting…                  |
+| `CodeHighlightingError`   | Failed to load syntax highlighting            |
+| `SpreadsheetFormula`      | Formula                                       |
+| `TableDownloadCsv`        | Download as CSV                               |
 
 #### Scenario: Toolset header
 
@@ -240,3 +277,20 @@ The skill, toolset and agent details popups SHALL keep the ui-kit `Popup` shell 
 
 - **WHEN** the About tab renders a code block
 - **THEN** its copy control SHALL be labelled with `quickAppEditor` `MarkdownCopyCode`
+
+#### Scenario: File preview region
+
+- **WHEN** a skill's supporting file `guide.pdf` is picked in the Details tab
+- **THEN** `ContentTab` SHALL receive the canvas preview in `filePreviewContent`
+- **AND** the preview SHALL be a `role="group"` region named "guide.pdf"
+- **AND** the PDF thumbnails control SHALL be labelled with `quickAppEditor` `PdfShowThumbnails`
+
+#### Scenario: Base file shows no canvas
+
+- **WHEN** the Details tab shows `SKILL.md`
+- **THEN** `ContentTab` SHALL receive no `filePreviewContent` and SHALL render the manifest body as Markdown
+
+#### Scenario: Preview in a right-to-left document
+
+- **WHEN** the document direction is `rtl` and a supporting file is previewed
+- **THEN** the preview region SHALL fill the tab panel from start to end with no physical-direction offset added by this app
