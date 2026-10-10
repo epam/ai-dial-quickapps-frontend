@@ -1,4 +1,5 @@
 import type { CatalogItem, CatalogItemDetailsFetchResult } from '@epam/ai-dial-catalog';
+import type { SkillFileContent } from '@epam/ai-dial-chat-hooks/skill-editor';
 import { useCatalogItemDetails } from '@epam/ai-dial-chat-hooks/catalog';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -13,8 +14,11 @@ export interface UseEntityDetailsResult {
   status: DetailsStatus;
   details?: CatalogItemDetailsFetchResult;
   retry: () => void;
-  /** Loads the text of one file in the open skill's package, for the Details tab file selector. */
-  onLoadContentFile: (fileId: string) => Promise<string | undefined>;
+  /**
+   * Downloads the bytes (and MIME type, when known) of one file in the open
+   * skill's package, for the Details tab file preview. Throws on failure.
+   */
+  onLoadSkillDetailsFile: (fileId: string) => Promise<SkillFileContent>;
 }
 
 interface DetailsState {
@@ -37,7 +41,7 @@ export const useEntityDetails = (item?: CatalogItem): UseEntityDetailsResult => 
   const api = useMemo(() => createCatalogDetailsApi(), []);
   const skillDtos = useMemo(() => skills.map(mapSkillToMetadataDto), [skills]);
 
-  const { onFetchDetails, onLoadContentFile } = useCatalogItemDetails({
+  const { onFetchDetails, onLoadSkillDetailsFile } = useCatalogItemDetails({
     api,
     skills: skillDtos,
     // Credentials come from the toolset listing, so the admin view is not
@@ -90,7 +94,7 @@ export const useEntityDetails = (item?: CatalogItem): UseEntityDetailsResult => 
 
   const retry = useCallback(() => setAttempt((value) => value + 1), []);
 
-  const actions = { retry, onLoadContentFile };
+  const actions = { retry, onLoadSkillDetailsFile };
   if (requestKey == null) return { status: DetailsStatus.Idle, ...actions };
   if (result?.requestKey !== requestKey) return { status: DetailsStatus.Loading, ...actions };
   if (result.details == null) return { status: DetailsStatus.Error, ...actions };

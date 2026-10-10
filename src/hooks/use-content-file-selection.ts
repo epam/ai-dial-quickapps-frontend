@@ -1,28 +1,27 @@
 import {
   CatalogContentNodeType,
-  CatalogContentPreviewType,
-  type CatalogContentFilePreview,
   type CatalogItem,
   type CatalogContentTreeNode,
 } from '@epam/ai-dial-catalog';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+
+import { findContentFileNode } from '@/utils/find-content-file-node';
+
+export interface ContentFilePick {
+  id: string;
+  /** The tree node's basename, which names the preview and decides its type by extension. */
+  name: string;
+}
 
 export interface UseContentFileSelectionResult {
   selectedFileId?: string;
-  /** The picked file's body; `null` while the base content (`SKILL.md`) is shown. */
-  filePreview: CatalogContentFilePreview | null;
-  isFileLoading: boolean;
+  /** The picked package file; `null` while the base content (`SKILL.md`) is shown. */
+  pickedFile: ContentFilePick | null;
   expandedFolderIds: ReadonlySet<string>;
   isFileSelectorOpen: boolean;
   onSelectFile: (fileId: string) => void;
   onToggleFolder: (folderId: string) => void;
   onFileSelectorOpenChange: (isOpen: boolean) => void;
-}
-
-interface PickedFile {
-  id: string;
-  /** `null` until loaded, or when loading failed. */
-  preview: CatalogContentFilePreview | null;
 }
 
 const collectFolderIds = (nodes: CatalogContentTreeNode[], into = new Set<string>()) => {
@@ -36,32 +35,25 @@ const collectFolderIds = (nodes: CatalogContentTreeNode[], into = new Set<string
 };
 
 /**
- * The skill package file selector of the catalog `ContentTab`, as the catalog
- * `DetailsPanel` drives it: the details carry the base file's body, and
- * picking another file loads its text and shows it as Markdown. Picking the
- * base file again shows the base body without a request; a response for a
- * superseded pick is dropped. Everything resets when the item or its base
- * file changes.
+ * The selection state of the catalog `ContentTab` skill package file
+ * selector: the details carry the base file's body, and picking another file
+ * records it so its preview can render (loading belongs to the preview).
+ * Picking the base file again clears the pick. Everything resets when the
+ * item or its base file changes.
  */
 export const useContentFileSelection = (
   item: CatalogItem | undefined,
-  onLoadContentFile: (fileId: string) => Promise<string | undefined>,
-  errorLabel: string,
 ): UseContentFileSelectionResult => {
   const promptContent = item?.details?.promptContent;
   const baseFileId = promptContent?.selectedFileId;
   const files = promptContent?.files;
 
-  const [pickedFile, setPickedFile] = useState<PickedFile | null>(null);
-  const [isFileLoading, setIsFileLoading] = useState(false);
+  const [pickedFile, setPickedFile] = useState<ContentFilePick | null>(null);
   const [expandedFolderIds, setExpandedFolderIds] = useState<Set<string>>(() => new Set());
   const [isFileSelectorOpen, setIsFileSelectorOpen] = useState(false);
-  const generationRef = useRef(0);
 
   useEffect(() => {
-    generationRef.current += 1;
     setPickedFile(null);
-    setIsFileLoading(false);
     setExpandedFolderIds(collectFolderIds(files ?? []));
     setIsFileSelectorOpen(false);
     // Reset per item and base file only; a re-rendered listing must keep the pick.
@@ -77,44 +69,21 @@ export const useContentFileSelection = (
     });
   }, []);
 
-  const loadFile = useCallback(
-    async (fileId: string) => {
-      const generation = ++generationRef.current;
+  const onSelectFile = useCallback(
+    (fileId: string) => {
       if (fileId === baseFileId) {
         setPickedFile(null);
-        setIsFileLoading(false);
         return;
       }
-      setPickedFile({ id: fileId, preview: null });
-      setIsFileLoading(true);
-      let preview: CatalogContentFilePreview | null = null;
-      try {
-        const text = await onLoadContentFile(fileId);
-        if (text != null) preview = { type: CatalogContentPreviewType.Markdown, text };
-      } catch {
-        preview = null;
-      } finally {
-        if (generationRef.current === generation) {
-          setPickedFile({ id: fileId, preview });
-          setIsFileLoading(false);
-        }
-      }
+      const node = findContentFileNode(files, fileId);
+      setPickedFile({ id: fileId, name: node?.name ?? fileId.split('/').pop() ?? fileId });
     },
-    [baseFileId, onLoadContentFile],
+    [baseFileId, files],
   );
-
-  const onSelectFile = useCallback((fileId: string) => void loadFile(fileId), [loadFile]);
-
-  // As in the catalog: while loading the tab shows its loading label over this.
-  let filePreview: CatalogContentFilePreview | null = null;
-  if (pickedFile != null) {
-    filePreview = pickedFile.preview ?? { type: CatalogContentPreviewType.Text, text: errorLabel };
-  }
 
   return {
     selectedFileId: pickedFile?.id ?? baseFileId,
-    filePreview,
-    isFileLoading,
+    pickedFile,
     expandedFolderIds,
     isFileSelectorOpen,
     onSelectFile,
