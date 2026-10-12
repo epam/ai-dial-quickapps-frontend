@@ -147,7 +147,7 @@ export const AgentDetailsPopup: FC<AgentDetailsPopupProps> = ({
       onRetry={retry}
       unavailableText={agent == null ? t(QuickAppEditorI18nKeys.AgentUnavailable) : undefined}
       isReadonly={isReadonly}
-      deleteLabel={t(QuickAppEditorI18nKeys.RemoveSkillFromApp)}
+      deleteLabel={t(QuickAppEditorI18nKeys.RemoveAddOnFromApp)}
       onDelete={handleDelete}
       onClose={onClose}
     />

@@ -31,8 +31,8 @@ export const useCatalogDetailsLabels = (): CatalogDetailsLabels => {
       tabs: {
         tabs: {
           [CatalogDetailsTab.About]: t(QuickAppEditorI18nKeys.AboutTab),
-          [CatalogDetailsTab.Content]: t(QuickAppEditorI18nKeys.SkillDetailsTab),
-          [CatalogDetailsTab.Overview]: t(QuickAppEditorI18nKeys.SkillOverviewTab),
+          [CatalogDetailsTab.Content]: t(QuickAppEditorI18nKeys.DetailsTab),
+          [CatalogDetailsTab.Overview]: t(QuickAppEditorI18nKeys.OverviewTab),
           [CatalogDetailsTab.Pricing]: t(QuickAppEditorI18nKeys.PricingTab),
           [CatalogDetailsTab.Limits]: t(QuickAppEditorI18nKeys.LimitsTab),
           [CatalogDetailsTab.Tools]: t(QuickAppEditorI18nKeys.ToolsTab),
@@ -100,7 +100,7 @@ export const useCatalogDetailsLabels = (): CatalogDetailsLabels => {
           addingApiKeyStatusLabel: t(QuickAppEditorI18nKeys.ApiKeyAdding),
           apiKeyAddedLabel: (when: string) => t(QuickAppEditorI18nKeys.ApiKeyAddedWhen, { when }),
           // The popover's "Delete" removes the API key; the same word as the footer's Delete.
-          deleteActionLabel: t(QuickAppEditorI18nKeys.RemoveSkillFromApp),
+          deleteActionLabel: t(QuickAppEditorI18nKeys.RemoveAddOnFromApp),
           deletingStatusLabel: t(QuickAppEditorI18nKeys.ApiKeyDeleting),
           entityTypeLabels: {
             [CatalogEntityType.Skill]: t(QuickAppEditorI18nKeys.SkillTypeLabel),

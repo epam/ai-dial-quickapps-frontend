@@ -220,7 +220,7 @@ state stays in `AuthContext`. The prompt component SHALL NOT own any auth state 
 ### Requirement: Sign-in prompt accessibility and direction
 
 The sign-in prompt SHALL be usable with a keyboard and assistive technology, and SHALL render
-correctly in right-to-left locales.
+correctly when the document direction is `rtl`.
 
 #### Scenario: Keyboard user
 
@@ -235,9 +235,9 @@ correctly in right-to-left locales.
 - **THEN** the title SHALL be exposed as a heading, and the lock and external-link icons SHALL be
   hidden from assistive technology (`aria-hidden`), because they are decorative
 
-#### Scenario: Right-to-left locale
+#### Scenario: Right-to-left document
 
-- **WHEN** the document direction is `rtl`
+- **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
 - **THEN** the prompt SHALL stay centred, the lock icon SHALL NOT be mirrored, and the
   external-link icon SHALL be mirrored horizontally, so that its arrow points toward the inline
   end
@@ -275,7 +275,7 @@ SHALL come from `common` i18n keys.
 ### Requirement: Forbidden and configuration-error screen accessibility and direction
 
 The forbidden and configuration-error screens SHALL be usable with assistive technology and a
-keyboard, and SHALL render correctly in right-to-left locales. They SHALL share their layout
+keyboard, and SHALL render correctly when the document direction is `rtl`. They SHALL share their layout
 with the sign-in prompt, so all three full-page auth states look the same.
 
 #### Scenario: Assistive technology reads the screen
@@ -296,8 +296,8 @@ with the sign-in prompt, so all three full-page auth states look the same.
 - **WHEN** a keyboard user tabs into the configuration-error screen
 - **THEN** the screen SHALL contain no focusable controls
 
-#### Scenario: Right-to-left locale
+#### Scenario: Right-to-left document
 
-- **WHEN** the document direction is `rtl`
+- **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
 - **THEN** both screens SHALL stay centred, and their badge icons SHALL NOT be mirrored, because
   they are symmetric

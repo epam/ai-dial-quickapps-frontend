@@ -29,7 +29,6 @@ import {
   toolsetsApi,
 } from '@/utils/chat-api-client';
 import { parseAllowedOrigins } from '@/utils/allowed-origins';
-import { chatApiFetch } from '@/utils/chat-api-fetch';
 import { isHiddenPath } from '@/utils/dial-file-path';
 import { ForbiddenError } from '@/utils/forbidden-error';
 import { getLocalizedText } from '@/utils/get-localized-text';
@@ -46,8 +45,7 @@ const CHAT_DEPLOYMENT_INTERFACE = ListDeploymentsInterfaceTypeEnum.Chat;
 
 /**
  * DIAL Core interface tag for deployments that expose an MCP interface.
- * Used to surface MCP-capable agents in the Agents & Toolsets picker
- * alongside the chat-interface deployments fetched via `fetchDialModels`.
+ * Used to surface MCP-capable agents in the Agents picker alongside the chat-interface deployments fetched via `fetchDialModels`.
  */
 const MCP_DEPLOYMENT_INTERFACE = ListDeploymentsInterfaceTypeEnum.Mcp;
 
@@ -470,14 +468,10 @@ export const mapCoreToDialSkill = (item: CoreSkillItem): DialSkill => {
   };
 };
 
-/** chat-api's own controller already does the personal+public+shared aggregation this app used to replicate against Core directly. */
+/** chat-api's catalog endpoint returns personal, public and shared skills; they are merged into one list here. */
 export const fetchDialSkills = async (): Promise<DialSkill[]> => {
   const res = await skillsApi.listCatalogSkills();
   return [...res.skills, ...res.publicSkills, ...res.sharedWithMe]
     .map(mapCoreToDialSkill)
     .filter((skill) => !isHiddenDialFolderId(skill.id));
 };
-
-// kept for callers that still fetch a raw response directly (e.g. resolve-icon-url's
-// `<img>` src, which stays outside the typed client — see resolve-icon-url.ts).
-export { chatApiFetch };

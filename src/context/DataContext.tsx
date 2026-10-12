@@ -41,7 +41,7 @@ interface DataState {
    * MCP-capable agents, fetched separately via the `mcp` deployment
    * interface. Kept out of `models`/`modelsMap` so the model selector
    * (which only wants chat-interface deployments) is unaffected — only the
-   * Agents & Toolsets picker consumes this.
+   * add-on code (the Agents picker, add-on lookup and save) consumes this.
    */
   mcpAgents: DialModel[];
   mcpAgentsMap: ModelsMap;
@@ -183,9 +183,8 @@ interface DataContextProviderProps {
 export const DataContextProvider = ({ children }: DataContextProviderProps) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { isReady, settings } = useAppContext();
-  // The user's bucket comes from `/api/v1/auth/me` (already fetched by
-  // AuthContext) — no separate round trip needed, unlike the old
-  // `fetchDialBucket()` call against the generic DIAL Core proxy.
+  // The user's bucket comes from `/api/v1/auth/me`, already fetched by
+  // AuthContext, so it needs no round trip of its own.
   const { user } = useAuthContext();
   const bucket = user?.bucket;
 

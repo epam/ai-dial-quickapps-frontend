@@ -1,5 +1,6 @@
 import {
   AttachmentStrategyType,
+  DialAppTransportType,
   type OrchestratorAttachmentStrategy,
   type RepresentationToolingFeature,
   type WebFetchFeature,
@@ -9,6 +10,12 @@ export enum AddOnsModalQueryParams {
   // Host-facing deep-link name; kept as-is so existing host URLs keep working.
   Modal = 'agentsAndToolsetsModal',
 }
+
+/**
+ * The transport an MCP-capable agent uses when none is saved: what save writes and what the
+ * agent's Settings tab shows checked.
+ */
+export const DEFAULT_AGENT_TRANSPORT = DialAppTransportType.MCP;
 
 export const ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE: OrchestratorAttachmentStrategy = {
   type: AttachmentStrategyType.LazyOnDemand,

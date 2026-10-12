@@ -57,7 +57,7 @@ export const AddAgentsModal: FC<AddAgentsModalProps> = ({
       failedToLoad: t(QuickAppEditorI18nKeys.FailedToLoadAgents),
       empty: t(QuickAppEditorI18nKeys.NoAgentsAvailable),
       selectAll: t(QuickAppEditorI18nKeys.SelectAllAgents),
-      selectRow: (name) => t(QuickAppEditorI18nKeys.SelectSkill, { name }),
+      selectRow: (name) => t(QuickAppEditorI18nKeys.SelectAddOn, { name }),
     }),
     [t],
   );

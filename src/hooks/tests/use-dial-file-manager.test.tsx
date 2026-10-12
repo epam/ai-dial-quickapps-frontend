@@ -201,6 +201,7 @@ describe('useDialFileManager — validation', () => {
     ['', DialFileManagerI18nKeys.FolderNameEmpty],
     ['a/b', DialFileManagerI18nKeys.FolderNameInvalidChars],
     ['.hidden', DialFileManagerI18nKeys.FolderNameHidden],
+    ['.dial_folder', DialFileManagerI18nKeys.FolderNameReserved],
     ['x'.repeat(256), DialFileManagerI18nKeys.FolderNameTooLong],
     ['DOCS', DialFileManagerI18nKeys.FolderConflict],
     ['fresh', null],

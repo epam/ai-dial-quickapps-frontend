@@ -2,13 +2,14 @@ import { RadioGroup } from '@epam/ai-dial-ui-kit';
 import { FC, useCallback, useMemo } from 'react';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { DEFAULT_AGENT_TRANSPORT } from '@/constants/quick-apps';
 import { useTranslation } from '@/hooks/use-translation';
 import { DialAppTransportType } from '@/types/quick-apps';
 import { Translation } from '@/types/translation';
 
 export interface AgentSettingsTabProps {
   agentId: string;
-  /** The transport saved for this entry; none reads as MCP, which is what save writes. */
+  /** The transport saved for this entry; none reads as `DEFAULT_AGENT_TRANSPORT`, which is what save writes. */
   transport?: DialAppTransportType;
   isTransportDisabled: boolean;
   onTransportChange: (transport: DialAppTransportType) => void;
@@ -47,7 +48,7 @@ export const AgentSettingsTab: FC<AgentSettingsTabProps> = ({
       name={`transport-${agentId}`}
       labelProps={{ label: t(QuickAppEditorI18nKeys.ConnectVia) }}
       items={transportItems}
-      value={transport ?? DialAppTransportType.MCP}
+      value={transport ?? DEFAULT_AGENT_TRANSPORT}
       onChange={handleTransportChange}
       disabled={isTransportDisabled}
     />
