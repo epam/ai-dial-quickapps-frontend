@@ -182,6 +182,34 @@ describe('useEntityDetails', () => {
     expect(specs?.find((spec) => spec.label === 'tr:Author')?.value).toBe('Ann');
   });
 
+  it('downloads the bytes and MIME type of a picked skill file', async () => {
+    await render(SKILL);
+    const bytes = new Uint8Array([0x25, 0x50, 0x44, 0x46]);
+    skillsApi.downloadSkillFileRaw.mockImplementationOnce(async () => ({
+      raw: new Response(bytes, { headers: { 'Content-Type': 'application/pdf' } }),
+    }));
+
+    const content = await latest.onLoadSkillDetailsFile('guide.pdf');
+
+    expect(skillsApi.downloadSkillFileRaw).toHaveBeenLastCalledWith(
+      expect.objectContaining({ bucket: 'public', path: 'research', filePath: 'guide.pdf' }),
+      expect.anything(),
+    );
+    expect([...content.bytes]).toEqual([...bytes]);
+    expect(content.mimeType).toBe('application/pdf');
+  });
+
+  it('reports a picked skill file that fails to download', async () => {
+    await render(SKILL);
+    skillsApi.downloadSkillFileRaw.mockImplementationOnce(async () => ({
+      raw: new Response('denied', { status: 403 }),
+    }));
+
+    await expect(latest.onLoadSkillDetailsFile('guide.pdf')).rejects.toMatchObject({
+      status: 403,
+    });
+  });
+
   it('reports a failure and loads again on retry', async () => {
     deploymentsApi.getDeploymentDetails.mockRejectedValueOnce(new Error('boom'));
     await render(FIGMA);

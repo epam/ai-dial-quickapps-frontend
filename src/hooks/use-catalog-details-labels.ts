@@ -1,3 +1,4 @@
+import type { AttachmentCanvasBodyLabels } from '@epam/ai-dial-attachment-canvas';
 import { CatalogDetailsTab } from '@epam/ai-dial-catalog';
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { useMemo } from 'react';
@@ -10,6 +11,8 @@ import { Translation } from '@/types/translation';
 export interface CatalogDetailsLabels {
   tabs: CatalogTabsLabels;
   mappers: CatalogMapperLabels;
+  /** The attachment canvas texts of a skill package file preview. */
+  canvas: AttachmentCanvasBodyLabels;
 }
 
 /**
@@ -109,6 +112,33 @@ export const useCatalogDetailsLabels = (): CatalogDetailsLabels => {
             [CatalogEntityType.Model]: t(QuickAppEditorI18nKeys.Model),
           },
         },
+      },
+      // Visualizer and cited-location labels are left out: a skill file has neither.
+      canvas: {
+        unsupportedLabel: t(QuickAppEditorI18nKeys.ContentFileUnsupported),
+        loadErrorLabel: t(QuickAppEditorI18nKeys.ContentFileError),
+        forbiddenErrorLabel: t(QuickAppEditorI18nKeys.ContentFileForbidden),
+        htmlFrameBlockedLabel: t(QuickAppEditorI18nKeys.HtmlPreviewBlocked),
+        htmlOpenInNewTabLabel: t(QuickAppEditorI18nKeys.OpenInNewTab),
+        pdfThumbnailsLabel: t(QuickAppEditorI18nKeys.PdfThumbnails),
+        pdfShowThumbnailsLabel: t(QuickAppEditorI18nKeys.PdfShowThumbnails),
+        pdfHideThumbnailsLabel: t(QuickAppEditorI18nKeys.PdfHideThumbnails),
+        pdfPageNumberLabel: t(QuickAppEditorI18nKeys.PdfPageNumber),
+        pdfContentLoadingLabel: t(QuickAppEditorI18nKeys.PdfViewerLoading),
+        pdfContentErrorLabel: t(QuickAppEditorI18nKeys.PdfViewerError),
+        pdfContentRetryLabel: t(QuickAppEditorI18nKeys.Retry),
+        xlsxFormulaLabel: t(QuickAppEditorI18nKeys.SpreadsheetFormula),
+        codeContentLoadingLabel: t(QuickAppEditorI18nKeys.CodeHighlightingLoading),
+        codeContentErrorLabel: t(QuickAppEditorI18nKeys.CodeHighlightingError),
+        codeContentRetryLabel: t(QuickAppEditorI18nKeys.Retry),
+        tableCopyLabel: t(QuickAppEditorI18nKeys.ConnectCopy),
+        tableCopiedLabel: t(QuickAppEditorI18nKeys.MarkdownCopiedCode),
+        tableDownloadCsvLabel: t(QuickAppEditorI18nKeys.TableDownloadCsv),
+        codeBlockCopyLabel: t(QuickAppEditorI18nKeys.MarkdownCopyCode),
+        codeBlockCopiedLabel: t(QuickAppEditorI18nKeys.MarkdownCopiedCode),
+        codeBlockDownloadLabel: t(QuickAppEditorI18nKeys.MarkdownDownloadCode),
+        tableScrollRegionAriaLabel: t(QuickAppEditorI18nKeys.MarkdownTableScrollRegion),
+        mathScrollRegionAriaLabel: t(QuickAppEditorI18nKeys.MarkdownMathScrollRegion),
       },
       mappers: {
         entityDetails: {
