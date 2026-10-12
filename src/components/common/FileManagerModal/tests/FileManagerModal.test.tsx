@@ -232,6 +232,52 @@ describe('FileManagerModal row selection', () => {
     expect(onClose.mock.calls[0][0]).toHaveLength(1);
     expect(onClose.mock.calls[0][0][0]).toMatch(/^files\/mine\//);
   });
+
+  const selectDocsFolder = async () => {
+    await until(() => rowCheckboxes().length > 1);
+    await until(() => {
+      const isAddEnabled = findButton(DialFileManagerI18nKeys.Add)?.disabled === false;
+      const checkbox = rowCheckboxes()[1] as HTMLInputElement | undefined;
+      if (!isAddEnabled && checkbox != null && !checkbox.checked) act(() => checkbox.click());
+      return isAddEnabled;
+    });
+  };
+
+  it('adds every file inside a ticked folder', async () => {
+    const { onClose } = await renderModal();
+    vi.mocked(listFiles).mockResolvedValue({
+      items: [
+        { name: 'a.md', path: 'files/mine/docs/a.md', nodeType: FilesApiNodeType.Item },
+        { name: 'b.md', path: 'files/mine/docs/sub/b.md', nodeType: FilesApiNodeType.Item },
+        { name: 'sub', path: 'files/mine/docs/sub/', nodeType: FilesApiNodeType.Folder },
+      ],
+    } as never);
+    await selectDocsFolder();
+
+    await act(async () => findButton(DialFileManagerI18nKeys.Add)?.click());
+    await until(() => onClose.mock.calls.length > 0);
+
+    expect(listFiles).toHaveBeenLastCalledWith({
+      bucket: 'mine',
+      path: 'docs/',
+      recursive: true,
+    });
+    expect(onClose).toHaveBeenCalledWith(['files/mine/docs/a.md', 'files/mine/docs/sub/b.md']);
+  });
+
+  it('stays open with an error when the folder contents cannot be loaded', async () => {
+    const { onClose } = await renderModal();
+    vi.mocked(listFiles).mockRejectedValue(new Error('boom'));
+    await selectDocsFolder();
+
+    await act(async () => findButton(DialFileManagerI18nKeys.Add)?.click());
+    await until(() => dialog().querySelector('[role="alert"]') != null);
+
+    expect(onClose).not.toHaveBeenCalled();
+    expect(dialog().querySelector('[role="alert"]')?.textContent).toBe(
+      DialFileManagerI18nKeys.AttachFolderFailed,
+    );
+  });
 });
 
 describe('FileManagerModal All tab', () => {

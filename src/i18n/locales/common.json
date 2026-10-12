@@ -64,6 +64,7 @@
     "folderNameTooLong": "Folder name is too long",
     "noPermissionToCreate": "You don't have permission to create items in this folder",
     "attachingHiddenFilesNotAllowed": "Attaching hidden files is not allowed",
+    "attachFolderFailed": "Couldn't load the files in the selected folder. Try again.",
     "deleteAction": "Delete",
     "deletingLabel": "Deleting…",
     "deleteConfirmTitleSingle": "Confirm deleting",

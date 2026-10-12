@@ -61,8 +61,15 @@ export const listFiles = async (params: {
   return { items: data.items.map(normalizeFileItem), permissions: data.permissions };
 };
 
-export const listPublicFiles = async (params?: { path?: string }): Promise<ListFilesResponse> => {
-  const data = await filesApi.listPublicFiles({ path: params?.path, limit: 1000 });
+export const listPublicFiles = async (params?: {
+  path?: string;
+  recursive?: boolean;
+}): Promise<ListFilesResponse> => {
+  const data = await filesApi.listPublicFiles({
+    path: params?.path,
+    recursive: params?.recursive,
+    limit: 1000,
+  });
   return { items: data.items.map(normalizeFileItem) };
 };
 
