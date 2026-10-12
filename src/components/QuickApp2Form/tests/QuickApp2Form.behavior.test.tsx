@@ -1,6 +1,5 @@
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
@@ -9,6 +8,8 @@ import type { QuickApp2Form } from '@/form/quickApp2Form';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
 import type { TriggerSaveGeneralPayload } from '@/types/editor-messages';
+import { click, getButton } from '@/test-utils/dom';
+import { setupTestRoot } from '@/test-utils/test-root';
 
 type FormSaveHandler = (
   data: QuickApp2Form,
@@ -55,9 +56,7 @@ const testContext = vi.hoisted(() => {
   };
 });
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({ language: 'en', t: (key: string) => key }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 
 vi.mock('@/context/AppContext', () => ({
   useAppContext: () => testContext.appContext,
@@ -255,13 +254,7 @@ import { QuickApp2Form as QuickApp2FormComponent } from '../QuickApp2Form';
 // Instructions are required, so a savable app needs a non-empty system prompt.
 const SAVED_ORCHESTRATOR = { system_prompt: { content: 'Be helpful' } };
 
-let root: Root;
-let container: HTMLDivElement;
-
-const getButtonByText = (text: string) =>
-  [...container.querySelectorAll('button')].find(
-    (button) => button.textContent === text,
-  ) as HTMLButtonElement;
+const dom = setupTestRoot();
 
 const renderForm = (
   props: { onSave?: Mock<FormSaveHandler>; isReadonly?: boolean; key?: string } = {},
@@ -270,17 +263,15 @@ const renderForm = (
   const onDirtyChange = vi.fn();
   const onModelReady = vi.fn();
 
-  act(() => {
-    root.render(
-      <QuickApp2FormComponent
-        key={props.key}
-        onSave={onSave}
-        onDirtyChange={onDirtyChange}
-        onModelReady={onModelReady}
-        isReadonly={props.isReadonly}
-      />,
-    );
-  });
+  dom.render(
+    <QuickApp2FormComponent
+      key={props.key}
+      onSave={onSave}
+      onDirtyChange={onDirtyChange}
+      onModelReady={onModelReady}
+      isReadonly={props.isReadonly}
+    />,
+  );
 
   return { onSave, onDirtyChange, onModelReady };
 };
@@ -295,7 +286,7 @@ const dispatchInput = async (input: HTMLInputElement, value: string) => {
 };
 
 const submitForm = async () => {
-  const form = container.querySelector('form');
+  const form = dom.container.querySelector('form');
   expect(form).not.toBeNull();
 
   await act(async () => {
@@ -312,7 +303,6 @@ const triggerSave = async (detail: { isAutoSave: boolean; shouldIgnoreDirty?: bo
 };
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   testContext.appContext.app = {
     id: 'app',
     applicationProperties: { orchestrator: SAVED_ORCHESTRATOR },
@@ -326,14 +316,6 @@ beforeEach(() => {
     mcpAgentsMap: {},
     status: 'ready',
   };
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
 });
 
 describe('QuickApp2Form observable behavior', () => {
@@ -348,7 +330,7 @@ describe('QuickApp2Form observable behavior', () => {
     });
 
     await dispatchInput(
-      container.querySelector('[aria-label="Model"]') as HTMLInputElement,
+      dom.container.querySelector('[aria-label="Model"]') as HTMLInputElement,
       'missing-model',
     );
     await submitForm();
@@ -358,7 +340,9 @@ describe('QuickApp2Form observable behavior', () => {
 
   it('reports dirty transitions when a controlled field changes and is restored', async () => {
     const { onDirtyChange } = renderForm();
-    const instructions = container.querySelector('[aria-label="Instructions"]') as HTMLInputElement;
+    const instructions = dom.container.querySelector(
+      '[aria-label="Instructions"]',
+    ) as HTMLInputElement;
 
     await dispatchInput(instructions, 'Updated instructions');
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
@@ -371,15 +355,17 @@ describe('QuickApp2Form observable behavior', () => {
     testContext.appContext.app = { id: 'app', applicationProperties: {} };
     const { onSave } = renderForm();
 
-    expect(container.textContent).not.toContain(QuickAppEditorI18nKeys.InstructionsRequired);
+    expect(dom.container.textContent).not.toContain(QuickAppEditorI18nKeys.InstructionsRequired);
 
     await submitForm();
     expect(onSave).not.toHaveBeenCalled();
-    expect(container.textContent).toContain(QuickAppEditorI18nKeys.InstructionsRequired);
+    expect(dom.container.textContent).toContain(QuickAppEditorI18nKeys.InstructionsRequired);
 
-    const instructions = container.querySelector('[aria-label="Instructions"]') as HTMLInputElement;
+    const instructions = dom.container.querySelector(
+      '[aria-label="Instructions"]',
+    ) as HTMLInputElement;
     await dispatchInput(instructions, 'Be helpful');
-    expect(container.textContent).not.toContain(QuickAppEditorI18nKeys.InstructionsRequired);
+    expect(dom.container.textContent).not.toContain(QuickAppEditorI18nKeys.InstructionsRequired);
 
     await submitForm();
     expect(onSave).toHaveBeenCalledTimes(1);
@@ -388,7 +374,7 @@ describe('QuickApp2Form observable behavior', () => {
   it('applies saved Advanced Settings to the form and marks it dirty', async () => {
     const { onSave, onDirtyChange } = renderForm();
 
-    act(() => getButtonByText('Save changed advanced settings').click());
+    click(getButton('Save changed advanced settings'));
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
 
     await submitForm();
@@ -403,7 +389,7 @@ describe('QuickApp2Form observable behavior', () => {
   it('applies temperature and process files saved from Advanced Settings and marks the form dirty', async () => {
     const { onSave, onDirtyChange } = renderForm();
 
-    act(() => getButtonByText('Save changed orchestrator settings').click());
+    click(getButton('Save changed orchestrator settings'));
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
 
     await submitForm();
@@ -418,7 +404,7 @@ describe('QuickApp2Form observable behavior', () => {
   it('keeps the form clean when Advanced Settings are saved unchanged', () => {
     const { onDirtyChange } = renderForm();
 
-    act(() => getButtonByText('Save unchanged advanced settings').click());
+    click(getButton('Save unchanged advanced settings'));
     expect(onDirtyChange).not.toHaveBeenCalledWith(true);
   });
 
@@ -429,14 +415,14 @@ describe('QuickApp2Form observable behavior', () => {
     expect(onSave).not.toHaveBeenCalled();
 
     await dispatchInput(
-      container.querySelector('[aria-label="Instructions"]') as HTMLInputElement,
+      dom.container.querySelector('[aria-label="Instructions"]') as HTMLInputElement,
       'Changed',
     );
     await triggerSave({ isAutoSave: true });
     expect(onSave).toHaveBeenCalledTimes(1);
 
     await act(async () => {
-      root.render(
+      dom.root.render(
         <QuickApp2FormComponent
           key="clean-again"
           onSave={onSave}
@@ -463,12 +449,12 @@ describe('QuickApp2Form observable behavior', () => {
     };
     const { onSave, onDirtyChange } = renderForm();
 
-    expect(container.querySelector('[data-testid="skills-value"]')?.textContent).toBe(
+    expect(dom.container.querySelector('[data-testid="skills-value"]')?.textContent).toBe(
       'skills/public/a|skills/public/b|skills/public/c',
     );
 
     await act(async () => {
-      [...container.querySelectorAll('button')]
+      [...dom.container.querySelectorAll('button')]
         .find((button) => button.textContent === 'Delete skill b')
         ?.click();
       await Promise.resolve();
@@ -491,25 +477,25 @@ describe('QuickApp2Form observable behavior', () => {
 
   it('restores the form baseline when the form is remounted for reset', async () => {
     const { onDirtyChange } = renderForm({ key: 'before-reset' });
-    const instructions = container.querySelector('[aria-label="Instructions"]') as HTMLInputElement;
+    const instructions = dom.container.querySelector(
+      '[aria-label="Instructions"]',
+    ) as HTMLInputElement;
 
     await dispatchInput(instructions, 'Unsaved change');
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
 
-    act(() => {
-      root.render(
-        <QuickApp2FormComponent
-          key="after-reset"
-          onSave={vi.fn()}
-          onDirtyChange={onDirtyChange}
-          onModelReady={vi.fn()}
-        />,
-      );
-    });
-
-    expect((container.querySelector('[aria-label="Instructions"]') as HTMLInputElement).value).toBe(
-      'Be helpful',
+    dom.render(
+      <QuickApp2FormComponent
+        key="after-reset"
+        onSave={vi.fn()}
+        onDirtyChange={onDirtyChange}
+        onModelReady={vi.fn()}
+      />,
     );
+
+    expect(
+      (dom.container.querySelector('[aria-label="Instructions"]') as HTMLInputElement).value,
+    ).toBe('Be helpful');
     expect(onDirtyChange).toHaveBeenLastCalledWith(false);
   });
 
@@ -521,7 +507,7 @@ describe('QuickApp2Form observable behavior', () => {
     };
     const { onSave, onDirtyChange } = renderForm();
 
-    expect(container.querySelector('[data-testid="attachment-value"]')?.textContent).toBe(
+    expect(dom.container.querySelector('[data-testid="attachment-value"]')?.textContent).toBe(
       'audio/mpeg|image/*',
     );
     expect(onDirtyChange).not.toHaveBeenCalledWith(true);
@@ -540,9 +526,9 @@ describe('QuickApp2Form observable behavior', () => {
     };
     const { onSave, onDirtyChange } = renderForm();
 
-    act(() => getButtonByText('Turn attachments off').click());
+    click(getButton('Turn attachments off'));
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
-    expect(container.querySelector('[data-testid="attachments-enabled"]')?.textContent).toBe(
+    expect(dom.container.querySelector('[data-testid="attachments-enabled"]')?.textContent).toBe(
       'false',
     );
 
@@ -553,9 +539,9 @@ describe('QuickApp2Form observable behavior', () => {
   it('blocks save and auto-save while attachments are enabled without a type', async () => {
     const { onSave, onDirtyChange } = renderForm();
 
-    act(() => getButtonByText('Turn attachments on').click());
+    click(getButton('Turn attachments on'));
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
-    expect(container.querySelector('[data-testid="attachment-error"]')?.textContent).toBe(
+    expect(dom.container.querySelector('[data-testid="attachment-error"]')?.textContent).toBe(
       QuickAppEditorI18nKeys.AttachmentTypesRequired,
     );
 
@@ -563,8 +549,8 @@ describe('QuickApp2Form observable behavior', () => {
     await triggerSave({ isAutoSave: true });
     expect(onSave).not.toHaveBeenCalled();
 
-    act(() => getButtonByText('Select PDF').click());
-    expect(container.querySelector('[data-testid="attachment-error"]')?.textContent).toBe('');
+    click(getButton('Select PDF'));
+    expect(dom.container.querySelector('[data-testid="attachment-error"]')?.textContent).toBe('');
 
     await submitForm();
     expect(onSave).toHaveBeenCalledTimes(1);
@@ -574,11 +560,11 @@ describe('QuickApp2Form observable behavior', () => {
   it('keeps the form clean when attachments are turned on and off without a selection', () => {
     const { onDirtyChange } = renderForm();
 
-    act(() => getButtonByText('Turn attachments on').click());
-    act(() => getButtonByText('Turn attachments off').click());
+    click(getButton('Turn attachments on'));
+    click(getButton('Turn attachments off'));
 
     expect(onDirtyChange).toHaveBeenLastCalledWith(false);
-    expect(container.querySelector('[data-testid="attachment-error"]')?.textContent).toBe('');
+    expect(dom.container.querySelector('[data-testid="attachment-error"]')?.textContent).toBe('');
   });
 
   it('resolves the model and reports ready when model data arrives asynchronously', () => {
@@ -593,7 +579,9 @@ describe('QuickApp2Form observable behavior', () => {
     };
     const { onModelReady } = renderForm();
 
-    expect((container.querySelector('[aria-label="Model"]') as HTMLInputElement).value).toBe('');
+    expect((dom.container.querySelector('[aria-label="Model"]') as HTMLInputElement).value).toBe(
+      '',
+    );
     expect(onModelReady).not.toHaveBeenCalled();
 
     testContext.dataContext = {
@@ -605,17 +593,15 @@ describe('QuickApp2Form observable behavior', () => {
       mcpAgentsMap: {},
       status: 'ready',
     };
-    act(() => {
-      root.render(
-        <QuickApp2FormComponent
-          onSave={vi.fn()}
-          onDirtyChange={vi.fn()}
-          onModelReady={onModelReady}
-        />,
-      );
-    });
+    dom.render(
+      <QuickApp2FormComponent
+        onSave={vi.fn()}
+        onDirtyChange={vi.fn()}
+        onModelReady={onModelReady}
+      />,
+    );
 
-    expect((container.querySelector('[aria-label="Model"]') as HTMLInputElement).value).toBe(
+    expect((dom.container.querySelector('[aria-label="Model"]') as HTMLInputElement).value).toBe(
       'model-1',
     );
     expect(onModelReady).toHaveBeenCalled();
@@ -637,13 +623,15 @@ describe('QuickApp2Form observable behavior', () => {
 
     renderForm();
 
-    expect(container.querySelector('[data-testid="starters-titles"]')?.textContent).toBe('B|A|');
+    expect(dom.container.querySelector('[data-testid="starters-titles"]')?.textContent).toBe(
+      'B|A|',
+    );
   });
 
   it('applies saved conversation starters to the form and marks it dirty', async () => {
     const { onSave, onDirtyChange } = renderForm();
 
-    act(() => getButtonByText('Save changed starters').click());
+    click(getButton('Save changed starters'));
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
 
     await submitForm();
@@ -666,7 +654,7 @@ describe('QuickApp2Form observable behavior', () => {
   it('keeps the form clean when conversation starters are saved unchanged', () => {
     const { onDirtyChange } = renderForm();
 
-    act(() => getButtonByText('Save unchanged starters').click());
+    click(getButton('Save unchanged starters'));
     expect(onDirtyChange).not.toHaveBeenCalledWith(true);
   });
 
@@ -679,7 +667,9 @@ describe('QuickApp2Form observable behavior', () => {
 
     renderForm();
 
-    expect(container.querySelector('[data-testid="starters-readonly"]')?.textContent).toBe('true');
+    expect(dom.container.querySelector('[data-testid="starters-readonly"]')?.textContent).toBe(
+      'true',
+    );
   });
 
   it('passes saved context files to the Knowledge base row', () => {
@@ -695,7 +685,7 @@ describe('QuickApp2Form observable behavior', () => {
 
     renderForm();
 
-    expect(container.querySelector('[data-testid="knowledge-files"]')?.textContent).toBe(
+    expect(dom.container.querySelector('[data-testid="knowledge-files"]')?.textContent).toBe(
       'files/abc/a.pdf|files/abc/b.pdf',
     );
   });
@@ -710,10 +700,10 @@ describe('QuickApp2Form observable behavior', () => {
     };
     const { onSave, onDirtyChange } = renderForm();
 
-    act(() => getButtonByText('Add knowledge files').click());
+    click(getButton('Add knowledge files'));
 
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
-    expect(container.querySelector('[data-testid="knowledge-files"]')?.textContent).toBe(
+    expect(dom.container.querySelector('[data-testid="knowledge-files"]')?.textContent).toBe(
       'files/abc/a.pdf|files/abc/new file.pdf',
     );
 
@@ -737,7 +727,7 @@ describe('QuickApp2Form observable behavior', () => {
     };
     const { onSave, onDirtyChange } = renderForm();
 
-    act(() => getButtonByText('Remove knowledge file').click());
+    click(getButton('Remove knowledge file'));
 
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
     await submitForm();
@@ -749,6 +739,8 @@ describe('QuickApp2Form observable behavior', () => {
 
     renderForm();
 
-    expect(container.querySelector('[data-testid="knowledge-readonly"]')?.textContent).toBe('true');
+    expect(dom.container.querySelector('[data-testid="knowledge-readonly"]')?.textContent).toBe(
+      'true',
+    );
   });
 });

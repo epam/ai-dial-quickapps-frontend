@@ -6,10 +6,10 @@ import {
 import type { SkillFileContent } from '@epam/ai-dial-chat-hooks/skill-editor';
 import { CodeBlockTheme } from '@epam/ai-dial-chat-shared';
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { setupTestRoot } from '@/test-utils/test-root';
 import { ThemeId } from '@/types/theme';
 
 import { SkillFilePreview } from '../SkillFilePreview';
@@ -33,9 +33,7 @@ const mocks = vi.hoisted(() => ({
   theme: { currentTheme: { id: 'light' } as { id: string } | undefined },
 }));
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({ t: (key: string) => key, language: 'en' }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/ThemeContext', () => ({ useThemeContext: () => mocks.theme }));
 vi.mock('@epam/ai-dial-chat-hooks/catalog', async (importOriginal) => ({
   ...(await importOriginal<object>()),
@@ -79,34 +77,24 @@ vi.mock('@epam/ai-dial-attachment-canvas', async (importOriginal) => {
 
 const bytes = (text: string): SkillFileContent => ({ bytes: new TextEncoder().encode(text) });
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 
 const render = async (fileId: string, fileName: string) => {
   await act(async () => {
-    root.render(<SkillFilePreview fileId={fileId} fileName={fileName} onLoadFile={vi.fn()} />);
+    dom.root.render(<SkillFilePreview fileId={fileId} fileName={fileName} onLoadFile={vi.fn()} />);
   });
 };
 
-const region = () => container.querySelector('[role="group"]') as HTMLElement;
-const body = () => container.querySelector('output') as HTMLElement;
+const region = () => dom.container.querySelector('[role="group"]') as HTMLElement;
+const body = () => dom.container.querySelector('output') as HTMLElement;
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   mocks.preview = { content: null, error: null, isLoading: true };
   mocks.opened = [];
   mocks.pendingOpen = null;
   mocks.bodyProps = null;
   mocks.theme.currentTheme = { id: ThemeId.Light };
   document.documentElement.dir = 'ltr';
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
 });
 
 describe('SkillFilePreview', () => {

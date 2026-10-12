@@ -1,5 +1,4 @@
 import { act, type FC } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 import {
@@ -15,10 +14,9 @@ import {
   type UseDialFileManagerResult,
 } from '@/hooks/use-dial-file-manager';
 import { useDialFileSources, type UseDialFileSourcesOptions } from '@/hooks/use-dial-file-sources';
+import { setupTestRoot } from '@/test-utils/test-root';
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({ t: (key: string) => key, language: 'en' }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/hooks/use-dial-file-manager', () => ({ useDialFileManager: vi.fn() }));
 
 const LABELS = {
@@ -81,19 +79,17 @@ const Probe: FC<UseDialFileSourcesOptions> = (props) => {
   return null;
 };
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 
 const render = async (activeTab: DialFileManagerTabs) => {
   await act(async () =>
-    root.render(
+    dom.root.render(
       <Probe bucket="mine" activeTab={activeTab} labels={LABELS} onNotification={onNotification} />,
     ),
   );
 };
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   fakes = {
     [DialFileManagerTabs.MyFiles]: createFake('My files'),
     [DialFileManagerTabs.Shared]: createFake('Shared', { isUploadEnabled: false }),
@@ -105,14 +101,9 @@ beforeEach(() => {
     enabled[options.activeTab ?? ''] = options.isEnabled ?? true;
     return fakes[options.activeTab ?? ''];
   });
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
 });
 
 afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
   vi.clearAllMocks();
 });
 

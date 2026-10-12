@@ -1,6 +1,8 @@
 import React, { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { click, getButton, typeInto } from '@/test-utils/dom';
+import { setupTestRoot } from '@/test-utils/test-root';
 
 import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
@@ -55,12 +57,25 @@ vi.mock('@/hooks/use-translation', () => ({
 }));
 vi.mock('@epam/ai-dial-ui-kit', () => ({
   ButtonAppearance: { Link: 'link', Ghost: 'ghost' },
-  ButtonVariant: { Primary: 'primary', Neutral: 'neutral', Danger: 'danger', Secondary: 'secondary' },
+  ButtonVariant: {
+    Primary: 'primary',
+    Neutral: 'neutral',
+    Danger: 'danger',
+    Secondary: 'secondary',
+  },
   PopupSize: { Md: 'md' },
   DIAL_ICON_SIZE: { SM: 16, MD: 20, LG: 24 },
   DIAL_KIT_ICON_STROKE: 1.5,
   mergeClasses: (...classes: unknown[]) => classes.filter(Boolean).join(' '),
-  Popup: ({ open, header, closeAriaLabel, children, onClose, additionalButtons, mainButtons }: MockPopupProps) =>
+  Popup: ({
+    open,
+    header,
+    closeAriaLabel,
+    children,
+    onClose,
+    additionalButtons,
+    mainButtons,
+  }: MockPopupProps) =>
     open ? (
       <div role="dialog" aria-label={header}>
         <button type="button" aria-label={closeAriaLabel} onClick={onClose} />
@@ -84,7 +99,10 @@ vi.mock('@epam/ai-dial-ui-kit', () => ({
       {iconAfter}
     </div>
   ),
-  IconButton: ({ icon, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { icon: React.ReactNode }) => (
+  IconButton: ({
+    icon,
+    ...props
+  }: React.ButtonHTMLAttributes<HTMLButtonElement> & { icon: React.ReactNode }) => (
     <button {...props}>{icon}</button>
   ),
   Switch: ({ isOn, disabled, labelProps, caption, onChange }: MockSwitchProps) => (
@@ -125,56 +143,32 @@ const emptyValues: ConversationStartersValues = {
   chatMessageInputDisabled: false,
 };
 
-let root: Root;
-let container: HTMLDivElement;
-
-beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
-});
+const dom = setupTestRoot();
 
 const renderModal = (values: ConversationStartersValues = emptyValues) => {
   const onSave = vi.fn();
   const onClose = vi.fn();
-  act(() => root.render(<ConversationStartersModal values={values} onSave={onSave} onClose={onClose} />));
+  dom.render(<ConversationStartersModal values={values} onSave={onSave} onClose={onClose} />);
   return { onSave, onClose };
 };
 
-const getButton = (name: string) =>
-  [...container.querySelectorAll('button')].find(
-    (button) => (button.getAttribute('aria-label') ?? button.textContent) === name,
-  ) as HTMLButtonElement;
-
-const getInputs = (name: string) =>
-  [...container.querySelectorAll<HTMLInputElement>(`input[aria-label="${name}"]`)];
+const getInputs = (name: string) => [
+  ...dom.container.querySelectorAll<HTMLInputElement>(`input[aria-label="${name}"]`),
+];
 
 const getTitleInputs = () => getInputs(QuickAppEditorI18nKeys.ButtonLabel);
 const getPromptInputs = () => getInputs(QuickAppEditorI18nKeys.PromptToSendInChat);
-const getDeleteButtons = () =>
-  [...container.querySelectorAll<HTMLButtonElement>(`button[aria-label="${QuickAppEditorI18nKeys.DeleteStarter}"]`)];
+const getDeleteButtons = () => [
+  ...dom.container.querySelectorAll<HTMLButtonElement>(
+    `button[aria-label="${QuickAppEditorI18nKeys.DeleteStarter}"]`,
+  ),
+];
 const getSwitch = () =>
-  container.querySelector(
+  dom.container.querySelector(
     `[role="switch"][aria-label="${QuickAppEditorI18nKeys.RequireStarterToStartNewChat}"]`,
   ) as HTMLButtonElement;
 const getIntroInput = () => getInputs(QuickAppEditorI18nKeys.IntroMessage)[0];
 const getRadio = (name: string) => getInputs(name)[0];
-
-const typeInto = (input: HTMLInputElement, value: string) => {
-  const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
-  act(() => {
-    setValue?.call(input, value);
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-  });
-};
-
-const click = (element: HTMLElement) => act(() => element.click());
 
 describe('ConversationStartersModal', () => {
   it('renders a named dialog seeded from the current values', () => {
@@ -185,13 +179,21 @@ describe('ConversationStartersModal', () => {
       chatMessageInputDisabled: true,
     });
 
-    expect(container.querySelector(`[role="dialog"][aria-label="${QuickAppEditorI18nKeys.SetUpConversationStarters}"]`)).toBeTruthy();
+    expect(
+      dom.container.querySelector(
+        `[role="dialog"][aria-label="${QuickAppEditorI18nKeys.SetUpConversationStarters}"]`,
+      ),
+    ).toBeTruthy();
     expect(getTitleInputs().map((input) => input.value)).toEqual(['Visual hierarchy', '']);
     expect(getPromptInputs().map((input) => input.value)).toEqual(['Analyze', '']);
     expect(getIntroInput().value).toBe('Hi!');
     expect(getSwitch().getAttribute('aria-checked')).toBe('true');
     expect(getRadio(QuickAppEditorI18nKeys.PopulatePromptInTheChatInput).checked).toBe(true);
-    expect(container.querySelector(`[role="radiogroup"][aria-label="${QuickAppEditorI18nKeys.WhenStarterIsSelected}"]`)).toBeTruthy();
+    expect(
+      dom.container.querySelector(
+        `[role="radiogroup"][aria-label="${QuickAppEditorI18nKeys.WhenStarterIsSelected}"]`,
+      ),
+    ).toBeTruthy();
   });
 
   it('appends a blank row when typing into the last row', () => {
@@ -205,10 +207,10 @@ describe('ConversationStartersModal', () => {
   it('shows a counter for a non-empty label and stops it at 30 characters', () => {
     renderModal();
 
-    expect(container.textContent).not.toContain('/30');
+    expect(dom.container.textContent).not.toContain('/30');
 
     typeInto(getTitleInputs()[0], 'Visual hierarchy');
-    expect(container.textContent).toContain('16/30');
+    expect(dom.container.textContent).toContain('16/30');
 
     typeInto(getTitleInputs()[0], 'x'.repeat(31));
     expect(getTitleInputs()[0].value).toBe('Visual hierarchy');
@@ -216,9 +218,14 @@ describe('ConversationStartersModal', () => {
 
   it('flags a legacy over-limit label without truncating it', () => {
     const legacy = 'x'.repeat(42);
-    const { onSave } = renderModal({ ...emptyValues, starters: [{ id: 'a', title: legacy, text: 'p' }, blankStarter] });
+    const { onSave } = renderModal({
+      ...emptyValues,
+      starters: [{ id: 'a', title: legacy, text: 'p' }, blankStarter],
+    });
 
-    const counter = [...container.querySelectorAll('span')].find((span) => span.textContent === '42/30');
+    const counter = [...dom.container.querySelectorAll('span')].find(
+      (span) => span.textContent === '42/30',
+    );
     expect(counter?.className).toContain('text-error');
     expect(getTitleInputs()[0].getAttribute('aria-invalid')).toBe('true');
 
@@ -240,7 +247,7 @@ describe('ConversationStartersModal', () => {
   it('explains on each disabled setting that a complete starter is required', () => {
     renderModal();
     const hint = QuickAppEditorI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings;
-    const radioGroup = container.querySelector('[role="radiogroup"]');
+    const radioGroup = dom.container.querySelector('[role="radiogroup"]');
 
     expect(getIntroInput().title).toBe(hint);
     expect(getSwitch().getAttribute('data-hint')).toBe(hint);
@@ -257,7 +264,9 @@ describe('ConversationStartersModal', () => {
   it('enables the settings only while the draft has a complete starter', () => {
     renderModal();
 
-    expect(container.textContent).toContain(QuickAppEditorI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings);
+    expect(dom.container.textContent).toContain(
+      QuickAppEditorI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings,
+    );
     expect(getIntroInput().disabled).toBe(true);
     expect(getSwitch().disabled).toBe(true);
     expect(getRadio(QuickAppEditorI18nKeys.SendPromptToTheChat).disabled).toBe(true);
@@ -334,7 +343,17 @@ describe('ConversationStartersModal', () => {
         const top = Math.max(index, 0) * (ROW_HEIGHT + ROW_GAP);
         const height = isRow ? ROW_HEIGHT : 0;
         const width = isRow ? 500 : 0;
-        return { top, left: 0, right: width, bottom: top + height, width, height, x: 0, y: top, toJSON: () => ({}) };
+        return {
+          top,
+          left: 0,
+          right: width,
+          bottom: top + height,
+          width,
+          height,
+          x: 0,
+          y: top,
+          toJSON: () => ({}),
+        };
       };
     });
 
@@ -342,12 +361,17 @@ describe('ConversationStartersModal', () => {
       Element.prototype.getBoundingClientRect = originalGetBoundingClientRect;
     });
 
-    const getHandles = () =>
-      [...container.querySelectorAll<HTMLButtonElement>('button[aria-roledescription="sortable"]')];
+    const getHandles = () => [
+      ...dom.container.querySelectorAll<HTMLButtonElement>(
+        'button[aria-roledescription="sortable"]',
+      ),
+    ];
 
     const pressKey = async (target: EventTarget, code: string) => {
       await act(async () => {
-        target.dispatchEvent(new KeyboardEvent('keydown', { code, key: code === 'Space' ? ' ' : code, bubbles: true }));
+        target.dispatchEvent(
+          new KeyboardEvent('keydown', { code, key: code === 'Space' ? ' ' : code, bubbles: true }),
+        );
         await new Promise((resolve) => setTimeout(resolve, 0));
       });
     };
@@ -359,7 +383,11 @@ describe('ConversationStartersModal', () => {
 
       const handles = getHandles();
       expect(handles).toHaveLength(4);
-      expect(handles.every((handle) => handle.getAttribute('aria-label') === QuickAppEditorI18nKeys.ReorderStarter)).toBe(true);
+      expect(
+        handles.every(
+          (handle) => handle.getAttribute('aria-label') === QuickAppEditorI18nKeys.ReorderStarter,
+        ),
+      ).toBe(true);
       expect(handles[3].disabled || handles[3].getAttribute('aria-disabled') === 'true').toBe(true);
       expect(handles[0].disabled).toBe(false);
     });
@@ -376,7 +404,12 @@ describe('ConversationStartersModal', () => {
       expect(titles()).toEqual(['B', 'A', 'C', '']);
 
       click(getButton(QuickAppEditorI18nKeys.Save));
-      expect(onSave.mock.calls[0][0].starters.map(({ id }: { id: string }) => id)).toEqual(['b', 'a', 'c', 'blank']);
+      expect(onSave.mock.calls[0][0].starters.map(({ id }: { id: string }) => id)).toEqual([
+        'b',
+        'a',
+        'c',
+        'blank',
+      ]);
     });
 
     it('cancels a keyboard move with Escape without closing the modal', async () => {
@@ -415,10 +448,12 @@ describe('ConversationStartersModal', () => {
     try {
       renderModal({ ...emptyValues, starters: [{ id: 'a', title: 'A', text: 'a' }, blankStarter] });
 
-      const handle = container.querySelector('button[aria-roledescription="sortable"]') as HTMLElement;
+      const handle = dom.container.querySelector(
+        'button[aria-roledescription="sortable"]',
+      ) as HTMLElement;
       const row = handle.parentElement as HTMLElement;
-      const controls = [...row.querySelectorAll('button, input')].map(
-        (element) => element.getAttribute('aria-label'),
+      const controls = [...row.querySelectorAll('button, input')].map((element) =>
+        element.getAttribute('aria-label'),
       );
 
       expect(controls).toEqual([
@@ -427,8 +462,12 @@ describe('ConversationStartersModal', () => {
         QuickAppEditorI18nKeys.PromptToSendInChat,
         QuickAppEditorI18nKeys.DeleteStarter,
       ]);
-      expect(container.querySelector('[class*="scale-x"]')).toBeNull();
-      expect(container.querySelector('[class*="ml-"], [class*="mr-"], [class*="pl-"], [class*="pr-"]')).toBeNull();
+      expect(dom.container.querySelector('[class*="scale-x"]')).toBeNull();
+      expect(
+        dom.container.querySelector(
+          '[class*="ml-"], [class*="mr-"], [class*="pl-"], [class*="pr-"]',
+        ),
+      ).toBeNull();
     } finally {
       document.documentElement.dir = '';
     }

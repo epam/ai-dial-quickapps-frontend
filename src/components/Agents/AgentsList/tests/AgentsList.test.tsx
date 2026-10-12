@@ -1,6 +1,8 @@
 import { act, useState } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+import { getButton } from '@/test-utils/dom';
+import { setupTestRoot } from '@/test-utils/test-root';
 
 import { DialEntityType } from '@/types/dial-entities';
 import { ApplicationStatus, type DialModel } from '@/types/dial-entities';
@@ -16,13 +18,7 @@ const OFFLINE = makeAgent('applications/public/offline', 'Offline', {
   functionStatus: ApplicationStatus.Undeployed,
 });
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({
-    language: 'en',
-    t: (key: string, options?: Record<string, string>) =>
-      key.replace(/\{\{(\w+)\}\}/g, (_, name: string) => options?.[name] ?? ''),
-  }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/hooks/use-add-on-entity-map', () => ({
   useAddOnEntityMap: () => ({ [RESEARCH.id]: RESEARCH, [GPT.id]: GPT, [OFFLINE.id]: OFFLINE }),
 }));
@@ -49,8 +45,7 @@ vi.mock('@/components/Agents/AgentDetailsPopup/AgentDetailsPopup', () => ({
   ),
 }));
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 
 interface HarnessProps {
   initial: string[];
@@ -76,32 +71,15 @@ const Harness = ({ initial, isReadonly = false }: HarnessProps) => {
 
 const render = async (initial: string[], isReadonly?: boolean) => {
   await act(async () => {
-    root.render(<Harness initial={initial} isReadonly={isReadonly} />);
+    dom.root.render(<Harness initial={initial} isReadonly={isReadonly} />);
   });
 };
-
-const getButton = (name: string) =>
-  [...container.querySelectorAll('button')].find(
-    (button) => button.getAttribute('aria-label') === name,
-  );
-
-beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
-});
 
 describe('AgentsList', () => {
   it('lists applications and models in order, with versions', async () => {
     await render([RESEARCH.id, GPT.id]);
 
-    const items = [...container.querySelectorAll('li')].map((li) => li.textContent);
+    const items = [...dom.container.querySelectorAll('li')].map((li) => li.textContent);
     expect(items[0]).toContain('Research Agent');
     expect(items[0]).toContain('2.1');
     expect(items[1]).toContain('GPT-4o');
@@ -111,14 +89,14 @@ describe('AgentsList', () => {
   it('describes an undeployed agent', async () => {
     await render([OFFLINE.id]);
 
-    expect(container.textContent?.toLowerCase()).toContain('undeployed');
+    expect(dom.container.textContent?.toLowerCase()).toContain('undeployed');
   });
 
   it('names an application missing from the catalog after its id and flags it', async () => {
     await render(['applications/public/gone__1.0']);
 
     expect(getButton('gone details')).toBeTruthy();
-    expect(container.textContent).toContain('needs to be removed');
+    expect(dom.container.textContent).toContain('needs to be removed');
   });
 
   it('removes only that agent and keeps the toolsets', async () => {
@@ -126,7 +104,7 @@ describe('AgentsList', () => {
 
     await act(async () => getButton('Remove Research Agent')?.click());
 
-    expect(container.querySelector('[data-testid="value"]')?.textContent).toBe(
+    expect(dom.container.querySelector('[data-testid="value"]')?.textContent).toBe(
       `toolsets/public/figma|${GPT.id}`,
     );
     expect(document.activeElement).toBe(getButton('GPT-4o details'));
@@ -152,13 +130,11 @@ describe('AgentsList details popup', () => {
     await render([RESEARCH.id, GPT.id]);
 
     await clickAndWait(getButton('GPT-4o details'));
-    expect(container.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe(GPT.id);
+    expect(dom.container.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe(GPT.id);
 
-    await clickAndWait(
-      [...container.querySelectorAll('button')].find((b) => b.textContent === 'Close'),
-    );
-    expect(container.querySelector('[role="dialog"]')).toBeNull();
-    expect(container.querySelector('[data-testid="value"]')?.textContent).toBe(
+    await clickAndWait(getButton('Close'));
+    expect(dom.container.querySelector('[role="dialog"]')).toBeNull();
+    expect(dom.container.querySelector('[data-testid="value"]')?.textContent).toBe(
       `${RESEARCH.id}|${GPT.id}`,
     );
   });
@@ -167,11 +143,9 @@ describe('AgentsList details popup', () => {
     await render([RESEARCH.id, GPT.id]);
 
     await clickAndWait(getButton('Research Agent details'));
-    await clickAndWait(
-      [...container.querySelectorAll('button')].find((b) => b.textContent === 'Delete'),
-    );
+    await clickAndWait(getButton('Delete'));
 
-    expect(container.querySelector('[data-testid="value"]')?.textContent).toBe(GPT.id);
-    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(dom.container.querySelector('[data-testid="value"]')?.textContent).toBe(GPT.id);
+    expect(dom.container.querySelector('[role="dialog"]')).toBeNull();
   });
 });

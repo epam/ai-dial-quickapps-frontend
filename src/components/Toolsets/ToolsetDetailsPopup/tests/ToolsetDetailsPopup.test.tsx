@@ -1,8 +1,8 @@
 import { act, useState } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { CatalogItemCredentials } from '@epam/ai-dial-catalog';
+import { setupTestRoot } from '@/test-utils/test-root';
 import { DialEntityType } from '@/types/dial-entities';
 import { type DialToolset, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
 
@@ -95,8 +95,7 @@ const FIGMA_DETAILS = {
   },
 };
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 const onRemove = vi.fn();
 const onClose = vi.fn();
 
@@ -133,7 +132,7 @@ const render = async (
 ) => {
   const toolset = 'toolset' in props ? props.toolset : FIGMA;
   await act(async () => {
-    root.render(
+    dom.root.render(
       <Harness
         initial={toolset}
         toolsetId={props.toolsetId ?? toolset?.id ?? 'toolsets/public/gone'}
@@ -172,7 +171,6 @@ const postFromHost = async (data: unknown, origin = HOST) => {
 };
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   // The catalog API-key popover is a kit Dropdown, which observes its anchor.
   (globalThis as Record<string, unknown>).IntersectionObserver = class {
     observe() {}
@@ -188,14 +186,9 @@ beforeEach(() => {
   deploymentsApi.getDeploymentLimits.mockReset();
   onRemove.mockReset();
   onClose.mockReset();
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
 });
 
 afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
   document.documentElement.dir = '';
 });
 

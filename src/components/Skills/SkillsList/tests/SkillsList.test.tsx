@@ -1,7 +1,8 @@
 import { act, useState } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { getButton } from '@/test-utils/dom';
+import { setupTestRoot } from '@/test-utils/test-root';
 import { DialEntityType } from '@/types/dial-entities';
 import type { DialSkill } from '@/types/dial-entities';
 
@@ -22,13 +23,7 @@ const SKILLS_MAP: Record<string, DialSkill> = {
   'skills/public/user-research': makeSkill('skills/public/user-research', 'User Research'),
 };
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({
-    language: 'en',
-    t: (key: string, options?: Record<string, string>) =>
-      key.replace(/\{\{(\w+)\}\}/g, (_, name: string) => options?.[name] ?? ''),
-  }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({ skillsMap: SKILLS_MAP }),
@@ -66,8 +61,7 @@ vi.mock('@/components/Skills/SkillDetailsPopup/SkillDetailsPopup', () => ({
   ),
 }));
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 
 const Harness = ({ initial, isReadonly = false }: { initial: string[]; isReadonly?: boolean }) => {
   const [value, setValue] = useState(initial);
@@ -85,14 +79,9 @@ const Harness = ({ initial, isReadonly = false }: { initial: string[]; isReadonl
 
 const render = async (initial: string[], isReadonly?: boolean) => {
   await act(async () => {
-    root.render(<Harness initial={initial} isReadonly={isReadonly} />);
+    dom.root.render(<Harness initial={initial} isReadonly={isReadonly} />);
   });
 };
-
-const getButton = (name: string) =>
-  [...container.querySelectorAll('button')].find(
-    (button) => (button.getAttribute('aria-label') ?? button.textContent) === name,
-  );
 
 const click = async (element?: Element | null) => {
   expect(element).toBeTruthy();
@@ -103,16 +92,7 @@ const click = async (element?: Element | null) => {
   });
 };
 
-beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
 afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
   document.documentElement.dir = '';
 });
 
@@ -120,7 +100,7 @@ describe('SkillsList', () => {
   it('lists the attached skills in order with their initials and names', async () => {
     await render(['skills/public/web-search', 'skills/public/user-research']);
 
-    const items = [...container.querySelectorAll('li')];
+    const items = [...dom.container.querySelectorAll('li')];
     expect(items.map((item) => item.textContent)).toEqual([
       expect.stringContaining('Web Search'),
       expect.stringContaining('User Research'),
@@ -132,7 +112,7 @@ describe('SkillsList', () => {
   it('shows the version only when the listing has one', async () => {
     await render(['skills/public/web-search', 'skills/public/user-research']);
 
-    const [first, second] = container.querySelectorAll('li');
+    const [first, second] = dom.container.querySelectorAll('li');
     expect(first.textContent).toContain('1.4.6');
     expect(second.textContent).not.toMatch(/\d+\.\d+/);
   });
@@ -146,7 +126,7 @@ describe('SkillsList', () => {
   it('gives each item a details button followed by a remove button', async () => {
     await render(['skills/public/web-search']);
 
-    const labels = [...container.querySelectorAll('li button')].map((button) =>
+    const labels = [...dom.container.querySelectorAll('li button')].map((button) =>
       button.getAttribute('aria-label'),
     );
     expect(labels).toEqual(['Web Search details', 'Remove Web Search']);
@@ -168,10 +148,10 @@ describe('SkillsList', () => {
 
     await click(getButton('Remove User Research'));
 
-    expect(container.querySelector('[data-testid="value"]')?.textContent).toBe(
+    expect(dom.container.querySelector('[data-testid="value"]')?.textContent).toBe(
       'skills/public/web-search',
     );
-    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(dom.container.querySelector('[role="dialog"]')).toBeNull();
     expect(document.activeElement).toBe(getButton('Web Search details'));
   });
 
@@ -184,7 +164,7 @@ describe('SkillsList', () => {
   it('renders nothing without attached skills', async () => {
     await render([]);
 
-    expect(container.querySelector('ul')).toBeNull();
+    expect(dom.container.querySelector('ul')).toBeNull();
   });
 
   it('opens the details popup of the activated skill', async () => {
@@ -192,10 +172,10 @@ describe('SkillsList', () => {
 
     await click(getButton('User Research details'));
 
-    expect(container.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe(
+    expect(dom.container.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe(
       'User Research',
     );
-    expect(container.querySelector('[data-testid="popup-skill-id"]')?.textContent).toBe(
+    expect(dom.container.querySelector('[data-testid="popup-skill-id"]')?.textContent).toBe(
       'skills/public/user-research',
     );
   });
@@ -206,10 +186,10 @@ describe('SkillsList', () => {
 
     await click(getButton('Delete'));
 
-    expect(container.querySelector('[data-testid="value"]')?.textContent).toBe(
+    expect(dom.container.querySelector('[data-testid="value"]')?.textContent).toBe(
       'skills/public/web-search',
     );
-    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(dom.container.querySelector('[role="dialog"]')).toBeNull();
     expect(document.activeElement).toBe(getButton('Web Search details'));
   });
 
@@ -219,8 +199,8 @@ describe('SkillsList', () => {
 
     await click(getButton('Close'));
 
-    expect(container.querySelector('[role="dialog"]')).toBeNull();
-    expect(container.querySelector('[data-testid="value"]')?.textContent).toBe(
+    expect(dom.container.querySelector('[role="dialog"]')).toBeNull();
+    expect(dom.container.querySelector('[data-testid="value"]')?.textContent).toBe(
       'skills/public/web-search',
     );
   });
@@ -229,7 +209,7 @@ describe('SkillsList', () => {
     await render(['skills/public/web-search'], true);
     await click(getButton('Web Search details'));
 
-    expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(dom.container.querySelector('[role="dialog"]')).not.toBeNull();
     expect(getButton('Delete')).toBeUndefined();
   });
 

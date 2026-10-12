@@ -1,6 +1,7 @@
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { setupTestRoot } from '@/test-utils/test-root';
 
 import { AUTO_SAVE_INTERVAL_MS, DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
 import { CommonI18nKeys } from '@/constants/i18n';
@@ -37,9 +38,7 @@ const mocks = vi.hoisted(() => ({
   formProps: null as FormStandInProps | null,
 }));
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({ language: 'en', t: (key: string) => key }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 
 vi.mock('@/utils/dial-client', () => ({
   fetchDialApp: mocks.fetchDialApp,
@@ -88,8 +87,7 @@ const OTHER_ORIGIN = 'https://evil.example.com';
 const BUILT_CONFIG = { orchestrator: { system_prompt: { content: 'Be helpful' } } };
 const FORM_DATA = { inputAttachmentTypes: ['application/pdf'], maxInputAttachments: 3 };
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 let postMessage: ReturnType<typeof vi.spyOn>;
 let triggerSaveDetails: TriggerSaveEventDetail[];
 
@@ -105,7 +103,7 @@ const flush = async () => {
 
 const renderEditor = async (search = `?id=${encodeURIComponent(APP_ID)}`) => {
   window.history.replaceState(null, '', `/${search}`);
-  await act(async () => root.render(<EditorClient />));
+  await act(async () => dom.root.render(<EditorClient />));
   await flush();
 };
 
@@ -119,7 +117,7 @@ const postedMessages = () => postMessage.mock.calls.map((call: unknown[]) => cal
 
 const postedTypes = () => postedMessages().map((msg: unknown) => (msg as { type: string }).type);
 
-const getForm = () => container.querySelector('form[aria-label="Quick app form"]');
+const getForm = () => dom.container.querySelector('form[aria-label="Quick app form"]');
 
 const saveFromForm = async (isAutoSave: boolean, general?: TriggerSaveGeneralPayload) => {
   await act(async () => {
@@ -128,7 +126,6 @@ const saveFromForm = async (isAutoSave: boolean, general?: TriggerSaveGeneralPay
 };
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   (globalThis as Record<string, unknown>).ResizeObserver = class {
     observe() {}
     disconnect() {}
@@ -144,14 +141,9 @@ beforeEach(() => {
   postMessage = vi.spyOn(window.parent, 'postMessage').mockImplementation(() => {});
   triggerSaveDetails = [];
   window.addEventListener(DIAL_EDITOR_TRIGGER_SAVE_EVENT, handleTriggerSave);
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
 });
 
 afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
   window.removeEventListener(DIAL_EDITOR_TRIGGER_SAVE_EVENT, handleTriggerSave);
   postMessage.mockRestore();
   vi.useRealTimers();
@@ -172,7 +164,7 @@ describe('EditorClient application load outcomes', () => {
 
     await renderEditor();
 
-    expect(container.querySelector(`[aria-label="${CommonI18nKeys.Loading}"]`)).not.toBeNull();
+    expect(dom.container.querySelector(`[aria-label="${CommonI18nKeys.Loading}"]`)).not.toBeNull();
     expect(getForm()).toBeNull();
   });
 
@@ -197,7 +189,7 @@ describe('EditorClient application load outcomes', () => {
 
     await renderEditor();
 
-    expect(container.querySelector('h1')?.textContent).toBe('Forbidden page');
+    expect(dom.container.querySelector('h1')?.textContent).toBe('Forbidden page');
     expect(getForm()).toBeNull();
   });
 
@@ -206,7 +198,7 @@ describe('EditorClient application load outcomes', () => {
 
     await renderEditor();
 
-    expect(container.textContent).toBe('Service unavailable');
+    expect(dom.container.textContent).toBe('Service unavailable');
     expect(getForm()).toBeNull();
   });
 });

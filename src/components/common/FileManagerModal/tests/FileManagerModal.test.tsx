@@ -1,20 +1,15 @@
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DialFileManagerI18nKeys } from '@/constants/i18n';
+import { click } from '@/test-utils/dom';
+import { setupTestRoot } from '@/test-utils/test-root';
 import { FilesApiNodeType, type ListFilesItem } from '@/types/dial-files';
 import { listFiles, listPublicFiles, listSharedFiles } from '@/utils/dial-files-api';
 
 import FileManagerModal from '../FileManagerModal';
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({
-    t: (key: string, options?: Record<string, string>) =>
-      key.replace(/\{\{(\w+)\}\}/g, (_, name: string) => options?.[name] ?? ''),
-    language: 'en',
-  }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/AuthContext', () => ({
   useAuthContext: () => ({ user: { bucket: 'mine' } }),
 }));
@@ -58,11 +53,9 @@ const PUBLIC: ListFilesItem[] = [
 // The real file manager and AG Grid are slow to mount, especially on the first render of a file.
 vi.setConfig({ testTimeout: 30000 });
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   (globalThis as Record<string, unknown>).ResizeObserver = class {
     observe() {}
     unobserve() {}
@@ -72,14 +65,9 @@ beforeEach(() => {
   vi.mocked(listFiles).mockResolvedValue({ items: MINE, permissions: ['READ', 'WRITE'] } as never);
   vi.mocked(listPublicFiles).mockResolvedValue({ items: PUBLIC } as never);
   vi.mocked(listSharedFiles).mockResolvedValue({ items: [] } as never);
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
 });
 
 afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
   vi.clearAllMocks();
 });
 
@@ -98,7 +86,7 @@ const until = async (condition: () => boolean, timeoutMs = 8000) => {
 };
 
 const renderModal = async (onClose = vi.fn()) => {
-  act(() => root.render(<FileManagerModal isOpen onClose={onClose} />));
+  dom.render(<FileManagerModal isOpen onClose={onClose} />);
   await flush();
   return { onClose };
 };
@@ -137,7 +125,7 @@ describe('FileManagerModal shell', () => {
   it('closes with no selection from Cancel', async () => {
     const { onClose } = await renderModal();
 
-    act(() => findButton('Cancel')?.click());
+    click(findButton('Cancel'));
 
     expect(onClose).toHaveBeenCalledWith([]);
   });

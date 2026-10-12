@@ -1,14 +1,12 @@
-import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { setupTestRoot } from '@/test-utils/test-root';
 
 import ModelConfigurationSection from '../ModelConfigurationSection';
 
 let modelsMap: Record<string, { allowTemperature?: boolean }> = {};
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({ language: 'en', t: (key: string) => key }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({ modelsMap }),
 }));
@@ -84,51 +82,42 @@ const TestForm = ({ isReadonly = false, isProcessLargeFilesAvailable = true }: T
   />
 );
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 
 const getSettings = () =>
-  container.querySelector('[data-testid="settings-section"]') as HTMLElement;
+  dom.container.querySelector('[data-testid="settings-section"]') as HTMLElement;
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   modelsMap = { 'model-id': {} };
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
 });
 
 describe('ModelConfigurationSection', () => {
   it('renders the Default model, then Settings, then Attachments', () => {
-    act(() => root.render(<TestForm />));
+    dom.render(<TestForm />);
 
-    expect(container.textContent).toContain('Configuration');
+    expect(dom.container.textContent).toContain('Configuration');
     expect(
-      container.querySelector('section[aria-labelledby="model-configuration-heading"]')?.className,
+      dom.container.querySelector('section[aria-labelledby="model-configuration-heading"]')
+        ?.className,
     ).toContain('px-8');
     expect(getSettings().previousElementSibling?.textContent).toBe('Model picker');
-    const attachments = container.querySelector('[data-testid="attachments-section"]');
+    const attachments = dom.container.querySelector('[data-testid="attachments-section"]');
     expect(attachments?.previousElementSibling).toBe(getSettings());
     expect(attachments?.getAttribute('data-value')).toBe('application/pdf');
   });
 
   it('has no inline temperature or process-files controls', () => {
-    act(() => root.render(<TestForm />));
+    dom.render(<TestForm />);
 
-    expect(container.querySelector('[role="slider"]')).toBeNull();
-    expect(container.querySelector('[role="switch"]')).toBeNull();
-    expect(container.textContent).not.toContain('Temperature');
-    expect(container.textContent).not.toContain('Process files');
-    expect(container.querySelectorAll('h3')).toHaveLength(0);
+    expect(dom.container.querySelector('[role="slider"]')).toBeNull();
+    expect(dom.container.querySelector('[role="switch"]')).toBeNull();
+    expect(dom.container.textContent).not.toContain('Temperature');
+    expect(dom.container.textContent).not.toContain('Process files');
+    expect(dom.container.querySelectorAll('h3')).toHaveLength(0);
   });
 
   it('tells Settings that temperature is available for a supporting model', () => {
-    act(() => root.render(<TestForm />));
+    dom.render(<TestForm />);
 
     expect(getSettings().getAttribute('data-temperature')).toBe('true');
   });
@@ -136,7 +125,7 @@ describe('ModelConfigurationSection', () => {
   it('tells Settings that temperature is unavailable when the model does not support it', () => {
     modelsMap = { 'model-id': { allowTemperature: false } };
 
-    act(() => root.render(<TestForm />));
+    dom.render(<TestForm />);
 
     expect(getSettings().getAttribute('data-temperature')).toBe('false');
   });
@@ -144,24 +133,26 @@ describe('ModelConfigurationSection', () => {
   it('treats temperature as available while the selected model is not loaded', () => {
     modelsMap = {};
 
-    act(() => root.render(<TestForm />));
+    dom.render(<TestForm />);
 
     expect(getSettings().getAttribute('data-temperature')).toBe('true');
   });
 
   it.each([true, false])('passes process-files availability (%s) to Settings', (isAvailable) => {
-    act(() => root.render(<TestForm isProcessLargeFilesAvailable={isAvailable} />));
+    dom.render(<TestForm isProcessLargeFilesAvailable={isAvailable} />);
 
     expect(getSettings().getAttribute('data-process-files')).toBe(String(isAvailable));
   });
 
   it('passes read-only through to the model picker, Settings and Attachments', () => {
-    act(() => root.render(<TestForm isReadonly />));
+    dom.render(<TestForm isReadonly />);
 
-    expect(container.querySelector('button')?.disabled).toBe(true);
+    expect(dom.container.querySelector('button')?.disabled).toBe(true);
     expect(getSettings().getAttribute('data-readonly')).toBe('true');
     expect(
-      container.querySelector('[data-testid="attachments-section"]')?.getAttribute('data-readonly'),
+      dom.container
+        .querySelector('[data-testid="attachments-section"]')
+        ?.getAttribute('data-readonly'),
     ).toBe('true');
   });
 });

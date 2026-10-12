@@ -1,10 +1,10 @@
 import type { CatalogItem } from '@epam/ai-dial-catalog';
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useEntityDetails, type UseEntityDetailsResult } from '@/hooks/use-entity-details';
+import { setupTestRoot } from '@/test-utils/test-root';
 import type { DialSkill } from '@/types/dial-entities';
 import { DetailsStatus } from '@/types/entity-details';
 
@@ -65,7 +65,7 @@ const GPT_DETAILS = {
 
 const MANIFEST = '---\nname: research\ndescription: Finds sources\n---\n# Research\nSteps.';
 
-let root: Root;
+const dom = setupTestRoot();
 let latest: UseEntityDetailsResult;
 
 const Harness = ({ value }: { value?: CatalogItem }) => {
@@ -77,7 +77,7 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 const render = async (value?: CatalogItem) => {
   await act(async () => {
-    root.render(<Harness value={value} />);
+    dom.root.render(<Harness value={value} />);
     await flush();
   });
 };
@@ -85,7 +85,6 @@ const render = async (value?: CatalogItem) => {
 const sectionTitles = () => latest.details?.overview?.sections?.map((section) => section.title);
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   vi.clearAllMocks();
   dataContext.skills = [];
   deploymentsApi.getDeploymentDetails.mockImplementation(({ deployment }: { deployment: string }) =>
@@ -114,11 +113,6 @@ beforeEach(() => {
     nodeType: 'item',
     author: 'Ann',
   });
-  root = createRoot(document.createElement('div'));
-});
-
-afterEach(() => {
-  act(() => root.unmount());
 });
 
 describe('useEntityDetails', () => {

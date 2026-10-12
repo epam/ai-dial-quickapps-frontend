@@ -1,7 +1,7 @@
 import { act, FC } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { setupTestRoot } from '@/test-utils/test-root';
 import type { Theme, ThemeConfiguration } from '@/types/theme';
 
 import ThemeProvider, { useThemeContext } from '../ThemeContext';
@@ -42,8 +42,7 @@ const jsonResponse = (body: unknown, status = 200): Response =>
     json: () => Promise.resolve(body),
   }) as unknown as Response;
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 let latest: ThemeContextValue | undefined;
 let osPrefersDark: boolean;
 let mqListeners: Set<(e: MediaQueryListEvent) => void>;
@@ -60,7 +59,7 @@ const ctx = (): ThemeContextValue => {
 
 const renderProvider = async () => {
   await act(async () => {
-    root.render(
+    dom.root.render(
       <ThemeProvider>
         <Consumer />
       </ThemeProvider>,
@@ -79,7 +78,6 @@ const cssVar = (name: string): string =>
   document.documentElement.style.getPropertyValue(`--${name}`);
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   latest = undefined;
   osPrefersDark = false;
   mqListeners = new Set();
@@ -98,14 +96,9 @@ beforeEach(() => {
   localStorage.clear();
   window.history.replaceState(null, '', '/');
   document.documentElement.removeAttribute('style');
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
 });
 
 afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
   localStorage.clear();
   window.history.replaceState(null, '', '/');
   document.documentElement.removeAttribute('style');
@@ -154,7 +147,7 @@ describe('ThemeProvider', () => {
       expect(ctx().themes).toEqual([]);
       expect(ctx().currentTheme).toBeUndefined();
       expect(document.documentElement.style.length).toBe(0);
-      expect(container.textContent).toBe('');
+      expect(dom.container.textContent).toBe('');
     });
 
     it('writes no custom property when the body is not JSON', async () => {
@@ -193,7 +186,7 @@ describe('ThemeProvider', () => {
       const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
       await renderProvider();
 
-      act(() => root.unmount());
+      dom.render(null);
       await act(async () => {
         resolveFetch(jsonResponse(CONFIG));
       });
@@ -201,7 +194,6 @@ describe('ThemeProvider', () => {
       expect(document.documentElement.style.length).toBe(0);
       expect(consoleError).not.toHaveBeenCalled();
       consoleError.mockRestore();
-      root = createRoot(container);
     });
 
     it('exposes no current theme when the configuration has an empty themes array', async () => {
@@ -280,8 +272,7 @@ describe('ThemeProvider', () => {
       await renderProvider();
       expect(mqListeners.size).toBe(1);
 
-      act(() => root.unmount());
-      root = createRoot(container);
+      dom.render(null);
 
       expect(mqListeners.size).toBe(0);
     });
@@ -371,7 +362,7 @@ describe('ThemeProvider', () => {
         return null;
       };
 
-      expect(() => act(() => root.render(<ThrowingConsumer />))).toThrow(
+      expect(() => dom.render(<ThrowingConsumer />)).toThrow(
         'useThemeContext must be used inside ThemeProvider',
       );
       consoleError.mockRestore();

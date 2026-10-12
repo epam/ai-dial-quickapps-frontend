@@ -1,7 +1,7 @@
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { setupTestRoot } from '@/test-utils/test-root';
 import { DialEntityType } from '@/types/dial-entities';
 import type { DialSkill } from '@/types/dial-entities';
 
@@ -53,8 +53,7 @@ const FILES = {
   ],
 };
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 const onRemove = vi.fn();
 const onClose = vi.fn();
 
@@ -63,7 +62,7 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 const render = async (props: { skill?: DialSkill; isReadonly?: boolean } = {}) => {
   const skill = 'skill' in props ? props.skill : SKILL;
   await act(async () => {
-    root.render(
+    dom.root.render(
       <SkillDetailsPopup
         skillId={SKILL.id}
         skill={skill}
@@ -98,7 +97,6 @@ const click = async (element?: HTMLElement) => {
 };
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   vi.clearAllMocks();
   skillsApi.downloadSkillFileRaw.mockImplementation(async () => ({ raw: new Response(MANIFEST) }));
   skillsApi.listSkillFiles.mockResolvedValue(FILES);
@@ -111,14 +109,9 @@ beforeEach(() => {
     author: 'jane.doe',
     updatedAt: Date.UTC(2025, 9, 7, 12),
   });
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
 });
 
 afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
   document.documentElement.dir = '';
 });
 

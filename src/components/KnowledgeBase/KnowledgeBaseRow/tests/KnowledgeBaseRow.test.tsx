@@ -1,8 +1,9 @@
-import React, { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import React from 'react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { click, getButton } from '@/test-utils/dom';
+import { setupTestRoot } from '@/test-utils/test-root';
 
 import KnowledgeBaseRow from '../KnowledgeBaseRow';
 
@@ -11,13 +12,7 @@ interface MockModalProps {
   onClose: (fileIds: string[]) => void;
 }
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({
-    language: 'en',
-    t: (key: string, options?: Record<string, string>) =>
-      key.replace(/\{\{(\w+)\}\}/g, (_, name: string) => options?.[name] ?? ''),
-  }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/AuthContext', () => ({
   useAuthContext: () => ({ user: { bucket: 'abc' } }),
 }));
@@ -35,59 +30,45 @@ vi.mock('@/components/common/FileManagerModal/FileManagerModal', () => ({
   ),
 }));
 
-let root: Root;
-let container: HTMLDivElement;
-
-beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
-});
+const dom = setupTestRoot();
 
 const renderRow = (props: Partial<React.ComponentProps<typeof KnowledgeBaseRow>> = {}) => {
   const onAddFiles = vi.fn();
   const onRemoveFile = vi.fn();
-  act(() =>
-    root.render(
-      <KnowledgeBaseRow
-        files={[]}
-        isReadonly={false}
-        onAddFiles={onAddFiles}
-        onRemoveFile={onRemoveFile}
-        {...props}
-      />,
-    ),
+  dom.render(
+    <KnowledgeBaseRow
+      files={[]}
+      isReadonly={false}
+      onAddFiles={onAddFiles}
+      onRemoveFile={onRemoveFile}
+      {...props}
+    />,
   );
   return { onAddFiles, onRemoveFile };
 };
 
-const findButton = (label: string) =>
-  [...container.querySelectorAll('button')].find(
-    (button) => button.textContent === label,
-  ) as HTMLButtonElement;
-const getModal = () => container.querySelector('[role="dialog"][aria-label="File manager"]');
+const findButton = (label: string) => getButton(label, dom.container) as HTMLButtonElement;
+const getModal = () => dom.container.querySelector('[role="dialog"][aria-label="File manager"]');
 
 describe('KnowledgeBaseRow', () => {
   it('shows the title, description and Add action when empty', () => {
     renderRow();
 
-    expect(container.querySelector('h3')?.textContent).toBe(QuickAppEditorI18nKeys.KnowledgeBase);
-    expect(container.textContent).toContain(QuickAppEditorI18nKeys.KnowledgeBaseDescription);
+    expect(dom.container.querySelector('h3')?.textContent).toBe(
+      QuickAppEditorI18nKeys.KnowledgeBase,
+    );
+    expect(dom.container.textContent).toContain(QuickAppEditorI18nKeys.KnowledgeBaseDescription);
     expect(findButton(CommonI18nKeys.Add)).toBeDefined();
-    expect(container.querySelector('ul')).toBeNull();
+    expect(dom.container.querySelector('ul')).toBeNull();
   });
 
   it('lists files without the description but keeps the Add action', () => {
     renderRow({ files: ['files/abc/a.pdf', 'files/abc/b.pdf'] });
 
-    expect(container.querySelectorAll('ul > li')).toHaveLength(2);
-    expect(container.textContent).not.toContain(QuickAppEditorI18nKeys.KnowledgeBaseDescription);
+    expect(dom.container.querySelectorAll('ul > li')).toHaveLength(2);
+    expect(dom.container.textContent).not.toContain(
+      QuickAppEditorI18nKeys.KnowledgeBaseDescription,
+    );
     expect(findButton(CommonI18nKeys.Add)).toBeDefined();
   });
 
@@ -95,10 +76,10 @@ describe('KnowledgeBaseRow', () => {
     const { onAddFiles } = renderRow({ files: ['files/abc/a.pdf'] });
 
     expect(getModal()).toBeNull();
-    act(() => findButton(CommonI18nKeys.Add).click());
+    click(findButton(CommonI18nKeys.Add));
     expect(getModal()?.textContent).toContain('files/abc/a.pdf');
 
-    act(() => findButton('Modal confirm').click());
+    click(findButton('Modal confirm'));
     expect(onAddFiles).toHaveBeenCalledWith(['files/abc/new.pdf']);
     expect(getModal()).toBeNull();
   });
@@ -106,8 +87,8 @@ describe('KnowledgeBaseRow', () => {
   it('changes nothing when the popup is dismissed without a selection', () => {
     const { onAddFiles } = renderRow();
 
-    act(() => findButton(CommonI18nKeys.Add).click());
-    act(() => findButton('Modal dismiss').click());
+    click(findButton(CommonI18nKeys.Add));
+    click(findButton('Modal dismiss'));
 
     expect(onAddFiles).not.toHaveBeenCalled();
     expect(getModal()).toBeNull();
@@ -116,9 +97,7 @@ describe('KnowledgeBaseRow', () => {
   it('removes the activated file', () => {
     const { onRemoveFile } = renderRow({ files: ['files/abc/a.pdf', 'files/abc/b.pdf'] });
 
-    act(() =>
-      (container.querySelector('button[aria-label="Remove b.pdf from knowledge base"]') as HTMLButtonElement).click(),
-    );
+    click(dom.container.querySelector('button[aria-label="Remove b.pdf from knowledge base"]'));
 
     expect(onRemoveFile).toHaveBeenCalledWith('files/abc/b.pdf');
   });
@@ -128,9 +107,9 @@ describe('KnowledgeBaseRow', () => {
 
     const addButton = findButton(CommonI18nKeys.Add);
     expect(addButton.disabled || addButton.getAttribute('aria-disabled') === 'true').toBe(true);
-    act(() => findButton(CommonI18nKeys.Add).click());
+    click(findButton(CommonI18nKeys.Add));
     expect(getModal()).toBeNull();
-    expect(container.querySelectorAll('ul > li')).toHaveLength(1);
-    expect(container.querySelector('ul > li button')).toBeNull();
+    expect(dom.container.querySelectorAll('ul > li')).toHaveLength(1);
+    expect(dom.container.querySelector('ul > li button')).toBeNull();
   });
 });
