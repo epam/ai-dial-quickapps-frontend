@@ -52,10 +52,12 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     [models],
   );
   const availableModelIds = useMemo(() => models.map((model) => model.id), [models]);
-  const sharedTooltip = app.isShared
+  // chat-api marks apps shared with the user as `sharedWithMe`; `isShared` is the host's own flag.
+  const isShared = !!(app.isShared || app.sharedWithMe);
+  const sharedTooltip = isShared
     ? t(QuickAppEditorI18nKeys.CannotChangeSharedApp, { context: 'field' })
     : undefined;
-  const isReadonly = isReadonlyProp || !!app.isShared;
+  const isReadonly = isReadonlyProp || isShared;
   const defaultValues = getQuickApp2FormData(
     app,
     toolSupportingModelIds,
