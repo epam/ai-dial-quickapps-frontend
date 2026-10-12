@@ -41,6 +41,14 @@ Activating Add in an editable editor SHALL open the same file-manager popup that
 - **THEN** the context files SHALL be `files/abc/docs/a.pdf` followed by `files/abc/docs/b.pdf`
 - **AND** the editor SHALL become dirty
 
+#### Scenario: Current files are pre-checked
+
+- **WHEN** the application has the context file `files/abc/docs/my file.pdf` and the user opens the popup
+- **THEN** the row for that file SHALL be checked once it is listed, including when its folder is opened later
+- **AND** a stored id SHALL match its row whether the listing reports it decoded or percent-encoded
+- **AND** a row the user has cleared SHALL NOT be checked again by a later listing
+- **AND** a folder row SHALL NOT be pre-checked, because folders are saved as the files inside them
+
 #### Scenario: Dismiss without selection
 
 - **WHEN** the user opens the popup and closes it without selecting anything

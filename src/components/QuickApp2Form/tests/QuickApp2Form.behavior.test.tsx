@@ -34,6 +34,7 @@ const testContext = vi.hoisted(() => {
         id: string;
         applicationProperties: unknown;
         isShared?: boolean;
+        sharedWithMe?: boolean;
         inputAttachmentTypes?: string[];
       },
       settings: {
@@ -736,6 +737,16 @@ describe('QuickApp2Form observable behavior', () => {
 
   it('renders the knowledge base row read-only for a shared app', () => {
     testContext.appContext.app = { id: 'app', applicationProperties: {}, isShared: true };
+
+    renderForm();
+
+    expect(dom.container.querySelector('[data-testid="knowledge-readonly"]')?.textContent).toBe(
+      'true',
+    );
+  });
+
+  it('renders the knowledge base row read-only for an app shared with the user', () => {
+    testContext.appContext.app = { id: 'app', applicationProperties: {}, sharedWithMe: true };
 
     renderForm();
 
