@@ -461,19 +461,23 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
           },
         ]}
       >
-        {notification != null && (
-          <div
-            className={mergeClasses(
-              'dial-small-text flex flex-col gap-1 px-6 py-3 text-primary',
-              notificationBgClass,
-            )}
-          >
-            {notification.title != null && (
-              <span className="font-semibold">{notification.title}</span>
-            )}
-            <span>{notification.message}</span>
-          </div>
-        )}
+        {/* Always rendered, so screen readers already watch it when a banner appears. */}
+        <div aria-live="polite" aria-atomic="true">
+          {notification != null && (
+            <div
+              role={notification.variant === NotificationVariant.Error ? 'alert' : undefined}
+              className={mergeClasses(
+                'dial-small-text flex flex-col gap-1 px-6 py-3 text-primary',
+                notificationBgClass,
+              )}
+            >
+              {notification.title != null && (
+                <span className="font-semibold">{notification.title}</span>
+              )}
+              <span>{notification.message}</span>
+            </div>
+          )}
+        </div>
 
         {error != null ? (
           <div role="alert" className="flex flex-col items-center gap-4 p-6">

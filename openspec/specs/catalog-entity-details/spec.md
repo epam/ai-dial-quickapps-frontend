@@ -183,7 +183,7 @@ While details load, the popup SHALL show the About tab from the listing (`descri
 
 Every catalog component and mapper SHALL receive translated text from this app's `quickAppEditor` namespace. No catalog English default SHALL be shown:
 
-- **Tab labels:** `AboutTab`, `SkillDetailsTab`, `SkillOverviewTab`, `PricingTab`, `LimitsTab`, `ToolsTab`.
+- **Tab labels:** `AboutTab`, `DetailsTab`, `OverviewTab`, `PricingTab`, `LimitsTab`, `ToolsTab`.
 - **Overview:** the section titles and spec labels passed to `mapEntityDetailsToCatalogDetails`'s `labels` (e.g. `OverviewCapabilities`, `OverviewSpecification`, `OverviewProvider`, `OverviewHostedBy`, …), `OverviewYes` / `OverviewNo` for boolean values, and the skill overview labels passed to `buildSkillOverview`: `SkillWhenToUse`, `SkillAllowedTools`, `SkillBundledResources`, `SkillAuthor`, `OverviewLastUpdated`, `SkillFileCount`, plus the section titles (`OverviewSpecification`, `SkillTypeLabel`).
 - **Pricing and Limits:** the section labels and the limits row labels passed to `mapDeploymentLimitsDtoToCatalogLimits`.
 - **Markdown:** the code-block and table labels the catalog forwards to its Markdown renderer.
@@ -197,9 +197,9 @@ Every catalog component and mapper SHALL receive translated text from this app's
 
 The catalog tab row SHALL follow the ARIA tabs pattern. Its panels SHALL be reachable with Tab after the header actions and before the footer. They SHALL follow `document.documentElement.dir` as they do in the chat catalog.
 
-#### Scenario: Right-to-left locale
+#### Scenario: Right-to-left document
 
-- **WHEN** `document.documentElement.dir` is `rtl`
+- **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
 - **THEN** the tab row SHALL run About → last tab from right to left
 - **AND** the Overview label column SHALL be at the start (right)
 - **AND** the popup shell SHALL keep Delete at the start and Close at the end

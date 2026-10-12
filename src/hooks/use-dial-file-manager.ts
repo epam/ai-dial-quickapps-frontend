@@ -444,11 +444,12 @@ export const useDialFileManager = ({
       if (/[/\\]/.test(name)) {
         return t(DialFileManagerI18nKeys.FolderNameInvalidChars);
       }
-      if (name.startsWith('.')) {
-        return t(DialFileManagerI18nKeys.FolderNameHidden);
-      }
+      // Before the hidden-name rule: the marker starts with `.` too, but has its own message.
       if (name === DIAL_HIDDEN_FOLDER_MARKER) {
         return t(DialFileManagerI18nKeys.FolderNameReserved);
+      }
+      if (name.startsWith('.')) {
+        return t(DialFileManagerI18nKeys.FolderNameHidden);
       }
       if (name.length > 255) {
         return t(DialFileManagerI18nKeys.FolderNameTooLong);

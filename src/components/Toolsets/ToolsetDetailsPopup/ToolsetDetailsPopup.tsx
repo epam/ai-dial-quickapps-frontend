@@ -86,7 +86,7 @@ export const ToolsetDetailsPopup: FC<ToolsetDetailsPopupProps> = ({
       onRetry={retry}
       unavailableText={toolset == null ? t(QuickAppEditorI18nKeys.ToolsetUnavailable) : undefined}
       isReadonly={isReadonly}
-      deleteLabel={t(QuickAppEditorI18nKeys.RemoveSkillFromApp)}
+      deleteLabel={t(QuickAppEditorI18nKeys.RemoveAddOnFromApp)}
       onDelete={handleDelete}
       onClose={onClose}
     />

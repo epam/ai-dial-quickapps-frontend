@@ -53,7 +53,7 @@ export const ConversationStartersList: FC<ConversationStartersListProps> = ({
             size={DIAL_ICON_SIZE.SM}
             stroke={DIAL_KIT_ICON_STROKE}
             aria-hidden="true"
-            className="mt-0.5 shrink-0 text-secondary"
+            className="mt-0.5 shrink-0 text-secondary rtl:scale-x-[-1]"
           />
           <div className="flex min-w-0 flex-1 flex-col">
             {starter.title.trim() && (

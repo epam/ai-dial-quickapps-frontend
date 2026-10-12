@@ -240,9 +240,9 @@ Every user-visible string of the row and modal SHALL be translated through the `
 
 The row and the modal SHALL follow the document direction.
 
-#### Scenario: Right-to-left locale
+#### Scenario: Right-to-left document
 
-- **WHEN** `document.documentElement.dir` is `rtl`
+- **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
 - **THEN** each modal row SHALL run handle, title, prompt, delete button from right to left
 - **AND** the `n/30` counter SHALL be at the logical end (left) of the title input
 - **AND** in the Add-ons row, the message icon SHALL be at the start (right) of each starter and Add/Manage at the logical end
@@ -284,8 +284,8 @@ Activating it SHALL remove that starter from the `starters` form value owned by 
 - **WHEN** the editor is read-only or the application is shared
 - **THEN** no remove button SHALL be rendered and the list SHALL stay visible
 
-#### Scenario: Right-to-left locale
+#### Scenario: Right-to-left document
 
-- **WHEN** `document.documentElement.dir` is `rtl`
+- **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
 - **THEN** the remove button SHALL sit at the end (left) of each starter item
 - **AND** the trash icon SHALL NOT be mirrored

@@ -9,7 +9,9 @@ All UI must support Arabic (`ar`) and any other right-to-left locale. The active
 
 ## Direction attribute
 
-The `<html>` element's `dir` attribute must be set dynamically — in this Vite SPA, from `src/components/I18nProvider/I18nProvider.tsx` (mounted in `src/main.tsx`). When the active language is RTL (Arabic `ar`, Hebrew `he`, Persian `fa`, Urdu `ur`), set `dir="rtl"`; otherwise `dir="ltr"`. Never hardcode `dir` or `lang` as static HTML attributes.
+The `<html>` element's `dir` and `lang` attributes must be set dynamically — in this Vite SPA, from `src/components/I18nProvider/I18nProvider.tsx` (mounted in `src/main.tsx`), which sets `dir` from i18next's `i18n.dir(language)` (it already knows the RTL languages, such as Arabic `ar`, Hebrew `he`, Persian `fa`, Urdu `ur`) and follows every language change. Never hardcode `dir`; `index.html`'s `lang="en"` is only the pre-mount default that `I18nProvider` overwrites.
+
+Today only English ships (`lng: 'en'` in `src/i18n/index.ts`, nothing switches the language), so `dir` is always `ltr` in production. The rules below still apply to every file, so the UI is ready when an RTL locale is added; tests exercise RTL by setting `document.documentElement.dir = 'rtl'`. See the `i18n` spec.
 
 ## Tailwind: logical over physical
 
@@ -44,7 +46,9 @@ Symmetric icons (×, +, ⚙, ↑, ↓) must NOT be flipped.
 
 ## Adding a new locale
 
-1. Create `src/i18n/locales/<lang>.json` (copy keys from existing locale files for each namespace: `quickAppEditor`, `common`).
-2. Register the locale in `src/i18n/index.ts`.
-3. Add the locale to the language selector UI.
-4. If the locale is RTL, add its language code to the RTL language list in the dir-switching logic in `src/components/I18nProvider/I18nProvider.tsx`.
+Locale files are one per namespace, not one per language: `src/i18n/locales/common.json` and `src/i18n/locales/quick-app-editor.json` hold the English text (each key is its own English text).
+
+1. Add the language's files for both namespaces, `common` and `quickAppEditor`, with every key of the English files.
+2. Register them under `resources.<lang>` in `src/i18n/index.ts`.
+3. Decide how the active language is chosen (from the host, the URL or the browser) — nothing selects it today, and there is no language selector UI. That is a `host-integration` / `i18n` spec change.
+4. Nothing to add for an RTL language: `I18nProvider` takes the direction from `i18n.dir()`.
