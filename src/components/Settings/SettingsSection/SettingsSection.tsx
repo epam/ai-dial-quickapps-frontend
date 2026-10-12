@@ -28,6 +28,7 @@ export interface SettingsSectionProps {
   isCodeInterpreterEnabled: boolean;
   isAddAttachmentEnabled: boolean;
   isWebFetchEnabled: boolean;
+  isAttachmentsEnabled: boolean;
   maxInputAttachmentsError?: string;
   onAdvancedSettingsSave: (values: AdvancedSettingsValues) => void;
 }

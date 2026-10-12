@@ -1,7 +1,8 @@
-import { FC, useCallback, useEffect, useMemo } from 'react';
+import { FC, useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { DEFAULT_MAX_INPUT_ATTACHMENTS } from '@/constants/quick-apps';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { getQuickApp2FormData } from '@/form/quickApp2Form';
@@ -120,10 +121,15 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
 
   const isProcessLargeFilesAvailable = !!modelsMap[values.model]?.inputAttachmentTypes?.length;
 
+  // True while `maxInputAttachments` holds a default that only the Attachments toggle put there.
+  const isMaxAttachmentsSeededRef = useRef(false);
+
   const handleSubmitForm = useCallback(
     (isAutoSave = false, general?: TriggerSaveGeneralPayload) => {
       const result = submit();
       if (!result.isValid) return;
+      // A saved max is the baseline now and must survive a later turn-off.
+      isMaxAttachmentsSeededRef.current = false;
       onSave(result.data, allEntitiesMap, isAutoSave, general);
     },
     [allEntitiesMap, onSave, submit],
@@ -165,7 +171,11 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     ],
   );
   const handleAdvancedSettingsSave = useCallback(
-    (nextAdvancedSettings: AdvancedSettingsValues) => setValues(nextAdvancedSettings),
+    (nextAdvancedSettings: AdvancedSettingsValues) => {
+      // A max confirmed in the popup is the user's, even when it equals the default.
+      isMaxAttachmentsSeededRef.current = false;
+      setValues(nextAdvancedSettings);
+    },
     [setValues],
   );
   const conversationStarters = useMemo<ConversationStartersValues>(
@@ -183,13 +193,31 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   );
   const handleAttachmentsEnabledChange = useCallback(
     (isEnabled: boolean) => {
+      const { maxInputAttachments } = values;
       if (isEnabled) {
+        if (maxInputAttachments == null || maxInputAttachments === '') {
+          isMaxAttachmentsSeededRef.current = true;
+          setValues({
+            attachmentsEnabled: true,
+            maxInputAttachments: DEFAULT_MAX_INPUT_ATTACHMENTS,
+          });
+          return;
+        }
         setField('attachmentsEnabled', true);
         return;
       }
-      setValues({ attachmentsEnabled: false, inputAttachmentTypes: [] });
+      // The max is kept on turn-off so turning Attachments back on restores it; only a value
+      // the toggle itself seeded is dropped, so on → off leaves the form untouched.
+      const shouldDropSeededMax =
+        isMaxAttachmentsSeededRef.current && maxInputAttachments === DEFAULT_MAX_INPUT_ATTACHMENTS;
+      isMaxAttachmentsSeededRef.current = false;
+      setValues({
+        attachmentsEnabled: false,
+        inputAttachmentTypes: [],
+        ...(shouldDropSeededMax ? { maxInputAttachments: undefined } : {}),
+      });
     },
-    [setField, setValues],
+    [setField, setValues, values],
   );
   const handleInputAttachmentTypesChange = useCallback(
     (mimeTypes: string[]) => setField('inputAttachmentTypes', mimeTypes),
