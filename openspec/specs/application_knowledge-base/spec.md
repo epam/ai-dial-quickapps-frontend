@@ -24,17 +24,12 @@ The Add-ons section SHALL contain a **Knowledge base** row titled with the `quic
 - **AND** the header SHALL keep the same **Add** action
 - **AND** the row SHALL list every context file in saved order, one item per line
 
-#### Scenario: Read-only editor
+#### Scenario: Read-only or shared application
 
-- **WHEN** the editor is read-only
-- **THEN** Add SHALL be disabled
+- **WHEN** the editor is read-only or the application is shared
+- **THEN** Add SHALL be disabled and SHALL expose the shared-application tooltip when the application is shared
 - **AND** activating it SHALL NOT open the popup
 - **AND** the items list, when present, SHALL remain visible without trash buttons
-
-#### Scenario: Shared application the user can edit
-
-- **WHEN** the application is shared with the user and the editor is editable (the user holds edit permission)
-- **THEN** Add and the trash buttons SHALL be enabled and files SHALL be added and removed as in any other application
 
 ### Requirement: Add opens the file-manager popup
 
