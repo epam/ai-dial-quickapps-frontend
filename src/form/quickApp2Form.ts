@@ -3,6 +3,7 @@ import { z } from 'zod';
 z.config({ jitless: true });
 
 import {
+  DEFAULT_AGENT_TRANSPORT,
   ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE,
   REPRESENTATION_TOOLING_FEATURE_VALUE,
   WEB_FETCH_FEATURE_VALUE,
@@ -25,7 +26,6 @@ import {
   CodeInterpreterToolset,
   ContextType,
   DialAppToolset,
-  DialAppTransportType,
   DialDeploymentSimpleTool,
   DialDeploymentToolset,
   DialDeploymentToolsetName,
@@ -50,15 +50,9 @@ import {
 import omit from 'lodash-es/omit';
 import sortBy from 'lodash-es/sortBy';
 import { nanoid } from 'nanoid';
+import { AddOnSchemaKeys } from '@/types/quick-app-form';
 
 const DEFAULT_TEMPERATURE = 0.5;
-
-export enum AddOnSchemaKeys {
-  id = '[schema]:id',
-  tool = '[schema]:tool',
-  isDialDeploymentTool = '[schema]:isDialDeploymentTool',
-  name = '[schema]:name',
-}
 
 const AddOnSchema = z.object({
   [AddOnSchemaKeys.id]: z.string(),
@@ -69,7 +63,7 @@ const AddOnSchema = z.object({
 export type AddOnEntry = z.infer<typeof AddOnSchema>;
 
 const AttachmentTypesSchema = z.array(z.string());
-export const MaxInputAttachmentsSchema = z.preprocess(
+const MaxInputAttachmentsSchema = z.preprocess(
   (value) => (value === '' ? undefined : value),
   z.coerce.number().int().positive().optional(),
 );
@@ -395,7 +389,7 @@ export const getQuickApp2Toolsets = ({
             type: ToolsetTypes.DialApp,
             deployment_id: encodeApiUrl(entity.id),
             ...(doesAgentSupportMcp(entity) && {
-              transport: (toolData as DialAppToolset).transport ?? DialAppTransportType.MCP,
+              transport: (toolData as DialAppToolset).transport ?? DEFAULT_AGENT_TRANSPORT,
             }),
           });
         } else {

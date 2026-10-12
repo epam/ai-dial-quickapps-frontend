@@ -7,7 +7,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import type { DialAppTransportType } from '@/types/quick-apps';
 import { Translation } from '@/types/translation';
 
-import { AddOnRow } from '@/components/AddOns/AddOnRow';
+import { AddOnRow } from '@/components/AddOns/AddOnRow/AddOnRow';
 import AgentsList from '@/components/Agents/AgentsList/AgentsList';
 
 // The picker brings in the catalog list (ag-grid + @epam/ai-dial-catalog),

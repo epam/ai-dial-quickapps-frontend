@@ -19,7 +19,7 @@ export const getAddOnDisplay = (
   entity: AddOnEntity | undefined,
   language: string,
 ): AddOnDisplay => {
-  const fallbackName = getEntityNameFromId(id, { removeVersion: true });
+  const fallbackName = getEntityNameFromId(id, { shouldRemoveVersion: true });
   if (entity == null) return { name: fallbackName, version: getVersionFromId(id) };
 
   return {

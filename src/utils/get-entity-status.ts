@@ -1,6 +1,7 @@
 import { isApplicationId, isToolsetId } from '@/utils/api';
 import { ApplicationStatus, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
 import { CommonI18nKeys } from '@/constants/i18n';
+import { EntityStatusKind } from '@/types/entity-status';
 
 interface EntityStatusFields {
   functionStatus?: ApplicationStatus;
@@ -70,15 +71,6 @@ export const getEntityStatus = (entity?: EntityStatusFields, id?: string): Entit
   };
 };
 
-// Transient lifecycle states a deployable entity can be in, in priority
-// order: the first one that's true wins.
-enum EntityStatusKind {
-  Deploying = 'DEPLOYING',
-  Undeploying = 'UNDEPLOYING',
-  Redeploying = 'REDEPLOYING',
-  Undeployed = 'UNDEPLOYED',
-}
-
 const getActiveStatusKind = (status: EntityStatus): EntityStatusKind | undefined => {
   if (status.isDeploying) {
     return EntityStatusKind.Deploying;
@@ -115,7 +107,9 @@ export const getEntityStatusMessage = (
   }
 
   if (status.isNotFoundInCatalog) {
-    return t(CommonI18nKeys.UnavailableEntityRemovalRequired, { entityType: entityTypeLabel ?? '' });
+    return t(CommonI18nKeys.UnavailableEntityRemovalRequired, {
+      entityType: entityTypeLabel ?? '',
+    });
   }
 
   if (status.isLoggedOut) {

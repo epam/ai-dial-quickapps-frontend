@@ -68,3 +68,9 @@ export interface FileUploadResponse {
   path: string;
   bucket: string;
 }
+
+export enum DownloadDestinationType {
+  Blob = 'blob',
+  Stream = 'stream',
+  Cancelled = 'cancelled',
+}

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AddOnSchemaKeys, buildQuickApp2Config, getQuickApp2FormData } from '@/form/quickApp2Form';
+import { buildQuickApp2Config, getQuickApp2FormData } from '@/form/quickApp2Form';
+import { AddOnSchemaKeys } from '@/types/quick-app-form';
 import { ToolsetTypes } from '@/types/quick-apps';
 
 import { fetchDialModels, fetchDialToolsets } from '@/utils/dial-client';

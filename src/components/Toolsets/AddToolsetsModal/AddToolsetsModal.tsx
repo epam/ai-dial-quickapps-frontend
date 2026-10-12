@@ -51,7 +51,7 @@ export const AddToolsetsModal: FC<AddToolsetsModalProps> = ({
       failedToLoad: t(QuickAppEditorI18nKeys.FailedToLoadToolsets),
       empty: t(QuickAppEditorI18nKeys.NoToolsetsAvailable),
       selectAll: t(QuickAppEditorI18nKeys.SelectAllToolsets),
-      selectRow: (name) => t(QuickAppEditorI18nKeys.SelectSkill, { name }),
+      selectRow: (name) => t(QuickAppEditorI18nKeys.SelectAddOn, { name }),
       credentialsBadge: t(QuickAppEditorI18nKeys.ToolsetLoggedOutBadge),
     }),
     [t],

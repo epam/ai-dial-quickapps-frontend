@@ -21,7 +21,7 @@ This is an internal form-engine replacement, not a UI redesign. The migration mu
 
 ### Form owner
 
-`src/components/QuickApp2Form.tsx` is the only form owner. It is now backed by the `useQuickApp2Form` controller (`src/hooks/use-quick-app2-form.ts`) and no longer imports RHF. The list below records the pre-migration RHF surface, which the controller replaces:
+`src/components/QuickApp2Form/QuickApp2Form.tsx` is the only form owner. It is now backed by the `useQuickApp2Form` controller (`src/hooks/use-quick-app2-form.ts`) and no longer imports RHF. The list below records the pre-migration RHF surface, which the controller replaces:
 
 - `zodResolver(QuickApp2Schema)`.
 - `useForm` with `defaultValues` and `mode: 'onChange'`.
@@ -64,7 +64,7 @@ Already migrated to value props (no RHF imports): `AdvancedSettingsSection`, `In
 - `src/components/ContextAndTools/tests/ContextAndToolsSection.test.tsx` imports RHF to provide `control`.
 - `src/components/QuickApp2FormLegacyFields/tests/QuickApp2FormLegacyFields.test.tsx` covers the temporary wrapper and goes away with it (task 5.1).
 - `InstructionsSection` and `ModelConfigurationSection` tests no longer create `useForm`.
-- `src/components/tests/QuickApp2Form.test.tsx` renders the real form owner and will need updates when its state/controller contract changes, although it does not directly import RHF today.
+- `src/components/QuickApp2Form/tests/QuickApp2Form.test.tsx` renders the real form owner and will need updates when its state/controller contract changes, although it does not directly import RHF today.
 
 ### RHF-independent code to preserve
 
@@ -223,7 +223,7 @@ Next: 4.1 `ContextAndToolsSection` (uses the controller actions `setAgentIds`, `
 
 User attachments are off RHF. This is tracked as task 4.4 in `openspec/changes/remove-react-hook-form/tasks.md`, and was done in change `move-attachments-to-settings` (#199):
 
-- `UserAttachmentsSection` is deleted. Attachment types now live in an Attachments row in Configuration (`src/components/Attachments/AttachmentsSection.tsx`), driven by `useQuickApp2Form`:
+- `UserAttachmentsSection` is deleted. Attachment types now live in an Attachments row in Configuration (`src/components/Attachments/AttachmentsSection/AttachmentsSection.tsx`), driven by `useQuickApp2Form`:
   - `inputAttachmentTypes`;
   - a form-only `attachmentsEnabled` that drives the switch and is never serialized;
   - `QuickApp2Schema` makes "enabled with no types" an error that blocks save.

@@ -52,11 +52,8 @@ import {
   renameFiles,
   uploadFile,
 } from '@/utils/dial-files-api';
-import {
-  DownloadDestinationType,
-  prepareDownloadDestination,
-  triggerBrowserDownload,
-} from '@/utils/file-download';
+import { prepareDownloadDestination, triggerBrowserDownload } from '@/utils/file-download';
+import { DownloadDestinationType } from '@/types/dial-files';
 import { sanitizeFileName } from '@/utils/file-name';
 import { safeDecodeURI } from '@/utils/safe-decode-uri';
 
@@ -98,7 +95,7 @@ export interface UseDialFileManagerResult {
   onRenameValidate: (value: string, item: DialFile) => string | null;
   onMoveToFiles: (items: DialCopiedItem[], sourceFolder: string, destinationFolder: string) => void;
   isRenaming: boolean;
-  uploadEnabled: boolean;
+  isUploadEnabled: boolean;
   isNewButtonDisabled: boolean;
   disabledNewButtonTooltip: string;
   visibleColumns: FileManagerColumnKey[];
@@ -447,11 +444,12 @@ export const useDialFileManager = ({
       if (/[/\\]/.test(name)) {
         return t(DialFileManagerI18nKeys.FolderNameInvalidChars);
       }
-      if (name.startsWith('.')) {
-        return t(DialFileManagerI18nKeys.FolderNameHidden);
-      }
+      // Before the hidden-name rule: the marker starts with `.` too, but has its own message.
       if (name === DIAL_HIDDEN_FOLDER_MARKER) {
         return t(DialFileManagerI18nKeys.FolderNameReserved);
+      }
+      if (name.startsWith('.')) {
+        return t(DialFileManagerI18nKeys.FolderNameHidden);
       }
       if (name.length > 255) {
         return t(DialFileManagerI18nKeys.FolderNameTooLong);
@@ -762,7 +760,7 @@ export const useDialFileManager = ({
 
   const canWriteCurrentFolder = hasDialFileWritePermission(currentFolder);
 
-  const uploadEnabled = useMemo((): boolean => {
+  const isUploadEnabled = useMemo((): boolean => {
     if (activeTab === DialFileManagerTabs.Organization) return false;
     if (activeTab === DialFileManagerTabs.Shared && folderPath === '') return false;
     return canWriteCurrentFolder;
@@ -780,12 +778,12 @@ export const useDialFileManager = ({
     };
     if (activeTab === DialFileManagerTabs.MyFiles) {
       labels[DialFileManagerActions.Delete] = t(DialFileManagerI18nKeys.DeleteAction);
-      if (uploadEnabled) {
+      if (isUploadEnabled) {
         labels[DialFileManagerActions.Rename] = t(DialFileManagerI18nKeys.RenameAction);
       }
     }
     return labels;
-  }, [activeTab, uploadEnabled, t]);
+  }, [activeTab, isUploadEnabled, t]);
 
   const sharedWithMeIds = useMemo(
     (): string[] | undefined =>
@@ -818,8 +816,8 @@ export const useDialFileManager = ({
     onRenameValidate,
     onMoveToFiles,
     isRenaming,
-    uploadEnabled,
-    isNewButtonDisabled: !uploadEnabled,
+    isUploadEnabled,
+    isNewButtonDisabled: !isUploadEnabled,
     disabledNewButtonTooltip,
     visibleColumns,
     dateLocale: language,

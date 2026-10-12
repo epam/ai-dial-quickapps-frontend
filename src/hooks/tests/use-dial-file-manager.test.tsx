@@ -42,7 +42,6 @@ vi.mock('@/utils/dial-files-api', () => ({
   uploadFile: vi.fn(),
 }));
 vi.mock('@/utils/file-download', () => ({
-  DownloadDestinationType: { Cancelled: 'cancelled' },
   prepareDownloadDestination: vi.fn(),
   triggerBrowserDownload: vi.fn(),
 }));
@@ -126,7 +125,7 @@ describe('useDialFileManager — listing', () => {
   it('enables upload, rename and delete in a writable My files folder', async () => {
     await render();
 
-    expect(latest.uploadEnabled).toBe(true);
+    expect(latest.isUploadEnabled).toBe(true);
     expect(latest.isNewButtonDisabled).toBe(false);
     expect(latest.visibleColumns).not.toContain(FileManagerColumnKey.Author);
     expect(Object.keys(latest.actionLabels)).toEqual(
@@ -142,7 +141,7 @@ describe('useDialFileManager — listing', () => {
     vi.mocked(listFiles).mockResolvedValue({ items: ROOT_ITEMS, permissions: ['READ'] });
     await render();
 
-    expect(latest.uploadEnabled).toBe(false);
+    expect(latest.isUploadEnabled).toBe(false);
     expect(latest.actionLabels[DialFileManagerActions.Rename]).toBeUndefined();
   });
 
@@ -193,7 +192,7 @@ describe('useDialFileManager — listing', () => {
     expect(listSharedFiles).toHaveBeenCalled();
     expect(latest.visibleColumns).toContain(FileManagerColumnKey.Author);
     expect(latest.sharedWithMeIds).toEqual(['files/owner/reports/']);
-    expect(latest.uploadEnabled).toBe(false);
+    expect(latest.isUploadEnabled).toBe(false);
   });
 });
 
@@ -202,6 +201,7 @@ describe('useDialFileManager — validation', () => {
     ['', DialFileManagerI18nKeys.FolderNameEmpty],
     ['a/b', DialFileManagerI18nKeys.FolderNameInvalidChars],
     ['.hidden', DialFileManagerI18nKeys.FolderNameHidden],
+    ['.dial_folder', DialFileManagerI18nKeys.FolderNameReserved],
     ['x'.repeat(256), DialFileManagerI18nKeys.FolderNameTooLong],
     ['DOCS', DialFileManagerI18nKeys.FolderConflict],
     ['fresh', null],

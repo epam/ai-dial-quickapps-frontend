@@ -138,9 +138,8 @@ export const downloadArchive = async (items: ArchiveItemDto[]): Promise<Response
   if (items.length === 1 && items[0].nodeType === FilesApiNodeType.Item) {
     return downloadFile(items[0].bucket, items[0].path);
   }
-  // chat-api does expose a real archive-download endpoint
-  // (FilesApi.downloadArchive) — using it for multi-item downloads is a
-  // deliberate future enhancement, not required by this migration.
+  // chat-api exposes an archive-download endpoint (FilesApi.downloadArchive),
+  // but multi-item downloads do not use it yet.
   throw new Error('Multi-file archive download is not supported');
 };
 

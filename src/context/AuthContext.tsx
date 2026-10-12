@@ -38,8 +38,7 @@ const AuthContextProvider: FC<AuthContextProviderProps> = ({ children }) => {
     } catch (error) {
       // Any failure to establish a session — including a genuine
       // `UnauthorizedError` and any transient/network error — is treated as
-      // logged out, mirroring next-auth's own fallback behavior rather than
-      // getting stuck in `Loading` forever.
+      // logged out rather than getting stuck in `Loading` forever.
       if (!(error instanceof UnauthorizedError)) {
         console.error('Failed to fetch current user', error);
       }
@@ -52,9 +51,8 @@ const AuthContextProvider: FC<AuthContextProviderProps> = ({ children }) => {
     void refresh();
   }, [refresh]);
 
-  // Mirrors next-auth's `SessionProvider` default: revalidate when the tab
-  // regains focus, so a session change made elsewhere (sign-out, expiry) is
-  // picked up without requiring a manual reload.
+  // Revalidate when the tab regains focus, so a session change made elsewhere
+  // (sign-out, expiry) is picked up without requiring a manual reload.
   useEffect(() => {
     const handleFocus = () => void refresh();
     window.addEventListener('focus', handleFocus);

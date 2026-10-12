@@ -19,8 +19,8 @@ The editor SHALL present its primary content and Configuration areas as side-by-
 - **AND** no editor content SHALL require horizontal scrolling
 - **AND** Add-ons SHALL remain directly below Instructions in the primary content flow
 
-#### Scenario: Right-to-left locale
-- **WHEN** the active locale is right-to-left
+#### Scenario: Right-to-left document
+- **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
 - **THEN** the column arrangement and spacing SHALL follow the document direction
 - **AND** Add-ons headings, descriptions, and Add actions SHALL use logical start/end placement
 - **AND** directional layout affordances SHALL not remain incorrectly pinned to the left-to-right side
@@ -272,7 +272,7 @@ The Settings row and popup SHALL use the editor's existing themed surfaces, typo
 - **AND** the popup SHALL present a distinct themed surface with a header, a body holding the Advanced Settings controls, and a footer matching the supplied design direction
 
 #### Scenario: Narrow or right-to-left presentation
-- **WHEN** the editor is rendered below the desktop breakpoint or with an RTL locale
+- **WHEN** the editor is rendered below the desktop breakpoint or with the document direction `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
 - **THEN** the Settings row and popup SHALL remain usable without horizontal overflow
 - **AND** trailing/leading spacing SHALL follow document direction through logical layout
 - **AND** the symmetric settings icon SHALL not be mirrored

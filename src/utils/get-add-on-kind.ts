@@ -1,4 +1,5 @@
-import { AddOnSchemaKeys, type AddOnEntry } from '@/form/quickApp2Form';
+import { type AddOnEntry } from '@/form/quickApp2Form';
+import { AddOnSchemaKeys } from '@/types/quick-app-form';
 import { AddOnKind } from '@/types/add-on-kind';
 import type { DialModel, DialToolset } from '@/types/dial-entities';
 import { DialEntityType } from '@/types/dial-entities';
