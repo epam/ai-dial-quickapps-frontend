@@ -19,7 +19,7 @@ export const isToolsetId = (id?: string) => id?.startsWith('toolsets/') ?? false
 
 const TOOLSETS_ID_PREFIX = 'toolsets/';
 
-/** Whether a toolset id belongs to the `public` bucket (shared with all users), mirroring the legacy `isEntityIdPublic` check. */
+/** Whether a toolset id belongs to the `public` bucket (shared with all users). */
 export const isPublicToolsetId = (toolsetId: string): boolean => {
   if (!toolsetId.startsWith(TOOLSETS_ID_PREFIX)) return false;
   const bucket = toolsetId.slice(TOOLSETS_ID_PREFIX.length).split('/')[0];
@@ -28,7 +28,7 @@ export const isPublicToolsetId = (toolsetId: string): boolean => {
 
 export const isHiddenDialFolderId = (id?: string) => {
   const lastSegment = id?.split('/').pop() ?? '';
-  const { name } = parseEntityApiKey(lastSegment, { parseVersion: true });
+  const { name } = parseEntityApiKey(lastSegment, { shouldParseVersion: true });
   return name === DIAL_HIDDEN_FOLDER_MARKER;
 };
 
@@ -38,17 +38,20 @@ export const splitEntityId = (id: string) => {
   return { name };
 };
 
-export const getEntityNameFromId = (id: string, options?: { removeVersion?: boolean }): string => {
+export const getEntityNameFromId = (
+  id: string,
+  options?: { shouldRemoveVersion?: boolean },
+): string => {
   const { name } = splitEntityId(id);
-  if (options?.removeVersion) {
-    return parseEntityApiKey(name, { parseVersion: true }).name;
+  if (options?.shouldRemoveVersion) {
+    return parseEntityApiKey(name, { shouldParseVersion: true }).name;
   }
   return name;
 };
 
 export const getVersionFromId = (id: string): string | undefined => {
   const { name } = splitEntityId(id);
-  return parseEntityApiKey(name, { parseVersion: true }).version;
+  return parseEntityApiKey(name, { shouldParseVersion: true }).version;
 };
 
 /** Full entity id with the trailing `__version` suffix removed (keeps the whole folder path). */
@@ -62,10 +65,10 @@ export const getEntityIdWithoutVersion = (id: string): string => {
 
 export const parseEntityApiKey = (
   apiKey: string,
-  options?: { parseVersion?: boolean },
+  options?: { shouldParseVersion?: boolean },
 ): { name: string; version?: string } => {
   const parts = apiKey.split(PATH_KEY_SEPARATOR);
-  if (options?.parseVersion && parts.length >= 2) {
+  if (options?.shouldParseVersion && parts.length >= 2) {
     const version = parts.pop();
     return { name: parts.join(PATH_KEY_SEPARATOR), version };
   }

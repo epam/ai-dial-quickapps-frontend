@@ -29,8 +29,8 @@ None. Existing observable behavior is intended to remain unchanged. The change o
 
 ## Impact
 
-- **Primary UI code:** `src/components/QuickApp2Form.tsx` and the seven sections that currently receive RHF control objects: Advanced Settings, Agent Skills, Context and Tools, Conversation Starters, Instructions, User Attachments, and Model Configuration.
-- **Tests:** RHF fixture setup in `InstructionsSection.test.tsx` and `ModelConfigurationSection.test.tsx`, plus `src/components/tests/QuickApp2Form.test.tsx`; new focused tests for validation, dirty state, autosave, reset, async model loading, arrays, and controlled inputs.
+- **Primary UI code:** `src/components/QuickApp2Form/QuickApp2Form.tsx` and the seven sections that currently receive RHF control objects: Advanced Settings, Agent Skills, Context and Tools, Conversation Starters, Instructions, User Attachments, and Model Configuration.
+- **Tests:** RHF fixture setup in `InstructionsSection.test.tsx` and `ModelConfigurationSection.test.tsx`, plus `src/components/QuickApp2Form/tests/QuickApp2Form.test.tsx`; new focused tests for validation, dirty state, autosave, reset, async model loading, arrays, and controlled inputs.
 - **Domain code:** `src/form/quickApp2Form.ts` should remain the source of truth for the schema and serialization; no API, auth, host protocol, or persistence contract should change.
 - **Dependencies:** remove `react-hook-form` and `@hookform/resolvers`; retain `zod`.
 - **i18n:** no new user-visible strings are expected. Existing validation messages and translation keys must remain unchanged.

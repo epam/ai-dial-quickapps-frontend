@@ -1,3 +1,4 @@
+import { DownloadDestinationType } from '@/types/dial-files';
 const extractFilename = (contentDisposition: string | null): string | null => {
   if (!contentDisposition) return null;
   const match = /filename[^;=\n]*=(?:(\\?['"])(.*?)\1|([^;\n]*))/i.exec(contentDisposition);
@@ -17,12 +18,6 @@ type ShowSaveFilePicker = (options: {
     accept: Record<string, string[]>;
   }>;
 }) => Promise<FileSaveHandle>;
-
-export enum DownloadDestinationType {
-  Blob = 'blob',
-  Stream = 'stream',
-  Cancelled = 'cancelled',
-}
 
 type DownloadDestination =
   | { type: DownloadDestinationType.Blob }

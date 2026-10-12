@@ -74,15 +74,17 @@ const ThemeProvider: FC<ThemeProviderProps> = ({ children }) => {
   // theme-config endpoint (Appendix A), so only the transport (chatApiFetch
   // over plain fetch) changes here.
   useEffect(() => {
-    chatApiFetch(THEMES_URL)
-      .then((r) => r.json() as Promise<ThemeConfiguration>)
-      .then((data) => {
-        setConfig(data);
-      })
-      .catch(() => {
+    const loadThemes = async () => {
+      try {
+        const res = await chatApiFetch(THEMES_URL);
+        setConfig((await res.json()) as ThemeConfiguration);
+      } catch {
         // silently fall back to CSS-var defaults already in globals.css
-      })
-      .finally(() => setIsLoading(false));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    void loadThemes();
   }, []);
 
   // Priority: query param > user choice; system resolves to OS preference

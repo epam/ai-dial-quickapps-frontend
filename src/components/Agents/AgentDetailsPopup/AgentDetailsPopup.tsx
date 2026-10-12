@@ -66,7 +66,7 @@ export const AgentDetailsPopup: FC<AgentDetailsPopupProps> = ({
   // Same gate as before the redesign: the host advertises credential forms
   // with `applicationCredentials=true`, and only apps behind auth need them.
   const isCredentialsMode = searchParams.get('applicationCredentials') === 'true';
-  const needsAuthentication = useApplicationAuthentication(
+  const isAuthenticationRequired = useApplicationAuthentication(
     isEditable && isCredentialsMode && agent?.type === DialEntityType.Application
       ? agentId
       : undefined,
@@ -125,7 +125,7 @@ export const AgentDetailsPopup: FC<AgentDetailsPopupProps> = ({
     ];
   }, [t, agentId, transport, isTransportVisible, isReadonly, handleTransportChange]);
 
-  const actions = needsAuthentication && (
+  const actions = isAuthenticationRequired && (
     <GhostButton
       label={t(QuickAppEditorI18nKeys.ApplicationCredentials)}
       iconBefore={<IconKey size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} />}

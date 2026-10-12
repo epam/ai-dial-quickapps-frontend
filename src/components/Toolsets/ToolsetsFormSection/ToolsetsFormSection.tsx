@@ -4,7 +4,7 @@ import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { useTranslation } from '@/hooks/use-translation';
 import { Translation } from '@/types/translation';
 
-import { AddOnRow } from '@/components/AddOns/AddOnRow';
+import { AddOnRow } from '@/components/AddOns/AddOnRow/AddOnRow';
 import ToolsetsList from '@/components/Toolsets/ToolsetsList/ToolsetsList';
 
 // The picker brings in the catalog list (ag-grid + @epam/ai-dial-catalog),

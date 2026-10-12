@@ -2,7 +2,8 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { AddOnSchemaKeys, QuickApp2Schema, type QuickApp2Form } from '@/form/quickApp2Form';
+import { QuickApp2Schema, type QuickApp2Form } from '@/form/quickApp2Form';
+import { AddOnSchemaKeys } from '@/types/quick-app-form';
 import { useQuickApp2Form, type UseQuickApp2FormResult } from '@/hooks/use-quick-app2-form';
 import { LoadStatus } from '@/types/load-status';
 import {
