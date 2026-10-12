@@ -221,6 +221,22 @@ describe('FileManagerModal row selection', () => {
     expect(onClose.mock.calls[0][0][0]).toMatch(/^files\/mine\//);
   });
 
+  it('pre-checks the current context files, matching decoded ids to encoded listing ids', async () => {
+    vi.mocked(listFiles).mockResolvedValue({
+      items: [{ ...MINE[1], path: 'files/mine/api%20keys.xls' }, MINE[2]],
+      permissions: ['READ', 'WRITE'],
+    } as never);
+    const onClose = vi.fn();
+    dom.render(
+      <FileManagerModal isOpen initialFileIds={['files/mine/api keys.xls']} onClose={onClose} />,
+    );
+    await until(() => rowCheckbox('api keys.xls')?.checked === true);
+
+    expect(rowCheckbox('api keys.xls')?.checked).toBe(true);
+    expect(rowCheckbox('a.pdf')?.checked).toBe(false);
+    expect(findButton(DialFileManagerI18nKeys.Add)?.disabled).toBe(false);
+  });
+
   const selectDocsFolder = async () => {
     await until(() => rowCheckboxes().length > 1);
     await until(() => {
