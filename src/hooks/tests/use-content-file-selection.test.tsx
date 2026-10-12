@@ -1,19 +1,13 @@
 import { act, type FC } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import {
-  CatalogContentNodeType,
-  CatalogContentPreviewType,
-  type CatalogItem,
-} from '@epam/ai-dial-catalog';
+import { CatalogContentNodeType, type CatalogItem } from '@epam/ai-dial-catalog';
 
 import {
   useContentFileSelection,
   type UseContentFileSelectionResult,
 } from '@/hooks/use-content-file-selection';
-
-const ERROR = 'Failed to load this file.';
 
 const skillItem = (id = 'skills/public/research'): CatalogItem =>
   ({
@@ -29,7 +23,7 @@ const skillItem = (id = 'skills/public/research'): CatalogItem =>
             id: 'reference',
             name: 'reference',
             items: [
-              { type: CatalogContentNodeType.File, id: 'reference/guide.md', name: 'guide.md' },
+              { type: CatalogContentNodeType.File, id: 'reference/guide.pdf', name: 'guide.pdf' },
             ],
           },
         ],
@@ -38,10 +32,9 @@ const skillItem = (id = 'skills/public/research'): CatalogItem =>
   }) as unknown as CatalogItem;
 
 let latest: UseContentFileSelectionResult;
-let load: ReturnType<typeof vi.fn<(fileId: string) => Promise<string | undefined>>>;
 
 const Probe: FC<{ item?: CatalogItem }> = ({ item }) => {
-  latest = useContentFileSelection(item, load, ERROR);
+  latest = useContentFileSelection(item);
   return null;
 };
 
@@ -54,7 +47,6 @@ const render = async (item?: CatalogItem) => {
 
 beforeEach(() => {
   (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
-  load = vi.fn<(fileId: string) => Promise<string | undefined>>();
   container = document.createElement('div');
   document.body.append(container);
   root = createRoot(container);
@@ -66,77 +58,49 @@ afterEach(() => {
 });
 
 describe('useContentFileSelection', () => {
-  it('opens on the base file with every folder expanded and no preview', async () => {
+  it('opens on the base file with every folder expanded and nothing picked', async () => {
     await render(skillItem());
 
     expect(latest.selectedFileId).toBe('SKILL.md');
-    expect(latest.filePreview).toBeNull();
+    expect(latest.pickedFile).toBeNull();
     expect([...latest.expandedFolderIds]).toEqual(['reference']);
   });
 
-  it('loads another file and shows it as Markdown', async () => {
-    load.mockResolvedValue('# Guide');
+  it('picks another file with its tree name', async () => {
     await render(skillItem());
 
-    await act(async () => latest.onSelectFile('reference/guide.md'));
+    act(() => latest.onSelectFile('reference/guide.pdf'));
 
-    expect(load).toHaveBeenCalledWith('reference/guide.md');
-    expect(latest.selectedFileId).toBe('reference/guide.md');
-    expect(latest.isFileLoading).toBe(false);
-    expect(latest.filePreview).toEqual({
-      type: CatalogContentPreviewType.Markdown,
-      text: '# Guide',
-    });
+    expect(latest.selectedFileId).toBe('reference/guide.pdf');
+    expect(latest.pickedFile).toEqual({ id: 'reference/guide.pdf', name: 'guide.pdf' });
   });
 
-  it('returns to the base file without a request', async () => {
-    load.mockResolvedValue('# Guide');
+  it('clears the pick when the base file is chosen again', async () => {
     await render(skillItem());
 
-    await act(async () => latest.onSelectFile('reference/guide.md'));
-    await act(async () => latest.onSelectFile('SKILL.md'));
+    act(() => latest.onSelectFile('reference/guide.pdf'));
+    act(() => latest.onSelectFile('SKILL.md'));
 
-    expect(load).toHaveBeenCalledTimes(1);
     expect(latest.selectedFileId).toBe('SKILL.md');
-    expect(latest.filePreview).toBeNull();
+    expect(latest.pickedFile).toBeNull();
   });
 
-  it('shows the error text when a file fails to load', async () => {
-    load.mockRejectedValue(new Error('404'));
+  it('names a file missing from the tree by the last segment of its id', async () => {
     await render(skillItem());
 
-    await act(async () => latest.onSelectFile('reference/guide.md'));
+    act(() => latest.onSelectFile('scripts/run.py'));
 
-    expect(latest.filePreview).toEqual({ type: CatalogContentPreviewType.Text, text: ERROR });
-  });
-
-  it('drops the response of a superseded pick', async () => {
-    let resolveFirst: (text: string) => void = () => undefined;
-    load
-      .mockImplementationOnce(() => new Promise((resolve) => (resolveFirst = resolve)))
-      .mockResolvedValueOnce('second');
-    await render(skillItem());
-
-    await act(async () => latest.onSelectFile('reference/guide.md'));
-    await act(async () => latest.onSelectFile('other.md'));
-    await act(async () => resolveFirst('first'));
-
-    expect(latest.selectedFileId).toBe('other.md');
-    expect(latest.filePreview).toEqual({
-      type: CatalogContentPreviewType.Markdown,
-      text: 'second',
-    });
+    expect(latest.pickedFile).toEqual({ id: 'scripts/run.py', name: 'run.py' });
   });
 
   it('resets the pick when the item changes', async () => {
-    load.mockResolvedValue('# Guide');
     await render(skillItem());
-    await act(async () => latest.onSelectFile('reference/guide.md'));
+    act(() => latest.onSelectFile('reference/guide.pdf'));
 
     await render(skillItem('skills/public/other'));
 
     expect(latest.selectedFileId).toBe('SKILL.md');
-    expect(latest.filePreview).toBeNull();
+    expect(latest.pickedFile).toBeNull();
   });
 
   it('toggles a folder and the selector', async () => {

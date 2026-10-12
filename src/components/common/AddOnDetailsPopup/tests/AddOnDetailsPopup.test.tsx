@@ -10,8 +10,10 @@ import { AppDetailsTab, DetailsStatus } from '@/types/entity-details';
 
 import { AddOnDetailsPopup, type AddOnDetailsPopupProps } from '../AddOnDetailsPopup';
 
-const { appContext } = vi.hoisted(() => ({
+const { appContext, previewChunk } = vi.hoisted(() => ({
   appContext: { settings: { dialCoreExternalUrl: undefined as string | undefined } },
+  // While set, the preview suspends as if its lazy chunk were still downloading.
+  previewChunk: { pending: null as Promise<void> | null },
 }));
 
 vi.mock('@/hooks/use-translation', () => ({
@@ -22,6 +24,13 @@ vi.mock('@/hooks/use-translation', () => ({
   }),
 }));
 vi.mock('@/context/AppContext', () => ({ useAppContext: () => appContext }));
+// The canvas preview has its own tests; here it only marks where it renders.
+vi.mock('@/components/SkillFilePreview/SkillFilePreview', () => ({
+  SkillFilePreview: ({ fileId, fileName }: { fileId: string; fileName: string }) => {
+    if (previewChunk.pending != null) throw previewChunk.pending;
+    return <div role="group" aria-label={fileName} data-file-id={fileId} />;
+  },
+}));
 
 const listing = {
   id: 'skills/public/research',
@@ -132,6 +141,71 @@ describe('AddOnDetailsPopup — catalog layout', () => {
     expect(dialog().textContent).toContain('Manifest body');
     expect(dialog().textContent).toContain('SKILL.md');
     expect(dialog().textContent).toContain('2 files');
+  });
+});
+
+describe('AddOnDetailsPopup — package file preview', () => {
+  beforeEach(() => {
+    // The file selector's ui-kit Dropdown observes its trigger; jsdom has no observer.
+    (globalThis as Record<string, unknown>).IntersectionObserver = class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
+  });
+
+  const pick = async (fileName: string) => {
+    // The file body is a region named by the selector trigger, which shows the current file.
+    const region = dialog().querySelector('[role="region"][aria-labelledby]') as HTMLElement;
+    const trigger = document.getElementById(
+      region.getAttribute('aria-labelledby') ?? '',
+    ) as HTMLElement;
+    act(() => trigger.click());
+    const row = [...document.body.querySelectorAll('[role="treeitem"]')].find((node) =>
+      node.textContent?.includes(fileName),
+    ) as HTMLElement;
+    await act(async () => row.click());
+  };
+  const preview = () => dialog().querySelector('[role="group"][aria-label="guide.md"]');
+
+  it('renders the canvas preview for a picked file', async () => {
+    render({ item: skillWithFiles, onLoadSkillDetailsFile: vi.fn() });
+
+    await pick('guide.md');
+
+    expect(preview()?.getAttribute('data-file-id')).toBe('guide.md');
+    expect(dialog().textContent).not.toContain('Manifest body');
+  });
+
+  it('shows the manifest body again when SKILL.md is picked', async () => {
+    render({ item: skillWithFiles, onLoadSkillDetailsFile: vi.fn() });
+
+    await pick('guide.md');
+    await pick('SKILL.md');
+
+    expect(preview()).toBeNull();
+    expect(dialog().textContent).toContain('Manifest body');
+  });
+
+  it('announces the loading file while the preview code downloads', async () => {
+    previewChunk.pending = new Promise(() => undefined);
+    render({ item: skillWithFiles, onLoadSkillDetailsFile: vi.fn() });
+
+    await pick('guide.md');
+
+    const status = [...dialog().querySelectorAll('[role="status"]')].find(
+      (node) => node.textContent === QuickAppEditorI18nKeys.ContentFileLoading,
+    );
+    expect(status).toBeDefined();
+    previewChunk.pending = null;
+  });
+
+  it('shows no preview without a file loader', async () => {
+    render({ item: skillWithFiles });
+
+    await pick('guide.md');
+
+    expect(preview()).toBeNull();
   });
 });
 

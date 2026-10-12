@@ -87,6 +87,14 @@
     `SKILL.md` under `files/` — the details now load through ai-dial-chat's `useSkillItemDetails`,
     which still downloads `SKILL.md` at the skill root first, so such skills show the error state;
     fix upstream (download `resolveSkillManifestFileId`'s path) and it applies here too.
+- [ ] Skill file preview follow-ups (from the `render-skill-file-previews` change):
+  - ai-dial-chat ask: export the skill file preview shell (`SkillDetailsFilePreview` /
+    `SkillFilePreview` in `apps/chat`) from a published lib, so
+    `src/components/SkillFilePreview/SkillFilePreview.tsx` and
+    `src/utils/skill-file-canvas-resolvers.ts` can drop their copy;
+  - verify in a deployed environment that chat-api serves `/api/v1/files/html-preview-frame` to
+    this app (`HTML_PREVIEW_FRAME_URL`); if not, drop `htmlSrcdocHostUrl` so `.html` skill files
+    render through plain `srcdoc`.
 - [ ] Add-ons: `AgentsFormSection` opens the Add agent picker when the URL has
       `?agentsAndToolsetsModal=1` (`AddOnsModalQueryParams.Modal` in
       `src/constants/quick-apps.ts`; it opened the merged Agents & Toolsets modal before
