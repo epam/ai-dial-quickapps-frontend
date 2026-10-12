@@ -12,8 +12,8 @@ const AppContext = createContext<AppState | null>(null);
 
 export const AppContextProvider = AppContext.Provider;
 
-export function useAppContext(): AppState {
+export const useAppContext = (): AppState => {
   const ctx = useContext(AppContext);
   if (!ctx) throw new Error('useAppContext must be used inside AppContextProvider');
   return ctx;
-}
+};

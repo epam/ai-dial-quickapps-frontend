@@ -50,15 +50,9 @@ import {
 import omit from 'lodash-es/omit';
 import sortBy from 'lodash-es/sortBy';
 import { nanoid } from 'nanoid';
+import { AddOnSchemaKeys } from '@/types/quick-app-form';
 
 const DEFAULT_TEMPERATURE = 0.5;
-
-export enum AddOnSchemaKeys {
-  id = '[schema]:id',
-  tool = '[schema]:tool',
-  isDialDeploymentTool = '[schema]:isDialDeploymentTool',
-  name = '[schema]:name',
-}
 
 const AddOnSchema = z.object({
   [AddOnSchemaKeys.id]: z.string(),

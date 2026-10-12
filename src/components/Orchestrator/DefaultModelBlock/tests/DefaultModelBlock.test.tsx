@@ -144,7 +144,7 @@ describe('DefaultModelBlock', () => {
   });
 
   it('disables Change when the field is disabled', () => {
-    render({ disabled: true });
+    render({ isDisabled: true });
 
     expect(getChangeButton()?.disabled).toBe(true);
     act(() => getChangeButton()?.click());

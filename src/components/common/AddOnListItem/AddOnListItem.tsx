@@ -53,6 +53,8 @@ export const AddOnListItem: FC<AddOnListItemProps> = ({
 
   return (
     <div className="group flex min-w-0 items-center gap-1 rounded-[10px] pe-1 hover:bg-control-accent-alpha">
+      {/* A native button, not a kit one: the kit's buttons take only a label and icons, and
+          this whole row (avatar, name, version, status) is the control that opens details. */}
       <button
         type="button"
         aria-label={detailsLabel}

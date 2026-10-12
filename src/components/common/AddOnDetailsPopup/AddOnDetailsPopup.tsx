@@ -33,13 +33,9 @@ import { useContentFileSelection } from '@/hooks/use-content-file-selection';
 import { useTranslation } from '@/hooks/use-translation';
 import { type AddOnAppTab, type AddOnDetailsTab, DetailsStatus } from '@/types/entity-details';
 import { Translation } from '@/types/translation';
+import { hideHeaderAction, loadNoContentFile } from '@/utils/catalog-details-defaults';
 
 const LOADING_SKELETON_PARAGRAPH = { rows: 1, width: '72px' };
-
-const loadNoContentFile = async (): Promise<string | undefined> => undefined;
-
-// The catalog header shows Share, Publish and Download unless the host rules them out.
-const hideHeaderAction = (): boolean => false;
 
 // The typography the catalog's DetailsPanel renders its Overview with.
 const OVERVIEW_CLASSES = {

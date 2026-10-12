@@ -12,7 +12,7 @@ import { BrowserRouter, Route, Routes } from 'react-router';
 
 import App from '@/App';
 import AuthContextProvider from '@/context/AuthContext';
-import { I18nProvider } from '@/components/I18nProvider';
+import { I18nProvider } from '@/components/I18nProvider/I18nProvider';
 import ThemeProvider from '@/context/ThemeContext';
 import SignInCompletePage from '@/pages/SignInCompletePage';
 
