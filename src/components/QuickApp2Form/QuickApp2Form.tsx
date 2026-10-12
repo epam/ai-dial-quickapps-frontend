@@ -32,6 +32,10 @@ interface QuickApp2FormProps {
     general?: TriggerSaveGeneralPayload,
   ) => void;
   onDirtyChange?: (isDirty: boolean) => void;
+  /** Called with whether the form values currently pass validation (deferred errors included). */
+  onValidityChange?: (isValid: boolean) => void;
+  /** Called when a manual save is blocked by form validation, with the error messages. */
+  onValidationError?: (messages: string[]) => void;
   /** Called once a model is resolved for the form — either the app's saved model or the default. */
   onModelReady?: () => void;
   isReadonly?: boolean;
@@ -40,6 +44,8 @@ interface QuickApp2FormProps {
 export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   onSave,
   onDirtyChange,
+  onValidationError,
+  onValidityChange,
   onModelReady,
   isReadonly: isReadonlyProp,
 }) => {
@@ -68,6 +74,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     values,
     errors,
     isDirty,
+    isValid,
     isModelReady,
     setField,
     setValues,
@@ -114,6 +121,10 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
 
+  useEffect(() => {
+    onValidityChange?.(isValid);
+  }, [isValid, onValidityChange]);
+
   const allEntitiesMap = useMemo(
     // MCP agents are separate from the model map but are valid toolset entities.
     () => ({ ...modelsMap, ...toolsetsMap, ...mcpAgentsMap }),
@@ -125,10 +136,16 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   const handleSubmitForm = useCallback(
     (isAutoSave = false, general?: TriggerSaveGeneralPayload) => {
       const result = submit();
-      if (!result.isValid) return;
+      if (!result.isValid) {
+        if (!isAutoSave) {
+          const messages = Object.values(result.errors).filter((message) => message != null);
+          onValidationError?.(messages.map((message) => t(message)));
+        }
+        return;
+      }
       onSave(result.data, allEntitiesMap, isAutoSave, general);
     },
-    [allEntitiesMap, onSave, submit],
+    [allEntitiesMap, onSave, onValidationError, submit, t],
   );
 
   useEffect(() => {

@@ -34,6 +34,8 @@ interface EditorInnerProps {
     general?: TriggerSaveGeneralPayload,
   ) => Promise<void>;
   onDirtyChange: (isDirty: boolean) => void;
+  onValidationError: (messages: string[]) => void;
+  onValidityChange: (isValid: boolean) => void;
   onModelReady?: () => void;
   resetKey: number;
 }
@@ -42,6 +44,8 @@ const EditorInner = ({
   appState,
   onSave,
   onDirtyChange,
+  onValidationError,
+  onValidityChange,
   onModelReady,
   resetKey,
 }: EditorInnerProps) => {
@@ -64,6 +68,8 @@ const EditorInner = ({
           key={resetKey}
           onSave={handleSave}
           onDirtyChange={onDirtyChange}
+          onValidationError={onValidationError}
+          onValidityChange={onValidityChange}
           onModelReady={onModelReady}
         />
       </AppContextProvider>
@@ -88,6 +94,7 @@ const EditorClient = ({ onReadyToSave }: EditorClientProps) => {
   const [resetKey, setResetKey] = useState(0);
   const [hasSavedOnce, setHasSavedOnce] = useState(false);
   const isDirtyRef = useRef(false);
+  const isValidRef = useRef(true);
   const isInitializedRef = useRef(false);
   const hasSavedOnceRef = useRef(false);
   // Empty until settings load — treated as "any origin", so READY reaches the host before then.
@@ -302,6 +309,30 @@ const EditorClient = ({ onReadyToSave }: EditorClientProps) => {
     }
   }, []);
 
+  const handleValidityChange = useCallback((isValid: boolean) => {
+    if (isValidRef.current !== isValid) {
+      isValidRef.current = isValid;
+      postToHost(
+        {
+          type: OutboundMessageType.ValidityState,
+          payload: { isValid },
+        },
+        allowedOriginsRef.current,
+      );
+    }
+  }, []);
+
+  // Tells the host a manual save was rejected before any request, so its Save doesn't wait for a timeout.
+  const handleValidationError = useCallback((messages: string[]) => {
+    postToHost(
+      {
+        type: OutboundMessageType.SaveError,
+        payload: { error: messages.join('; ') },
+      },
+      allowedOriginsRef.current,
+    );
+  }, []);
+
   if (isForbidden) {
     return <ForbiddenPage />;
   }
@@ -324,6 +355,8 @@ const EditorClient = ({ onReadyToSave }: EditorClientProps) => {
                 appState={appState}
                 onSave={handleSave}
                 onDirtyChange={handleDirtyChange}
+                onValidationError={handleValidationError}
+                onValidityChange={handleValidityChange}
                 onModelReady={onReadyToSave}
                 resetKey={resetKey}
               />
