@@ -30,8 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The app is now a Vite-built React SPA served by `chat-api`, replacing the standalone Next.js
   server. The Docker image, every runtime environment variable, the auth provider variables and
   the OAuth redirect URI path (`/api/auth/callback/<provider>` →
-  `/api/v1/auth/callback/<provider>`) change. See [1.0.0](#100---2026-09-26) below for the full
-  migration steps.
+  `/api/v1/auth/callback/<provider>`) change. See [Platform migration](#platform-migration-nextjs--vite-spa) below for the
+  full migration steps.
 
 ### Changed
 
@@ -48,20 +48,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Patched `zlib` in the runtime image to address CVE-2026-85091.
 
-## [1.0.0] - 2026-09-26
+### Platform migration: Next.js → Vite SPA
 
 Migrated the app to a different tech stack: it's no longer a Next.js app with its own
 `next-auth`-based BFF and API routes. It's now a plain Vite-built React SPA (no server code of
 its own) served directly by [chat-api](https://github.com/epam/ai-dial-chat)'s own server, which
 also now owns auth and every DIAL entity call.
 
-### ⚠ BREAKING CHANGES — must read before deploying this version
+#### ⚠ BREAKING CHANGES — must read before deploying this version
 
 The Docker image is different (it's now `chat-api` + this app's static build, not a standalone
 Next.js server), and **every runtime environment variable sets for this app has changed**
-— old `.env`/deployment config for a pre-1.0.0 deployment will not work unchanged.
+— old `.env`/deployment config for a pre-0.3.0 deployment will not work unchanged.
 
-#### Environment variables changes
+##### Environment variables changes
 
 - **Renamed / consolidated** — old variable still has an equivalent, but under a new name or
   nested inside a JSON blob:
@@ -96,7 +96,7 @@ Next.js server), and **every runtime environment variable sets for this app has 
 
   If there were other providers configured, make similar changes.
 
-- **New** — did not exist pre-1.0.0:
+- **New** — did not exist pre-0.3.0:
 
   | Variable                        | Required? | Notes                                                                                                                                         |
   | ------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -109,7 +109,7 @@ Next.js server), and **every runtime environment variable sets for this app has 
   | `CSP_MODE`                      | No        | Defaults to `report-only`                                                                                                                     |
   | `ALLOWED_CONNECT_ORIGINS`       | No        | External connection origins permitted by CSP                                                                                                  |
 
-### OAuth redirect URI path changed for every provider
+#### OAuth redirect URI path changed for every provider
 
 The callback path moved from `/api/auth/callback/<provider>` to `/api/v1/auth/callback/<provider>`.
 Each identity provider's registered redirect URI must be updated to match, or sign-in will fail.
