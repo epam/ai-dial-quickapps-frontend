@@ -1,9 +1,8 @@
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
-import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { AddOnCatalogModalProps } from '@/components/common/AddOnCatalogModal/AddOnCatalogModal';
+import { setupTestRoot } from '@/test-utils/test-root';
 import { type DialToolset, ToolsetAuthType } from '@/types/dial-entities';
 
 import { AddToolsetsModal } from '../AddToolsetsModal';
@@ -19,13 +18,7 @@ const FIGMA = makeToolset('toolsets/public/figma', 'Figma', {
 const JIRA = makeToolset('toolsets/public/jira', 'Jira');
 const HIDDEN = makeToolset('toolsets/public/.dial_folder', 'Hidden');
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({
-    language: 'en',
-    t: (key: string, options?: Record<string, string>) =>
-      key.replace(/\{\{(\w+)\}\}/g, (_, name: string) => options?.[name] ?? ''),
-  }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({ toolsets: [FIGMA, JIRA, HIDDEN], userBucket: 'me' }),
 }));
@@ -36,29 +29,18 @@ vi.mock('@/components/common/AddOnCatalogModal/AddOnCatalogModal', () => ({
   },
 }));
 
-let root: Root;
-
-beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
-  root = createRoot(document.createElement('div'));
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-});
+const dom = setupTestRoot();
 
 describe('AddToolsetsModal', () => {
   it('offers the visible toolsets only, with their sign-in state', () => {
     const onConfirm = vi.fn();
-    act(() =>
-      root.render(
-        <AddToolsetsModal
-          allIds={['applications/public/agent', FIGMA.id]}
-          toolsetIds={[FIGMA.id]}
-          onConfirm={onConfirm}
-          onClose={vi.fn()}
-        />,
-      ),
+    dom.render(
+      <AddToolsetsModal
+        allIds={['applications/public/agent', FIGMA.id]}
+        toolsetIds={[FIGMA.id]}
+        onConfirm={onConfirm}
+        onClose={vi.fn()}
+      />,
     );
 
     const props = captured.props as AddOnCatalogModalProps;
@@ -71,10 +53,8 @@ describe('AddToolsetsModal', () => {
   });
 
   it('labels the popup for toolsets', () => {
-    act(() =>
-      root.render(
-        <AddToolsetsModal allIds={[]} toolsetIds={[]} onConfirm={vi.fn()} onClose={vi.fn()} />,
-      ),
+    dom.render(
+      <AddToolsetsModal allIds={[]} toolsetIds={[]} onConfirm={vi.fn()} onClose={vi.fn()} />,
     );
 
     const { labels } = captured.props as AddOnCatalogModalProps;

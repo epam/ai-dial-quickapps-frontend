@@ -1,17 +1,17 @@
-import { act, type ReactNode } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
+import type { ReactNode } from 'react';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import type { CatalogItem } from '@epam/ai-dial-catalog';
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
+
+import { click, getButton, typeInto } from '@/test-utils/dom';
+import { setupTestRoot } from '@/test-utils/test-root';
 
 import { CatalogPickerModal, type CatalogPickerModalLabels } from '../CatalogPickerModal';
 
 let status: 'idle' | 'loading' | 'ready' | 'error' = 'ready';
 const refreshAll = vi.fn();
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({ language: 'en', t: (key: string) => key }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({
     status,
@@ -151,55 +151,43 @@ const LABELS: CatalogPickerModalLabels = {
   empty: 'No toolsets available',
 };
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 let items: CatalogItem[];
 let onConfirm: Mock<() => void>;
 let onClose: Mock<() => void>;
 let renderList: Mock<(rows: CatalogItem[], query: string) => ReactNode>;
 
 const render = (props: { isConfirmDisabled?: boolean } = {}) =>
-  act(() =>
-    root.render(
-      <CatalogPickerModal
-        items={items}
-        labels={LABELS}
-        isConfirmDisabled={props.isConfirmDisabled}
-        onConfirm={onConfirm}
-        onClose={onClose}
-        renderList={renderList}
-      />,
-    ),
+  dom.render(
+    <CatalogPickerModal
+      items={items}
+      labels={LABELS}
+      isConfirmDisabled={props.isConfirmDisabled}
+      onConfirm={onConfirm}
+      onClose={onClose}
+      renderList={renderList}
+    />,
   );
 
 const getRows = () =>
-  [...container.querySelectorAll<HTMLElement>('[role="row"]')].map((row) => row.textContent);
+  [...dom.container.querySelectorAll<HTMLElement>('[role="row"]')].map((row) => row.textContent);
 
-const getButton = (text: string) =>
-  [...container.querySelectorAll('button')].find((button) => button.textContent === text);
+const getDialogText = () => dom.container.querySelector('[role="dialog"]')?.textContent ?? '';
 
-const getDialogText = () => container.querySelector('[role="dialog"]')?.textContent ?? '';
+const typeSearch = (text: string) =>
+  typeInto(
+    dom.container.querySelector<HTMLInputElement>('input[aria-label="Search toolsets..."]'),
+    text,
+  );
 
-const typeSearch = (text: string) => {
-  const input = container.querySelector<HTMLInputElement>('input[aria-label="Search toolsets..."]');
-  if (!input) throw new Error('search input not found');
-  const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
-  act(() => {
-    setValue?.call(input, text);
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-  });
-};
-
-const toggleCheckbox = (label: string) => {
-  const input = [...container.querySelectorAll('label')]
-    .find((el) => el.textContent === label)
-    ?.querySelector('input');
-  expect(input).toBeTruthy();
-  act(() => input?.click());
-};
+const toggleCheckbox = (label: string) =>
+  click(
+    [...dom.container.querySelectorAll('label')]
+      .find((el) => el.textContent === label)
+      ?.querySelector('input'),
+  );
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   items = [figma, jira, mine];
   status = 'ready';
   refreshAll.mockReset();
@@ -214,14 +202,6 @@ beforeEach(() => {
       ))}
     </div>
   ));
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
 });
 
 describe('CatalogPickerModal', () => {
@@ -229,13 +209,13 @@ describe('CatalogPickerModal', () => {
     it('opens with the title, catalog heading, count, search, From, sort and list', () => {
       render();
 
-      expect(container.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe(
+      expect(dom.container.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe(
         'Add toolset',
       );
       expect(getDialogText()).toContain('Toolsets catalog3');
-      expect(container.querySelector('input[aria-label="Search toolsets..."]')).not.toBeNull();
-      expect(container.querySelector('fieldset[aria-label="From"]')).not.toBeNull();
-      expect(container.querySelector('[data-testid="sort-label"]')?.textContent).toBe(
+      expect(dom.container.querySelector('input[aria-label="Search toolsets..."]')).not.toBeNull();
+      expect(dom.container.querySelector('fieldset[aria-label="From"]')).not.toBeNull();
+      expect(dom.container.querySelector('[data-testid="sort-label"]')?.textContent).toBe(
         'Recently updated',
       );
       expect(getRows()).toEqual(['Jira', 'Figma', 'My notes']);
@@ -257,7 +237,7 @@ describe('CatalogPickerModal', () => {
       render();
 
       expect(
-        [...container.querySelectorAll('fieldset label')].map((label) => label.textContent),
+        [...dom.container.querySelectorAll('fieldset label')].map((label) => label.textContent),
       ).toEqual(['Design', 'Tracking', 'My']);
 
       toggleCheckbox('Design');
@@ -277,9 +257,11 @@ describe('CatalogPickerModal', () => {
     it('sorts by name on request', () => {
       render();
 
-      act(() => getButton('Name A-Z')?.click());
+      click(getButton('Name A-Z'));
 
-      expect(container.querySelector('[data-testid="sort-label"]')?.textContent).toBe('Name A-Z');
+      expect(dom.container.querySelector('[data-testid="sort-label"]')?.textContent).toBe(
+        'Name A-Z',
+      );
       expect(getRows()).toEqual(['Figma', 'Jira', 'My notes']);
     });
 
@@ -288,8 +270,8 @@ describe('CatalogPickerModal', () => {
 
       typeSearch('zzz');
 
-      expect(container.textContent).toContain('No results found');
-      expect(container.querySelector('[role="grid"]')).toBeNull();
+      expect(dom.container.textContent).toContain('No results found');
+      expect(dom.container.querySelector('[role="grid"]')).toBeNull();
       expect(getDialogText()).toContain('Toolsets catalog0');
       expect(getButton('Add')?.disabled).toBe(false);
     });
@@ -299,7 +281,7 @@ describe('CatalogPickerModal', () => {
     it('confirms with Add', () => {
       render();
 
-      act(() => getButton('Add')?.click());
+      click(getButton('Add'));
 
       expect(onConfirm).toHaveBeenCalledTimes(1);
     });
@@ -307,7 +289,7 @@ describe('CatalogPickerModal', () => {
     it('keeps Add disabled when the picker says so', () => {
       render({ isConfirmDisabled: true });
 
-      act(() => getButton('Add')?.click());
+      click(getButton('Add'));
 
       expect(getButton('Add')?.disabled).toBe(true);
       expect(onConfirm).not.toHaveBeenCalled();
@@ -316,8 +298,8 @@ describe('CatalogPickerModal', () => {
     it('closes without confirming on Cancel and on the close control', () => {
       render();
 
-      act(() => getButton('Cancel')?.click());
-      act(() => container.querySelector<HTMLButtonElement>('[aria-label="Close dialog"]')?.click());
+      click(getButton('Cancel'));
+      click(dom.container.querySelector('[aria-label="Close dialog"]'));
 
       expect(onClose).toHaveBeenCalledTimes(2);
       expect(onConfirm).not.toHaveBeenCalled();
@@ -327,7 +309,7 @@ describe('CatalogPickerModal', () => {
       render();
       typeSearch('ji');
 
-      act(() => root.render(null));
+      dom.render(null);
       render();
 
       expect(getRows()).toHaveLength(3);
@@ -339,7 +321,7 @@ describe('CatalogPickerModal', () => {
       items = [];
       render();
 
-      expect(container.textContent).toContain('No toolsets available');
+      expect(dom.container.textContent).toContain('No toolsets available');
       expect(renderList).not.toHaveBeenCalled();
     });
 
@@ -347,7 +329,7 @@ describe('CatalogPickerModal', () => {
       status = 'loading';
       render();
 
-      expect(container.querySelector('[aria-label="Loading toolsets…"]')).not.toBeNull();
+      expect(dom.container.querySelector('[aria-label="Loading toolsets…"]')).not.toBeNull();
       expect(getDialogText()).not.toContain('Toolsets catalog3');
       expect(getButton('Add')?.disabled).toBe(true);
     });
@@ -356,11 +338,11 @@ describe('CatalogPickerModal', () => {
       status = 'error';
       render();
 
-      expect(container.textContent).toContain('Failed to load toolsets');
-      expect(container.textContent).toContain('Network down');
+      expect(dom.container.textContent).toContain('Failed to load toolsets');
+      expect(dom.container.textContent).toContain('Network down');
       expect(getButton('Add')?.disabled).toBe(true);
 
-      act(() => getButton('Retry')?.click());
+      click(getButton('Retry'));
 
       expect(refreshAll).toHaveBeenCalledTimes(1);
     });

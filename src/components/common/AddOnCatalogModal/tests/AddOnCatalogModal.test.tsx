@@ -1,9 +1,9 @@
-import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import type { CatalogItem } from '@epam/ai-dial-catalog';
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 
+import { click, getButton } from '@/test-utils/dom';
+import { setupTestRoot } from '@/test-utils/test-root';
 import type { CatalogPickerModalProps } from '@/components/common/CatalogPickerModal/CatalogPickerModal';
 
 import { AddOnCatalogModal, type AddOnCatalogModalLabels } from '../AddOnCatalogModal';
@@ -121,50 +121,32 @@ const LABELS: AddOnCatalogModalLabels = {
   selectRow: (name) => `Select ${name}`,
 };
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 let onConfirm: Mock<(ids: string[]) => void>;
 let onClose: Mock<() => void>;
 
 const render = (attachedIds: string[] = [], initialCheckedIds = attachedIds) =>
-  act(() =>
-    root.render(
-      <AddOnCatalogModal
-        type={CatalogEntityType.Toolset}
-        items={[figma, jira, mine]}
-        attachedIds={attachedIds}
-        initialCheckedIds={initialCheckedIds}
-        labels={LABELS}
-        onConfirm={onConfirm}
-        onClose={onClose}
-      />,
-    ),
+  dom.render(
+    <AddOnCatalogModal
+      type={CatalogEntityType.Toolset}
+      items={[figma, jira, mine]}
+      attachedIds={attachedIds}
+      initialCheckedIds={initialCheckedIds}
+      labels={LABELS}
+      onConfirm={onConfirm}
+      onClose={onClose}
+    />,
   );
 
 const getCheckbox = (name: string) =>
-  container.querySelector<HTMLInputElement>(`input[aria-label="${name}"]`);
+  dom.container.querySelector<HTMLInputElement>(`input[aria-label="${name}"]`);
 
-const click = (element?: Element | null) => {
-  expect(element).toBeTruthy();
-  act(() => (element as HTMLElement).click());
-};
-
-const getAddButton = () =>
-  [...container.querySelectorAll('button')].find((button) => button.textContent === 'Add');
+const getAddButton = () => getButton('Add');
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   shell.visibleIds = undefined;
   onConfirm = vi.fn();
   onClose = vi.fn();
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
 });
 
 describe('AddOnCatalogModal', () => {
@@ -176,7 +158,7 @@ describe('AddOnCatalogModal', () => {
     expect(props.labels).toBe(LABELS);
     expect(props.onClose).toBe(onClose);
     expect(props.isConfirmDisabled).toBeFalsy();
-    expect(container.querySelector('[role="grid"]')?.getAttribute('aria-label')).toBe(
+    expect(dom.container.querySelector('[role="grid"]')?.getAttribute('aria-label')).toBe(
       'Toolsets catalog',
     );
   });

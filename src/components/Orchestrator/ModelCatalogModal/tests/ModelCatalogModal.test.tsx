@@ -1,8 +1,10 @@
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 
 import type { CatalogItem } from '@epam/ai-dial-catalog';
+
+import { click, getButton } from '@/test-utils/dom';
+import { setupTestRoot } from '@/test-utils/test-root';
 import type { CatalogPickerModalProps } from '@/components/common/CatalogPickerModal/CatalogPickerModal';
 import { DialEntityType } from '@/types/dial-entities';
 import type { DialModel } from '@/types/dial-entities';
@@ -17,9 +19,7 @@ const { shell } = vi.hoisted(() => ({
 
 let models: DialModel[] = [];
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({ language: 'en', t: (key: string) => key }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({ modelsWithFavorites: models, userBucket: USER_BUCKET }),
 }));
@@ -105,49 +105,32 @@ const agent = makeModel({
   type: DialEntityType.Application,
 });
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 let onConfirm: Mock<(modelId: string) => void>;
 let onClose: Mock<() => void>;
 
 const render = (props: { value?: string } = {}) =>
-  act(() =>
-    root.render(
-      <ModelCatalogModal
-        value={props.value ?? gemini.id}
-        onConfirm={onConfirm}
-        onClose={onClose}
-      />,
-    ),
+  dom.render(
+    <ModelCatalogModal value={props.value ?? gemini.id} onConfirm={onConfirm} onClose={onClose} />,
   );
 
 const getRows = () =>
-  [...container.querySelectorAll<HTMLElement>('[role="row"]')].map((row) => row.textContent);
+  [...dom.container.querySelectorAll<HTMLElement>('[role="row"]')].map((row) => row.textContent);
 
-const getRow = (id: string) => container.querySelector<HTMLElement>(`[row-id="${id}"]`);
+const getRow = (id: string) => dom.container.querySelector<HTMLElement>(`[row-id="${id}"]`);
 
 const getSelectedRowIds = () =>
-  [...container.querySelectorAll('[role="row"][aria-selected="true"]')].map((row) =>
+  [...dom.container.querySelectorAll('[role="row"][aria-selected="true"]')].map((row) =>
     row.getAttribute('row-id'),
   );
 
-const getAddButton = () =>
-  [...container.querySelectorAll('button')].find((button) => button.textContent === 'Add');
+const getAddButton = () => getButton('Add');
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   models = [gemini, geminiV2, claude, noTools, agent];
   shell.visibleIds = undefined;
   onConfirm = vi.fn<(modelId: string) => void>();
   onClose = vi.fn<() => void>();
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
 });
 
 describe('ModelCatalogModal', () => {
@@ -155,7 +138,7 @@ describe('ModelCatalogModal', () => {
     it('lists only tool-supporting models, one row per version, with their folder', () => {
       render();
 
-      expect(container.querySelector('[role="grid"]')?.getAttribute('aria-label')).toBe(
+      expect(dom.container.querySelector('[role="grid"]')?.getAttribute('aria-label')).toBe(
         'Models catalog',
       );
       expect(getRows()).toEqual([
@@ -192,7 +175,7 @@ describe('ModelCatalogModal', () => {
     it('selects a clicked row without confirming it', () => {
       render();
 
-      act(() => getRow(geminiV2.id)?.click());
+      click(getRow(geminiV2.id));
 
       expect(getSelectedRowIds()).toEqual([geminiV2.id]);
       expect(onConfirm).not.toHaveBeenCalled();
@@ -220,8 +203,8 @@ describe('ModelCatalogModal', () => {
     it('confirms the selected row with its full versioned id on Add', () => {
       render();
 
-      act(() => getRow(geminiV2.id)?.click());
-      act(() => getAddButton()?.click());
+      click(getRow(geminiV2.id));
+      click(getAddButton());
 
       expect(onConfirm).toHaveBeenCalledWith('models/gemini__2.0.0');
     });
@@ -235,11 +218,11 @@ describe('ModelCatalogModal', () => {
 
     it('keeps a selection that search hides and still confirms it', () => {
       render();
-      act(() => getRow(geminiV2.id)?.click());
+      click(getRow(geminiV2.id));
 
       shell.visibleIds = [claude.id];
       render();
-      act(() => getAddButton()?.click());
+      click(getAddButton());
 
       expect(getRows()).toEqual(['Anthropic Claude 1.0.0 | Personal']);
       expect(getAddButton()?.disabled).toBe(false);
@@ -248,9 +231,9 @@ describe('ModelCatalogModal', () => {
 
     it('starts fresh each time it is mounted again', () => {
       render();
-      act(() => getRow(claude.id)?.click());
+      click(getRow(claude.id));
 
-      act(() => root.render(null));
+      dom.render(null);
       render();
 
       expect(getSelectedRowIds()).toEqual([gemini.id]);

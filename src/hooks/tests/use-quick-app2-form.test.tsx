@@ -1,10 +1,10 @@
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { QuickApp2Schema, type QuickApp2Form } from '@/form/quickApp2Form';
 import { AddOnSchemaKeys } from '@/types/quick-app-form';
 import { useQuickApp2Form, type UseQuickApp2FormResult } from '@/hooks/use-quick-app2-form';
+import { setupTestRoot } from '@/test-utils/test-root';
 import { LoadStatus } from '@/types/load-status';
 import {
   type QuickApp2FormValidationResult,
@@ -37,8 +37,7 @@ const createValues = (overrides: Partial<QuickApp2FormValues> = {}): QuickApp2Fo
   ...overrides,
 });
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 let latestForm: UseQuickApp2FormResult;
 
 const HookHarness = ({ defaultValues }: { defaultValues: QuickApp2FormValues }) => {
@@ -47,23 +46,9 @@ const HookHarness = ({ defaultValues }: { defaultValues: QuickApp2FormValues }) 
 };
 
 const renderHook = (defaultValues: QuickApp2FormValues = createValues()) => {
-  act(() => {
-    root.render(<HookHarness defaultValues={defaultValues} />);
-  });
+  dom.render(<HookHarness defaultValues={defaultValues} />);
   return latestForm;
 };
-
-beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
-});
 
 describe('useQuickApp2Form values and validation', () => {
   it('tracks dirty state against the initial baseline and preserves raw values', () => {

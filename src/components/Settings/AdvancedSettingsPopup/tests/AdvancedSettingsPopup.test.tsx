@@ -1,7 +1,8 @@
 import React, { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
+import { click, getButton, typeInto } from '@/test-utils/dom';
+import { setupTestRoot } from '@/test-utils/test-root';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 
 import AdvancedSettingsPopup from '../AdvancedSettingsPopup';
@@ -55,9 +56,7 @@ interface MockSwitchProps {
   onChange: (value: boolean) => void;
 }
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({ language: 'en', t: (key: string) => key }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@epam/ai-dial-ui-kit', () => ({
   ButtonAppearance: { Link: 'link' },
   ButtonVariant: { Primary: 'primary', Neutral: 'neutral' },
@@ -143,7 +142,13 @@ vi.mock('@epam/ai-dial-ui-kit', () => ({
   ),
   Switch: ({ isOn, labelProps, caption, onChange }: MockSwitchProps) => (
     <div>
-      <button type="button" role="switch" aria-checked={isOn} aria-label={labelProps.label} onClick={() => onChange(!isOn)} />
+      <button
+        type="button"
+        role="switch"
+        aria-checked={isOn}
+        aria-label={labelProps.label}
+        onClick={() => onChange(!isOn)}
+      />
       <span>{caption}</span>
     </div>
   ),
@@ -160,76 +165,52 @@ const initialValues: AdvancedSettingsValues = {
   webFetch: false,
 };
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 
 const renderPopup = (props: Partial<React.ComponentProps<typeof AdvancedSettingsPopup>> = {}) => {
   const onSave = vi.fn();
   const onClose = vi.fn();
-  act(() =>
-    root.render(
-      <AdvancedSettingsPopup
-        isOpen
-        advancedSettings={initialValues}
-        isTemperatureAvailable={false}
-        isProcessLargeFilesAvailable={false}
-        isCodeInterpreterEnabled={false}
-        isAddAttachmentEnabled={false}
-        isWebFetchEnabled={false}
-        onSave={onSave}
-        onClose={onClose}
-        {...props}
-      />,
-    ),
+  dom.render(
+    <AdvancedSettingsPopup
+      isOpen
+      advancedSettings={initialValues}
+      isTemperatureAvailable={false}
+      isProcessLargeFilesAvailable={false}
+      isCodeInterpreterEnabled={false}
+      isAddAttachmentEnabled={false}
+      isWebFetchEnabled={false}
+      onSave={onSave}
+      onClose={onClose}
+      {...props}
+    />,
   );
   return { onSave, onClose };
 };
 
-const getButton = (name: string) =>
-  [...container.querySelectorAll('button')].find(
-    (button) => (button.getAttribute('aria-label') ?? button.textContent) === name,
-  ) as HTMLButtonElement;
-
 const getSwitch = (name: string) =>
-  container.querySelector(`[role="switch"][aria-label="${name}"]`) as HTMLButtonElement;
+  dom.container.querySelector(`[role="switch"][aria-label="${name}"]`) as HTMLButtonElement;
 
 const getInputByLabel = (text: string) => {
-  const label = [...container.querySelectorAll('label')].find((item) => item.textContent === text);
+  const label = [...dom.container.querySelectorAll('label')].find(
+    (item) => item.textContent === text,
+  );
   return document.getElementById(label?.htmlFor ?? '') as HTMLInputElement;
 };
 
-const getSlider = () => container.querySelector('[role="slider"]') as HTMLElement;
+const getSlider = () => dom.container.querySelector('[role="slider"]') as HTMLElement;
 
 const pressKey = (element: HTMLElement, key: string) =>
   act(() => {
     element.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
   });
 
-const typeInto = (input: HTMLInputElement, value: string) => {
-  const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
-  act(() => {
-    setValue?.call(input, value);
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-  });
-};
-
-beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
-});
-
 describe('AdvancedSettingsPopup', () => {
   it('renders a named dialog with the three settings in order, seeded from the form', () => {
     renderPopup();
 
-    expect(container.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe('Advanced settings');
+    expect(dom.container.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe(
+      'Advanced settings',
+    );
     const input = getInputByLabel('Maximum attachments amount user can add');
     expect(input.value).toBe('50');
     expect(document.getElementById(input.getAttribute('aria-describedby') ?? '')?.textContent).toBe(
@@ -238,7 +219,7 @@ describe('AdvancedSettingsPopup', () => {
     expect(getSwitch('Time awareness').getAttribute('aria-checked')).toBe('true');
     expect(getSwitch('Built-in file tools').getAttribute('aria-checked')).toBe('false');
 
-    const body = container.querySelector('[data-testid="body"]') as HTMLElement;
+    const body = dom.container.querySelector('[data-testid="body"]') as HTMLElement;
     expect(body.textContent).toContain('Gives the agent the current date and time');
     expect(body.textContent).toContain('Lets the agent browse, search, read, and edit files');
     const controls = [...body.querySelectorAll('input, [role="switch"]')].map(
@@ -250,7 +231,7 @@ describe('AdvancedSettingsPopup', () => {
   it('caps the dialog at the design width from the desktop breakpoint', () => {
     renderPopup();
 
-    expect(container.querySelector('[role="dialog"]')?.className).toBe('md:max-w-[586px]');
+    expect(dom.container.querySelector('[role="dialog"]')?.className).toBe('md:max-w-[586px]');
   });
 
   it('shows a placeholder in an empty max attachments input', () => {
@@ -264,16 +245,16 @@ describe('AdvancedSettingsPopup', () => {
   it('renders nothing when closed', () => {
     renderPopup({ isOpen: false });
 
-    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(dom.container.querySelector('[role="dialog"]')).toBeNull();
   });
 
   it('saves the edited draft and closes', () => {
     const { onSave, onClose } = renderPopup();
 
-    act(() => getSwitch('Built-in file tools').click());
-    act(() => getSwitch('Time awareness').click());
+    click(getSwitch('Built-in file tools'));
+    click(getSwitch('Time awareness'));
     typeInto(getInputByLabel('Maximum attachments amount user can add'), '10');
-    act(() => getButton('Save').click());
+    click(getButton('Save'));
 
     expect(onSave).toHaveBeenCalledWith({
       ...initialValues,
@@ -288,7 +269,7 @@ describe('AdvancedSettingsPopup', () => {
     const { onSave } = renderPopup();
 
     typeInto(getInputByLabel('Maximum attachments amount user can add'), '');
-    act(() => getButton('Save').click());
+    click(getButton('Save'));
 
     expect(onSave).toHaveBeenCalledWith({ ...initialValues, maxInputAttachments: '' });
   });
@@ -298,7 +279,7 @@ describe('AdvancedSettingsPopup', () => {
 
     const input = getInputByLabel('Maximum attachments amount user can add');
     typeInto(input, '0');
-    act(() => getButton('Save').click());
+    click(getButton('Save'));
 
     expect(onSave).not.toHaveBeenCalled();
     expect(onClose).not.toHaveBeenCalled();
@@ -314,21 +295,27 @@ describe('AdvancedSettingsPopup', () => {
   it('shows an existing form error for max attachments on open', () => {
     renderPopup({ maxInputAttachmentsError: 'Too small' });
 
-    expect(getInputByLabel('Maximum attachments amount user can add').getAttribute('aria-invalid')).toBe('true');
+    expect(
+      getInputByLabel('Maximum attachments amount user can add').getAttribute('aria-invalid'),
+    ).toBe('true');
   });
 
-  it.each(['Close advanced settings', 'Close'])('discards the draft when dismissed with %s', (name) => {
-    const { onSave, onClose } = renderPopup();
+  it.each(['Close advanced settings', 'Close'])(
+    'discards the draft when dismissed with %s',
+    (name) => {
+      const { onSave, onClose } = renderPopup();
 
-    act(() => getSwitch('Built-in file tools').click());
-    act(() => getButton(name).click());
+      click(getSwitch('Built-in file tools'));
+      click(getButton(name));
 
-    expect(onSave).not.toHaveBeenCalled();
-    expect(onClose).toHaveBeenCalledTimes(1);
-  });
+      expect(onSave).not.toHaveBeenCalled();
+      expect(onClose).toHaveBeenCalledTimes(1);
+    },
+  );
 
   describe('with temperature and process files available', () => {
-    const renderFull = () => renderPopup({ isTemperatureAvailable: true, isProcessLargeFilesAvailable: true });
+    const renderFull = () =>
+      renderPopup({ isTemperatureAvailable: true, isProcessLargeFilesAvailable: true });
     const allControls = [
       'Temperature',
       'Temperature value',
@@ -341,12 +328,14 @@ describe('AdvancedSettingsPopup', () => {
     it('renders five controls in order, temperature first and process files last', () => {
       renderFull();
 
-      const body = container.querySelector('[data-testid="body"]') as HTMLElement;
+      const body = dom.container.querySelector('[data-testid="body"]') as HTMLElement;
       const controls = [...body.querySelectorAll('input, [role="switch"], [role="slider"]')].map(
         (element) => element.getAttribute('aria-label') ?? 'max attachments',
       );
       expect(controls).toEqual(allControls);
-      expect(getSwitch('Allow orchestrator to process files').getAttribute('aria-checked')).toBe('true');
+      expect(getSwitch('Allow orchestrator to process files').getAttribute('aria-checked')).toBe(
+        'true',
+      );
       expect(body.textContent).toContain(
         'Handle attachments by reading file content on demand instead of including all attachment content in the initial prompt.',
       );
@@ -357,15 +346,21 @@ describe('AdvancedSettingsPopup', () => {
     it('shows the scale label in the tooltip and the value in the box, seeded from the form', () => {
       renderFull();
 
-      const slider = container.querySelector('[data-testid="slider"]') as HTMLElement;
+      const slider = dom.container.querySelector('[data-testid="slider"]') as HTMLElement;
       expect(slider.getAttribute('data-ticks')).toBe('true');
       // The kit draws one tick per step, so 0..1 at 0.1 gives exactly 10 steps of ticks.
       const steps =
-        (Number(getSlider().getAttribute('aria-valuemax')) - Number(getSlider().getAttribute('aria-valuemin'))) /
+        (Number(getSlider().getAttribute('aria-valuemax')) -
+          Number(getSlider().getAttribute('aria-valuemin'))) /
         Number(slider.getAttribute('data-step'));
       expect(Math.round(steps)).toBe(10);
-      expect(container.querySelector('[data-testid="slider-tooltip"]')?.textContent).toBe('Neutral');
-      expect((container.querySelector('input[aria-label="Temperature value"]') as HTMLInputElement).value).toBe('0.5');
+      expect(dom.container.querySelector('[data-testid="slider-tooltip"]')?.textContent).toBe(
+        'Neutral',
+      );
+      expect(
+        (dom.container.querySelector('input[aria-label="Temperature value"]') as HTMLInputElement)
+          .value,
+      ).toBe('0.5');
       expect(getSlider().getAttribute('aria-valuenow')).toBe('0.5');
       expect(getSlider().getAttribute('aria-valuetext')).toBe('Neutral');
     });
@@ -376,8 +371,13 @@ describe('AdvancedSettingsPopup', () => {
       pressKey(getSlider(), 'ArrowLeft');
       pressKey(getSlider(), 'ArrowLeft');
 
-      expect(container.querySelector('[data-testid="slider-tooltip"]')?.textContent).toBe('Precise');
-      expect((container.querySelector('input[aria-label="Temperature value"]') as HTMLInputElement).value).toBe('0.3');
+      expect(dom.container.querySelector('[data-testid="slider-tooltip"]')?.textContent).toBe(
+        'Precise',
+      );
+      expect(
+        (dom.container.querySelector('input[aria-label="Temperature value"]') as HTMLInputElement)
+          .value,
+      ).toBe('0.3');
       expect(onSave).not.toHaveBeenCalled();
     });
 
@@ -386,10 +386,14 @@ describe('AdvancedSettingsPopup', () => {
 
       pressKey(getSlider(), 'ArrowLeft');
       pressKey(getSlider(), 'ArrowLeft');
-      act(() => getSwitch('Allow orchestrator to process files').click());
-      act(() => getButton('Save').click());
+      click(getSwitch('Allow orchestrator to process files'));
+      click(getButton('Save'));
 
-      expect(onSave).toHaveBeenCalledWith({ ...initialValues, temperature: 0.3, processLargeFiles: false });
+      expect(onSave).toHaveBeenCalledWith({
+        ...initialValues,
+        temperature: 0.3,
+        processLargeFiles: false,
+      });
       expect(onClose).toHaveBeenCalledTimes(1);
     });
 
@@ -397,8 +401,8 @@ describe('AdvancedSettingsPopup', () => {
       const { onSave, onClose } = renderFull();
 
       pressKey(getSlider(), 'ArrowRight');
-      act(() => getSwitch('Allow orchestrator to process files').click());
-      act(() => getButton('Close').click());
+      click(getSwitch('Allow orchestrator to process files'));
+      click(getButton('Close'));
 
       expect(onSave).not.toHaveBeenCalled();
       expect(onClose).toHaveBeenCalledTimes(1);
@@ -407,7 +411,7 @@ describe('AdvancedSettingsPopup', () => {
     it('keeps the slider, its value input and the switches in focus order', () => {
       renderFull();
 
-      const body = container.querySelector('[data-testid="body"]') as HTMLElement;
+      const body = dom.container.querySelector('[data-testid="body"]') as HTMLElement;
       const focusable = [...body.querySelectorAll('input, button, [tabindex]')].map(
         (element) => element.getAttribute('aria-label') ?? 'max attachments',
       );
@@ -417,16 +421,23 @@ describe('AdvancedSettingsPopup', () => {
     it('snaps a typed temperature to the step and moves the slider', () => {
       renderFull();
 
-      typeInto((container.querySelector('input[aria-label="Temperature value"]') as HTMLInputElement), '0.36');
+      typeInto(
+        dom.container.querySelector('input[aria-label="Temperature value"]') as HTMLInputElement,
+        '0.36',
+      );
 
       expect(getSlider().getAttribute('aria-valuenow')).toBe('0.4');
-      expect(container.querySelector('[data-testid="slider-tooltip"]')?.textContent).toBe('Neutral');
+      expect(dom.container.querySelector('[data-testid="slider-tooltip"]')?.textContent).toBe(
+        'Neutral',
+      );
     });
 
     it('keeps the typed text while editing and shows the snapped value on blur', () => {
       renderFull();
 
-      const input = (container.querySelector('input[aria-label="Temperature value"]') as HTMLInputElement);
+      const input = dom.container.querySelector(
+        'input[aria-label="Temperature value"]',
+      ) as HTMLInputElement;
       typeInto(input, '0.36');
       expect(input.value).toBe('0.36');
 
@@ -439,8 +450,11 @@ describe('AdvancedSettingsPopup', () => {
     it('saves a temperature typed into the value input', () => {
       const { onSave } = renderFull();
 
-      typeInto((container.querySelector('input[aria-label="Temperature value"]') as HTMLInputElement), '0.8');
-      act(() => getButton('Save').click());
+      typeInto(
+        dom.container.querySelector('input[aria-label="Temperature value"]') as HTMLInputElement,
+        '0.8',
+      );
+      click(getButton('Save'));
 
       expect(onSave).toHaveBeenCalledWith({ ...initialValues, temperature: 0.8 });
     });
@@ -448,15 +462,20 @@ describe('AdvancedSettingsPopup', () => {
     it('ignores an empty value input', () => {
       const { onSave } = renderFull();
 
-      typeInto((container.querySelector('input[aria-label="Temperature value"]') as HTMLInputElement), '');
-      act(() => getButton('Save').click());
+      typeInto(
+        dom.container.querySelector('input[aria-label="Temperature value"]') as HTMLInputElement,
+        '',
+      );
+      click(getButton('Save'));
 
       expect(onSave).toHaveBeenCalledWith(initialValues);
     });
   });
 
   describe('feature toggles', () => {
-    const renderToggles = (props: Partial<React.ComponentProps<typeof AdvancedSettingsPopup>> = {}) =>
+    const renderToggles = (
+      props: Partial<React.ComponentProps<typeof AdvancedSettingsPopup>> = {},
+    ) =>
       renderPopup({
         isProcessLargeFilesAvailable: true,
         isCodeInterpreterEnabled: true,
@@ -468,7 +487,7 @@ describe('AdvancedSettingsPopup', () => {
     it('renders the enabled toggles after process files with their titles and descriptions', () => {
       renderToggles();
 
-      const body = container.querySelector('[data-testid="body"]') as HTMLElement;
+      const body = dom.container.querySelector('[data-testid="body"]') as HTMLElement;
       const switches = [...body.querySelectorAll('[role="switch"]')].map((element) =>
         element.getAttribute('aria-label'),
       );
@@ -502,9 +521,9 @@ describe('AdvancedSettingsPopup', () => {
         advancedSettings: { ...initialValues, addAttachment: true },
       });
 
-      act(() => getSwitch('Web fetch').click());
-      act(() => getSwitch('Code Interpreter').click());
-      act(() => getButton('Save').click());
+      click(getSwitch('Web fetch'));
+      click(getSwitch('Code Interpreter'));
+      click(getButton('Save'));
 
       expect(onSave).toHaveBeenCalledWith({
         ...initialValues,
@@ -517,8 +536,8 @@ describe('AdvancedSettingsPopup', () => {
     it('discards toggle edits on Close', () => {
       const { onSave, onClose } = renderToggles();
 
-      act(() => getSwitch('Web fetch').click());
-      act(() => getButton('Close').click());
+      click(getSwitch('Web fetch'));
+      click(getButton('Close'));
 
       expect(onSave).not.toHaveBeenCalled();
       expect(onClose).toHaveBeenCalledTimes(1);
@@ -530,7 +549,7 @@ describe('AdvancedSettingsPopup', () => {
 
     expect(getSlider()).toBeNull();
     expect(getSwitch('Allow orchestrator to process files')).toBeNull();
-    act(() => getButton('Save').click());
+    click(getButton('Save'));
 
     expect(onSave).toHaveBeenCalledWith(initialValues);
   });
@@ -538,7 +557,9 @@ describe('AdvancedSettingsPopup', () => {
   it('uses only logical layout classes and no mirrored icons', () => {
     renderPopup({ isTemperatureAvailable: true, isProcessLargeFilesAvailable: true });
 
-    expect(container.innerHTML).not.toMatch(/class="[^"]*\b(ml|mr|pl|pr|left|right|text-left|text-right)-/);
-    expect(container.innerHTML).not.toContain('scale-x-[-1]');
+    expect(dom.container.innerHTML).not.toMatch(
+      /class="[^"]*\b(ml|mr|pl|pr|left|right|text-left|text-right)-/,
+    );
+    expect(dom.container.innerHTML).not.toContain('scale-x-[-1]');
   });
 });

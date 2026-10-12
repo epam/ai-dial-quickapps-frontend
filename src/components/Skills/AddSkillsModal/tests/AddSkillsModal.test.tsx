@@ -1,8 +1,7 @@
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
-import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
+import { setupTestRoot } from '@/test-utils/test-root';
 import { DialEntityType } from '@/types/dial-entities';
 import type { AddOnCatalogModalProps } from '@/components/common/AddOnCatalogModal/AddOnCatalogModal';
 import type { DialSkill } from '@/types/dial-entities';
@@ -25,13 +24,7 @@ const WEB_SEARCH = makeSkill('skills/public/web-search', 'Web Search');
 const MINE = makeSkill(`skills/${USER_BUCKET}/mine`, 'My notes', { isMy: true });
 const HIDDEN = makeSkill('skills/public/.dial_folder', '.dial_folder');
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({
-    language: 'en',
-    t: (key: string, options?: Record<string, string>) =>
-      key.replace(/\{\{(\w+)\}\}/g, (_, name: string) => options?.[name] ?? ''),
-  }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({ skills: [WEB_SEARCH, HIDDEN, MINE], userBucket: USER_BUCKET }),
 }));
@@ -42,24 +35,13 @@ vi.mock('@/components/common/AddOnCatalogModal/AddOnCatalogModal', () => ({
   },
 }));
 
-let root: Root;
-
-beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
-  root = createRoot(document.createElement('div'));
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-});
+const dom = setupTestRoot();
 
 describe('AddSkillsModal', () => {
   it('offers the visible skills with their folder and checks the attached ones', () => {
     const onConfirm = vi.fn();
     const value = [WEB_SEARCH.id, 'skills/public/deleted'];
-    act(() =>
-      root.render(<AddSkillsModal value={value} onConfirm={onConfirm} onClose={vi.fn()} />),
-    );
+    dom.render(<AddSkillsModal value={value} onConfirm={onConfirm} onClose={vi.fn()} />);
 
     const props = captured.props as AddOnCatalogModalProps;
     expect(props.type).toBe(CatalogEntityType.Skill);
@@ -73,7 +55,7 @@ describe('AddSkillsModal', () => {
   });
 
   it('labels the popup for skills', () => {
-    act(() => root.render(<AddSkillsModal value={[]} onConfirm={vi.fn()} onClose={vi.fn()} />));
+    dom.render(<AddSkillsModal value={[]} onConfirm={vi.fn()} onClose={vi.fn()} />);
 
     const { labels } = captured.props as AddOnCatalogModalProps;
     expect(labels).toMatchObject({

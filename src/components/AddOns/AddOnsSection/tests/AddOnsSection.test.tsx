@@ -1,6 +1,8 @@
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { getButton } from '@/test-utils/dom';
+import { setupTestRoot } from '@/test-utils/test-root';
 
 import { DialEntityType } from '@/types/dial-entities';
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
@@ -24,9 +26,7 @@ const RESEARCH: DialModel = {
   type: DialEntityType.Application,
 };
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({ t: (key: string) => key, language: 'en' }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/hooks/use-search-params', () => ({
   useSearchParams: () => ({ get: (key: string) => searchParams.get(key) ?? null }),
 }));
@@ -81,20 +81,10 @@ vi.mock('@/components/Agents/AddAgentsModal/AddAgentsModal', () => ({
   AddAgentsModal: () => <div role="dialog" aria-label="Add agent" />,
 }));
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   searchParams.clear();
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
 });
 
 const entry = (id: string) => ({ [AddOnSchemaKeys.id]: id });
@@ -105,7 +95,7 @@ const renderSection = async ({
   onAgentsChange = vi.fn(),
 }: { ids?: string[]; isReadonly?: boolean; onAgentsChange?: (ids: string[]) => void } = {}) => {
   await act(async () => {
-    root.render(
+    dom.root.render(
       <AddOnsSection
         agentSkills={[]}
         onAgentSkillsChange={vi.fn()}
@@ -130,14 +120,14 @@ const renderSection = async ({
 };
 
 const getByAriaLabel = (label: string) =>
-  [...container.querySelectorAll('[aria-label]')].find(
+  [...dom.container.querySelectorAll('[aria-label]')].find(
     (element) => element.getAttribute('aria-label') === label,
   );
 
-const getHeadings = () => [...container.querySelectorAll('h3')].map((h) => h.textContent);
+const getHeadings = () => [...dom.container.querySelectorAll('h3')].map((h) => h.textContent);
 
 const getAddButtons = () =>
-  [...container.querySelectorAll('button')].filter((button) => button.textContent === 'Add');
+  [...dom.container.querySelectorAll('button')].filter((button) => button.textContent === 'Add');
 
 const clickAndWait = async (element?: Element) => {
   await act(async () => {
@@ -150,13 +140,13 @@ describe('AddOnsSection', () => {
   it('renders Skills, Toolsets, Agents, Knowledge base and Conversation starters in that order', async () => {
     await renderSection();
 
-    expect(container.querySelector('section[aria-label="Add-ons"]')).toBeTruthy();
+    expect(dom.container.querySelector('section[aria-label="Add-ons"]')).toBeTruthy();
     expect(getHeadings()).toEqual([QuickAppEditorI18nKeys.Toolsets, QuickAppEditorI18nKeys.Agents]);
 
     const order = [
       getByAriaLabel('Skills row'),
-      container.querySelector('h3'),
-      container.querySelectorAll('h3')[1],
+      dom.container.querySelector('h3'),
+      dom.container.querySelectorAll('h3')[1],
       getByAriaLabel('Conversation starters row'),
     ];
     for (let i = 1; i < order.length; i += 1) {
@@ -164,14 +154,14 @@ describe('AddOnsSection', () => {
         order[i - 1]!.compareDocumentPosition(order[i]!) & Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy();
     }
-    expect(container.querySelector('[aria-expanded]')).toBeNull();
+    expect(dom.container.querySelector('[aria-expanded]')).toBeNull();
   });
 
   it('shows each empty row its own description', async () => {
     await renderSection();
 
-    expect(container.textContent).toContain(QuickAppEditorI18nKeys.ToolsetsDescription);
-    expect(container.textContent).toContain(QuickAppEditorI18nKeys.AgentsDescription);
+    expect(dom.container.textContent).toContain(QuickAppEditorI18nKeys.ToolsetsDescription);
+    expect(dom.container.textContent).toContain(QuickAppEditorI18nKeys.AgentsDescription);
   });
 
   it('splits the entries between the Toolsets and Agents rows', async () => {
@@ -183,17 +173,15 @@ describe('AddOnsSection', () => {
     expect(getByAriaLabel('Agents list')?.textContent).toBe(`${RESEARCH.id}gpt-x`);
     // A populated row hides its description; the other one keeps it.
     await renderSection({ ids: [FIGMA.id] });
-    expect(container.textContent).not.toContain(QuickAppEditorI18nKeys.ToolsetsDescription);
-    expect(container.textContent).toContain(QuickAppEditorI18nKeys.AgentsDescription);
+    expect(dom.container.textContent).not.toContain(QuickAppEditorI18nKeys.ToolsetsDescription);
+    expect(dom.container.textContent).toContain(QuickAppEditorI18nKeys.AgentsDescription);
   });
 
   it('hands back the full id list when a toolset is removed', async () => {
     const onAgentsChange = vi.fn();
     await renderSection({ ids: [RESEARCH.id, FIGMA.id], onAgentsChange });
 
-    await clickAndWait(
-      [...container.querySelectorAll('button')].find((b) => b.textContent === `Remove ${FIGMA.id}`),
-    );
+    await clickAndWait(getButton(`Remove ${FIGMA.id}`, dom.container));
 
     expect(onAgentsChange).toHaveBeenCalledWith([RESEARCH.id]);
   });
@@ -229,13 +217,13 @@ describe('AddOnsSection', () => {
       expect(button.disabled || button.getAttribute('aria-disabled') === 'true').toBe(true);
       await clickAndWait(button);
     }
-    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(dom.container.querySelector('[role="dialog"]')).toBeNull();
   });
 
   it('does not render a JSON control for toolsets or agents', async () => {
     await renderSection({ ids: [FIGMA.id, RESEARCH.id] });
 
-    expect(container.textContent).not.toContain('JSON');
-    expect(container.querySelector('[role="switch"]')).toBeNull();
+    expect(dom.container.textContent).not.toContain('JSON');
+    expect(dom.container.querySelector('[role="switch"]')).toBeNull();
   });
 });
