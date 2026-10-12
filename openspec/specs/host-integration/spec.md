@@ -134,9 +134,15 @@ the entry URL, and they SHALL be addressed to the resolved host (see "Host origi
   `{ height }` so the host can size its embedding container.
 - **DirtyState** — sent when the unsaved-changes state of the current editor session
   changes, carrying `{ isDirty }`.
+- **ValidityState** — sent when whether the form values pass validation (`QuickApp2Schema`,
+  deferred errors included) changes, carrying `{ isValid }`, so the host can disable its Save
+  button while `isValid` is `false`. A form that starts invalid (e.g. a new application with
+  blank Instructions) posts `{ isValid: false }` once it mounts; a valid form posts nothing
+  until it first becomes invalid.
 - **SaveSuccess** — sent when a manual save completes successfully, carrying the updated
   application data and `hasChanges` (its meaning is defined in `application_editing`).
-- **SaveError** — sent when a save request fails, carrying `{ error }`, the error's message.
+- **SaveError** — sent when a save request fails, or a manual save is blocked by form
+  validation, carrying `{ error }`, the error's message.
 - **AutoSaveComplete** — sent when an automatic (non-user-triggered) save completes.
 - **RequestApplicationCredentials** — sent to ask the host to supply credentials for a
   given application id (see "Application credentials request").
@@ -165,8 +171,9 @@ the entry URL, and they SHALL be addressed to the resolved host (see "Host origi
 #### Scenario: A save trigger is skipped
 
 - **WHEN** a save trigger is skipped before any request is sent (the cases listed in
-  `application_editing`, such as an auto-save before the first save or an invalid form)
-- **THEN** QuickApps SHALL post no save-outcome message for it
+  `application_editing`, such as an auto-save before the first save or an invalid auto-save)
+- **THEN** QuickApps SHALL post no save-outcome message for it, except SaveError for a manual
+  save that fails validation
 
 #### Scenario: Plain messages use the name from the entry URL
 
