@@ -1,11 +1,11 @@
 import { act, type FC } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   useToolsetCredentials,
   type UseToolsetCredentialsResult,
 } from '@/hooks/use-toolset-credentials';
+import { setupTestRoot } from '@/test-utils/test-root';
 import { DialEntityType } from '@/types/dial-entities';
 import { type DialToolset, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
 
@@ -17,9 +17,7 @@ const { postToHost, toolsetsApi, dataContext } = vi.hoisted(() => ({
   dataContext: { applyToolsetAuthResult: vi.fn(), refreshToolsets: vi.fn() },
 }));
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({ t: (key: string) => key, language: 'en' }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/AppContext', () => ({
   useAppContext: () => ({ settings: { allowedOrigins: [HOST] } }),
 }));
@@ -53,8 +51,7 @@ const PRIVATE_API_KEY: DialToolset = {
 };
 
 let latest: UseToolsetCredentialsResult;
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 
 const Probe: FC<{ toolset?: DialToolset }> = ({ toolset }) => {
   latest = useToolsetCredentials(toolset);
@@ -62,7 +59,7 @@ const Probe: FC<{ toolset?: DialToolset }> = ({ toolset }) => {
 };
 
 const render = async (toolset?: DialToolset) => {
-  await act(async () => root.render(<Probe toolset={toolset} />));
+  await act(async () => dom.root.render(<Probe toolset={toolset} />));
 };
 
 const postFromHost = async (data: unknown, origin = HOST) => {
@@ -79,16 +76,7 @@ const track = (promise: Promise<void>) => {
 };
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   vi.clearAllMocks();
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
 });
 
 describe('useToolsetCredentials — OAuth through the host', () => {

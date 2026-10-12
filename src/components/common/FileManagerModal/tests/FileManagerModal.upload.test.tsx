@@ -1,9 +1,10 @@
 import { NotificationVariant } from '@epam/ai-dial-ui-kit';
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { DialFileManagerI18nKeys } from '@/constants/i18n';
+import { click } from '@/test-utils/dom';
+import { setupTestRoot } from '@/test-utils/test-root';
 import type { UseDialFileManagerResult } from '@/hooks/use-dial-file-manager';
 import { useDialFileSources } from '@/hooks/use-dial-file-sources';
 import { FileUploadStatus, type FileUploadBatchState } from '@/types/file-manager';
@@ -69,25 +70,15 @@ const batch = (...statuses: FileUploadStatus[]): FileUploadBatchState => ({
   files: statuses.map((status, i) => ({ id: `id-${i}`, name: `file-${i}.pdf`, status })),
 });
 
-let root: Root;
-let container: HTMLDivElement;
-
-beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
+const dom = setupTestRoot();
 
 afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
   vi.clearAllMocks();
 });
 
 const renderWith = (state: FileUploadBatchState | null) => {
   vi.mocked(useDialFileSources).mockReturnValue(sources(state));
-  act(() => root.render(<FileManagerModal isOpen onClose={vi.fn()} />));
+  dom.render(<FileManagerModal isOpen onClose={vi.fn()} />);
 };
 
 const dialog = () => document.body.querySelector('[role="dialog"]') as HTMLElement;
@@ -133,7 +124,7 @@ describe('FileManagerModal upload queue', () => {
   it('cancels a single file from its row', () => {
     renderWith(batch(FileUploadStatus.Uploading));
 
-    act(() => button(`${DialFileManagerI18nKeys.QueueCancelItem}:file-0.pdf`)?.click());
+    click(button(`${DialFileManagerI18nKeys.QueueCancelItem}:file-0.pdf`));
 
     expect(cancelUploadItem).toHaveBeenCalledWith('id-0');
     expect(cancelUpload).not.toHaveBeenCalled();
@@ -142,7 +133,7 @@ describe('FileManagerModal upload queue', () => {
   it('cancels and clears the batch when a finished queue is closed', () => {
     renderWith(batch(FileUploadStatus.Completed, FileUploadStatus.Cancelled));
 
-    act(() => button(DialFileManagerI18nKeys.QueueClose)?.click());
+    click(button(DialFileManagerI18nKeys.QueueClose));
 
     expect(cancelUpload).toHaveBeenCalledTimes(1);
     expect(clearUploadBatch).toHaveBeenCalledTimes(1);
@@ -151,7 +142,7 @@ describe('FileManagerModal upload queue', () => {
   it('asks before closing while a file is still uploading', () => {
     renderWith(batch(FileUploadStatus.Uploading));
 
-    act(() => button(DialFileManagerI18nKeys.QueueClose)?.click());
+    click(button(DialFileManagerI18nKeys.QueueClose));
 
     expect(clearUploadBatch).not.toHaveBeenCalled();
     expect(document.body.textContent).toContain(DialFileManagerI18nKeys.QueueCloseConfirmHeader);

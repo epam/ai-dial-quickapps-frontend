@@ -1,9 +1,9 @@
 import { act, type FC } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useAuthContext } from '@/context/AuthContext';
 import { useAuth } from '@/hooks/use-auth';
+import { setupTestRoot } from '@/test-utils/test-root';
 import { AuthStatus } from '@/types/auth';
 
 vi.mock('@/context/AuthContext', () => ({ useAuthContext: vi.fn() }));
@@ -21,34 +21,29 @@ const Probe: FC = () => {
   return null;
 };
 
-let root: Root;
-let container: HTMLDivElement;
 let popup: { opener: unknown; close: ReturnType<typeof vi.fn> };
 
 const setStatus = (status: AuthStatus) => {
   mockedUseAuthContext.mockReturnValue({ status, user: null, refresh, logout: vi.fn() });
 };
 
-const render = () => act(() => root.render(<Probe />));
-
 beforeEach(() => {
   vi.useFakeTimers();
   vi.clearAllMocks();
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   popup = { opener: window, close: vi.fn() };
   vi.spyOn(window, 'open').mockReturnValue(popup as unknown as Window);
   setStatus(AuthStatus.Unauthenticated);
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
 });
 
 afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
   vi.restoreAllMocks();
   vi.useRealTimers();
 });
+
+// After the hooks above, so the root unmounts before the timers and spies are restored.
+const dom = setupTestRoot();
+
+const render = () => dom.render(<Probe />);
 
 describe('useAuth', () => {
   it('opens the provider login in a popup that returns to /signin/complete', () => {

@@ -1,40 +1,36 @@
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import i18n from '@/i18n';
+import { setupTestRoot } from '@/test-utils/test-root';
 
 import { I18nProvider } from '../I18nProvider';
 
-let root: Root;
-let container: HTMLDivElement;
 let originalLanguage: string;
 let originalDirection: string;
 let originalDocumentLanguage: string;
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   originalLanguage = i18n.language;
   originalDirection = document.documentElement.dir;
   originalDocumentLanguage = document.documentElement.lang;
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
 });
 
 afterEach(async () => {
-  act(() => root.unmount());
   await i18n.changeLanguage(originalLanguage);
   document.documentElement.dir = originalDirection;
   document.documentElement.lang = originalDocumentLanguage;
-  container.remove();
 });
+
+// Set up after the hooks above: after-hooks run in reverse order, so the root
+// unmounts before the original language is restored.
+const dom = setupTestRoot();
 
 describe('I18nProvider', () => {
   it('sets the document language and direction for the active language', async () => {
     await act(async () => {
       await i18n.changeLanguage('en');
-      root.render(
+      dom.root.render(
         <I18nProvider>
           <div>Content</div>
         </I18nProvider>,
@@ -47,7 +43,7 @@ describe('I18nProvider', () => {
 
   it('updates document direction when the language changes to RTL', async () => {
     await act(async () => {
-      root.render(
+      dom.root.render(
         <I18nProvider>
           <div>Content</div>
         </I18nProvider>,
@@ -65,7 +61,7 @@ describe('I18nProvider', () => {
   it('restores LTR direction when changing from RTL to an LTR language', async () => {
     await act(async () => {
       await i18n.changeLanguage('ar');
-      root.render(
+      dom.root.render(
         <I18nProvider>
           <div>Content</div>
         </I18nProvider>,
@@ -82,14 +78,14 @@ describe('I18nProvider', () => {
 
   it('removes the language listener when unmounted', async () => {
     await act(async () => {
-      root.render(
+      dom.root.render(
         <I18nProvider>
           <div>Content</div>
         </I18nProvider>,
       );
     });
 
-    act(() => root.render(null));
+    dom.render(null);
     document.documentElement.dir = 'ltr';
 
     await act(async () => {

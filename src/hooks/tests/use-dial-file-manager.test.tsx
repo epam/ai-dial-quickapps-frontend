@@ -1,6 +1,5 @@
 import { act, type FC } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { NotificationVariant } from '@epam/ai-dial-ui-kit';
 import {
@@ -18,6 +17,7 @@ import {
   type UseDialFileManagerOptions,
   type UseDialFileManagerResult,
 } from '@/hooks/use-dial-file-manager';
+import { setupTestRoot } from '@/test-utils/test-root';
 import {
   createFolder,
   deleteFiles,
@@ -27,9 +27,7 @@ import {
 } from '@/utils/dial-files-api';
 import { FilesApiNodeType, type ListFilesItem } from '@/types/dial-files';
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({ t: (key: string) => key, language: 'en' }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/utils/dial-files-api', () => ({
   createFolder: vi.fn(),
   deleteFiles: vi.fn(),
@@ -63,27 +61,17 @@ const Probe: FC<UseDialFileManagerOptions> = (props) => {
   return null;
 };
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 
 const render = async (props: Partial<UseDialFileManagerOptions> = {}) => {
-  await act(async () => root.render(<Probe bucket="mine" {...props} />));
+  await act(async () => dom.root.render(<Probe bucket="mine" {...props} />));
 };
 
 const rootFolder = (): DialFile => latest.items[0];
 
 beforeEach(() => {
   vi.resetAllMocks();
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   vi.mocked(listFiles).mockResolvedValue({ items: ROOT_ITEMS, permissions: ['READ', 'WRITE'] });
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
 });
 
 describe('useDialFileManager — listing', () => {

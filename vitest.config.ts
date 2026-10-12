@@ -12,12 +12,14 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    setupFiles: ['src/test-utils/setup.ts'],
     coverage: {
       provider: 'v8',
       include: ['src/**/*.{ts,tsx}'],
       exclude: [
         'src/**/*.d.ts',
         'src/**/tests/**',
+        'src/test-utils/**',
         'src/vite-env.d.ts',
         // Bootstrap only (providers/router wiring), not worth unit-testing.
         'src/main.tsx',

@@ -1,34 +1,41 @@
-import { act, type ReactNode } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import type { CatalogItem } from '@epam/ai-dial-catalog';
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 
+import { click, getButton } from '@/test-utils/dom';
+import { setupTestRoot } from '@/test-utils/test-root';
+import type { CatalogPickerModalProps } from '@/components/common/CatalogPickerModal/CatalogPickerModal';
+
 import { AddOnCatalogModal, type AddOnCatalogModalLabels } from '../AddOnCatalogModal';
 
-let status: 'idle' | 'loading' | 'ready' | 'error' = 'ready';
-const refreshAll = vi.fn();
-
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({
-    language: 'en',
-    t: (key: string, options?: Record<string, string>) =>
-      key.replace(/\{\{(\w+)\}\}/g, (_, name: string) => options?.[name] ?? ''),
-  }),
-}));
-vi.mock('@/context/DataContext', () => ({
-  useDataContext: () => ({
-    status,
-    error: status === 'error' ? 'Network down' : null,
-    refreshAll,
-  }),
+const { shell } = vi.hoisted(() => ({
+  shell: { props: undefined as unknown, visibleIds: undefined as string[] | undefined },
 }));
 
 /*
- * ag-grid needs layout jsdom doesn't have, and the From filter opens a
- * floating dropdown; both are replaced by plain controls with the same
- * contract. The list mirrors the catalog's multi-select semantics: a checked
- * id is appended, select-all covers the listed items and keeps hidden ones.
+ * The shell (search, filter, sort, states, buttons) is covered by its own
+ * test; here it renders the list for `shell.visibleIds` — the rows a search
+ * or filter would leave — and an Add button.
+ */
+vi.mock('@/components/common/CatalogPickerModal/CatalogPickerModal', () => ({
+  CatalogPickerModal: (props: CatalogPickerModalProps) => {
+    shell.props = props;
+    const rows = shell.visibleIds
+      ? props.items.filter((item) => shell.visibleIds?.includes(item.id))
+      : props.items;
+    return (
+      <div>
+        {props.renderList(rows, '')}
+        <button onClick={props.onConfirm}>Add</button>
+      </div>
+    );
+  },
+}));
+
+/*
+ * ag-grid needs layout jsdom doesn't have; the list mirrors the catalog's
+ * multi-select semantics: a checked id is appended, select-all covers the
+ * listed items and keeps hidden ones.
  */
 vi.mock('@epam/ai-dial-catalog', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@epam/ai-dial-catalog')>();
@@ -72,94 +79,23 @@ vi.mock('@epam/ai-dial-catalog', async (importOriginal) => {
             onChange={toggleAll}
           />
           {items.map((item) => (
-            <div key={item.id} role="row" {...{ 'row-id': item.id }}>
+            <div key={item.id} role="row">
               <input
                 type="checkbox"
                 aria-label={selectRowAriaLabel?.(item)}
                 checked={selectedItemIds.has(item.id)}
                 onChange={() => toggle(item.id)}
               />
-              {`${item.name} | ${item.folder.join(' / ')}`}
+              {item.name}
             </div>
           ))}
         </div>
       );
     },
-    Filter: ({
-      isMyAppsActive,
-      onMyAppsChange,
-      defaultLabel,
-      myAppsLabel,
-    }: {
-      isMyAppsActive?: boolean;
-      onMyAppsChange?: (isActive: boolean) => void;
-      defaultLabel?: string;
-      myAppsLabel?: string;
-    }) => (
-      <fieldset aria-label={defaultLabel}>
-        <label>
-          <input
-            type="checkbox"
-            checked={!!isMyAppsActive}
-            onChange={() => onMyAppsChange?.(!isMyAppsActive)}
-          />
-          {myAppsLabel}
-        </label>
-      </fieldset>
-    ),
   };
 });
 
-vi.mock('@epam/ai-dial-ui-kit', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@epam/ai-dial-ui-kit')>();
-  return {
-    ...actual,
-    Popup: ({
-      open,
-      header,
-      children,
-      mainButtons,
-      onClose,
-      closeAriaLabel,
-    }: {
-      open: boolean;
-      header: string;
-      children: ReactNode;
-      mainButtons: { label: string; disabled?: boolean; onClick: () => void }[];
-      onClose: () => void;
-      closeAriaLabel: string;
-    }) =>
-      open ? (
-        <div role="dialog" aria-label={header}>
-          <button aria-label={closeAriaLabel} onClick={() => onClose()} />
-          {children}
-          {mainButtons.map((button) => (
-            <button key={button.label} disabled={button.disabled} onClick={button.onClick}>
-              {button.label}
-            </button>
-          ))}
-        </div>
-      ) : null,
-    ButtonDropdown: ({
-      label,
-      items,
-    }: {
-      label: string;
-      items: { key: string; label: string; checked?: boolean; onClick: () => void }[];
-    }) => (
-      <div>
-        <span>{label}</span>
-        {items.map((item) => (
-          <button key={item.key} role="menuitemradio" onClick={item.onClick}>
-            {item.label}
-          </button>
-        ))}
-      </div>
-    ),
-  };
-});
-
-const makeItem = (id: string, name: string, overrides: Partial<CatalogItem> = {}): CatalogItem => ({
+const makeItem = (id: string, name: string): CatalogItem => ({
   id,
   type: CatalogEntityType.Toolset,
   name,
@@ -168,16 +104,11 @@ const makeItem = (id: string, name: string, overrides: Partial<CatalogItem> = {}
   topics: [],
   folder: ['Organization'],
   lastUsed: '',
-  ...overrides,
 });
 
-const figma = makeItem('toolsets/public/figma', 'Figma', { updatedAt: 3 });
-const jira = makeItem('toolsets/public/jira', 'Jira', { updatedAt: 2 });
-const mine = makeItem('toolsets/me/notes', 'My notes', {
-  updatedAt: 1,
-  isMyApp: true,
-  folder: ['Personal'],
-});
+const figma = makeItem('toolsets/public/figma', 'Figma');
+const jira = makeItem('toolsets/public/jira', 'Jira');
+const mine = makeItem('toolsets/me/notes', 'My notes');
 
 const LABELS: AddOnCatalogModalLabels = {
   title: 'Add toolset',
@@ -190,84 +121,46 @@ const LABELS: AddOnCatalogModalLabels = {
   selectRow: (name) => `Select ${name}`,
 };
 
-let root: Root;
-let container: HTMLDivElement;
-let items: CatalogItem[];
+const dom = setupTestRoot();
 let onConfirm: Mock<(ids: string[]) => void>;
 let onClose: Mock<() => void>;
 
 const render = (attachedIds: string[] = [], initialCheckedIds = attachedIds) =>
-  act(() =>
-    root.render(
-      <AddOnCatalogModal
-        type={CatalogEntityType.Toolset}
-        items={items}
-        attachedIds={attachedIds}
-        initialCheckedIds={initialCheckedIds}
-        labels={LABELS}
-        onConfirm={onConfirm}
-        onClose={onClose}
-      />,
-    ),
+  dom.render(
+    <AddOnCatalogModal
+      type={CatalogEntityType.Toolset}
+      items={[figma, jira, mine]}
+      attachedIds={attachedIds}
+      initialCheckedIds={initialCheckedIds}
+      labels={LABELS}
+      onConfirm={onConfirm}
+      onClose={onClose}
+    />,
   );
 
 const getCheckbox = (name: string) =>
-  container.querySelector<HTMLInputElement>(`input[aria-label="${name}"]`);
+  dom.container.querySelector<HTMLInputElement>(`input[aria-label="${name}"]`);
 
-const click = (element?: Element | null) => {
-  expect(element).toBeTruthy();
-  act(() => (element as HTMLElement).click());
-};
-
-const getButton = (text: string) =>
-  [...container.querySelectorAll('button')].find((button) => button.textContent === text);
-
-const getRows = () =>
-  [...container.querySelectorAll<HTMLElement>('[role="row"]')].map((row) => row.textContent);
-
-const typeSearch = (text: string) => {
-  const input = container.querySelector<HTMLInputElement>(
-    'input[aria-label="Search toolsets..."]',
-  );
-  if (!input) throw new Error('search input not found');
-  const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
-  act(() => {
-    setValue?.call(input, text);
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-  });
-};
+const getAddButton = () => getButton('Add');
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
-  items = [figma, jira, mine];
-  status = 'ready';
-  refreshAll.mockReset();
+  shell.visibleIds = undefined;
   onConfirm = vi.fn();
   onClose = vi.fn();
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
 });
 
 describe('AddOnCatalogModal', () => {
-  it('opens with the title, catalog heading, count, search, From, sort and list', () => {
+  it('hands the items, labels and close handler to the picker shell', () => {
     render();
 
-    const dialog = container.querySelector('[role="dialog"]');
-    expect(dialog?.getAttribute('aria-label')).toBe('Add toolset');
-    expect(dialog?.textContent).toContain('Toolsets catalog3');
-    expect(container.querySelector('input[aria-label="Search toolsets..."]')).not.toBeNull();
-    expect(container.querySelector('fieldset[aria-label="From"]')).not.toBeNull();
-    expect(dialog?.textContent).toContain('Recently updated');
-    expect(container.querySelector('[role="grid"]')?.getAttribute('aria-label')).toBe(
+    const props = shell.props as CatalogPickerModalProps;
+    expect(props.items).toEqual([figma, jira, mine]);
+    expect(props.labels).toBe(LABELS);
+    expect(props.onClose).toBe(onClose);
+    expect(props.isConfirmDisabled).toBeFalsy();
+    expect(dom.container.querySelector('[role="grid"]')?.getAttribute('aria-label')).toBe(
       'Toolsets catalog',
     );
-    expect(getRows()).toEqual(['Figma | Organization', 'Jira | Organization', 'My notes | Personal']);
   });
 
   it('pre-checks the given ids and shows a mixed select-all', () => {
@@ -284,78 +177,26 @@ describe('AddOnCatalogModal', () => {
 
     click(getCheckbox('Select Figma'));
     click(getCheckbox('Select My notes'));
-    click(getButton('Add'));
+    click(getAddButton());
 
     expect(onConfirm).toHaveBeenCalledWith(['agent-1', jira.id, mine.id]);
   });
 
-  it('selects only the filtered rows with select-all and keeps hidden checked ones', () => {
+  it('selects only the listed rows with select-all and keeps hidden checked ones', () => {
+    shell.visibleIds = [jira.id];
     render([mine.id]);
 
-    typeSearch('ji');
-    expect(getRows()).toEqual(['Jira | Organization']);
-
     click(getCheckbox('Select all toolsets'));
-    typeSearch('');
-    click(getButton('Add'));
+    click(getAddButton());
 
     expect(onConfirm).toHaveBeenCalledWith([mine.id, jira.id]);
   });
 
-  it('narrows the rows and the count to the user’s own entries with "My"', () => {
-    render();
-
-    click(container.querySelector('fieldset[aria-label="From"] input'));
-
-    expect(getRows()).toEqual(['My notes | Personal']);
-    expect(container.querySelector('[role="dialog"]')?.textContent).toContain('Toolsets catalog1');
-  });
-
-  it('discards changes on Cancel and on the close control', () => {
+  it('commits nothing until Add', () => {
     render([figma.id]);
 
     click(getCheckbox('Select Figma'));
-    click(getButton('Cancel'));
-    click(container.querySelector('button[aria-label="Close dialog"]'));
 
-    expect(onClose).toHaveBeenCalledTimes(2);
     expect(onConfirm).not.toHaveBeenCalled();
-  });
-
-  it('shows no results for a search without matches and keeps Add enabled', () => {
-    render();
-
-    typeSearch('zzz');
-
-    expect(container.textContent).toContain('No results found');
-    expect(getButton('Add')?.disabled).toBe(false);
-  });
-
-  it('shows the empty catalog state', () => {
-    items = [];
-    render();
-
-    expect(container.textContent).toContain('No toolsets available');
-  });
-
-  it('shows a spinner and disables Add while data loads', () => {
-    status = 'loading';
-    render();
-
-    expect(container.querySelector('[aria-label="Loading toolsets…"]')).not.toBeNull();
-    expect(getButton('Add')?.disabled).toBe(true);
-  });
-
-  it('shows the load error with a Retry that reloads', () => {
-    status = 'error';
-    render();
-
-    expect(container.textContent).toContain('Failed to load toolsets');
-    expect(container.textContent).toContain('Network down');
-    expect(getButton('Add')?.disabled).toBe(true);
-
-    click(getButton('Retry'));
-
-    expect(refreshAll).toHaveBeenCalledTimes(1);
   });
 });

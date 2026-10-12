@@ -1,6 +1,5 @@
 import { act, type FC } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { CatalogContentNodeType, type CatalogItem } from '@epam/ai-dial-catalog';
 
@@ -8,6 +7,7 @@ import {
   useContentFileSelection,
   type UseContentFileSelectionResult,
 } from '@/hooks/use-content-file-selection';
+import { setupTestRoot } from '@/test-utils/test-root';
 
 const skillItem = (id = 'skills/public/research'): CatalogItem =>
   ({
@@ -38,24 +38,11 @@ const Probe: FC<{ item?: CatalogItem }> = ({ item }) => {
   return null;
 };
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 
 const render = async (item?: CatalogItem) => {
-  await act(async () => root.render(<Probe item={item} />));
+  await act(async () => dom.root.render(<Probe item={item} />));
 };
-
-beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
-});
 
 describe('useContentFileSelection', () => {
   it('opens on the base file with every folder expanded and nothing picked', async () => {

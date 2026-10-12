@@ -1,6 +1,7 @@
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { setupTestRoot } from '@/test-utils/test-root';
 
 import { DialEntityType } from '@/types/dial-entities';
 import type { DialModel } from '@/types/dial-entities';
@@ -78,8 +79,7 @@ const MODEL_DETAILS = {
 
 const LIMITS = { dayTokenStats: { total: 1000, used: 250 } };
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 const onRemove = vi.fn();
 const onConfigure = vi.fn();
 const onClose = vi.fn();
@@ -96,7 +96,7 @@ interface RenderProps {
 const render = async (props: RenderProps = {}) => {
   const agent = 'agent' in props ? props.agent : MCP_APP;
   await act(async () => {
-    root.render(
+    dom.root.render(
       <AgentDetailsPopup
         agentId={props.agentId ?? agent?.id ?? 'applications/public/gone'}
         agent={agent}
@@ -140,7 +140,6 @@ const click = async (element?: HTMLElement) => {
 };
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   searchParams.clear();
   // The MCP app also serves chat completion, so its transport is a real choice.
   dataContext.modelsMap = { [MCP_APP.id]: MCP_APP };
@@ -156,14 +155,9 @@ beforeEach(() => {
   onRemove.mockReset();
   onConfigure.mockReset();
   onClose.mockReset();
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
 });
 
 afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
   document.documentElement.dir = '';
 });
 

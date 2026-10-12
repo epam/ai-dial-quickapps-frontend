@@ -1,8 +1,9 @@
 import { act, useState } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { CatalogItemCredentials } from '@epam/ai-dial-catalog';
+import { getButton } from '@/test-utils/dom';
+import { setupTestRoot } from '@/test-utils/test-root';
 import { type DialToolset, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
 
 import ToolsetsList from '../ToolsetsList';
@@ -21,13 +22,7 @@ const JIRA = makeToolset('toolsets/public/jira', 'Jira', {
   authSettings: { authenticationType: ToolsetAuthType.None },
 });
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({
-    language: 'en',
-    t: (key: string, options?: Record<string, string>) =>
-      key.replace(/\{\{(\w+)\}\}/g, (_, name: string) => options?.[name] ?? ''),
-  }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/hooks/use-add-on-entity-map', () => ({
   useAddOnEntityMap: () => ({ [FIGMA.id]: FIGMA, [JIRA.id]: JIRA }),
 }));
@@ -70,8 +65,7 @@ vi.mock('@/components/Toolsets/ToolsetDetailsPopup/ToolsetDetailsPopup', () => (
   ),
 }));
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 
 interface HarnessProps {
   initial: string[];
@@ -95,7 +89,7 @@ const Harness = ({ initial, isReadonly = false }: HarnessProps) => {
 
 const render = async (initial: string[], isReadonly?: boolean) => {
   await act(async () => {
-    root.render(<Harness initial={initial} isReadonly={isReadonly} />);
+    dom.root.render(<Harness initial={initial} isReadonly={isReadonly} />);
   });
   // Let the lazily loaded badge module resolve and render.
   await act(async () => {
@@ -104,23 +98,9 @@ const render = async (initial: string[], isReadonly?: boolean) => {
   });
 };
 
-const getButton = (name: string) =>
-  [...container.querySelectorAll('button')].find(
-    (button) => button.getAttribute('aria-label') === name,
-  );
-
-const getValue = () => container.querySelector('[data-testid="value"]')?.textContent;
-
-beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
+const getValue = () => dom.container.querySelector('[data-testid="value"]')?.textContent;
 
 afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
   document.documentElement.dir = '';
 });
 
@@ -128,7 +108,7 @@ describe('ToolsetsList', () => {
   it('lists the toolsets in order with their names and versions', async () => {
     await render([FIGMA.id, JIRA.id]);
 
-    const items = [...container.querySelectorAll('li')].map((li) => li.textContent);
+    const items = [...dom.container.querySelectorAll('li')].map((li) => li.textContent);
     expect(items[0]).toContain('Figma');
     expect(items[0]).toContain('1.0.0');
     expect(items[1]).toContain('Jira');
@@ -138,18 +118,18 @@ describe('ToolsetsList', () => {
   it('badges a signed-out toolset and describes it as logged out', async () => {
     await render([FIGMA.id, JIRA.id]);
 
-    const badges = container.querySelectorAll('[data-testid="badge"]');
+    const badges = dom.container.querySelectorAll('[data-testid="badge"]');
     expect(badges).toHaveLength(1);
     expect(badges[0].closest('li')?.textContent).toContain('Figma');
     expect(badges[0].textContent).toBe('Authorize to use this toolset.');
-    expect(container.textContent).toContain('Logged out toolset.');
+    expect(dom.container.textContent).toContain('Logged out toolset.');
   });
 
   it('names a toolset missing from the catalog after its id and flags it', async () => {
     await render(['toolsets/public/old-tool']);
 
     expect(getButton('old-tool details')).toBeTruthy();
-    expect(container.textContent).toContain('needs to be removed');
+    expect(dom.container.textContent).toContain('needs to be removed');
   });
 
   it('removes only that toolset and moves focus to the remaining one', async () => {
@@ -182,7 +162,7 @@ describe('ToolsetsList', () => {
   it('renders nothing without attached toolsets', async () => {
     await render(['applications/public/agent']);
 
-    expect(container.querySelector('ul')).toBeNull();
+    expect(dom.container.querySelector('ul')).toBeNull();
   });
 });
 
@@ -194,13 +174,17 @@ describe('ToolsetsList details popup', () => {
       getButton('Jira details')?.click();
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
-    expect(container.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe(JIRA.id);
+    expect(dom.container.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe(
+      JIRA.id,
+    );
 
     await act(async () => {
-      [...container.querySelectorAll('button')].find((b) => b.textContent === 'Delete')?.click();
+      [...dom.container.querySelectorAll('button')]
+        .find((b) => b.textContent === 'Delete')
+        ?.click();
     });
 
     expect(getValue()).toBe(FIGMA.id);
-    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(dom.container.querySelector('[role="dialog"]')).toBeNull();
   });
 });

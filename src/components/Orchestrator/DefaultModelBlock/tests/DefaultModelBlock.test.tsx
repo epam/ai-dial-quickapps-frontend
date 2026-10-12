@@ -1,7 +1,8 @@
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { click, getButton } from '@/test-utils/dom';
+import { setupTestRoot } from '@/test-utils/test-root';
 import { DialEntityType } from '@/types/dial-entities';
 import type { DialModel } from '@/types/dial-entities';
 
@@ -10,9 +11,7 @@ import { DefaultModelBlock } from '../DefaultModelBlock';
 let models: DialModel[] = [];
 let status: 'idle' | 'loading' | 'ready' | 'error' = 'ready';
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({ language: 'en', t: (key: string) => key }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({
     modelsMap: Object.fromEntries(models.map((model) => [model.id, model])),
@@ -47,16 +46,12 @@ const gemini: DialModel = {
   features: { tools: true },
 };
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 
 const render = (props: Partial<Parameters<typeof DefaultModelBlock>[0]> = {}) =>
-  act(() => root.render(<DefaultModelBlock value={gemini.id} onChange={vi.fn()} {...props} />));
+  dom.render(<DefaultModelBlock value={gemini.id} onChange={vi.fn()} {...props} />);
 
-const getButton = (text: string) =>
-  [...container.querySelectorAll('button')].find((button) => button.textContent === text);
-
-const getPicker = () => container.querySelector('[role="dialog"]');
+const getPicker = () => dom.container.querySelector('[role="dialog"]');
 
 const getChangeButton = () => getButton('Change');
 
@@ -64,25 +59,16 @@ const getChangeButton = () => getButton('Change');
 const openPicker = () => act(async () => getChangeButton()?.click());
 
 const hasElementWithText = (text: string) =>
-  [...container.querySelectorAll('span, div')].some((el) => el.textContent === text);
+  [...dom.container.querySelectorAll('span, div')].some((el) => el.textContent === text);
 
 const getSectionName = () => {
-  const labelledBy = container.querySelector('section')?.getAttribute('aria-labelledby');
+  const labelledBy = dom.container.querySelector('section')?.getAttribute('aria-labelledby');
   return labelledBy ? document.getElementById(labelledBy)?.textContent : undefined;
 };
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   models = [gemini];
   status = 'ready';
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
 });
 
 describe('DefaultModelBlock', () => {
@@ -90,26 +76,26 @@ describe('DefaultModelBlock', () => {
     render();
 
     expect(getSectionName()).toBe('Default model');
-    expect(getChangeButton()?.closest('section')).toBe(container.querySelector('section'));
+    expect(getChangeButton()?.closest('section')).toBe(dom.container.querySelector('section'));
   });
 
   it('shows the type label, the name as a level-4 heading and the version as text', () => {
     render();
 
     expect(hasElementWithText('Model')).toBe(true);
-    expect(container.querySelector('h4')?.textContent).toBe('Google Gemini 3.5 Flash Lite');
-    expect(container.textContent).toContain('1.0.3');
-    expect(container.querySelector('[role="combobox"]')).toBeNull();
-    expect(container.textContent).not.toContain('Featured');
+    expect(dom.container.querySelector('h4')?.textContent).toBe('Google Gemini 3.5 Flash Lite');
+    expect(dom.container.textContent).toContain('1.0.3');
+    expect(dom.container.querySelector('[role="combobox"]')).toBeNull();
+    expect(dom.container.textContent).not.toContain('Featured');
   });
 
   it('shows only the selected version when the model has several', () => {
     models = [gemini, { ...gemini, id: 'models/gemini__2.0.0', version: '2.0.0' }];
     render();
 
-    expect(container.textContent).toContain('1.0.3');
-    expect(container.textContent).not.toContain('2.0.0');
-    expect(container.querySelector('[role="combobox"]')).toBeNull();
+    expect(dom.container.textContent).toContain('1.0.3');
+    expect(dom.container.textContent).not.toContain('2.0.0');
+    expect(dom.container.querySelector('[role="combobox"]')).toBeNull();
   });
 
   it('opens the model picker with the current value when Change is clicked', async () => {
@@ -126,7 +112,7 @@ describe('DefaultModelBlock', () => {
     render({ onChange });
     await openPicker();
 
-    act(() => getButton('Confirm picker')?.click());
+    click(getButton('Confirm picker'));
 
     expect(onChange).toHaveBeenCalledWith('models/gpt__2.0.0');
     expect(getPicker()).toBeNull();
@@ -137,7 +123,7 @@ describe('DefaultModelBlock', () => {
     render({ onChange });
     await openPicker();
 
-    act(() => getButton('Close picker')?.click());
+    click(getButton('Close picker'));
 
     expect(onChange).not.toHaveBeenCalled();
     expect(getPicker()).toBeNull();
@@ -147,7 +133,7 @@ describe('DefaultModelBlock', () => {
     render({ isDisabled: true });
 
     expect(getChangeButton()?.disabled).toBe(true);
-    act(() => getChangeButton()?.click());
+    click(getChangeButton());
     expect(getPicker()).toBeNull();
   });
 
@@ -157,20 +143,20 @@ describe('DefaultModelBlock', () => {
     render();
 
     expect(getChangeButton()?.disabled).toBe(true);
-    expect(container.querySelector('h4')).toBeNull();
+    expect(dom.container.querySelector('h4')).toBeNull();
   });
 
   it('shows the validation error below the card', () => {
     render({ error: 'Selected model does not support tools' });
 
-    expect(container.textContent).toContain('Selected model does not support tools');
+    expect(dom.container.textContent).toContain('Selected model does not support tools');
   });
 
   it('shows an unknown id as the name, without a type label', () => {
     render({ value: 'models/removed-model' });
 
-    expect(container.textContent).toContain('models/removed-model');
-    expect(container.querySelector('h4')).toBeNull();
+    expect(dom.container.textContent).toContain('models/removed-model');
+    expect(dom.container.querySelector('h4')).toBeNull();
     expect(hasElementWithText('Model')).toBe(false);
   });
 
@@ -185,7 +171,7 @@ describe('DefaultModelBlock', () => {
     ];
     render({ value: 'applications/bucket/some-agent__1.0.0' });
 
-    expect(container.querySelector('h4')?.textContent).toBe('Some agent');
+    expect(dom.container.querySelector('h4')?.textContent).toBe('Some agent');
     expect(hasElementWithText('Model')).toBe(true);
   });
 });

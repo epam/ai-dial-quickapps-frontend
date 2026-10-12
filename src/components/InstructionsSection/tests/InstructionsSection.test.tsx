@@ -1,12 +1,11 @@
 import { act, useState } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+import { setupTestRoot } from '@/test-utils/test-root';
 
 import InstructionsSection from '../InstructionsSection';
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({ language: 'en', t: (key: string) => key }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/ThemeContext', () => ({
   useThemeContext: () => ({ currentTheme: { id: 'light' } }),
 }));
@@ -41,46 +40,33 @@ const TestForm = () => {
   return <InstructionsSection value={value} onChange={setValue} />;
 };
 
-let root: Root;
-let container: HTMLDivElement;
-
-beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
-});
+const dom = setupTestRoot();
 
 describe('InstructionsSection', () => {
   it('renders the instructions editor in a standalone section', async () => {
-    await act(async () => root.render(<TestForm />));
+    await act(async () => dom.root.render(<TestForm />));
 
-    expect(container.textContent).toContain('Instructions');
-    const heading = container.querySelector('section[aria-label="Instructions"] > h2');
+    expect(dom.container.textContent).toContain('Instructions');
+    const heading = dom.container.querySelector('section[aria-label="Instructions"] > h2');
     expect(heading?.className).toContain('text-primary');
     expect(heading?.querySelector('.dial-h3-text')?.textContent).toBe('Instructions');
     expect(heading?.textContent).toContain('*');
-    expect(container.textContent).not.toContain('Orchestrator');
-    expect(container.textContent).not.toContain('Model');
-    expect(container.textContent).not.toContain('Temperature');
-    expect(container.textContent).not.toContain('Process files');
-    const instructionsSection = container.querySelector('section[aria-label="Instructions"]');
+    expect(dom.container.textContent).not.toContain('Orchestrator');
+    expect(dom.container.textContent).not.toContain('Model');
+    expect(dom.container.textContent).not.toContain('Temperature');
+    expect(dom.container.textContent).not.toContain('Process files');
+    const instructionsSection = dom.container.querySelector('section[aria-label="Instructions"]');
     expect(instructionsSection?.className).toContain('rounded-[20px]');
     expect(instructionsSection?.className).toContain('bg-layer-raised');
     expect(instructionsSection?.className).toContain('shadow-md');
-    expect(container.querySelector('[aria-label="Instructions editor"]')).toBeTruthy();
-    expect(container.querySelector('[aria-expanded]')).toBeNull();
+    expect(dom.container.querySelector('[aria-label="Instructions editor"]')).toBeTruthy();
+    expect(dom.container.querySelector('[aria-expanded]')).toBeNull();
   });
 
   it('keeps the existing instructions value bound to the editor', async () => {
-    await act(async () => root.render(<TestForm />));
+    await act(async () => dom.root.render(<TestForm />));
 
-    const editor = container.querySelector(
+    const editor = dom.container.querySelector(
       '[aria-label="Instructions editor"]',
     ) as HTMLTextAreaElement;
     expect(editor.value).toBe('Existing instructions');
@@ -94,22 +80,22 @@ describe('InstructionsSection', () => {
   });
 
   it('hides the editor resize drag bar', async () => {
-    await act(async () => root.render(<TestForm />));
+    await act(async () => dom.root.render(<TestForm />));
 
-    const editor = container.querySelector('[aria-label="Instructions editor"]');
+    const editor = dom.container.querySelector('[aria-label="Instructions editor"]');
     expect(editor?.getAttribute('data-show-dragbar')).toBe('false');
   });
 
   it('shows the translated error as an alert only when there is one', async () => {
-    await act(async () => root.render(<InstructionsSection value="" onChange={vi.fn()} />));
-    expect(container.querySelector('[role="alert"]')).toBeNull();
+    await act(async () => dom.root.render(<InstructionsSection value="" onChange={vi.fn()} />));
+    expect(dom.container.querySelector('[role="alert"]')).toBeNull();
 
     await act(async () =>
-      root.render(
+      dom.root.render(
         <InstructionsSection value="" error="Instructions are required" onChange={vi.fn()} />,
       ),
     );
-    expect(container.querySelector('[role="alert"]')?.textContent).toBe(
+    expect(dom.container.querySelector('[role="alert"]')?.textContent).toBe(
       'Instructions are required',
     );
   });

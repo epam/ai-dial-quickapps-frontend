@@ -1,6 +1,8 @@
-import { act, useState } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useState } from 'react';
+import { describe, expect, it, vi } from 'vitest';
+
+import { click } from '@/test-utils/dom';
+import { setupTestRoot } from '@/test-utils/test-root';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 
@@ -27,13 +29,7 @@ interface MockAutocompleteTagInputProps {
   onChange: (mimeTypes: string[]) => void;
 }
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({
-    language: 'en',
-    t: (key: string, options?: Record<string, string>) =>
-      key.replace(/\{\{(\w+)\}\}/g, (_, name: string) => options?.[name] ?? ''),
-  }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@epam/ai-dial-ui-kit', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@epam/ai-dial-ui-kit')>()),
   Switch: ({ isOn, disabled, onChange, 'aria-label': ariaLabel }: MockSwitchProps) => (
@@ -120,43 +116,31 @@ const TestHost = ({
   );
 };
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 
-const getSwitch = () => container.querySelector('[role="switch"]') as HTMLButtonElement;
-const getField = () => container.querySelector('[aria-label="Attachment types"]');
+const getSwitch = () => dom.container.querySelector('[role="switch"]') as HTMLButtonElement;
+const getField = () => dom.container.querySelector('[aria-label="Attachment types"]');
 const getButton = (text: string) =>
-  [...container.querySelectorAll('button')].find(
+  [...dom.container.querySelectorAll('button')].find(
     (button) => button.textContent === text,
   ) as HTMLButtonElement;
-const getTypes = () => container.querySelector('[data-testid="attachment-types"]')?.textContent;
-const click = (element: HTMLElement) => act(() => element.click());
-
-beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
-});
+const getTypes = () => dom.container.querySelector('[data-testid="attachment-types"]')?.textContent;
 
 describe('AttachmentsSection', () => {
   it('shows the title, description, and an off switch without a field when no types are saved', () => {
-    act(() => root.render(<TestHost />));
+    dom.render(<TestHost />);
 
-    expect(container.textContent).toContain('Attachments');
-    expect(container.textContent).toContain('Lets end users upload files during a conversation.');
+    expect(dom.container.textContent).toContain('Attachments');
+    expect(dom.container.textContent).toContain(
+      'Lets end users upload files during a conversation.',
+    );
     expect(getSwitch().getAttribute('aria-label')).toBe('Attachments');
     expect(getSwitch().getAttribute('aria-checked')).toBe('false');
     expect(getField()).toBeNull();
   });
 
   it('configures the kit field with the translated copy and the MIME suggestions', () => {
-    act(() => root.render(<TestHost initialValue={['application/pdf']} />));
+    dom.render(<TestHost initialValue={['application/pdf']} />);
 
     const field = getField() as HTMLElement;
     expect(field.getAttribute('aria-required')).toBe('true');
@@ -172,7 +156,7 @@ describe('AttachmentsSection', () => {
   });
 
   it('shows the switch on with the saved types in the field', () => {
-    act(() => root.render(<TestHost initialValue={['application/pdf']} />));
+    dom.render(<TestHost initialValue={['application/pdf']} />);
 
     expect(getSwitch().getAttribute('aria-checked')).toBe('true');
     expect(getTypes()).toBe('application/pdf');
@@ -180,11 +164,7 @@ describe('AttachmentsSection', () => {
 
   it('reports the switch turning off and hides the field', () => {
     const onEnabledChange = vi.fn();
-    act(() =>
-      root.render(
-        <TestHost initialValue={['application/pdf']} onEnabledChange={onEnabledChange} />,
-      ),
-    );
+    dom.render(<TestHost initialValue={['application/pdf']} onEnabledChange={onEnabledChange} />);
 
     click(getSwitch());
 
@@ -194,7 +174,7 @@ describe('AttachmentsSection', () => {
 
   it('does not change the value when the switch is turned on and off without adding a type', () => {
     const onChange = vi.fn();
-    act(() => root.render(<TestHost onChange={onChange} />));
+    dom.render(<TestHost onChange={onChange} />);
 
     click(getSwitch());
     expect(getField()).not.toBeNull();
@@ -205,18 +185,18 @@ describe('AttachmentsSection', () => {
   });
 
   it('passes the translated form error to the field while on with no types', () => {
-    act(() => root.render(<TestHost />));
+    dom.render(<TestHost />);
 
     click(getSwitch());
 
-    expect(container.querySelector('[role="alert"]')?.textContent).toBe(
+    expect(dom.container.querySelector('[role="alert"]')?.textContent).toBe(
       'Select at least one attachment type',
     );
   });
 
   it('forwards added types to the form', () => {
     const onChange = vi.fn();
-    act(() => root.render(<TestHost initialValue={['application/pdf']} onChange={onChange} />));
+    dom.render(<TestHost initialValue={['application/pdf']} onChange={onChange} />);
 
     click(getButton('Add PNG'));
 
@@ -224,7 +204,7 @@ describe('AttachmentsSection', () => {
   });
 
   it('keeps the switch on when the last type is removed', () => {
-    act(() => root.render(<TestHost initialValue={['application/pdf']} />));
+    dom.render(<TestHost initialValue={['application/pdf']} />);
 
     click(getButton('Remove first'));
 
@@ -233,7 +213,7 @@ describe('AttachmentsSection', () => {
   });
 
   it('disables the switch and the field when read-only', () => {
-    act(() => root.render(<TestHost initialValue={['application/pdf']} isReadonly />));
+    dom.render(<TestHost initialValue={['application/pdf']} isReadonly />);
 
     expect(getSwitch().disabled).toBe(true);
     expect(getButton('Add PNG').disabled).toBe(true);

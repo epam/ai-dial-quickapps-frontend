@@ -1,7 +1,7 @@
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { setupTestRoot } from '@/test-utils/test-root';
 import { AuthStatus } from '@/types/auth';
 
 const mocks = vi.hoisted(() => ({
@@ -41,29 +41,22 @@ import App from '@/App';
 
 const HOST = 'https://chat.example.com';
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 let postMessage: ReturnType<typeof vi.spyOn>;
 
 const renderApp = async (search: string) => {
   window.history.replaceState(null, '', `/${search}`);
-  await act(async () => root.render(<App />));
+  await act(async () => dom.root.render(<App />));
 };
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   vi.clearAllMocks();
   mocks.authState.status = AuthStatus.Authenticated;
   mocks.fetchAppSettings.mockResolvedValue({ dialChatHost: HOST });
   postMessage = vi.spyOn(window.parent, 'postMessage').mockImplementation(() => {});
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
 });
 
 afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
   postMessage.mockRestore();
   window.history.replaceState(null, '', '/');
 });
@@ -78,21 +71,23 @@ describe('App host connector', () => {
     expect(mocks.sendReadyToInteract).toHaveBeenCalledTimes(1);
   });
 
-  it('uses each load\'s own name for the same deployment', async () => {
+  it("uses each load's own name for the same deployment", async () => {
     await renderApp('?applicationName=A');
-    act(() => root.unmount());
-    root = createRoot(container);
+    dom.render(null);
     await renderApp('?applicationName=B');
 
     expect(mocks.connectorCtor.mock.calls.map((c) => c[1])).toEqual(['A', 'B']);
   });
 
-  it.each(['', '?applicationName='])('does not create the connector without a name (%j)', async (search) => {
-    await renderApp(search);
+  it.each(['', '?applicationName='])(
+    'does not create the connector without a name (%j)',
+    async (search) => {
+      await renderApp(search);
 
-    expect(mocks.connectorCtor).not.toHaveBeenCalled();
-    expect(mocks.sendReady).not.toHaveBeenCalled();
-  });
+      expect(mocks.connectorCtor).not.toHaveBeenCalled();
+      expect(mocks.sendReady).not.toHaveBeenCalled();
+    },
+  );
 
   it('prefixes readyToSave with the name from the URL', async () => {
     await renderApp('?applicationName=X');

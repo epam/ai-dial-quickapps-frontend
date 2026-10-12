@@ -1,5 +1,4 @@
 import { act, type FC } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DataContextProvider, useDataContext } from '@/context/DataContext';
@@ -11,6 +10,7 @@ import {
   ToolsetAuthStatus,
   ToolsetAuthType,
 } from '@/types/dial-entities';
+import { setupTestRoot } from '@/test-utils/test-root';
 import { LoadStatus } from '@/types/load-status';
 
 const HOST = 'https://host';
@@ -81,8 +81,7 @@ const SKILL: DialSkill = {
 };
 
 let latest: ReturnType<typeof useDataContext>;
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 
 const Probe: FC = () => {
   latest = useDataContext();
@@ -91,7 +90,7 @@ const Probe: FC = () => {
 
 const render = async () => {
   await act(async () =>
-    root.render(
+    dom.root.render(
       <DataContextProvider>
         <Probe />
       </DataContextProvider>,
@@ -113,21 +112,15 @@ const loginResult = (overrides: Record<string, unknown> = {}) => ({
 });
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   vi.clearAllMocks();
   fetchers.fetchDialModels.mockResolvedValue([GPT]);
   fetchers.fetchDialToolsets.mockResolvedValue([FIGMA]);
   fetchers.fetchDialMcpAgents.mockResolvedValue([]);
   fetchers.fetchDialSkills.mockResolvedValue([SKILL]);
   fetchers.fetchFavoriteIds.mockResolvedValue(new Set<string>());
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
 });
 
 afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
   vi.restoreAllMocks();
 });
 

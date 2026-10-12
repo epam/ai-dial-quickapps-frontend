@@ -1,43 +1,24 @@
-import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+import { click, getButton } from '@/test-utils/dom';
+import { setupTestRoot } from '@/test-utils/test-root';
 
 import { AddOnListItem, type AddOnListItemProps } from '../AddOnListItem';
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 
 const render = (props: Partial<AddOnListItemProps> = {}) => {
-  act(() => {
-    root.render(
-      <AddOnListItem
-        id="toolsets/public/figma"
-        name="Figma"
-        detailsLabel="Figma details"
-        removeLabel="Remove Figma"
-        onClick={vi.fn()}
-        {...props}
-      />,
-    );
-  });
-};
-
-const getButton = (name: string) =>
-  [...container.querySelectorAll('button')].find(
-    (button) => button.getAttribute('aria-label') === name,
+  dom.render(
+    <AddOnListItem
+      id="toolsets/public/figma"
+      name="Figma"
+      detailsLabel="Figma details"
+      removeLabel="Remove Figma"
+      onClick={vi.fn()}
+      {...props}
+    />,
   );
-
-beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
-});
+};
 
 describe('AddOnListItem', () => {
   it('shows the name and version in a named details button', () => {
@@ -48,7 +29,7 @@ describe('AddOnListItem', () => {
     expect(details?.textContent).toContain('Figma');
     expect(details?.textContent).toContain('1.0.0');
 
-    act(() => details?.click());
+    click(details);
     expect(onClick).toHaveBeenCalledWith('toolsets/public/figma');
   });
 
@@ -58,9 +39,7 @@ describe('AddOnListItem', () => {
     const details = getButton('Figma details');
     const describedBy = details?.getAttribute('aria-describedby');
     expect(describedBy).toBeTruthy();
-    expect(document.getElementById(describedBy as string)?.textContent).toBe(
-      'Logged out toolset.',
-    );
+    expect(document.getElementById(describedBy as string)?.textContent).toBe('Logged out toolset.');
   });
 
   it('has no description without a status', () => {
@@ -75,7 +54,7 @@ describe('AddOnListItem', () => {
 
     const onRemove = vi.fn();
     render({ onRemove });
-    act(() => getButton('Remove Figma')?.click());
+    click(getButton('Remove Figma'));
     expect(onRemove).toHaveBeenCalledWith('toolsets/public/figma');
   });
 

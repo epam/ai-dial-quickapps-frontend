@@ -1,11 +1,12 @@
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CatalogContentNodeType, type CatalogItem } from '@epam/ai-dial-catalog';
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 
 import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { click } from '@/test-utils/dom';
+import { setupTestRoot } from '@/test-utils/test-root';
 import { AppDetailsTab, DetailsStatus } from '@/types/entity-details';
 
 import { AddOnDetailsPopup, type AddOnDetailsPopupProps } from '../AddOnDetailsPopup';
@@ -16,13 +17,7 @@ const { appContext, previewChunk } = vi.hoisted(() => ({
   previewChunk: { pending: null as Promise<void> | null },
 }));
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({
-    t: (key: string, options?: Record<string, string>) =>
-      key.replace(/\{\{(\w+)\}\}/g, (_, name: string) => options?.[name] ?? ''),
-    language: 'en',
-  }),
-}));
+vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/AppContext', () => ({ useAppContext: () => appContext }));
 // The canvas preview has its own tests; here it only marks where it renders.
 vi.mock('@/components/SkillFilePreview/SkillFilePreview', () => ({
@@ -55,39 +50,27 @@ const skillWithFiles = {
   },
 } as unknown as CatalogItem;
 
-let root: Root;
-let container: HTMLDivElement;
+const dom = setupTestRoot();
 
 beforeEach(() => {
-  (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
   appContext.settings.dialCoreExternalUrl = undefined;
-  container = document.createElement('div');
-  document.body.append(container);
-  root = createRoot(container);
-});
-
-afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
 });
 
 const render = (props: Partial<AddOnDetailsPopupProps> = {}) => {
-  act(() =>
-    root.render(
-      <AddOnDetailsPopup
-        entityType={CatalogEntityType.Skill}
-        name="User Research"
-        folder={['Organization', 'research']}
-        item={listing}
-        detailsStatus={DetailsStatus.Ready}
-        onRetry={vi.fn()}
-        isReadonly={false}
-        deleteLabel="Delete"
-        onDelete={vi.fn()}
-        onClose={vi.fn()}
-        {...props}
-      />,
-    ),
+  dom.render(
+    <AddOnDetailsPopup
+      entityType={CatalogEntityType.Skill}
+      name="User Research"
+      folder={['Organization', 'research']}
+      item={listing}
+      detailsStatus={DetailsStatus.Ready}
+      onRetry={vi.fn()}
+      isReadonly={false}
+      deleteLabel="Delete"
+      onDelete={vi.fn()}
+      onClose={vi.fn()}
+      {...props}
+    />,
   );
 };
 
@@ -160,7 +143,7 @@ describe('AddOnDetailsPopup — package file preview', () => {
     const trigger = document.getElementById(
       region.getAttribute('aria-labelledby') ?? '',
     ) as HTMLElement;
-    act(() => trigger.click());
+    click(trigger);
     const row = [...document.body.querySelectorAll('[role="treeitem"]')].find((node) =>
       node.textContent?.includes(fileName),
     ) as HTMLElement;
@@ -241,7 +224,7 @@ describe('AddOnDetailsPopup — app-owned tabs', () => {
     const tab = [...dialog().querySelectorAll<HTMLElement>('[role="tab"]')].find(
       (node) => node.textContent === 'Settings',
     );
-    act(() => tab?.click());
+    click(tab);
 
     const panel = dialog().querySelector('[role="tabpanel"]');
     expect(panel?.getAttribute('aria-label')).toBe('Settings');
@@ -289,7 +272,7 @@ describe('AddOnDetailsPopup — Connect', () => {
     expect(tabNames().at(-1)).toBe(QuickAppEditorI18nKeys.ConnectTab);
 
     const connect = [...dialog().querySelectorAll<HTMLElement>('[role="tab"]')].at(-1);
-    act(() => connect?.click());
+    click(connect);
 
     expect(dialog().textContent).toContain(MCP_URL);
   });
@@ -332,7 +315,7 @@ describe('AddOnDetailsPopup — catalog header actions', () => {
     const login = [...dialog().querySelectorAll('button')].find(
       (button) => button.textContent?.trim() === QuickAppEditorI18nKeys.LoginToolsetAction,
     );
-    act(() => login?.click());
+    click(login);
 
     expect(onLogin).toHaveBeenCalledWith({ apiKey: undefined });
   });
