@@ -201,7 +201,7 @@ The popup SHALL show, after the existing switches, a Code Interpreter switch whe
 - **AND** its saved form value SHALL be `false`, as before
 
 #### Scenario: Read-only application
-- **WHEN** the application is shared or the editor is read-only
+- **WHEN** the editor is read-only
 - **THEN** the Advanced button SHALL be disabled and the popup SHALL NOT open, so the switches cannot be changed
 
 ### Requirement: Feature toggles are drafted and saved with the popup

@@ -1,7 +1,6 @@
 import { FC, useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
 import { DEFAULT_MAX_INPUT_ATTACHMENTS } from '@/constants/quick-apps';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
@@ -48,7 +47,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   onValidationError,
   onValidityChange,
   onModelReady,
-  isReadonly: isReadonlyProp,
+  isReadonly = false,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
   const { app, settings } = useAppContext();
@@ -59,12 +58,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     [models],
   );
   const availableModelIds = useMemo(() => models.map((model) => model.id), [models]);
-  // chat-api marks apps shared with the user as `sharedWithMe`; `isShared` is the host's own flag.
-  const isShared = !!(app.isShared || app.sharedWithMe);
-  const sharedTooltip = isShared
-    ? t(QuickAppEditorI18nKeys.CannotChangeSharedApp, { context: 'field' })
-    : undefined;
-  const isReadonly = isReadonlyProp || isShared;
   const defaultValues = getQuickApp2FormData(
     app,
     toolSupportingModelIds,
@@ -262,7 +255,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
           agentSkills={values.agentSkills}
           onAgentSkillsChange={(value) => setField('agentSkills', value)}
           isReadonly={isReadonly}
-          tooltip={sharedTooltip}
           addOns={values.addOns}
           onAgentsChange={setAgentIds}
           onConfigureAgent={configureAgent}
@@ -279,7 +271,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         onModelChange={(value) => setField('model', value)}
         errors={errors}
         isReadonly={isReadonly}
-        tooltip={sharedTooltip}
         isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
         isCodeInterpreterEnabled={!!settings.isCodeInterpreterEnabled}
         isAddAttachmentEnabled={!!settings.isAddAttachmentEnabled}

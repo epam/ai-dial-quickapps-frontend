@@ -21,7 +21,6 @@ export interface AddOnsSectionProps {
   agentSkills: QuickApp2FormValues['agentSkills'];
   onAgentSkillsChange: (value: QuickApp2FormValues['agentSkills']) => void;
   isReadonly: boolean;
-  tooltip?: string;
   addOns: QuickApp2FormValues['addOns'];
   onAgentsChange: (ids: string[]) => void;
   onConfigureAgent: (id: string, transport: DialAppTransportType) => void;
@@ -36,7 +35,6 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
   agentSkills,
   onAgentSkillsChange,
   isReadonly,
-  tooltip,
   addOns,
   onAgentsChange,
   onConfigureAgent,
@@ -76,14 +74,12 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
           value={agentSkills}
           onChange={onAgentSkillsChange}
           isReadonly={isReadonly}
-          tooltip={tooltip}
         />
 
         <ToolsetsFormSection
           allIds={allIds}
           toolsetIds={toolsetIds}
           isReadonly={isReadonly}
-          tooltip={tooltip}
           onChange={onAgentsChange}
         />
 
@@ -91,7 +87,6 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
           allIds={allIds}
           agentIds={agentIds}
           isReadonly={isReadonly}
-          tooltip={tooltip}
           onChange={onAgentsChange}
           transports={transports}
           onConfigure={onConfigureAgent}
@@ -100,7 +95,6 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
         <KnowledgeBaseRow
           files={documentRelativeUrl}
           isReadonly={isReadonly}
-          tooltip={tooltip}
           onAddFiles={onAddDocuments}
           onRemoveFile={onRemoveDocument}
         />
@@ -108,7 +102,6 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
         <ConversationStartersRow
           values={conversationStarters}
           isReadonly={isReadonly}
-          tooltip={tooltip}
           onSave={onConversationStartersSave}
         />
       </div>
