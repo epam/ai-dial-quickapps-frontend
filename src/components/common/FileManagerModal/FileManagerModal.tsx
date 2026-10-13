@@ -421,7 +421,12 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
         open={isOpen}
         header={t(DialFileManagerI18nKeys.AddTitle)}
         size={PopupSize.Lg}
-        className="flex !h-[min(800px,100dvh)] w-full flex-col"
+        // Below `md` the dialog fills the screen and drops the nested insets, so the file list
+        // keeps the room on a phone (Issue #252); from `md` up it stays the kit's centred dialog.
+        overlayClassName="p-0 md:p-4"
+        className="flex !h-[min(800px,100dvh)] w-full flex-col rounded-none md:rounded-xl"
+        headerClassName="px-4 py-3 md:px-6 md:py-4"
+        footerClassName="px-4 py-3 md:px-6 md:py-4"
         bodyClassName="flex min-h-0 flex-col"
         closeAriaLabel={t(DialFileManagerI18nKeys.CloseDialog)}
         headerDivider
@@ -475,7 +480,8 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
             aria-busy={isUploading}
           >
             <DialFileManager
-              className="min-h-0 w-full grow"
+              className="min-h-0 w-full grow p-0 md:p-3 md:pt-4"
+              contentClassName="px-4 pb-2 pt-3 md:px-5 md:pb-4 md:pt-0"
               gridClassName="size-full"
               items={items}
               path={path}
