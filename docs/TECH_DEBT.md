@@ -148,8 +148,8 @@ OpenSpec change).
 - [ ] **General summary lookup misses encoded ids** — `fetchApplicationSummary` compares the
       decoded id with the encoded listing id (`dial-client.ts:325`), so description, icon,
       topics and version load empty for such apps.
-- [ ] **Read-only mode is unreachable** — `app.isShared` is never set and `isReadonly` is never
-      passed (`QuickApp2Form.tsx:58`), yet `application_editor-layout` and
+- [ ] **Read-only mode is unreachable** — `isReadonly` is never passed to `QuickApp2Form` (shared apps are
+      deliberately NOT read-only, #208), yet `application_editor-layout` and
       `application_user-attachments` specify a read-only editor.
 - [ ] **SaveError text** — chat-api rejections surface the client's generic "Response returned
       an error code"; the 'Save failed' / 'Initialization failed' fallbacks are hard-coded English.

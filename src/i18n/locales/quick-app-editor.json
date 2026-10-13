@@ -128,7 +128,6 @@
   "Temperature": "Temperature",
   "Code Interpreter": "Code Interpreter",
   "Allows to build multi-agent applications where agents can generate and safely execute Python code in real-time to perform specific tasks, such as data visualization or analytics.": "Allows to build multi-agent applications where agents can generate and safely execute Python code in real-time to perform specific tasks, such as data visualization or analytics.",
-  "You cannot change the {{context}} of a shared application.": "You cannot change the {{context}} of a shared application.",
   "Reusable instruction modules the agent loads on demand when the task matches.": "Reusable instruction modules the agent loads on demand when the task matches.",
   "No Agent Skills added": "No Agent Skills added",
   "Add Agent Skills": "Add Agent Skills",

@@ -46,7 +46,7 @@ The Toolsets row of the Add-ons card SHALL list the attached toolsets in `addOns
 
 **Details button.** Each item SHALL hold a button named by `quickAppEditor` key `AddOnDetails` with `{{name}}` (e.g. "Figma details"). Activating it SHALL open the toolset details popup.
 
-**Remove button.** In an editable application, each item SHALL also hold a remove button at its end: a ui-kit ghost icon button with a trash icon, named by `quickAppEditor` key `RemoveAddOn` with `{{name}}`. It SHALL be visible only while the item is hovered or holds keyboard focus (`:focus-visible`), and SHALL stay in the tab order. Focus that returns to the item after a popup is closed with the mouse SHALL NOT reveal it. Activating it SHALL remove that id from `addOns` without opening the popup, and SHALL move focus to the first remaining item in the row. Read-only and shared applications SHALL NOT render it.
+**Remove button.** In an editable application, each item SHALL also hold a remove button at its end: a ui-kit ghost icon button with a trash icon, named by `quickAppEditor` key `RemoveAddOn` with `{{name}}`. It SHALL be visible only while the item is hovered or holds keyboard focus (`:focus-visible`), and SHALL stay in the tab order. Focus that returns to the item after a popup is closed with the mouse SHALL NOT reveal it. Activating it SHALL remove that id from `addOns` without opening the popup, and SHALL move focus to the first remaining item in the row. Read-only applications SHALL NOT render it.
 
 **Not rendered.** Items SHALL NOT render a chip box, a tooltip or a configure (gear) button.
 
@@ -78,7 +78,7 @@ The Toolsets row of the Add-ons card SHALL list the attached toolsets in `addOns
 
 #### Scenario: Read-only application
 
-- **WHEN** the editor is read-only or the application is shared
+- **WHEN** the editor is read-only
 - **THEN** toolsets SHALL still be listed and SHALL still open the details popup
 - **AND** no remove button SHALL be rendered
 
@@ -181,7 +181,7 @@ The `DetailsHeader` credentials action SHALL start the existing sign-in flows, t
 - **OAuth Log out:** the same with `REQUEST_TOOLSET_LOGOUT` / `TOOLSET_LOGOUT_RESULT`, started directly from the action (`onRequestLogout`), with no confirmation step.
 - **API key add / delete:** the catalog personal API-key popover calls `toolsetsApi.loginToolset` (with the key) / `logoutToolset`, at the credentials level `USER` for a public toolset and `GLOBAL` otherwise, then `refreshToolsets`. A failed request SHALL leave the status unchanged.
 
-After a successful result, the details popup SHALL stay open. Its header action and the row item's badge SHALL reflect the new status from `DataContext`. Messages from origins outside `allowedOrigins`, and results for other toolset ids, SHALL be ignored. Read-only and shared applications SHALL NOT render the credentials action.
+After a successful result, the details popup SHALL stay open. Its header action and the row item's badge SHALL reflect the new status from `DataContext`. Messages from origins outside `allowedOrigins`, and results for other toolset ids, SHALL be ignored. Read-only applications SHALL NOT render the credentials action.
 
 #### Scenario: OAuth login succeeds
 
@@ -201,7 +201,7 @@ After a successful result, the details popup SHALL stay open. Its header action 
 
 ### Requirement: Remove a toolset from the application
 
-**Delete** in the toolset details popup SHALL remove that id from `addOns` and close the popup. It SHALL NOT call any chat-api toolset mutation. In a read-only or shared application, Delete SHALL NOT be rendered.
+**Delete** in the toolset details popup SHALL remove that id from `addOns` and close the popup. It SHALL NOT call any chat-api toolset mutation. In a read-only application, Delete SHALL NOT be rendered.
 
 #### Scenario: Delete detaches the toolset
 
@@ -243,8 +243,8 @@ The popup state SHALL be local `useState`, reset on each open. The popup SHALL b
 
 #### Scenario: Read-only application
 
-- **WHEN** the editor is read-only or the application is shared
-- **THEN** the Add action SHALL be disabled with the shared-application tooltip, and the popup SHALL NOT open
+- **WHEN** the editor is read-only
+- **THEN** the Add action SHALL be disabled, and the popup SHALL NOT open
 
 ### Requirement: Toolsets accessibility and direction
 

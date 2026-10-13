@@ -776,17 +776,18 @@ describe('QuickApp2Form observable behavior', () => {
     expect(onDirtyChange).not.toHaveBeenCalledWith(true);
   });
 
-  it('renders the conversation starters row read-only for a shared app', () => {
+  it('keeps the conversation starters row editable for a shared app', () => {
     testContext.appContext.app = {
       id: 'app',
       applicationProperties: { orchestrator: SAVED_ORCHESTRATOR },
       isShared: true,
+      sharedWithMe: true,
     };
 
     renderForm();
 
     expect(dom.container.querySelector('[data-testid="starters-readonly"]')?.textContent).toBe(
-      'true',
+      'false',
     );
   });
 
@@ -852,23 +853,16 @@ describe('QuickApp2Form observable behavior', () => {
     expect(onSave.mock.calls[0][0].documentRelativeUrl).toEqual(['files/abc/b.pdf']);
   });
 
-  it('renders the knowledge base row read-only for a shared app', () => {
-    testContext.appContext.app = { id: 'app', applicationProperties: {}, isShared: true };
+  it.each([{ isShared: true }, { sharedWithMe: true }])(
+    'keeps the knowledge base row editable for a shared app (%o)',
+    (sharedFlags) => {
+      testContext.appContext.app = { id: 'app', applicationProperties: {}, ...sharedFlags };
 
-    renderForm();
+      renderForm();
 
-    expect(dom.container.querySelector('[data-testid="knowledge-readonly"]')?.textContent).toBe(
-      'true',
-    );
-  });
-
-  it('renders the knowledge base row read-only for an app shared with the user', () => {
-    testContext.appContext.app = { id: 'app', applicationProperties: {}, sharedWithMe: true };
-
-    renderForm();
-
-    expect(dom.container.querySelector('[data-testid="knowledge-readonly"]')?.textContent).toBe(
-      'true',
-    );
-  });
+      expect(dom.container.querySelector('[data-testid="knowledge-readonly"]')?.textContent).toBe(
+        'false',
+      );
+    },
+  );
 });

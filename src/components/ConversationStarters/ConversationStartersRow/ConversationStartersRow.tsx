@@ -15,14 +15,12 @@ import ConversationStartersModal from '../ConversationStartersModal/Conversation
 export interface ConversationStartersRowProps {
   values: ConversationStartersValues;
   isReadonly: boolean;
-  tooltip?: string;
   onSave: (values: ConversationStartersValues) => void;
 }
 
 const ConversationStartersRow: FC<ConversationStartersRowProps> = ({
   values,
   isReadonly,
-  tooltip,
   onSave,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
@@ -50,7 +48,6 @@ const ConversationStartersRow: FC<ConversationStartersRowProps> = ({
         emptyDescription={t(QuickAppEditorI18nKeys.ConversationStartersAddOnDescription)}
         isEmpty={isEmpty}
         isAddDisabled={isReadonly}
-        addTooltip={tooltip}
         actionLabel={isEmpty ? undefined : t(QuickAppEditorI18nKeys.Manage)}
         actionIcon={
           isEmpty ? undefined : (
