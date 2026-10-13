@@ -16,7 +16,7 @@ The Skills row of the Add-ons card SHALL list the application's attached skills 
 
 Each item SHALL hold a button whose accessible name comes from `ApplicationEditorI18nKeys.AddOnsDetails` with the skill name interpolated (e.g. "Web Search details"); activating it SHALL open the skill details popup for that skill. Items SHALL NOT render a bordered chip box or a tooltip.
 
-In an editable application, each item SHALL also hold a remove button at its end: a ui-kit 2.0 ghost icon button with a trash icon, named by `ApplicationEditorI18nKeys.AddOnsRemove` with the skill name interpolated (e.g. "Remove Web Search"). It SHALL be visible only while the item is hovered or holds keyboard focus (`:focus-visible`), and SHALL stay in the tab order. Focus that returns to the item after a popup is closed with the mouse SHALL NOT reveal it. Activating it SHALL remove that skill id from `agentSkills` without opening the details popup, and SHALL move focus to the first remaining item. Read-only and shared applications SHALL NOT render it. The list SHALL be read from `DataContext.skillsMap` and SHALL make no chat-api request of its own.
+In an editable application, each item SHALL also hold a remove button at its end: a ui-kit 2.0 ghost icon button with a trash icon, named by `ApplicationEditorI18nKeys.AddOnsRemove` with the skill name interpolated (e.g. "Remove Web Search"). It SHALL be visible only while the item is hovered or holds keyboard focus (`:focus-visible`), and SHALL stay in the tab order. Focus that returns to the item after a popup is closed with the mouse SHALL NOT reveal it. Activating it SHALL remove that skill id from `agentSkills` without opening the details popup, and SHALL move focus to the first remaining item. Read-only applications SHALL NOT render it. The list SHALL be read from `DataContext.skillsMap` and SHALL make no chat-api request of its own.
 
 #### Scenario: Attached skills are listed
 
@@ -51,7 +51,7 @@ In an editable application, each item SHALL also hold a remove button at its end
 
 #### Scenario: Read-only application
 
-- **WHEN** the editor is read-only or the application is shared
+- **WHEN** the editor is read-only
 - **THEN** the attached skills SHALL still be listed and SHALL still open the details popup
 - **AND** no remove button SHALL be rendered
 
@@ -284,7 +284,7 @@ Rendered result:
 
 ### Requirement: Remove a skill from the application
 
-**Delete** in the details popup SHALL remove that skill id from the `agentSkills` form value and close the popup. It SHALL NOT call any chat-api skill mutation: the skill resource in DIAL SHALL remain untouched. In a read-only or shared application, Delete SHALL NOT be rendered.
+**Delete** in the details popup SHALL remove that skill id from the `agentSkills` form value and close the popup. It SHALL NOT call any chat-api skill mutation: the skill resource in DIAL SHALL remain untouched. In a read-only application, Delete SHALL NOT be rendered.
 
 #### Scenario: Delete detaches the skill
 
@@ -300,7 +300,7 @@ Rendered result:
 
 #### Scenario: Read-only application
 
-- **WHEN** the details popup opens in a read-only or shared application
+- **WHEN** the details popup opens in a read-only application
 - **THEN** only **Close** SHALL be rendered in the footer
 
 ### Requirement: Add skill popup catalog list
@@ -411,8 +411,8 @@ The Add skill popup SHALL support checking any number of skills and SHALL commit
 
 #### Scenario: Read-only application
 
-- **WHEN** the editor is read-only or the application is shared
-- **THEN** the Add action SHALL be disabled with the existing shared-application tooltip, and the popup SHALL NOT open
+- **WHEN** the editor is read-only
+- **THEN** the Add action SHALL be disabled, and the popup SHALL NOT open
 
 ### Requirement: Add skill popup loading and error states
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { DEFAULT_MAX_INPUT_ATTACHMENTS } from '@/constants/quick-apps';
 import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import {
   buildQuickApp2Config,
@@ -120,8 +121,40 @@ describe('QuickApp2Schema', () => {
     expect(invalidResult.success).toBe(false);
   });
 
+  it('requires an attachment count while attachments are enabled', () => {
+    const result = QuickApp2Schema.safeParse(
+      createForm({
+        attachmentsEnabled: true,
+        inputAttachmentTypes: ['image/png'],
+        maxInputAttachments: '' as unknown as number,
+      }),
+    );
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: ['maxInputAttachments'],
+            message: ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachmentsRequired,
+          }),
+        ]),
+      );
+    }
+  });
+
+  it('keeps the attachment count optional while attachments are disabled', () => {
+    const result = QuickApp2Schema.safeParse(
+      createForm({ attachmentsEnabled: false, maxInputAttachments: undefined }),
+    );
+
+    expect(result.success).toBe(true);
+  });
+
   it('requires at least one attachment type while attachments are enabled', () => {
-    const result = QuickApp2Schema.safeParse(createForm({ attachmentsEnabled: true }));
+    const result = QuickApp2Schema.safeParse(
+      createForm({ attachmentsEnabled: true, maxInputAttachments: 1 }),
+    );
 
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -137,7 +170,11 @@ describe('QuickApp2Schema', () => {
   it.each([
     [
       'enabled with a type',
-      { attachmentsEnabled: true, inputAttachmentTypes: ['application/pdf'] },
+      {
+        attachmentsEnabled: true,
+        inputAttachmentTypes: ['application/pdf'],
+        maxInputAttachments: 1,
+      },
     ],
     ['disabled without types', { attachmentsEnabled: false, inputAttachmentTypes: [] }],
   ])('accepts attachments %s', (_label, overrides) => {
@@ -449,6 +486,67 @@ describe('advanced settings', () => {
     expect(isValidMaxInputAttachments(0)).toBe(false);
     expect(isValidMaxInputAttachments(-1)).toBe(false);
     expect(isValidMaxInputAttachments(1.5)).toBe(false);
+  });
+
+  it('seeds the default attachment count for an app with types and no count', () => {
+    const data = getQuickApp2FormData(
+      { applicationProperties: {}, inputAttachmentTypes: ['image/png'] },
+      ['model-1'],
+      ['model-1'],
+      'model-1',
+    );
+
+    expect(data.maxInputAttachments).toBe(DEFAULT_MAX_INPUT_ATTACHMENTS);
+  });
+
+  it.each([0, -2, 2.5, null, 'abc', ''])(
+    'treats the host attachment count %j as missing and seeds the default',
+    (maxInputAttachments) => {
+      const data = getQuickApp2FormData(
+        { applicationProperties: {}, inputAttachmentTypes: ['image/png'], maxInputAttachments },
+        ['model-1'],
+        ['model-1'],
+        'model-1',
+      );
+
+      expect(data.maxInputAttachments).toBe(DEFAULT_MAX_INPUT_ATTACHMENTS);
+    },
+  );
+
+  it('accepts a numeric string attachment count from the host', () => {
+    const data = getQuickApp2FormData(
+      { applicationProperties: {}, inputAttachmentTypes: ['image/png'], maxInputAttachments: '3' },
+      ['model-1'],
+      ['model-1'],
+      'model-1',
+    );
+
+    expect(data.maxInputAttachments).toBe(3);
+  });
+
+  it('keeps a stored attachment count for an app without types and does not seed one', () => {
+    const withCount = getQuickApp2FormData(
+      { applicationProperties: {}, maxInputAttachments: 5 },
+      ['model-1'],
+      ['model-1'],
+      'model-1',
+    );
+    const withoutCount = getQuickApp2FormData(
+      { applicationProperties: {} },
+      ['model-1'],
+      ['model-1'],
+      'model-1',
+    );
+
+    expect(withCount.maxInputAttachments).toBe(5);
+    expect(withoutCount.maxInputAttachments).toBeUndefined();
+  });
+
+  it('treats an empty attachment count as invalid only when required', () => {
+    expect(isValidMaxInputAttachments('')).toBe(true);
+    expect(isValidMaxInputAttachments('', true)).toBe(false);
+    expect(isValidMaxInputAttachments(undefined, true)).toBe(false);
+    expect(isValidMaxInputAttachments(2, true)).toBe(true);
   });
 
   it('defaults time awareness to on and built-in file tools to off for a new app', () => {

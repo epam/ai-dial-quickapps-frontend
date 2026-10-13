@@ -59,7 +59,7 @@ The Agents row SHALL list the attached agents in `addOns` order. It SHALL use th
 
 #### Scenario: Read-only application
 
-- **WHEN** the editor is read-only or the application is shared
+- **WHEN** the editor is read-only
 - **THEN** agents SHALL still be listed and SHALL still open the details popup
 - **AND** no remove button SHALL be rendered
 
@@ -149,7 +149,7 @@ The popup SHALL be loaded with `React.lazy`.
 
 #### Scenario: Read-only application
 
-- **WHEN** the popup opens in a read-only or shared application
+- **WHEN** the popup opens in a read-only application
 - **THEN** only Close SHALL be rendered in the footer, and no Credentials action SHALL be rendered
 
 ### Requirement: Agent Settings tab
@@ -179,7 +179,7 @@ from the catalog.
 - **Change:** selecting an option SHALL call `configureAgent(id, transport)` from
   `useQuickApp2Form` at once. The form becomes dirty, the popup stays open on
   Settings, and there is no Apply step.
-- **Read-only:** in a read-only or shared application the group SHALL be disabled
+- **Read-only:** in a read-only application the group SHALL be disabled
   and SHALL show the saved value.
 
 **State and data.**
@@ -214,7 +214,7 @@ from the catalog.
 
 #### Scenario: Read-only transport
 
-- **WHEN** a read-only or shared application opens the details of an MCP and chat-completion application whose saved transport is `chat-completion`
+- **WHEN** a read-only application opens the details of an MCP and chat-completion application whose saved transport is `chat-completion`
 - **THEN** Settings SHALL show "Connect via" disabled with "Chat Completion" checked
 
 ### Requirement: Agent About and Overview tabs
@@ -245,7 +245,7 @@ Settings tab ("Agent Settings tab").
 
 ### Requirement: Remove an agent from the application
 
-**Delete** in the agent details popup SHALL remove that id from `addOns` and close the popup. It SHALL NOT call any chat-api mutation. Read-only and shared applications SHALL NOT render it.
+**Delete** in the agent details popup SHALL remove that id from `addOns` and close the popup. It SHALL NOT call any chat-api mutation. Read-only applications SHALL NOT render it.
 
 #### Scenario: Delete detaches the agent
 
@@ -291,8 +291,8 @@ The popup state SHALL be local `useState`, reset on each open, and the popup SHA
 
 #### Scenario: Read-only application
 
-- **WHEN** the editor is read-only or the application is shared
-- **THEN** the Add action SHALL be disabled with the shared-application tooltip, and the popup SHALL NOT open, including through the deep link
+- **WHEN** the editor is read-only
+- **THEN** the Add action SHALL be disabled, and the popup SHALL NOT open, including through the deep link
 
 ### Requirement: Agents accessibility and direction
 

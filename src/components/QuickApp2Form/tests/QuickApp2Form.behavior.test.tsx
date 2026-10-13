@@ -34,7 +34,9 @@ const testContext = vi.hoisted(() => {
         id: string;
         applicationProperties: unknown;
         isShared?: boolean;
+        sharedWithMe?: boolean;
         inputAttachmentTypes?: string[];
+        maxInputAttachments?: unknown;
       },
       settings: {
         defaultModelId: 'model-1',
@@ -113,6 +115,13 @@ vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationS
     <div>
       <output data-testid="attachments-enabled">{String(isAttachmentsEnabled)}</output>
       <output data-testid="attachment-value">{inputAttachmentTypes.join('|')}</output>
+      <output data-testid="max-value">{String(advancedSettings.maxInputAttachments ?? '')}</output>
+      <button
+        type="button"
+        onClick={() => onAdvancedSettingsSave({ ...advancedSettings, maxInputAttachments: 1 })}
+      >
+        Save max 1
+      </button>
       <output data-testid="attachment-error">{errors.inputAttachmentTypes ?? ''}</output>
       <button type="button" onClick={() => onAttachmentsEnabledChange(true)}>
         Turn attachments on
@@ -256,7 +265,13 @@ const SAVED_ORCHESTRATOR = { system_prompt: { content: 'Be helpful' } };
 const dom = setupTestRoot();
 
 const renderForm = (
-  props: { onSave?: Mock<FormSaveHandler>; isReadonly?: boolean; key?: string } = {},
+  props: {
+    onSave?: Mock<FormSaveHandler>;
+    onValidationError?: Mock<(messages: string[]) => void>;
+    onValidityChange?: Mock<(isValid: boolean) => void>;
+    isReadonly?: boolean;
+    key?: string;
+  } = {},
 ) => {
   const onSave = props.onSave ?? vi.fn<FormSaveHandler>();
   const onDirtyChange = vi.fn();
@@ -267,6 +282,8 @@ const renderForm = (
       key={props.key}
       onSave={onSave}
       onDirtyChange={onDirtyChange}
+      onValidationError={props.onValidationError}
+      onValidityChange={props.onValidityChange}
       onModelReady={onModelReady}
       isReadonly={props.isReadonly}
     />,
@@ -368,6 +385,33 @@ describe('QuickApp2Form observable behavior', () => {
 
     await submitForm();
     expect(onSave).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports validity changes as instructions are blanked and filled', async () => {
+    const onValidityChange = vi.fn<(isValid: boolean) => void>();
+    renderForm({ onValidityChange });
+    const instructions = dom.container.querySelector(
+      '[aria-label="Instructions"]',
+    ) as HTMLInputElement;
+
+    expect(onValidityChange).toHaveBeenLastCalledWith(true);
+    await dispatchInput(instructions, '');
+    expect(onValidityChange).toHaveBeenLastCalledWith(false);
+    await dispatchInput(instructions, 'Be helpful');
+    expect(onValidityChange).toHaveBeenLastCalledWith(true);
+  });
+
+  it('reports validation errors for a blocked manual save but not for an auto-save', async () => {
+    testContext.appContext.app = { id: 'app', applicationProperties: {} };
+    const onValidationError = vi.fn<(messages: string[]) => void>();
+    const { onSave } = renderForm({ onValidationError });
+
+    await triggerSave({ isAutoSave: true, shouldIgnoreDirty: true });
+    expect(onValidationError).not.toHaveBeenCalled();
+
+    await triggerSave({ isAutoSave: false });
+    expect(onSave).not.toHaveBeenCalled();
+    expect(onValidationError).toHaveBeenCalledWith([ApplicationEditorI18nKeys.InstructionsRequired]);
   });
 
   it('applies saved Advanced Settings to the form and marks it dirty', async () => {
@@ -566,6 +610,80 @@ describe('QuickApp2Form observable behavior', () => {
     expect(dom.container.querySelector('[data-testid="attachment-error"]')?.textContent).toBe('');
   });
 
+  const getMaxValue = () => dom.container.querySelector('[data-testid="max-value"]')?.textContent;
+
+  it('seeds the default max when attachments are turned on without a max', async () => {
+    const { onSave, onDirtyChange } = renderForm();
+
+    click(getButton('Turn attachments on'));
+    expect(getMaxValue()).toBe('1');
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+
+    click(getButton('Select PDF'));
+    await submitForm();
+    expect(onSave.mock.calls[0][0]).toMatchObject({ maxInputAttachments: 1 });
+  });
+
+  it('keeps an existing max when attachments are turned on', () => {
+    testContext.appContext.app = {
+      id: 'app',
+      applicationProperties: { orchestrator: SAVED_ORCHESTRATOR },
+      maxInputAttachments: 5,
+    };
+    renderForm();
+
+    click(getButton('Turn attachments on'));
+    expect(getMaxValue()).toBe('5');
+
+    click(getButton('Turn attachments off'));
+    expect(getMaxValue()).toBe('5');
+  });
+
+  it('restores the max set in Advanced settings when attachments are turned off and on', () => {
+    renderForm();
+
+    click(getButton('Save changed advanced settings'));
+    click(getButton('Turn attachments on'));
+    click(getButton('Turn attachments off'));
+    click(getButton('Turn attachments on'));
+
+    expect(getMaxValue()).toBe('5');
+  });
+
+  it('keeps a max of 1 confirmed in Advanced settings when attachments are turned off', () => {
+    const { onDirtyChange } = renderForm();
+
+    click(getButton('Turn attachments on'));
+    click(getButton('Save max 1'));
+    click(getButton('Turn attachments off'));
+
+    expect(getMaxValue()).toBe('1');
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+  });
+
+  it('keeps the seeded max after a save when attachments are turned off', async () => {
+    renderForm();
+
+    click(getButton('Turn attachments on'));
+    click(getButton('Select PDF'));
+    await submitForm();
+    click(getButton('Turn attachments off'));
+
+    expect(getMaxValue()).toBe('1');
+  });
+
+  it('loads an app with attachment types and no max with the default max and a clean form', () => {
+    testContext.appContext.app = {
+      id: 'app',
+      applicationProperties: { orchestrator: SAVED_ORCHESTRATOR },
+      inputAttachmentTypes: ['application/pdf'],
+    };
+    const { onDirtyChange } = renderForm();
+
+    expect(getMaxValue()).toBe('1');
+    expect(onDirtyChange).not.toHaveBeenCalledWith(true);
+  });
+
   it('resolves the model and reports ready when model data arrives asynchronously', () => {
     testContext.dataContext = {
       models: [],
@@ -657,17 +775,18 @@ describe('QuickApp2Form observable behavior', () => {
     expect(onDirtyChange).not.toHaveBeenCalledWith(true);
   });
 
-  it('renders the conversation starters row read-only for a shared app', () => {
+  it('keeps the conversation starters row editable for a shared app', () => {
     testContext.appContext.app = {
       id: 'app',
       applicationProperties: { orchestrator: SAVED_ORCHESTRATOR },
       isShared: true,
+      sharedWithMe: true,
     };
 
     renderForm();
 
     expect(dom.container.querySelector('[data-testid="starters-readonly"]')?.textContent).toBe(
-      'true',
+      'false',
     );
   });
 
@@ -733,13 +852,16 @@ describe('QuickApp2Form observable behavior', () => {
     expect(onSave.mock.calls[0][0].documentRelativeUrl).toEqual(['files/abc/b.pdf']);
   });
 
-  it('renders the knowledge base row read-only for a shared app', () => {
-    testContext.appContext.app = { id: 'app', applicationProperties: {}, isShared: true };
+  it.each([{ isShared: true }, { sharedWithMe: true }])(
+    'keeps the knowledge base row editable for a shared app (%o)',
+    (sharedFlags) => {
+      testContext.appContext.app = { id: 'app', applicationProperties: {}, ...sharedFlags };
 
-    renderForm();
+      renderForm();
 
-    expect(dom.container.querySelector('[data-testid="knowledge-readonly"]')?.textContent).toBe(
-      'true',
-    );
-  });
+      expect(dom.container.querySelector('[data-testid="knowledge-readonly"]')?.textContent).toBe(
+        'false',
+      );
+    },
+  );
 });

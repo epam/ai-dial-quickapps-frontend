@@ -122,7 +122,6 @@ describe('ConversationStartersRow', () => {
   it('disables the action and keeps the list visible when read-only', () => {
     renderRow({
       isReadonly: true,
-      tooltip: ApplicationEditorI18nKeys.CannotChangeSharedApp,
       values: createValues([{ id: 'a', title: 'A', text: 'a' }, blankStarter]),
     });
 

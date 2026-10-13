@@ -1,7 +1,8 @@
-import { FC, useCallback, useEffect, useMemo } from 'react';
+import { FC, useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
-import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
+import type { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
+import { DEFAULT_MAX_INPUT_ATTACHMENTS } from '@/constants/quick-apps';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { getQuickApp2FormData } from '@/form/quickApp2Form';
@@ -31,6 +32,10 @@ interface QuickApp2FormProps {
     general?: TriggerSaveGeneralPayload,
   ) => void;
   onDirtyChange?: (isDirty: boolean) => void;
+  /** Called with whether the form values currently pass validation (deferred errors included). */
+  onValidityChange?: (isValid: boolean) => void;
+  /** Called when a manual save is blocked by form validation, with the error messages. */
+  onValidationError?: (messages: string[]) => void;
   /** Called once a model is resolved for the form — either the app's saved model or the default. */
   onModelReady?: () => void;
   isReadonly?: boolean;
@@ -39,8 +44,10 @@ interface QuickApp2FormProps {
 export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   onSave,
   onDirtyChange,
+  onValidationError,
+  onValidityChange,
   onModelReady,
-  isReadonly: isReadonlyProp,
+  isReadonly = false,
 }) => {
   const { t } = useTranslation();
   const { app, settings } = useAppContext();
@@ -51,10 +58,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     [models],
   );
   const availableModelIds = useMemo(() => models.map((model) => model.id), [models]);
-  const sharedTooltip = app.isShared
-    ? t(ApplicationEditorI18nKeys.CannotChangeSharedApp, { target: 'field' })
-    : undefined;
-  const isReadonly = isReadonlyProp || !!app.isShared;
   const defaultValues = getQuickApp2FormData(
     app,
     toolSupportingModelIds,
@@ -65,6 +68,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     values,
     errors,
     isDirty,
+    isValid,
     isModelReady,
     setField,
     setValues,
@@ -111,6 +115,10 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
 
+  useEffect(() => {
+    onValidityChange?.(isValid);
+  }, [isValid, onValidityChange]);
+
   const allEntitiesMap = useMemo(
     // MCP agents are separate from the model map but are valid toolset entities.
     () => ({ ...modelsMap, ...toolsetsMap, ...mcpAgentsMap }),
@@ -119,13 +127,24 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
 
   const isProcessLargeFilesAvailable = !!modelsMap[values.model]?.inputAttachmentTypes?.length;
 
+  // True while `maxInputAttachments` holds a default that only the Attachments toggle put there.
+  const isMaxAttachmentsSeededRef = useRef(false);
+
   const handleSubmitForm = useCallback(
     (isAutoSave = false, general?: TriggerSaveGeneralPayload) => {
       const result = submit();
-      if (!result.isValid) return;
+      if (!result.isValid) {
+        if (!isAutoSave) {
+          const messages = Object.values(result.errors).filter((message) => message != null);
+          onValidationError?.(messages.map((message) => t(message as ApplicationEditorI18nKeys)));
+        }
+        return;
+      }
+      // A saved max is the baseline now and must survive a later turn-off.
+      isMaxAttachmentsSeededRef.current = false;
       onSave(result.data, allEntitiesMap, isAutoSave, general);
     },
-    [allEntitiesMap, onSave, submit],
+    [allEntitiesMap, onSave, onValidationError, submit, t],
   );
 
   useEffect(() => {
@@ -164,7 +183,11 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     ],
   );
   const handleAdvancedSettingsSave = useCallback(
-    (nextAdvancedSettings: AdvancedSettingsValues) => setValues(nextAdvancedSettings),
+    (nextAdvancedSettings: AdvancedSettingsValues) => {
+      // A max confirmed in the popup is the user's, even when it equals the default.
+      isMaxAttachmentsSeededRef.current = false;
+      setValues(nextAdvancedSettings);
+    },
     [setValues],
   );
   const conversationStarters = useMemo<ConversationStartersValues>(
@@ -182,13 +205,31 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   );
   const handleAttachmentsEnabledChange = useCallback(
     (isEnabled: boolean) => {
+      const { maxInputAttachments } = values;
       if (isEnabled) {
+        if (maxInputAttachments == null || maxInputAttachments === '') {
+          isMaxAttachmentsSeededRef.current = true;
+          setValues({
+            attachmentsEnabled: true,
+            maxInputAttachments: DEFAULT_MAX_INPUT_ATTACHMENTS,
+          });
+          return;
+        }
         setField('attachmentsEnabled', true);
         return;
       }
-      setValues({ attachmentsEnabled: false, inputAttachmentTypes: [] });
+      // The max is kept on turn-off so turning Attachments back on restores it; only a value
+      // the toggle itself seeded is dropped, so on → off leaves the form untouched.
+      const shouldDropSeededMax =
+        isMaxAttachmentsSeededRef.current && maxInputAttachments === DEFAULT_MAX_INPUT_ATTACHMENTS;
+      isMaxAttachmentsSeededRef.current = false;
+      setValues({
+        attachmentsEnabled: false,
+        inputAttachmentTypes: [],
+        ...(shouldDropSeededMax ? { maxInputAttachments: undefined } : {}),
+      });
     },
-    [setField, setValues],
+    [setField, setValues, values],
   );
   const handleInputAttachmentTypesChange = useCallback(
     (mimeTypes: string[]) => setField('inputAttachmentTypes', mimeTypes),
@@ -214,7 +255,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
           agentSkills={values.agentSkills}
           onAgentSkillsChange={(value) => setField('agentSkills', value)}
           isReadonly={isReadonly}
-          tooltip={sharedTooltip}
           addOns={values.addOns}
           onAgentsChange={setAgentIds}
           onConfigureAgent={configureAgent}
@@ -231,7 +271,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         onModelChange={(value) => setField('model', value)}
         errors={errors}
         isReadonly={isReadonly}
-        tooltip={sharedTooltip}
         isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
         isCodeInterpreterEnabled={!!settings.isCodeInterpreterEnabled}
         isAddAttachmentEnabled={!!settings.isAddAttachmentEnabled}

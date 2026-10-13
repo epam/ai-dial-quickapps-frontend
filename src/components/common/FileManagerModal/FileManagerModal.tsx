@@ -35,9 +35,6 @@ import {
   toTransferQueueItems,
   type DialFileSourceLabels,
 } from '@/utils/dial-file-manager';
-import { FilesApiNodeType } from '@/types/dial-files';
-import { listFiles, listPublicFiles } from '@/utils/dial-files-api';
-import { PUBLIC_BUCKET_SEGMENT } from '@/constants/dial-paths';
 import { safeDecodeURI } from '@/utils/safe-decode-uri';
 
 interface FileManagerModalProps {
@@ -148,7 +145,8 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
 
   const [selectedPaths, setSelectedPaths] = useState<Set<string>>(() => new Set());
 
-  const hasInitialized = useRef(false);
+  // Initial ids already matched to a loaded row, so a later load never re-checks a row the user cleared.
+  const appliedInitialIds = useRef(new Set<string>());
 
   const handleTabChangeWithReset = useCallback(
     (tab: DialFileManagerTabs) => {
@@ -164,7 +162,11 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
       nodes.forEach((item) => {
         if (item.nodeType === DialFileNodeType.ITEM || item.nodeType === DialFileNodeType.FOLDER) {
           result.set(item.path, item);
-          if (item.id) result.set(item.id, item);
+          if (item.id) {
+            result.set(item.id, item);
+            // Context files are held decoded, while listing ids are percent-encoded.
+            result.set(safeDecodeURI(item.id), item);
+          }
         }
         if (item.items) collect(item.items);
       });
@@ -185,73 +187,45 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
   useEffect(() => {
     const reset = () => {
       setSelectedPaths(new Set());
-      hasInitialized.current = false;
+      appliedInitialIds.current = new Set();
     };
     if (!isOpen) reset();
   }, [isOpen]);
 
-  // Pre-populate selection from initialFileIds once the file tree is loaded.
+  // Pre-check the current context files as the tree loads. Folders are fetched lazily, so rows
+  // can appear after the first listing; each initial id is matched once, when its row shows up.
   // filesByPath maps both the DIAL Core path (DialFile.id) and virtual path, so
   // we look up by the stored DIAL Core ID and set the virtual path DialFileManager uses.
   useEffect(() => {
-    if (hasInitialized.current || filesByPath.size === 0) return;
-    hasInitialized.current = true;
-    if (!initialFileIds?.length) return;
-    const paths = new Set<string>();
+    if (!initialFileIds?.length || filesByPath.size === 0) return;
+    const matched: string[] = [];
     for (const id of initialFileIds) {
-      const file = filesByPath.get(id);
-      if (file) paths.add(file.path);
+      if (appliedInitialIds.current.has(id)) continue;
+      const file = filesByPath.get(id) ?? filesByPath.get(safeDecodeURI(id));
+      if (!file) continue;
+      appliedInitialIds.current.add(id);
+      matched.push(file.path);
     }
-    const apply = () => setSelectedPaths(paths);
-    if (paths.size > 0) apply();
+    if (matched.length === 0) return;
+    setSelectedPaths((prev) => new Set([...prev, ...matched]));
   }, [filesByPath, initialFileIds]);
 
-  const expandFolderFileIds = useCallback(
-    async (folder: DialFile): Promise<string[]> => {
-      const folderBucket = folder.bucket ?? bucket;
-      const folderId = folder.id ?? '';
-      const prefix = `files/${folderBucket}/`;
-      // The id is the API's (percent-encoded) path; the listing endpoints take it decoded.
-      const folderRelPath = folderId.startsWith(prefix)
-        ? safeDecodeURI(folderId.slice(prefix.length))
-        : '';
-      const result =
-        folderBucket === PUBLIC_BUCKET_SEGMENT
-          ? await listPublicFiles({ path: folderRelPath, recursive: true })
-          : await listFiles({ bucket: folderBucket, path: folderRelPath, recursive: true });
-      return result.items
-        .filter((item) => item.nodeType === FilesApiNodeType.Item && !isHiddenPath(item.path))
-        .map((item) => item.path);
-    },
-    [bucket],
-  );
-
-  const handleAttach = useCallback(async () => {
+  const handleAttach = useCallback(() => {
     const fileIds = new Set<string>();
-    // Files the tree hasn't resolved yet (e.g. in an unvisited folder/tab) never
+    // Entries the tree hasn't resolved yet (e.g. in an unvisited folder/tab) never
     // made it into selectedPaths, so keep them as-is rather than dropping them.
     for (const id of initialFileIds ?? []) {
-      if (!filesByPath.has(id)) fileIds.add(id);
+      if (!filesByPath.has(id) && !filesByPath.has(safeDecodeURI(id))) fileIds.add(id);
     }
-    try {
-      for (const f of selectedFiles) {
-        if (f.nodeType === DialFileNodeType.FOLDER) {
-          const folderFileIds = await expandFolderFileIds(f);
-          folderFileIds.forEach((id) => fileIds.add(id));
-        } else if (f.nodeType === DialFileNodeType.ITEM && !isHiddenPath(f.path)) {
-          fileIds.add(f.id ?? f.path);
-        }
-      }
-    } catch {
-      // Stay open with the selection intact; closing here would silently add nothing.
-      setNotification({
-        variant: NotificationVariant.Error,
-        message: t(DialFileManagerI18nKeys.AttachFolderFailed),
-      });
-      return;
+    // A folder is reported as the folder itself (its id ends in `/`), not as the files inside it.
+    for (const f of selectedFiles) {
+      if (isHiddenPath(f.path)) continue;
+      const id = f.id ?? f.path;
+      if (f.nodeType === DialFileNodeType.FOLDER) fileIds.add(id.endsWith('/') ? id : `${id}/`);
+      else if (f.nodeType === DialFileNodeType.ITEM) fileIds.add(id);
     }
     onClose(Array.from(fileIds));
-  }, [selectedFiles, onClose, expandFolderFileIds, initialFileIds, filesByPath, t]);
+  }, [selectedFiles, onClose, initialFileIds, filesByPath]);
 
   const handleCancel = useCallback(() => {
     onClose([]);

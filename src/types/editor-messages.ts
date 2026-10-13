@@ -71,6 +71,7 @@ export interface TriggerSaveEventDetail {
 export enum OutboundMessageType {
   Ready = 'READY',
   DirtyState = 'DIRTY_STATE',
+  ValidityState = 'VALIDITY_STATE',
   SaveSuccess = 'SAVE_SUCCESS',
   SaveError = 'SAVE_ERROR',
   AutoSaveComplete = 'AUTO_SAVE_COMPLETE',

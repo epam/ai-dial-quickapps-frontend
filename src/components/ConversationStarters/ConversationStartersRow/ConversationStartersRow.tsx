@@ -14,14 +14,12 @@ import ConversationStartersModal from '../ConversationStartersModal/Conversation
 export interface ConversationStartersRowProps {
   values: ConversationStartersValues;
   isReadonly: boolean;
-  tooltip?: string;
   onSave: (values: ConversationStartersValues) => void;
 }
 
 const ConversationStartersRow: FC<ConversationStartersRowProps> = ({
   values,
   isReadonly,
-  tooltip,
   onSave,
 }) => {
   const { t } = useTranslation();
@@ -49,7 +47,6 @@ const ConversationStartersRow: FC<ConversationStartersRowProps> = ({
         emptyDescription={t(ApplicationEditorI18nKeys.StartersDescription)}
         isEmpty={isEmpty}
         isAddDisabled={isReadonly}
-        addTooltip={tooltip}
         actionLabel={isEmpty ? undefined : t(ButtonsI18nKeys.Manage)}
         actionIcon={
           isEmpty ? undefined : (

@@ -94,7 +94,7 @@ needs the language SHALL read `i18n.resolvedLanguage` from the hook's `i18n`.
 
 #### Scenario: Interpolated message
 
-- **WHEN** a component calls `t(ApplicationEditorI18nKeys.RemoveStarter, { name: 'Hi' })`
+- **WHEN** a component calls `t(ApplicationEditorI18nKeys.StartersRemove, { name: 'Hi' })`
 - **THEN** i18next SHALL receive the key together with those options and render "Remove starter Hi"
 
 ### Requirement: Tests mock translations once

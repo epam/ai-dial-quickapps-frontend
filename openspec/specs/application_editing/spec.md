@@ -301,7 +301,9 @@ save-outcome message, when:
   state — only a TriggerAutoSave with `payload.ignoreDirty: true` does
   (`shouldIgnoreDirty`); the interval never does;
 - the form values fail validation (`QuickApp2Schema`). The form SHALL then show the
-  validation errors, including deferred ones such as empty instructions;
+  validation errors, including deferred ones such as empty instructions. A manual save
+  SHALL additionally post SaveError carrying the error messages joined with `; `, so the host
+  does not wait for an outcome; an auto-save posts nothing;
 - it arrives before the form has mounted (the application is still loading, or the load
   failed).
 
@@ -342,8 +344,9 @@ TriggerSave's `general` payload to the save, and SHALL NOT pass `general` with a
   instructions are blank
 - **THEN** QuickApps SHALL show the error `ApplicationEditorI18nKeys.InstructionsRequired`
   ("Instructions are required") on the instructions field
-- **AND** it SHALL NOT call chat-api and SHALL NOT post SaveSuccess, SaveError or
-  AutoSaveComplete
+- **AND** it SHALL NOT call chat-api and SHALL NOT post SaveSuccess or AutoSaveComplete
+- **AND** for a TriggerSave it SHALL post SaveError with `error` "Instructions are required";
+  for a TriggerAutoSave it SHALL post nothing
 
 ### Requirement: Auto-save interval
 

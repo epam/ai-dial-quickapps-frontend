@@ -4,6 +4,7 @@ z.config({ jitless: true });
 
 import {
   DEFAULT_AGENT_TRANSPORT,
+  DEFAULT_MAX_INPUT_ATTACHMENTS,
   ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE,
   REPRESENTATION_TOOLING_FEATURE_VALUE,
   WEB_FETCH_FEATURE_VALUE,
@@ -68,8 +69,20 @@ const MaxInputAttachmentsSchema = z.preprocess(
   z.coerce.number().int().positive().optional(),
 );
 
-export const isValidMaxInputAttachments = (value: unknown): boolean =>
-  MaxInputAttachmentsSchema.safeParse(value).success;
+const isEmptyMaxInputAttachments = (value: unknown): boolean => value == null || value === '';
+
+export const isValidMaxInputAttachments = (value: unknown, isRequired = false): boolean => {
+  if (isRequired && isEmptyMaxInputAttachments(value)) return false;
+  return MaxInputAttachmentsSchema.safeParse(value).success;
+};
+
+// Host values that are not a positive integer (0, negatives, decimals, null, garbage) count as
+// missing; a numeric string such as "3" is accepted.
+const normalizeMaxInputAttachments = (value: unknown): number | undefined => {
+  if (typeof value === 'string' && value.trim() === '') return undefined;
+  const result = MaxInputAttachmentsSchema.safeParse(value);
+  return result.success ? result.data : undefined;
+};
 
 export const QuickApp2Schema = z
   .object({
@@ -106,6 +119,14 @@ export const QuickApp2Schema = z
     webFetch: z.boolean(),
   })
   .superRefine((data, ctx) => {
+    if (data.attachmentsEnabled && data.maxInputAttachments == null) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['maxInputAttachments'],
+        message: ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachmentsRequired,
+      });
+    }
+
     if (data.attachmentsEnabled && data.inputAttachmentTypes.length === 0) {
       ctx.addIssue({
         code: 'custom',
@@ -230,7 +251,9 @@ export const getQuickApp2FormData = (
       false,
     attachmentsEnabled: inputAttachmentTypes.length > 0,
     inputAttachmentTypes,
-    maxInputAttachments: app?.maxInputAttachments as number | undefined,
+    maxInputAttachments:
+      normalizeMaxInputAttachments(app?.maxInputAttachments) ??
+      (inputAttachmentTypes.length > 0 ? DEFAULT_MAX_INPUT_ATTACHMENTS : undefined),
     introText: appProperties?.conversation_starters?.intro_text,
     chatMessageInputDisabled:
       appProperties?.conversation_starters?.chat_message_input_disabled ?? false,

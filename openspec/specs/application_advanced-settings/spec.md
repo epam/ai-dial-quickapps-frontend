@@ -70,12 +70,19 @@ Activating Save with a valid draft SHALL write `temperature`, `maxInputAttachmen
 
 ### Requirement: Max attachments is validated before Save
 
-The max attachments draft SHALL accept an empty value or a positive integer, using the same rule as the form schema (`MaxInputAttachmentsSchema`). An invalid value SHALL block Save.
+The max attachments draft SHALL be a positive integer when attachments are enabled (`attachmentsEnabled` is `true`), and SHALL accept an empty value or a positive integer otherwise, using the same rule as the form schema. An invalid or required-but-empty value SHALL block Save.
 
 #### Scenario: Empty value
 
-- **WHEN** the input is cleared and the user activates Save
+- **WHEN** attachments are disabled, the input is cleared and the user activates Save
 - **THEN** the form value `maxInputAttachments` SHALL become empty and the saved application SHALL omit `maxInputAttachments`
+
+#### Scenario: Empty value with attachments enabled
+
+- **WHEN** attachments are enabled, the input is cleared and the user activates Save
+- **THEN** the popup SHALL stay open
+- **AND** the input SHALL be marked invalid and show the translated message `ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachmentsRequired` ("Maximum attachments amount is required"), associated with the input for assistive technology
+- **AND** no form value SHALL change
 
 #### Scenario: Invalid value
 
@@ -234,7 +241,7 @@ The popup SHALL show, after the existing switches, a Code Interpreter switch whe
 
 #### Scenario: Read-only application
 
-- **WHEN** the application is shared or the editor is read-only
+- **WHEN** the editor is read-only
 - **THEN** the Advanced button SHALL be disabled and the popup SHALL NOT open, so the switches cannot be changed
 
 ### Requirement: Feature toggles are drafted and saved with the popup

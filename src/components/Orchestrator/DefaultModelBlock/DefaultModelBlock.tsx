@@ -27,7 +27,6 @@ interface DefaultModelBlockProps {
   value: string;
   onChange: (modelId: string) => void;
   isDisabled?: boolean;
-  tooltip?: string;
   error?: string;
 }
 
@@ -35,7 +34,6 @@ export const DefaultModelBlock: FC<DefaultModelBlockProps> = ({
   value,
   onChange,
   isDisabled,
-  tooltip,
   error,
 }) => {
   const { t } = useTranslation();
@@ -71,19 +69,16 @@ export const DefaultModelBlock: FC<DefaultModelBlockProps> = ({
           label={t(ButtonsI18nKeys.Change)}
           onClick={handleOpen}
           disabled={isDisabled || isLoading}
-          tooltipProps={tooltip ? { tooltip } : undefined}
         />
       }
     >
-      <div title={tooltip}>
-        <SelectedModelCard
-          modelId={value}
-          model={selectedModel}
-          isLoading={isLoading}
-          isDisabled={isDisabled}
-          error={error}
-        />
-      </div>
+      <SelectedModelCard
+        modelId={value}
+        model={selectedModel}
+        isLoading={isLoading}
+        isDisabled={isDisabled}
+        error={error}
+      />
 
       {isOpen && (
         <Suspense fallback={null}>

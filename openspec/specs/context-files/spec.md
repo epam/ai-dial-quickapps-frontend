@@ -287,7 +287,7 @@ Download SHALL support a single file only. A single file SHALL be fetched with `
 
 ### Requirement: Hidden files
 
-A path SHALL count as hidden when it contains the `.dial_folder` marker (`isHiddenPath`, `src/utils/dial-file-path.ts`). The toolbar SHALL show the Show hidden files toggle labelled `ShowHiddenFiles` / `HideHiddenFiles`. A new folder name starting with `.` and a rename to `.dial_folder` SHALL be refused, as defined above. Hidden rows SHALL NOT be selectable and SHALL expose `AttachingHiddenFilesNotAllowed`, and a selected folder SHALL expand without its hidden files, as `application_knowledge-base` defines for the popup.
+A path SHALL count as hidden when it contains the `.dial_folder` marker (`isHiddenPath`, `src/utils/dial-file-path.ts`). The toolbar SHALL show the Show hidden files toggle labelled `ShowHiddenFiles` / `HideHiddenFiles`. A new folder name starting with `.` and a rename to `.dial_folder` SHALL be refused, as defined above. Hidden rows SHALL NOT be selectable and SHALL expose `AttachingHiddenFilesNotAllowed`, and a hidden folder SHALL NOT be reported, as `application_knowledge-base` defines for the popup.
 
 #### Scenario: Toggle labels
 

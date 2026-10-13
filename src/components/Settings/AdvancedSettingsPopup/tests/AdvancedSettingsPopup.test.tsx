@@ -183,6 +183,7 @@ const renderPopup = (props: Partial<React.ComponentProps<typeof AdvancedSettings
       isCodeInterpreterEnabled={false}
       isAddAttachmentEnabled={false}
       isWebFetchEnabled={false}
+      isAttachmentsEnabled={false}
       onSave={onSave}
       onClose={onClose}
       {...props}
@@ -287,7 +288,7 @@ describe('AdvancedSettingsPopup', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('saves an empty max attachments value', () => {
+  it('saves an empty max attachments value while attachments are disabled', () => {
     const { onSave } = renderPopup();
 
     typeInto(getInputByLabel(ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachments), '');
@@ -312,6 +313,38 @@ describe('AdvancedSettingsPopup', () => {
 
     typeInto(input, '3');
     expect(input.getAttribute('aria-invalid')).toBe('false');
+  });
+
+  it('blocks Save and shows the required error for an empty max while attachments are enabled', () => {
+    const { onSave, onClose } = renderPopup({ isAttachmentsEnabled: true });
+
+    const input = getInputByLabel(ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachments);
+    typeInto(input, '');
+    click(getButton(ButtonsI18nKeys.Save));
+
+    expect(onSave).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+    expect(document.getElementById(input.getAttribute('aria-describedby') ?? '')?.textContent).toBe(
+      ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachmentsRequired,
+    );
+
+    typeInto(input, '2');
+    click(getButton(ButtonsI18nKeys.Save));
+    expect(onSave).toHaveBeenCalledWith({ ...initialValues, maxInputAttachments: 2 });
+  });
+
+  it('shows the invalid message, not the required one, for 0 while attachments are enabled', () => {
+    const { onSave } = renderPopup({ isAttachmentsEnabled: true });
+
+    const input = getInputByLabel(ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachments);
+    typeInto(input, '0');
+    click(getButton(ButtonsI18nKeys.Save));
+
+    expect(onSave).not.toHaveBeenCalled();
+    expect(document.getElementById(input.getAttribute('aria-describedby') ?? '')?.textContent).toBe(
+      ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachmentsInvalid,
+    );
   });
 
   it('shows an existing form error for max attachments on open', () => {

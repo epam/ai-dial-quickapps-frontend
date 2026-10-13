@@ -25,11 +25,10 @@ This change introduces no chat-api endpoint. Models continue to come from the ex
 - **THEN** the model picker popup defined by "Model picker catalog list" SHALL open
 - **AND** the `model` form value SHALL change only when the user confirms a highlighted row with **Add**, as defined by "Model picker single selection"
 
-#### Scenario: Read-only or shared application
+#### Scenario: Read-only application
 
-- **WHEN** the editor is read-only or the application is shared
+- **WHEN** the editor is read-only
 - **THEN** the **Change** button SHALL be disabled and SHALL NOT open the picker
-- **AND** the shared-application tooltip (`ApplicationEditorI18nKeys.CannotChangeSharedApp`) SHALL remain available on the block
 
 ### Requirement: Picker offers only models
 

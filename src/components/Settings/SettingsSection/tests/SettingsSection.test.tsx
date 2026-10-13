@@ -97,6 +97,7 @@ const renderSection = (
       isCodeInterpreterEnabled={false}
       isAddAttachmentEnabled={false}
       isWebFetchEnabled={false}
+      isAttachmentsEnabled={false}
       onAdvancedSettingsSave={onAdvancedSettingsSave}
     />,
   );

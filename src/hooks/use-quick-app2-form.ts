@@ -53,6 +53,7 @@ export interface UseQuickApp2FormResult {
   values: QuickApp2FormValues;
   errors: QuickApp2FormErrors;
   isDirty: boolean;
+  isValid: boolean;
   isModelReady: boolean;
   setField: <K extends keyof QuickApp2FormValues>(
     field: K,
@@ -316,11 +317,14 @@ export const useQuickApp2Form = ({
     [],
   );
 
+  const isValid = useMemo(() => QuickApp2Schema.safeParse(state.values).success, [state.values]);
+
   return useMemo(
     () => ({
       values: state.values,
       errors: state.errors,
       isDirty: !isEqual(state.values, state.initialValues),
+      isValid,
       isModelReady: state.modelStatus === LoadStatus.Ready && !!state.values.model,
       setField,
       setValues,
@@ -336,6 +340,7 @@ export const useQuickApp2Form = ({
     }),
     [
       state,
+      isValid,
       setField,
       setValues,
       syncExternalState,

@@ -33,7 +33,7 @@ The hook `useApplicationAuthentication(appId?)` (`src/hooks/use-application-auth
 - credentials mode is on;
 - the attached agent is in the catalog with `type` `DialEntityType.Application`. MCP-only agents from `DataContext.mcpAgentsMap` count as applications.
 
-In every other case it SHALL pass `undefined`: models, read-only or shared applications, and agents no longer in the catalog. Without an `appId`, the hook SHALL make no request and SHALL return `false`.
+In every other case it SHALL pass `undefined`: models, read-only applications, and agents no longer in the catalog. Without an `appId`, the hook SHALL make no request and SHALL return `false`.
 
 With an `appId`, the hook SHALL call `fetchApplicationRequiresAuthentication(appId)` (`src/utils/dial-client.ts`). That function SHALL:
 
@@ -74,7 +74,7 @@ The hook SHALL return `true` only when its latest result belongs to the `appId` 
 
 #### Scenario: No detection outside an eligible application
 
-- **WHEN** the details popup opens for a model, for an agent no longer in the catalog, or in a read-only or shared application
+- **WHEN** the details popup opens for a model, for an agent no longer in the catalog, or in a read-only application
 - **THEN** no external-services request SHALL be made and no Credentials action SHALL be rendered
 
 #### Scenario: Detection runs again when the popup reopens

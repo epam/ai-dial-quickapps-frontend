@@ -10,7 +10,6 @@ import { KnowledgeBaseList } from '../KnowledgeBaseList/KnowledgeBaseList';
 export interface KnowledgeBaseRowProps {
   files: string[];
   isReadonly: boolean;
-  tooltip?: string;
   onAddFiles: (files: string[]) => void;
   onRemoveFile: (file: string) => void;
 }
@@ -18,7 +17,6 @@ export interface KnowledgeBaseRowProps {
 const KnowledgeBaseRow: FC<KnowledgeBaseRowProps> = ({
   files,
   isReadonly,
-  tooltip,
   onAddFiles,
   onRemoveFile,
 }) => {
@@ -42,7 +40,6 @@ const KnowledgeBaseRow: FC<KnowledgeBaseRowProps> = ({
         emptyDescription={t(ApplicationEditorI18nKeys.KnowledgeBaseDescription)}
         isEmpty={isEmpty}
         isAddDisabled={isReadonly}
-        addTooltip={tooltip}
         onAdd={handleOpen}
       >
         {isEmpty ? null : (
