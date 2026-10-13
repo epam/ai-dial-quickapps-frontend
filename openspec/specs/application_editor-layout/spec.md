@@ -19,6 +19,11 @@ The editor SHALL present its primary content and Configuration areas as side-by-
 - **AND** no editor content SHALL require horizontal scrolling
 - **AND** Add-ons SHALL remain directly below Instructions in the primary content flow
 
+#### Scenario: Toggling a switch keeps the scroll position
+- **WHEN** the user has scrolled the editor and toggles a switch, such as Attachments
+- **THEN** the editor SHALL keep its scroll position and SHALL NOT shift the page
+- **AND** the editor document SHALL NOT grow taller than the editor's scroll container
+
 #### Scenario: Right-to-left document
 - **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
 - **THEN** the column arrangement and spacing SHALL follow the document direction

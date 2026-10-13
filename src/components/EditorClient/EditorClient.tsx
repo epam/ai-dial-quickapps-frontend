@@ -348,7 +348,10 @@ const EditorClient = ({ onReadyToSave }: EditorClientProps) => {
   return (
     <AppContextProvider value={appState}>
       <DataContextProvider>
-        <div className="h-full overflow-y-auto">
+        {/* `relative` keeps the UI kit's visually hidden (`sr-only`, absolute) inputs inside the
+            scroller; otherwise they escape it, stretch the document past the iframe and focusing
+            one — every Switch tap — scrolls the whole editor (Issue #260). */}
+        <div className="relative h-full overflow-y-auto">
           <div ref={formRef}>
             <Suspense>
               <EditorInner
