@@ -83,16 +83,25 @@ vi.mock('@epam/ai-dial-ui-kit', async (importOriginal) => {
       mainButtons,
       onClose,
       closeAriaLabel,
+      className,
+      overlayClassName,
     }: {
       open: boolean;
       header: string;
+      className?: string;
+      overlayClassName?: string;
       children: ReactNode;
       mainButtons: { label: string; disabled?: boolean; onClick: () => void }[];
       onClose: () => void;
       closeAriaLabel: string;
     }) =>
       open ? (
-        <div role="dialog" aria-label={header}>
+        <div
+          role="dialog"
+          aria-label={header}
+          className={className}
+          data-overlay-class={overlayClassName}
+        >
           <button aria-label={closeAriaLabel} onClick={() => onClose()} />
           {children}
           {mainButtons.map((button) => (
@@ -219,6 +228,17 @@ describe('CatalogPickerModal', () => {
         'Recently updated',
       );
       expect(getRows()).toEqual(['Jira', 'Figma', 'My notes']);
+    });
+
+    // Issue #259: below `md` the popup is full-screen; from `md` up it keeps the dialog.
+    it('fills a narrow viewport and keeps the centred dialog from md up', () => {
+      render();
+
+      const dialog = dom.container.querySelector('[role="dialog"]');
+      expect(dialog?.getAttribute('data-overlay-class')).toBe('p-0 md:p-4');
+      expect(dialog?.className.split(' ')).toEqual(
+        expect.arrayContaining(['h-full', 'rounded-none', 'md:h-auto', 'md:rounded-xl']),
+      );
     });
   });
 

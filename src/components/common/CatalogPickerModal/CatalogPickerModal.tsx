@@ -19,6 +19,7 @@ import {
 } from '@epam/ai-dial-ui-kit';
 
 import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { MOBILE_FULLSCREEN_POPUP_CLASS_NAMES } from '@/constants/popup';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from '@/hooks/use-translation';
 import { LoadStatus } from '@/types/load-status';
@@ -174,8 +175,10 @@ export const CatalogPickerModal: FC<CatalogPickerModalProps> = ({
       headerDivider
       footerDivider
       size={PopupSize.Lg}
+      {...MOBILE_FULLSCREEN_POPUP_CLASS_NAMES}
       closeAriaLabel={tCommon(CommonI18nKeys.CloseDialog)}
-      bodyClassName="flex h-[70vh] flex-col overflow-hidden px-6 pb-5 pt-6"
+      // Below `md` the body takes what the full-screen popup leaves; from `md` up it is fixed.
+      bodyClassName="flex min-h-0 flex-col overflow-hidden px-4 pb-4 pt-4 md:h-[70vh] md:px-6 md:pb-5 md:pt-6"
       mainButtons={mainButtons}
       onClose={onClose}
     >
