@@ -20,7 +20,6 @@ export interface ToolsetsFormSectionProps {
   /** The toolset entries among them. */
   toolsetIds: string[];
   isReadonly: boolean;
-  tooltip?: string;
   onChange: (allIds: string[]) => void;
 }
 
@@ -29,7 +28,6 @@ const ToolsetsFormSection: FC<ToolsetsFormSectionProps> = ({
   allIds,
   toolsetIds,
   isReadonly,
-  tooltip,
   onChange,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
@@ -51,7 +49,7 @@ const ToolsetsFormSection: FC<ToolsetsFormSectionProps> = ({
       emptyDescription={t(QuickAppEditorI18nKeys.ToolsetsDescription)}
       isEmpty={toolsetIds.length === 0}
       isAddDisabled={isReadonly}
-      addTooltip={tooltip ?? t(QuickAppEditorI18nKeys.AddToolsets)}
+      addTooltip={t(QuickAppEditorI18nKeys.AddToolsets)}
       onAdd={() => setIsAddModalOpen(true)}
     >
       <ToolsetsList ids={toolsetIds} allIds={allIds} isReadonly={isReadonly} onChange={onChange} />

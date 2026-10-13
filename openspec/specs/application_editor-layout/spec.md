@@ -83,9 +83,14 @@ The layout change SHALL preserve existing form state ownership, field names, con
 - **AND** the editor SHALL make no additional chat-api request because of the layout change
 
 #### Scenario: Read-only editor
-- **WHEN** the editor is read-only or the application is shared
+- **WHEN** the editor is read-only
 - **THEN** moved controls SHALL retain their existing disabled/read-only behavior
 - **AND** Add actions SHALL not allow a selection modal to be opened
+
+#### Scenario: Shared application
+- **WHEN** the application is shared with the user, however the host or chat-api flags it
+- **THEN** the editor SHALL behave exactly as for the user's own application: every control SHALL be editable and no control SHALL be disabled or carry a shared-application hint because of that
+- **AND** whether the user may change the application SHALL be decided by the host (through the editor's read-only state) and by chat-api when saving, never by the editor inspecting the application's sharing flags
 
 #### Scenario: Existing selections remain visible
 - **WHEN** an application loads with one or more skills, toolsets or agents already selected
@@ -115,7 +120,7 @@ The editor SHALL render an Add-ons section directly below Instructions. The sect
 - **WHEN** the Add-ons section is rendered in any supported locale
 - **THEN** the section and row labels SHALL be translated through the `quickAppEditor` keys `AddOns`, `Skills`, `Toolsets` ("Toolsets"), `Agents` ("Agents"), `KnowledgeBase` and `ConversationStarters`
 - **AND** the empty-row descriptions SHALL use `AgentSkillsDescription`, `ToolsetsDescription` ("External tools and services the agent can call, such as MCP servers.") and `AgentsDescription` ("Sub-agents this agent can delegate tasks to.")
-- **AND** the Add tooltips SHALL use `AddAgentSkills`, `AddToolsets` ("Add toolsets") and `AddAgents` ("Add agents"), or the shared-application tooltip when read-only
+- **AND** the Add tooltips SHALL use `AddAgentSkills`, `AddToolsets` ("Add toolsets") and `AddAgents` ("Add agents")
 - **AND** the Conversation starters Manage action SHALL use `quickAppEditor` key `Manage`
 - **AND** no user-visible label SHALL be hardcoded in the component
 
@@ -238,7 +243,7 @@ The Configuration area SHALL retain its existing model controls and render a tra
 - **AND** the row exposes a translated Advanced action using `quickAppEditor.Advanced`
 
 #### Scenario: Read-only Configuration
-- **WHEN** the editor is read-only or the application is shared
+- **WHEN** the editor is read-only
 - **THEN** the Advanced action SHALL be disabled
 - **AND** activating it SHALL not open the popup or change form state
 

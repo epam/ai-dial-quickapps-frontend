@@ -187,7 +187,7 @@ When an application is loaded with at least one `inputAttachmentTypes` entry and
 - **AND** a successful response SHALL return the application with the same `inputAttachmentTypes`
 
 ### Requirement: Attachments controls are read-only aware, accessible and direction-aware
-When the editor is read-only or the application is shared, the switch and the attachment types input SHALL be disabled, and tags SHALL NOT be removable.
+When the editor is read-only, the switch and the attachment types input SHALL be disabled, and tags SHALL NOT be removable.
 
 The switch SHALL use `quickAppEditor.Attachments` as its accessible name.
 

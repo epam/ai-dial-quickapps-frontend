@@ -18,14 +18,12 @@ export interface AgentSkillsFormSectionProps {
   value: QuickApp2FormValues['agentSkills'];
   onChange: (value: QuickApp2FormValues['agentSkills']) => void;
   isReadonly: boolean;
-  tooltip?: string;
 }
 
 const AgentSkillsFormSection: FC<AgentSkillsFormSectionProps> = ({
   value,
   onChange,
   isReadonly,
-  tooltip,
 }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
   const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
@@ -51,7 +49,7 @@ const AgentSkillsFormSection: FC<AgentSkillsFormSectionProps> = ({
       emptyDescription={t(QuickAppEditorI18nKeys.AgentSkillsDescription)}
       isEmpty={!value?.length}
       isAddDisabled={isReadonly}
-      addTooltip={tooltip ?? t(QuickAppEditorI18nKeys.AddAgentSkills)}
+      addTooltip={t(QuickAppEditorI18nKeys.AddAgentSkills)}
       onAdd={() => setIsSkillsModalOpen(true)}
     >
       <SkillsList value={value} isReadonly={isReadonly} onRemove={handleRemove} />

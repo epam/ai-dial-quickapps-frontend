@@ -103,7 +103,7 @@ describe('KnowledgeBaseRow', () => {
   });
 
   it('disables Add and hides trash buttons when read-only', () => {
-    renderRow({ files: ['files/abc/a.pdf'], isReadonly: true, tooltip: 'Shared' });
+    renderRow({ files: ['files/abc/a.pdf'], isReadonly: true });
 
     const addButton = findButton(CommonI18nKeys.Add);
     expect(addButton.disabled || addButton.getAttribute('aria-disabled') === 'true').toBe(true);
