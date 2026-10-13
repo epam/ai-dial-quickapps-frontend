@@ -36,9 +36,6 @@ import {
   toTransferQueueItems,
   type DialFileSourceLabels,
 } from '@/utils/dial-file-manager';
-import { FilesApiNodeType } from '@/types/dial-files';
-import { listFiles, listPublicFiles } from '@/utils/dial-files-api';
-import { PUBLIC_BUCKET_SEGMENT } from '@/constants/dial-paths';
 import { safeDecodeURI } from '@/utils/safe-decode-uri';
 
 interface FileManagerModalProps {
@@ -214,52 +211,22 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
     setSelectedPaths((prev) => new Set([...prev, ...matched]));
   }, [filesByPath, initialFileIds]);
 
-  const expandFolderFileIds = useCallback(
-    async (folder: DialFile): Promise<string[]> => {
-      const folderBucket = folder.bucket ?? bucket;
-      const folderId = folder.id ?? '';
-      const prefix = `files/${folderBucket}/`;
-      // The id is the API's (percent-encoded) path; the listing endpoints take it decoded.
-      const folderRelPath = folderId.startsWith(prefix)
-        ? safeDecodeURI(folderId.slice(prefix.length))
-        : '';
-      const result =
-        folderBucket === PUBLIC_BUCKET_SEGMENT
-          ? await listPublicFiles({ path: folderRelPath, recursive: true })
-          : await listFiles({ bucket: folderBucket, path: folderRelPath, recursive: true });
-      return result.items
-        .filter((item) => item.nodeType === FilesApiNodeType.Item && !isHiddenPath(item.path))
-        .map((item) => item.path);
-    },
-    [bucket],
-  );
-
-  const handleAttach = useCallback(async () => {
+  const handleAttach = useCallback(() => {
     const fileIds = new Set<string>();
-    // Files the tree hasn't resolved yet (e.g. in an unvisited folder/tab) never
+    // Entries the tree hasn't resolved yet (e.g. in an unvisited folder/tab) never
     // made it into selectedPaths, so keep them as-is rather than dropping them.
     for (const id of initialFileIds ?? []) {
       if (!filesByPath.has(id) && !filesByPath.has(safeDecodeURI(id))) fileIds.add(id);
     }
-    try {
-      for (const f of selectedFiles) {
-        if (f.nodeType === DialFileNodeType.FOLDER) {
-          const folderFileIds = await expandFolderFileIds(f);
-          folderFileIds.forEach((id) => fileIds.add(id));
-        } else if (f.nodeType === DialFileNodeType.ITEM && !isHiddenPath(f.path)) {
-          fileIds.add(f.id ?? f.path);
-        }
-      }
-    } catch {
-      // Stay open with the selection intact; closing here would silently add nothing.
-      setNotification({
-        variant: NotificationVariant.Error,
-        message: t(DialFileManagerI18nKeys.AttachFolderFailed),
-      });
-      return;
+    // A folder is reported as the folder itself (its id ends in `/`), not as the files inside it.
+    for (const f of selectedFiles) {
+      if (isHiddenPath(f.path)) continue;
+      const id = f.id ?? f.path;
+      if (f.nodeType === DialFileNodeType.FOLDER) fileIds.add(id.endsWith('/') ? id : `${id}/`);
+      else if (f.nodeType === DialFileNodeType.ITEM) fileIds.add(id);
     }
     onClose(Array.from(fileIds));
-  }, [selectedFiles, onClose, expandFolderFileIds, initialFileIds, filesByPath, t]);
+  }, [selectedFiles, onClose, initialFileIds, filesByPath]);
 
   const handleCancel = useCallback(() => {
     onClose([]);
