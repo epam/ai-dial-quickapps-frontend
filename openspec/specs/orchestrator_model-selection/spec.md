@@ -15,8 +15,8 @@ This change introduces no chat-api endpoint. Models continue to come from the ex
 #### Scenario: Block header is rendered
 
 - **WHEN** the editor renders the Configuration area
-- **THEN** a heading with the text from `quickAppEditor` key `DefaultModel` ("Default model") SHALL be displayed, visually uppercased
-- **AND** a button labelled with `quickAppEditor` key `Change` and a leading pencil icon SHALL be displayed at the end side of the same header row
+- **THEN** a heading with the text from `ApplicationEditorI18nKeys.OrchestratorDefaultModel` ("Default model") SHALL be displayed, visually uppercased
+- **AND** a button labelled with `ButtonsI18nKeys.Change` and a leading pencil icon SHALL be displayed at the end side of the same header row
 - **AND** the block SHALL be exposed as a `section` whose accessible name is the heading text
 
 #### Scenario: Change opens the model picker
@@ -29,7 +29,7 @@ This change introduces no chat-api endpoint. Models continue to come from the ex
 
 - **WHEN** the editor is read-only or the application is shared
 - **THEN** the **Change** button SHALL be disabled and SHALL NOT open the picker
-- **AND** the shared-application tooltip (`quickAppEditor` key `CannotChangeSharedApp`) SHALL remain available on the block
+- **AND** the shared-application tooltip (`ApplicationEditorI18nKeys.CannotChangeSharedApp`) SHALL remain available on the block
 
 ### Requirement: Picker offers only models
 
@@ -53,9 +53,9 @@ The model picker SHALL be a modal dialog presenting models as a catalog list, ma
 
 Layout, top to bottom:
 
-- dialog header: title from `quickAppEditor` key `ChangeModel` ("Change model") and a close (×) control, separated from the body by a divider,
-- a heading row: `quickAppEditor` key `ModelsCatalog` ("Models catalog") followed by the number of rows currently listed, and the sort menu at the end side,
-- a search input (placeholder `quickAppEditor` key `SearchModels`, "Search models…") followed by the From filter,
+- dialog header: title from `ApplicationEditorI18nKeys.OrchestratorChangeModel` ("Change model") and a close (×) control, separated from the body by a divider,
+- a heading row: `ApplicationEditorI18nKeys.OrchestratorCatalogTitle` ("Models catalog") followed by the number of rows currently listed, and the sort menu at the end side,
+- a search input (placeholder `ApplicationEditorI18nKeys.OrchestratorSearchPlaceholder`, "Search models…") followed by the From filter,
 - the list with columns **Name**, **Type**, **Folder**, **Tags**,
 - a footer, separated from the list by a divider, with **Cancel** (ghost) and **Add** (neutral) at the end side.
 
@@ -73,7 +73,7 @@ The picker state (search query, filter, sort, highlighted row) SHALL be local `u
 - **WHEN** a tool-supporting model `models/gemini__1.0.3` with name "Google Gemini 3.5 Flash Lite", version `1.0.3`, topics `["Business", "Domain"]` and an `iconUrl` is listed
 - **THEN** its Name cell SHALL show the icon (initials of the name when `iconUrl` is absent or fails), the localized name and the version `1.0.3` as secondary text
 - **AND** its Type cell SHALL show the catalog's model type label
-- **AND** its Folder cell SHALL show a folder icon and the deepest segment of the path made of the scope label (`common` keys `PersonalScope` / `SharedScope` / `OrganizationScope`) followed by the folder segments — e.g. "Organization" for `models/gemini__1.0.3`, or "folder1" for a model under a public sub-folder, with the full path "Organization / folder1" in a tooltip and in screen-reader text
+- **AND** its Folder cell SHALL show a folder icon and the deepest segment of the path made of the scope label (`CatalogI18nKeys.FolderPersonal` / `CatalogI18nKeys.FolderSharedScope` / `BasicI18nKeys.Organization`) followed by the folder segments — e.g. "Organization" for `models/gemini__1.0.3`, or "folder1" for a model under a public sub-folder, with the full path "Organization / folder1" in a tooltip and in screen-reader text
 - **AND** its Tags cell SHALL show "Business" and "Domain" as tags
 
 #### Scenario: Each version is its own row
@@ -94,7 +94,7 @@ The picker SHALL let the user narrow and reorder the rows. The heading count SHA
 
 - **WHEN** the user types "gem" in the search box
 - **THEN** only rows whose localized name contains "gem" (case-insensitive, trimmed) SHALL be listed, and matching text SHALL be highlighted in the Name cell
-- **AND** clearing the search (clear button labelled by `common` key `ClearSearch`) SHALL restore all rows
+- **AND** clearing the search (clear button labelled by `BasicI18nKeys.ClearSearch`) SHALL restore all rows
 
 #### Scenario: Filter by topic
 
@@ -105,20 +105,20 @@ The picker SHALL let the user narrow and reorder the rows. The heading count SHA
 
 #### Scenario: Filter to my models
 
-- **WHEN** the user checks "My" (`quickAppEditor` key `FilterMy`) in the From filter
+- **WHEN** the user checks "My" (`CatalogI18nKeys.BrowseSettingsMy`) in the From filter
 - **THEN** only rows whose id is in the user's personal bucket SHALL be listed
 
 #### Scenario: Sort
 
 - **WHEN** the picker opens
 - **THEN** rows SHALL be sorted by "Recently updated" (`updatedAt` descending; rows without `updatedAt` last)
-- **AND** the sort menu SHALL also offer "Newest" and "Name A-Z" (`quickAppEditor` keys `SortRecentlyUpdated`, `SortNewest`, `SortNameAZ`), and choosing one SHALL reorder the rows
-- **AND** the sort trigger SHALL be labelled with the applied order, as in the chat catalog (the kit's `Button` derives its accessible name from that label); `quickAppEditor` key `SortLabel` ("Sort") SHALL be used only as a fallback when no option matches
+- **AND** the sort menu SHALL also offer "Newest" and "Name A-Z" (`CatalogI18nKeys.SortsUpdated`, `CatalogI18nKeys.SortNewest`, `CatalogI18nKeys.SortNameAZ`), and choosing one SHALL reorder the rows
+- **AND** the sort trigger SHALL be labelled with the applied order, as in the chat catalog (the kit's `Button` derives its accessible name from that label); `ButtonsI18nKeys.Sort` ("Sort") SHALL be used only as a fallback when no option matches
 
 #### Scenario: No results
 
 - **WHEN** search or filter leave no rows
-- **THEN** the list area SHALL show the `quickAppEditor` `NoResultsFound` empty state with a search icon
+- **THEN** the list area SHALL show the `BasicI18nKeys.NoResults` empty state with a search icon
 - **AND** the count SHALL show 0 and **Add** SHALL be disabled
 
 ### Requirement: Model picker single selection
@@ -139,13 +139,13 @@ The picker SHALL support selecting exactly one model and SHALL commit it only on
 
 #### Scenario: Confirm with Add
 
-- **WHEN** a row is selected and the user activates **Add** (`common` key `Add`)
+- **WHEN** a row is selected and the user activates **Add** (`ButtonsI18nKeys.Add`)
 - **THEN** the `model` form value SHALL be set to that row's deployment id (including its version suffix)
 - **AND** the picker SHALL close
 
 #### Scenario: Discard
 
-- **WHEN** the user activates **Cancel** (`common` key `Cancel`), the × control, presses Escape, or clicks outside the dialog
+- **WHEN** the user activates **Cancel** (`ButtonsI18nKeys.Cancel`), the × control, presses Escape, or clicks outside the dialog
 - **THEN** the picker SHALL close and the `model` form value SHALL remain unchanged
 - **AND** reopening the picker SHALL show the current value selected with search, filter and sort reset
 
@@ -166,18 +166,18 @@ The picker SHALL keep explicit loading, error and empty states while preserving 
 #### Scenario: Models loading
 
 - **WHEN** the `DataContext` status is `idle` or `loading`
-- **THEN** the list area SHALL show a spinner with accessible label `quickAppEditor` key `LoadingModels`
+- **THEN** the list area SHALL show a spinner with accessible label `DeploymentSelectorI18nKeys.Loading`
 - **AND** **Add** SHALL be disabled
 
 #### Scenario: Load error
 
 - **WHEN** the `DataContext` status is `error`
-- **THEN** the list area SHALL show `quickAppEditor` `FailedToLoadModels` with the error text and a **Retry** button (`quickAppEditor` key `Retry`) that calls `refreshAll`
+- **THEN** the list area SHALL show `DeploymentSelectorI18nKeys.Error` with the error text and a **Retry** button (`ButtonsI18nKeys.Retry`) that calls `refreshAll`
 
 #### Scenario: No selectable models
 
 - **WHEN** models have loaded, no search or filter is active, and none is selectable
-- **THEN** the list area SHALL show the `quickAppEditor` `NotAvailable` empty state
+- **THEN** the list area SHALL show the `BasicI18nKeys.NotAvailable` empty state
 
 ### Requirement: Model picker accessibility and direction
 
@@ -187,7 +187,7 @@ The picker SHALL be keyboard operable and follow the document direction.
 
 - **WHEN** the picker opens
 - **THEN** focus SHALL move into the dialog, and Tab SHALL reach search, From, sort, the list, Cancel and Add in reading order
-- **AND** the list SHALL be exposed as a grid with an accessible name from `quickAppEditor` key `ModelsCatalog`
+- **AND** the list SHALL be exposed as a grid with an accessible name from `ApplicationEditorI18nKeys.OrchestratorCatalogTitle`
 - **AND** arrow keys SHALL move focus between rows, and Enter or Space on a focused row SHALL select it as a click does
 
 #### Scenario: Right-to-left document
@@ -221,7 +221,7 @@ The card SHALL NOT contain an inline version selector.
 
 - **WHEN** the selected deployment has `type: 'model'` and a `version` (e.g. `1.0.3`)
 - **THEN** the card SHALL show the entity icon (the image from `iconUrl`, or the initials of the name when absent or broken)
-- **AND** a type label from `quickAppEditor` key `Model` ("Model"), displayed uppercase in the model entity colour (`text-blue`)
+- **AND** a type label from `ApplicationEditorI18nKeys.OrchestratorModel` ("Model"), displayed uppercase in the model entity colour (`text-blue`)
 - **AND** the localized name (e.g. "Google Gemini 3.5 Flash Lite")
 - **AND** the version `1.0.3` as secondary text next to the name, with no dropdown control
 
@@ -254,7 +254,7 @@ The configured default model id SHALL come only from chat-api's client config: `
 Example response (relevant part only):
 
 ```json
-{ "config": { "defaultDeploymentId": "gemini-2.5-flash", "customVariables": { } } }
+{ "config": { "defaultDeploymentId": "gemini-2.5-flash", "customVariables": {} } }
 ```
 
 A stored model SHALL never be replaced by the pre-selection. The pre-selected value SHALL become the form's initial value: it SHALL NOT mark the form dirty, and it SHALL be persisted only when the application is saved.

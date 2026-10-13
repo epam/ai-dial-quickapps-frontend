@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import type { CatalogItem } from '@epam/ai-dial-catalog';
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 
+import { BasicI18nKeys, ButtonsI18nKeys, CatalogI18nKeys } from '@/constants/translation-keys';
 import { click, getButton, typeInto } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
 
@@ -11,7 +12,6 @@ import { CatalogPickerModal, type CatalogPickerModalLabels } from '../CatalogPic
 let status: 'idle' | 'loading' | 'ready' | 'error' = 'ready';
 const refreshAll = vi.fn();
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({
     status,
@@ -214,9 +214,11 @@ describe('CatalogPickerModal', () => {
       );
       expect(getDialogText()).toContain('Toolsets catalog3');
       expect(dom.container.querySelector('input[aria-label="Search toolsets..."]')).not.toBeNull();
-      expect(dom.container.querySelector('fieldset[aria-label="From"]')).not.toBeNull();
+      expect(
+        dom.container.querySelector(`fieldset[aria-label="${CatalogI18nKeys.BrowseSettingsFrom}"]`),
+      ).not.toBeNull();
       expect(dom.container.querySelector('[data-testid="sort-label"]')?.textContent).toBe(
-        'Recently updated',
+        CatalogI18nKeys.SortsUpdated,
       );
       expect(getRows()).toEqual(['Jira', 'Figma', 'My notes']);
     });
@@ -238,7 +240,7 @@ describe('CatalogPickerModal', () => {
 
       expect(
         [...dom.container.querySelectorAll('fieldset label')].map((label) => label.textContent),
-      ).toEqual(['Design', 'Tracking', 'My']);
+      ).toEqual(['Design', 'Tracking', CatalogI18nKeys.BrowseSettingsMy]);
 
       toggleCheckbox('Design');
 
@@ -248,7 +250,7 @@ describe('CatalogPickerModal', () => {
     it("keeps only the user's own entries when My is checked", () => {
       render();
 
-      toggleCheckbox('My');
+      toggleCheckbox(CatalogI18nKeys.BrowseSettingsMy);
 
       expect(getRows()).toEqual(['My notes']);
       expect(getDialogText()).toContain('Toolsets catalog1');
@@ -257,10 +259,10 @@ describe('CatalogPickerModal', () => {
     it('sorts by name on request', () => {
       render();
 
-      click(getButton('Name A-Z'));
+      click(getButton(CatalogI18nKeys.SortNameAZ));
 
       expect(dom.container.querySelector('[data-testid="sort-label"]')?.textContent).toBe(
-        'Name A-Z',
+        CatalogI18nKeys.SortNameAZ,
       );
       expect(getRows()).toEqual(['Figma', 'Jira', 'My notes']);
     });
@@ -270,10 +272,10 @@ describe('CatalogPickerModal', () => {
 
       typeSearch('zzz');
 
-      expect(dom.container.textContent).toContain('No results found');
+      expect(dom.container.textContent).toContain(BasicI18nKeys.NoResults);
       expect(dom.container.querySelector('[role="grid"]')).toBeNull();
       expect(getDialogText()).toContain('Toolsets catalog0');
-      expect(getButton('Add')?.disabled).toBe(false);
+      expect(getButton(ButtonsI18nKeys.Add)?.disabled).toBe(false);
     });
   });
 
@@ -281,7 +283,7 @@ describe('CatalogPickerModal', () => {
     it('confirms with Add', () => {
       render();
 
-      click(getButton('Add'));
+      click(getButton(ButtonsI18nKeys.Add));
 
       expect(onConfirm).toHaveBeenCalledTimes(1);
     });
@@ -289,17 +291,17 @@ describe('CatalogPickerModal', () => {
     it('keeps Add disabled when the picker says so', () => {
       render({ isConfirmDisabled: true });
 
-      click(getButton('Add'));
+      click(getButton(ButtonsI18nKeys.Add));
 
-      expect(getButton('Add')?.disabled).toBe(true);
+      expect(getButton(ButtonsI18nKeys.Add)?.disabled).toBe(true);
       expect(onConfirm).not.toHaveBeenCalled();
     });
 
     it('closes without confirming on Cancel and on the close control', () => {
       render();
 
-      click(getButton('Cancel'));
-      click(dom.container.querySelector('[aria-label="Close dialog"]'));
+      click(getButton(ButtonsI18nKeys.Cancel));
+      click(dom.container.querySelector(`[aria-label="${BasicI18nKeys.CloseDialog}"]`));
 
       expect(onClose).toHaveBeenCalledTimes(2);
       expect(onConfirm).not.toHaveBeenCalled();
@@ -321,7 +323,7 @@ describe('CatalogPickerModal', () => {
       items = [];
       render();
 
-      expect(dom.container.textContent).toContain('No toolsets available');
+      expect(dom.container.textContent).toContain(LABELS.empty);
       expect(renderList).not.toHaveBeenCalled();
     });
 
@@ -331,18 +333,18 @@ describe('CatalogPickerModal', () => {
 
       expect(dom.container.querySelector('[aria-label="Loading toolsets…"]')).not.toBeNull();
       expect(getDialogText()).not.toContain('Toolsets catalog3');
-      expect(getButton('Add')?.disabled).toBe(true);
+      expect(getButton(ButtonsI18nKeys.Add)?.disabled).toBe(true);
     });
 
     it('shows the load error with a Retry that reloads', () => {
       status = 'error';
       render();
 
-      expect(dom.container.textContent).toContain('Failed to load toolsets');
+      expect(dom.container.textContent).toContain(LABELS.failedToLoad);
       expect(dom.container.textContent).toContain('Network down');
-      expect(getButton('Add')?.disabled).toBe(true);
+      expect(getButton(ButtonsI18nKeys.Add)?.disabled).toBe(true);
 
-      click(getButton('Retry'));
+      click(getButton(ButtonsI18nKeys.Retry));
 
       expect(refreshAll).toHaveBeenCalledTimes(1);
     });

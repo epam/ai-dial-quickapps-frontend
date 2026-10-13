@@ -2,9 +2,8 @@ import { FC, memo, useCallback, useState } from 'react';
 
 import { AddOnRow } from '@/components/AddOns/AddOnRow/AddOnRow';
 import FileManagerModal from '@/components/common/FileManagerModal/FileManagerModal';
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/use-translation';
-import { Translation } from '@/types/translation';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
+import { useTranslation } from 'react-i18next';
 
 import { KnowledgeBaseList } from '../KnowledgeBaseList/KnowledgeBaseList';
 
@@ -23,7 +22,7 @@ const KnowledgeBaseRow: FC<KnowledgeBaseRowProps> = ({
   onAddFiles,
   onRemoveFile,
 }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const isEmpty = files.length === 0;
 
@@ -39,8 +38,8 @@ const KnowledgeBaseRow: FC<KnowledgeBaseRowProps> = ({
   return (
     <>
       <AddOnRow
-        label={t(QuickAppEditorI18nKeys.KnowledgeBase)}
-        emptyDescription={t(QuickAppEditorI18nKeys.KnowledgeBaseDescription)}
+        label={t(ApplicationEditorI18nKeys.KnowledgeBaseTitle)}
+        emptyDescription={t(ApplicationEditorI18nKeys.KnowledgeBaseDescription)}
         isEmpty={isEmpty}
         isAddDisabled={isReadonly}
         addTooltip={tooltip}

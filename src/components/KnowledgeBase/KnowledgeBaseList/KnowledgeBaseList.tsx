@@ -9,10 +9,9 @@ import {
 import { IconTrash } from '@tabler/icons-react';
 import { FC, useCallback, useEffect, useMemo, useRef } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys, BasicI18nKeys, CatalogI18nKeys } from '@/constants/translation-keys';
 import { useAuthContext } from '@/context/AuthContext';
-import { useTranslation } from '@/hooks/use-translation';
-import { Translation } from '@/types/translation';
+import { useTranslation } from 'react-i18next';
 import { parseKnowledgeBaseItem } from '@/utils/knowledge-base-path';
 
 export interface KnowledgeBaseListProps {
@@ -22,7 +21,7 @@ export interface KnowledgeBaseListProps {
 }
 
 export const KnowledgeBaseList: FC<KnowledgeBaseListProps> = ({ files, onRemove }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation();
   const { user } = useAuthContext();
   const ownBucket = user?.bucket;
   const listRef = useRef<HTMLUListElement>(null);
@@ -32,9 +31,9 @@ export const KnowledgeBaseList: FC<KnowledgeBaseListProps> = ({ files, onRemove 
 
   const rootLabels = useMemo(
     () => ({
-      personal: t(QuickAppEditorI18nKeys.KnowledgeBasePersonal),
-      organization: t(QuickAppEditorI18nKeys.KnowledgeBaseOrganization),
-      shared: t(QuickAppEditorI18nKeys.KnowledgeBaseShared),
+      personal: t(CatalogI18nKeys.FolderPersonal),
+      organization: t(BasicI18nKeys.Organization),
+      shared: t(CatalogI18nKeys.FolderShared),
     }),
     [t],
   );
@@ -76,7 +75,7 @@ export const KnowledgeBaseList: FC<KnowledgeBaseListProps> = ({ files, onRemove 
           <div className="min-w-0 flex-1">
             <Breadcrumbs
               items={breadcrumbItems[index]}
-              ariaLabel={t(QuickAppEditorI18nKeys.KnowledgeBasePathLabel, { name: item.name })}
+              ariaLabel={t(ApplicationEditorI18nKeys.KnowledgeBasePathLabel, { name: item.name })}
             />
           </div>
           {onRemove && (
@@ -84,7 +83,7 @@ export const KnowledgeBaseList: FC<KnowledgeBaseListProps> = ({ files, onRemove 
             <GhostIconButton
               size={ElementSize.Small}
               icon={<IconTrash size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} />}
-              aria-label={t(QuickAppEditorI18nKeys.RemoveKnowledgeBaseItem, { name: item.name })}
+              aria-label={t(ApplicationEditorI18nKeys.KnowledgeBaseRemoveItem, { name: item.name })}
               className="shrink-0 opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100"
               onClick={() => handleRemove(item.file)}
             />

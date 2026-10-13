@@ -6,6 +6,11 @@ import { setupTestRoot } from '@/test-utils/test-root';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 
 import AdvancedSettingsPopup from '../AdvancedSettingsPopup';
+import {
+  ApplicationEditorI18nKeys,
+  ButtonsI18nKeys,
+  ChatSettingsI18nKeys,
+} from '@/constants/translation-keys';
 
 interface MockButtonProps {
   label: string;
@@ -56,7 +61,6 @@ interface MockSwitchProps {
   onChange: (value: boolean) => void;
 }
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@epam/ai-dial-ui-kit', () => ({
   ButtonAppearance: { Link: 'link' },
   ButtonVariant: { Primary: 'primary', Neutral: 'neutral' },
@@ -209,23 +213,39 @@ describe('AdvancedSettingsPopup', () => {
     renderPopup();
 
     expect(dom.container.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe(
-      'Advanced settings',
+      ApplicationEditorI18nKeys.AdvancedSettingsTitle,
     );
-    const input = getInputByLabel('Maximum attachments amount user can add');
+    const input = getInputByLabel(ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachments);
     expect(input.value).toBe('50');
     expect(document.getElementById(input.getAttribute('aria-describedby') ?? '')?.textContent).toBe(
-      'Valid only for the cases when attachments enabled for the agent',
+      ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachmentsHint,
     );
-    expect(getSwitch('Time awareness').getAttribute('aria-checked')).toBe('true');
-    expect(getSwitch('Built-in file tools').getAttribute('aria-checked')).toBe('false');
+    expect(
+      getSwitch(ApplicationEditorI18nKeys.AdvancedSettingsTimeAwareness).getAttribute(
+        'aria-checked',
+      ),
+    ).toBe('true');
+    expect(
+      getSwitch(ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileTools).getAttribute(
+        'aria-checked',
+      ),
+    ).toBe('false');
 
     const body = dom.container.querySelector('[data-testid="body"]') as HTMLElement;
-    expect(body.textContent).toContain('Gives the agent the current date and time');
-    expect(body.textContent).toContain('Lets the agent browse, search, read, and edit files');
+    expect(body.textContent).toContain(
+      ApplicationEditorI18nKeys.AdvancedSettingsTimeAwarenessDescription,
+    );
+    expect(body.textContent).toContain(
+      ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileToolsDescription,
+    );
     const controls = [...body.querySelectorAll('input, [role="switch"]')].map(
       (element) => element.getAttribute('aria-label') ?? 'max attachments',
     );
-    expect(controls).toEqual(['max attachments', 'Time awareness', 'Built-in file tools']);
+    expect(controls).toEqual([
+      'max attachments',
+      ApplicationEditorI18nKeys.AdvancedSettingsTimeAwareness,
+      ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileTools,
+    ]);
   });
 
   it('caps the dialog at the design width from the desktop breakpoint', () => {
@@ -237,9 +257,11 @@ describe('AdvancedSettingsPopup', () => {
   it('shows a placeholder in an empty max attachments input', () => {
     renderPopup({ advancedSettings: { ...initialValues, maxInputAttachments: '' } });
 
-    const input = getInputByLabel('Maximum attachments amount user can add');
+    const input = getInputByLabel(ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachments);
     expect(input.value).toBe('');
-    expect(input.placeholder).toBe('Enter the maximum number of attachments');
+    expect(input.placeholder).toBe(
+      ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachmentsPlaceholder,
+    );
   });
 
   it('renders nothing when closed', () => {
@@ -251,10 +273,10 @@ describe('AdvancedSettingsPopup', () => {
   it('saves the edited draft and closes', () => {
     const { onSave, onClose } = renderPopup();
 
-    click(getSwitch('Built-in file tools'));
-    click(getSwitch('Time awareness'));
-    typeInto(getInputByLabel('Maximum attachments amount user can add'), '10');
-    click(getButton('Save'));
+    click(getSwitch(ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileTools));
+    click(getSwitch(ApplicationEditorI18nKeys.AdvancedSettingsTimeAwareness));
+    typeInto(getInputByLabel(ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachments), '10');
+    click(getButton(ButtonsI18nKeys.Save));
 
     expect(onSave).toHaveBeenCalledWith({
       ...initialValues,
@@ -268,8 +290,8 @@ describe('AdvancedSettingsPopup', () => {
   it('saves an empty max attachments value', () => {
     const { onSave } = renderPopup();
 
-    typeInto(getInputByLabel('Maximum attachments amount user can add'), '');
-    click(getButton('Save'));
+    typeInto(getInputByLabel(ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachments), '');
+    click(getButton(ButtonsI18nKeys.Save));
 
     expect(onSave).toHaveBeenCalledWith({ ...initialValues, maxInputAttachments: '' });
   });
@@ -277,15 +299,15 @@ describe('AdvancedSettingsPopup', () => {
   it('blocks Save and shows an error for a max attachments value that is not a positive integer', () => {
     const { onSave, onClose } = renderPopup();
 
-    const input = getInputByLabel('Maximum attachments amount user can add');
+    const input = getInputByLabel(ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachments);
     typeInto(input, '0');
-    click(getButton('Save'));
+    click(getButton(ButtonsI18nKeys.Save));
 
     expect(onSave).not.toHaveBeenCalled();
     expect(onClose).not.toHaveBeenCalled();
     expect(input.getAttribute('aria-invalid')).toBe('true');
     expect(document.getElementById(input.getAttribute('aria-describedby') ?? '')?.textContent).toBe(
-      'Enter a whole number greater than 0',
+      ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachmentsInvalid,
     );
 
     typeInto(input, '3');
@@ -296,16 +318,18 @@ describe('AdvancedSettingsPopup', () => {
     renderPopup({ maxInputAttachmentsError: 'Too small' });
 
     expect(
-      getInputByLabel('Maximum attachments amount user can add').getAttribute('aria-invalid'),
+      getInputByLabel(ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachments).getAttribute(
+        'aria-invalid',
+      ),
     ).toBe('true');
   });
 
-  it.each(['Close advanced settings', 'Close'])(
+  it.each([ApplicationEditorI18nKeys.AdvancedSettingsClose, ButtonsI18nKeys.Close])(
     'discards the draft when dismissed with %s',
     (name) => {
       const { onSave, onClose } = renderPopup();
 
-      click(getSwitch('Built-in file tools'));
+      click(getSwitch(ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileTools));
       click(getButton(name));
 
       expect(onSave).not.toHaveBeenCalled();
@@ -317,12 +341,12 @@ describe('AdvancedSettingsPopup', () => {
     const renderFull = () =>
       renderPopup({ isTemperatureAvailable: true, isProcessLargeFilesAvailable: true });
     const allControls = [
-      'Temperature',
-      'Temperature value',
+      ChatSettingsI18nKeys.TemperatureLabel,
+      ApplicationEditorI18nKeys.AdvancedSettingsTemperatureValue,
       'max attachments',
-      'Time awareness',
-      'Built-in file tools',
-      'Allow orchestrator to process files',
+      ApplicationEditorI18nKeys.AdvancedSettingsTimeAwareness,
+      ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileTools,
+      ApplicationEditorI18nKeys.AdvancedSettingsProcessFiles,
     ];
 
     it('renders five controls in order, temperature first and process files last', () => {
@@ -333,14 +357,14 @@ describe('AdvancedSettingsPopup', () => {
         (element) => element.getAttribute('aria-label') ?? 'max attachments',
       );
       expect(controls).toEqual(allControls);
-      expect(getSwitch('Allow orchestrator to process files').getAttribute('aria-checked')).toBe(
-        'true',
-      );
+      expect(
+        getSwitch(ApplicationEditorI18nKeys.AdvancedSettingsProcessFiles).getAttribute(
+          'aria-checked',
+        ),
+      ).toBe('true');
       expect(body.textContent).toContain(
-        'Handle attachments by reading file content on demand instead of including all attachment content in the initial prompt.',
+        ApplicationEditorI18nKeys.AdvancedSettingsProcessFilesDescription,
       );
-      expect(body.textContent).not.toContain('Process files');
-      expect(body.textContent).not.toContain('Higher values will make the output more random');
     });
 
     it('shows the scale label in the tooltip and the value in the box, seeded from the form', () => {
@@ -355,14 +379,19 @@ describe('AdvancedSettingsPopup', () => {
         Number(slider.getAttribute('data-step'));
       expect(Math.round(steps)).toBe(10);
       expect(dom.container.querySelector('[data-testid="slider-tooltip"]')?.textContent).toBe(
-        'Neutral',
+        ChatSettingsI18nKeys.TemperatureNeutral,
       );
       expect(
-        (dom.container.querySelector('input[aria-label="Temperature value"]') as HTMLInputElement)
-          .value,
+        (
+          dom.container.querySelector(
+            `input[aria-label="${ApplicationEditorI18nKeys.AdvancedSettingsTemperatureValue}"]`,
+          ) as HTMLInputElement
+        ).value,
       ).toBe('0.5');
       expect(getSlider().getAttribute('aria-valuenow')).toBe('0.5');
-      expect(getSlider().getAttribute('aria-valuetext')).toBe('Neutral');
+      expect(getSlider().getAttribute('aria-valuetext')).toBe(
+        ChatSettingsI18nKeys.TemperatureNeutral,
+      );
     });
 
     it('updates the draft temperature with the keyboard without saving', () => {
@@ -372,11 +401,14 @@ describe('AdvancedSettingsPopup', () => {
       pressKey(getSlider(), 'ArrowLeft');
 
       expect(dom.container.querySelector('[data-testid="slider-tooltip"]')?.textContent).toBe(
-        'Precise',
+        ChatSettingsI18nKeys.TemperaturePrecise,
       );
       expect(
-        (dom.container.querySelector('input[aria-label="Temperature value"]') as HTMLInputElement)
-          .value,
+        (
+          dom.container.querySelector(
+            `input[aria-label="${ApplicationEditorI18nKeys.AdvancedSettingsTemperatureValue}"]`,
+          ) as HTMLInputElement
+        ).value,
       ).toBe('0.3');
       expect(onSave).not.toHaveBeenCalled();
     });
@@ -386,8 +418,8 @@ describe('AdvancedSettingsPopup', () => {
 
       pressKey(getSlider(), 'ArrowLeft');
       pressKey(getSlider(), 'ArrowLeft');
-      click(getSwitch('Allow orchestrator to process files'));
-      click(getButton('Save'));
+      click(getSwitch(ApplicationEditorI18nKeys.AdvancedSettingsProcessFiles));
+      click(getButton(ButtonsI18nKeys.Save));
 
       expect(onSave).toHaveBeenCalledWith({
         ...initialValues,
@@ -401,8 +433,8 @@ describe('AdvancedSettingsPopup', () => {
       const { onSave, onClose } = renderFull();
 
       pressKey(getSlider(), 'ArrowRight');
-      click(getSwitch('Allow orchestrator to process files'));
-      click(getButton('Close'));
+      click(getSwitch(ApplicationEditorI18nKeys.AdvancedSettingsProcessFiles));
+      click(getButton(ButtonsI18nKeys.Close));
 
       expect(onSave).not.toHaveBeenCalled();
       expect(onClose).toHaveBeenCalledTimes(1);
@@ -422,13 +454,15 @@ describe('AdvancedSettingsPopup', () => {
       renderFull();
 
       typeInto(
-        dom.container.querySelector('input[aria-label="Temperature value"]') as HTMLInputElement,
+        dom.container.querySelector(
+          `input[aria-label="${ApplicationEditorI18nKeys.AdvancedSettingsTemperatureValue}"]`,
+        ) as HTMLInputElement,
         '0.36',
       );
 
       expect(getSlider().getAttribute('aria-valuenow')).toBe('0.4');
       expect(dom.container.querySelector('[data-testid="slider-tooltip"]')?.textContent).toBe(
-        'Neutral',
+        ChatSettingsI18nKeys.TemperatureNeutral,
       );
     });
 
@@ -436,7 +470,7 @@ describe('AdvancedSettingsPopup', () => {
       renderFull();
 
       const input = dom.container.querySelector(
-        'input[aria-label="Temperature value"]',
+        `input[aria-label="${ApplicationEditorI18nKeys.AdvancedSettingsTemperatureValue}"]`,
       ) as HTMLInputElement;
       typeInto(input, '0.36');
       expect(input.value).toBe('0.36');
@@ -451,10 +485,12 @@ describe('AdvancedSettingsPopup', () => {
       const { onSave } = renderFull();
 
       typeInto(
-        dom.container.querySelector('input[aria-label="Temperature value"]') as HTMLInputElement,
+        dom.container.querySelector(
+          `input[aria-label="${ApplicationEditorI18nKeys.AdvancedSettingsTemperatureValue}"]`,
+        ) as HTMLInputElement,
         '0.8',
       );
-      click(getButton('Save'));
+      click(getButton(ButtonsI18nKeys.Save));
 
       expect(onSave).toHaveBeenCalledWith({ ...initialValues, temperature: 0.8 });
     });
@@ -463,10 +499,12 @@ describe('AdvancedSettingsPopup', () => {
       const { onSave } = renderFull();
 
       typeInto(
-        dom.container.querySelector('input[aria-label="Temperature value"]') as HTMLInputElement,
+        dom.container.querySelector(
+          `input[aria-label="${ApplicationEditorI18nKeys.AdvancedSettingsTemperatureValue}"]`,
+        ) as HTMLInputElement,
         '',
       );
-      click(getButton('Save'));
+      click(getButton(ButtonsI18nKeys.Save));
 
       expect(onSave).toHaveBeenCalledWith(initialValues);
     });
@@ -492,23 +530,26 @@ describe('AdvancedSettingsPopup', () => {
         element.getAttribute('aria-label'),
       );
       expect(switches).toEqual([
-        'Time awareness',
-        'Built-in file tools',
-        'Allow orchestrator to process files',
-        'Code Interpreter',
-        'Add attachment',
-        'Web fetch',
+        ApplicationEditorI18nKeys.AdvancedSettingsTimeAwareness,
+        ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileTools,
+        ApplicationEditorI18nKeys.AdvancedSettingsProcessFiles,
+        ApplicationEditorI18nKeys.CodeInterpreterTitle,
+        ApplicationEditorI18nKeys.AdvancedSettingsAddAttachment,
+        ApplicationEditorI18nKeys.AdvancedSettingsWebFetch,
       ]);
-      expect(body.textContent).toContain('Allows to build multi-agent applications');
-      expect(body.textContent).toContain('attaching a file to the final response');
-      expect(body.textContent).toContain('fetching an external web resource');
-      expect(body.textContent).not.toContain('Allow the agent to');
+      expect(body.textContent).toContain(ApplicationEditorI18nKeys.CodeInterpreterDescription);
+      expect(body.textContent).toContain(
+        ApplicationEditorI18nKeys.AdvancedSettingsAddAttachmentDescription,
+      );
+      expect(body.textContent).toContain(
+        ApplicationEditorI18nKeys.AdvancedSettingsWebFetchDescription,
+      );
     });
 
     it.each([
-      ['isCodeInterpreterEnabled', 'Code Interpreter'],
-      ['isAddAttachmentEnabled', 'Add attachment'],
-      ['isWebFetchEnabled', 'Web fetch'],
+      ['isCodeInterpreterEnabled', ApplicationEditorI18nKeys.CodeInterpreterTitle],
+      ['isAddAttachmentEnabled', ApplicationEditorI18nKeys.AdvancedSettingsAddAttachment],
+      ['isWebFetchEnabled', ApplicationEditorI18nKeys.AdvancedSettingsWebFetch],
     ] as const)('hides the matching switch when %s is off', (prop, name) => {
       renderToggles({ [prop]: false });
 
@@ -521,9 +562,9 @@ describe('AdvancedSettingsPopup', () => {
         advancedSettings: { ...initialValues, addAttachment: true },
       });
 
-      click(getSwitch('Web fetch'));
-      click(getSwitch('Code Interpreter'));
-      click(getButton('Save'));
+      click(getSwitch(ApplicationEditorI18nKeys.AdvancedSettingsWebFetch));
+      click(getSwitch(ApplicationEditorI18nKeys.CodeInterpreterTitle));
+      click(getButton(ButtonsI18nKeys.Save));
 
       expect(onSave).toHaveBeenCalledWith({
         ...initialValues,
@@ -536,8 +577,8 @@ describe('AdvancedSettingsPopup', () => {
     it('discards toggle edits on Close', () => {
       const { onSave, onClose } = renderToggles();
 
-      click(getSwitch('Web fetch'));
-      click(getButton('Close'));
+      click(getSwitch(ApplicationEditorI18nKeys.AdvancedSettingsWebFetch));
+      click(getButton(ButtonsI18nKeys.Close));
 
       expect(onSave).not.toHaveBeenCalled();
       expect(onClose).toHaveBeenCalledTimes(1);
@@ -548,8 +589,8 @@ describe('AdvancedSettingsPopup', () => {
     const { onSave } = renderPopup();
 
     expect(getSlider()).toBeNull();
-    expect(getSwitch('Allow orchestrator to process files')).toBeNull();
-    click(getButton('Save'));
+    expect(getSwitch(ApplicationEditorI18nKeys.AdvancedSettingsProcessFiles)).toBeNull();
+    click(getButton(ButtonsI18nKeys.Save));
 
     expect(onSave).toHaveBeenCalledWith(initialValues);
   });

@@ -123,7 +123,7 @@ decoded and encoded once when written.
 
 QuickApps SHALL load the application named by the entry URL's `id` (see `host-integration`,
 "Entry URL query parameters") once per mount and SHALL show the full-screen loading
-spinner, labelled with the `common` namespace key `CommonI18nKeys.Loading` ("Loading…"),
+spinner, labelled with the key `BasicI18nKeys.Loading` ("Loading…"),
 until the load settles. The state is owned by `EditorClient`
 (`src/components/EditorClient/EditorClient.tsx`) as `appState`; it is passed to the form
 through `AppContextProvider`. No other context or hook owns it.
@@ -340,7 +340,7 @@ TriggerSave's `general` payload to the save, and SHALL NOT pass `general` with a
 
 - **WHEN** QuickApps receives a TriggerSave or a dirty TriggerAutoSave while the
   instructions are blank
-- **THEN** QuickApps SHALL show the `quickAppEditor` error `InstructionsRequired`
+- **THEN** QuickApps SHALL show the error `ApplicationEditorI18nKeys.InstructionsRequired`
   ("Instructions are required") on the instructions field
 - **AND** it SHALL NOT call chat-api and SHALL NOT post SaveSuccess, SaveError or
   AutoSaveComplete
@@ -563,4 +563,3 @@ included, and `orchestrator.system_prompt.variables` SHALL be the loaded
   the user changes the instructions to `"  Be brief  "` and saves
 - **THEN** the saved `system_prompt` SHALL be
   `{ "type": "custom", "variables": { "team": "support" }, "content": "  Be brief  " }`
-

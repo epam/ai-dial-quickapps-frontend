@@ -38,9 +38,9 @@ The Agents row SHALL list the attached agents in `addOns` order. It SHALL use th
 
 **Status line.** Below the name, the item SHALL show the `getEntityStatusMessage` text (read-only wording) when the agent is not found in the catalog, or is deploying, undeploying, redeploying or undeployed.
 
-**Details button.** Each item SHALL hold a button named by `quickAppEditor` key `AddOnDetails` with `{{name}}`. Activating it SHALL open the agent details popup.
+**Details button.** Each item SHALL hold a button named by `ApplicationEditorI18nKeys.AddOnsDetails` with `{{name}}`. Activating it SHALL open the agent details popup.
 
-**Remove button.** In an editable application, each item SHALL hold a hover/focus-revealed trash button named by `quickAppEditor` key `RemoveAddOn` with `{{name}}`. It SHALL have the same visibility, tab-order, removal and refocus behaviour as the Toolsets row.
+**Remove button.** In an editable application, each item SHALL hold a hover/focus-revealed trash button named by `ApplicationEditorI18nKeys.AddOnsRemove` with `{{name}}`. It SHALL have the same visibility, tab-order, removal and refocus behaviour as the Toolsets row.
 
 **Not rendered.** Items SHALL NOT render a chip box, a tooltip, or a configure (gear) or credentials button. Those actions live in the details popup.
 
@@ -55,7 +55,7 @@ The Agents row SHALL list the attached agents in `addOns` order. It SHALL use th
 #### Scenario: Undeployed agent
 
 - **WHEN** an attached application has `functionStatus` `UNDEPLOYED`
-- **THEN** its item SHALL show the `common` `UndeployedApp` text under the name
+- **THEN** its item SHALL show the `ApplicationEditorI18nKeys.AddOnsUndeployedApp` text under the name
 
 #### Scenario: Read-only application
 
@@ -70,11 +70,11 @@ Activating an Agents row item SHALL open a modal dialog (ui-kit `Popup`, `PopupS
 **Header:** the catalog `DetailsHeader`, as in the toolset popup. It shows:
 
 - the icon;
-- a caption: `quickAppEditor` `AgentTypeLabel` ("Agent") for applications and MCP
-  agents, `Model` ("Model") for models;
+- a caption: `ApplicationEditorI18nKeys.AgentsTypeLabel` ("Agent") for applications and MCP
+  agents, `ApplicationEditorI18nKeys.OrchestratorModel` ("Model") for models;
 - the name and version;
 - the folder path;
-- × labelled by `common` `CloseDialog`.
+- × labelled by `BasicI18nKeys.CloseDialog`.
 
 The header SHALL show no action of its own.
 
@@ -83,7 +83,7 @@ The dialog's accessible name SHALL be the agent name.
 **Action** (in the row under the header, where the catalog shows a toolset's Log in;
 editable applications only):
 
-- **Credentials** (`quickAppEditor` `ApplicationCredentials`, ghost button with a
+- **Credentials** (`ApplicationCredentialsI18nKeys.Title`, ghost button with a
   leading key icon).
   - **Shown when:** the entry URL carries `applicationCredentials=true`, the entity
     is an application, and `useApplicationAuthentication(id)` reports that it needs
@@ -113,7 +113,7 @@ The popup SHALL open on About.
 
 **Footer:**
 
-- **Delete** (`quickAppEditor` `RemoveAddOnFromApp`, "Delete"; danger, outlined, leading trash icon) at the start edge;
+- **Delete** (`ButtonsI18nKeys.Delete`, "Delete"; danger, outlined, leading trash icon) at the start edge;
 - **Close** at the end edge.
 
 The popup SHALL be loaded with `React.lazy`.
@@ -144,7 +144,7 @@ The popup SHALL be loaded with `React.lazy`.
 #### Scenario: Agent unavailable
 
 - **WHEN** the popup opens for an attached agent that is not in the catalog
-- **THEN** the content SHALL show `quickAppEditor` `AgentUnavailable` ("This agent is no longer available") in place of the tabs, and no chat-api request SHALL be made
+- **THEN** the content SHALL show `ApplicationEditorI18nKeys.AgentsUnavailable` ("This agent is no longer available") in place of the tabs, and no chat-api request SHALL be made
 - **AND** neither Credentials nor a Settings tab SHALL be shown, and Delete SHALL still be offered in an editable application
 
 #### Scenario: Read-only application
@@ -155,7 +155,7 @@ The popup SHALL be loaded with `React.lazy`.
 ### Requirement: Agent Settings tab
 
 The agent details popup SHALL offer this app's own **Settings** tab, labelled by
-`quickAppEditor` `Settings` ("Settings"). It holds the transport the orchestrator
+`BasicI18nKeys.Settings` ("Settings"). It holds the transport the orchestrator
 uses to call the agent. It SHALL be placed after every catalog tab
 (`catalog-entity-details` "App-owned tabs in add-on details popups"), so that for an
 MCP-capable application with a DIAL Core URL the tabs read About, Overview,
@@ -171,7 +171,7 @@ from the catalog.
 **Connect via.** The tab panel (`AgentSettingsTab`,
 `src/components/Agents/AgentSettingsTab/`) SHALL render:
 
-- **Control:** a ui-kit `RadioGroup` labelled `quickAppEditor` `ConnectVia`
+- **Control:** a ui-kit `RadioGroup` labelled `ApplicationEditorI18nKeys.AgentsConnectVia`
   ("Connect via"), with the options `MCP` ("MCP", value `mcp`) and `ChatCompletion`
   ("Chat Completion", value `chat-completion`).
 - **Selected value:** the entry's saved `transport`, or `mcp` when the entry has
@@ -256,14 +256,14 @@ Settings tab ("Agent Settings tab").
 
 The Agents row's Add action SHALL open the **Add agent** popup. It SHALL match the Add skill popup (`skills_catalog`) with these differences:
 
-- **Text:** title `quickAppEditor` `AddAgent` ("Add agent"); heading `AgentsCatalog` ("Agents catalog"); search `SearchAgents` ("Search agents...").
+- **Text:** title `ApplicationEditorI18nKeys.AgentsAdd` ("Add agent"); heading `ApplicationEditorI18nKeys.AgentsCatalogTitle` ("Agents catalog"); search `ApplicationEditorI18nKeys.AgentsSearchPlaceholder` ("Search agents...").
 - **Content:** the rows are `DataContext.models` and `DataContext.mcpAgents`:
   - without hidden-folder ids;
   - without the application being edited (`getEntityIdWithoutVersion(app.id)`), so it can't call itself;
   - mapped by `mapAgentToCatalogItem`, with item type `Model` for models and `Agent` otherwise.
 - **List:** `ListView` uses `type={CatalogEntityType.Agent}`, multi-select and `isReadonly`.
-- **Checkbox names:** row checkboxes use `SelectAddOn`; select-all uses `SelectAllAgents`.
-- **States:** the loading label is `LoadingAgents`, the error title `FailedToLoadAgents`, and the empty-catalog title `NoAgentsAvailable`.
+- **Checkbox names:** row checkboxes use `ApplicationEditorI18nKeys.AddOnsSelect`; select-all uses `ApplicationEditorI18nKeys.AgentsSelectAll`.
+- **States:** the loading label is `ApplicationEditorI18nKeys.AgentsLoading`, the error title `ApplicationEditorI18nKeys.AgentsLoadError`, and the empty-catalog title `ApplicationEditorI18nKeys.AgentsEmpty`.
 - **Pre-check:** only attached agent ids start checked.
 - **Add** SHALL apply `applyCatalogSelection` to the full `addOns` id list:
   - kept agents and every toolset entry stay in place, with their tool data;
@@ -315,4 +315,4 @@ The Agents row, the Add agent popup and the agent details popup SHALL be keyboar
 #### Scenario: Localization
 
 - **WHEN** any of the three surfaces is rendered in a supported locale
-- **THEN** every user-visible string SHALL come from the `quickAppEditor` or `common` keys named in this spec, and none SHALL be hardcoded
+- **THEN** every user-visible string SHALL come from the translation keys named in this spec, and none SHALL be hardcoded

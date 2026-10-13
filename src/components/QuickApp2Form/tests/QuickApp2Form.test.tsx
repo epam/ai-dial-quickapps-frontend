@@ -4,7 +4,6 @@ import { setupTestRoot } from '@/test-utils/test-root';
 
 import { QuickApp2Form } from '../QuickApp2Form';
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/AppContext', () => ({
   useAppContext: () => ({
     app: { id: 'app', applicationProperties: {} },

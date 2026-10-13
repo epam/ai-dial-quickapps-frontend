@@ -8,14 +8,13 @@ import {
 } from '@epam/ai-dial-react-file-manager';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
-import { DialFileManagerI18nKeys } from '@/constants/i18n';
+import { DialFileManagerI18nKeys } from '@/constants/translation-keys';
 import {
   useDialFileManager,
   type UseDialFileManagerOptions,
   type UseDialFileManagerResult,
 } from '@/hooks/use-dial-file-manager';
-import { useTranslation } from '@/hooks/use-translation';
-import { Translation } from '@/types/translation';
+import { useTranslation } from 'react-i18next';
 import {
   groupBySource,
   resolveSourceByPath,
@@ -50,7 +49,7 @@ export const useDialFileSources = ({
   onNotification,
   forbiddenSymbolsRegExp,
 }: UseDialFileSourcesOptions): UseDialFileManagerResult => {
-  const { t } = useTranslation(Translation.Common);
+  const { t } = useTranslation();
   const visitedRef = useRef<Set<DialFileSourceTab>>(new Set([DialFileManagerTabs.MyFiles]));
   const [allPath, setAllPath] = useState(`/${labels[DialFileManagerTabs.MyFiles]}`);
 

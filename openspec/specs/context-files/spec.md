@@ -6,7 +6,9 @@ The file manager the editor uses to browse and manage DIAL files — My files, S
 Organization and the combined All view — with listing, permissions, upload, create folder, rename,
 delete, download and path encoding. How the Knowledge base row uses it is in
 `application_knowledge-base`.
+
 ## Requirements
+
 ### Requirement: File manager state ownership
 
 The file manager SHALL be the `FileManagerModal` component (`src/components/common/FileManagerModal/`), rendered with `@epam/ai-dial-react-file-manager`'s `DialFileManager` inside the UI kit `Popup`. It SHALL take `isOpen`, `initialFileIds` and `onClose(fileIds)` from its caller and SHALL introduce no React context. The signed-in user's bucket SHALL come from `useAuthContext().user.bucket`. Listing, cache, permission and operation state SHALL be owned by `useDialFileManager` (`src/hooks/use-dial-file-manager.ts`), one instance per source (My files, Shared, Organization), and `useDialFileSources` (`src/hooks/use-dial-file-sources.ts`) SHALL compose the three instances and expose the active one, or the combined All view, through the same `UseDialFileManagerResult` shape. A source SHALL request nothing until it is first shown, and SHALL keep its loaded folders once it has been shown. My files SHALL request nothing while the user's bucket is unknown. The modal SHALL be wrapped in `React.memo`; the hook's tree (`items`), every callback and every option object passed to `DialFileManager` SHALL be memoised with `useMemo` / `useCallback`, so a parent re-render does not rebuild the tree. How the Knowledge base row opens the popup and consumes its result, and the popup's title, footer, tabs, All view, search, selection and upload-queue presentation, are specified by `application_knowledge-base` and are not repeated here.
@@ -36,7 +38,7 @@ Each folder SHALL be listed lazily, one request per folder the user opens, throu
 - Shared, inside a root: `GET /api/v1/files/list` with the owner's `bucket`, the root's path in that bucket followed by the sub-path, and `permissions: true`. A path under a root that the top-level listing did not return SHALL list as empty without a request.
 - Organization: `GET /api/v1/files/public` (`filesApi.listPublicFiles`) with `path` (omitted at the root).
 
-Each `ListFilesItemDto` SHALL be normalised to `ListFilesItem` (`src/types/dial-files.ts`): `nodeType` `folder`/`item` to `FilesApiNodeType`, and `updatedAt` epoch milliseconds to an ISO string. The tree SHALL be a single root folder named with the source's label (`common` `DialFileManagerI18nKeys.TabMyFiles`, `TabShared`, `TabOrganization`), whose children are built from the folders loaded so far; a folder never opened SHALL have no children. Each node's `id` SHALL be the item's DIAL Core id (`path`, e.g. `files/<bucket>/docs/a.pdf`), its `name` the percent-decoded name, and its virtual `path` `/<label>/<decoded folders>/<name>` with a trailing `/` for folders. The grid SHALL show the columns Name, Updated, Size and Actions, plus Author in Shared, and SHALL format dates with the active i18n language as `{ year: 'numeric', month: 'short', day: '2-digit' }`. The Shared view SHALL pass the top-level root ids to the file manager as `sharedWithMeIds`.
+Each `ListFilesItemDto` SHALL be normalised to `ListFilesItem` (`src/types/dial-files.ts`): `nodeType` `folder`/`item` to `FilesApiNodeType`, and `updatedAt` epoch milliseconds to an ISO string. The tree SHALL be a single root folder named with the source's label (`DialFileManagerI18nKeys.TabMyFiles`, `TabShared`, `TabOrganization`), whose children are built from the folders loaded so far; a folder never opened SHALL have no children. Each node's `id` SHALL be the item's DIAL Core id (`path`, e.g. `files/<bucket>/docs/a.pdf`), its `name` the percent-decoded name, and its virtual `path` `/<label>/<decoded folders>/<name>` with a trailing `/` for folders. The grid SHALL show the columns Name, Updated, Size and Actions, plus Author in Shared, and SHALL format dates with the active i18n language as `{ year: 'numeric', month: 'short', day: '2-digit' }`. The Shared view SHALL pass the top-level root ids to the file manager as `sharedWithMeIds`.
 
 Example request and response:
 
@@ -50,11 +52,23 @@ GET /api/v1/files/list?bucket=abc&path=docs%2F&limit=1000&permissions=true
   "path": "docs/",
   "permissions": ["READ", "WRITE"],
   "items": [
-    { "name": "spec%20v2.pdf", "path": "files/abc/docs/spec%20v2.pdf", "folderId": "files/abc/docs/",
-      "nodeType": "item", "bucket": "abc", "contentType": "application/pdf",
-      "contentLength": 20480, "updatedAt": 1760000000000 },
-    { "name": "drafts", "path": "files/abc/docs/drafts/", "folderId": "files/abc/docs/",
-      "nodeType": "folder", "bucket": "abc" }
+    {
+      "name": "spec%20v2.pdf",
+      "path": "files/abc/docs/spec%20v2.pdf",
+      "folderId": "files/abc/docs/",
+      "nodeType": "item",
+      "bucket": "abc",
+      "contentType": "application/pdf",
+      "contentLength": 20480,
+      "updatedAt": 1760000000000
+    },
+    {
+      "name": "drafts",
+      "path": "files/abc/docs/drafts/",
+      "folderId": "files/abc/docs/",
+      "nodeType": "folder",
+      "bucket": "abc"
+    }
   ]
 }
 ```
@@ -85,7 +99,7 @@ GET /api/v1/files/list?bucket=abc&path=docs%2F&limit=1000&permissions=true
 #### Scenario: Listing error and retry
 
 - **WHEN** a listing request fails
-- **THEN** the popup SHALL replace the browser with an alert (`role="alert"`) showing `DialFileManagerI18nKeys.Error` ("Failed to load files") and a `Retry` button
+- **THEN** the popup SHALL replace the browser with an alert (`role="alert"`) showing `DialFileManagerI18nKeys.Error` ("Failed to load files") and a `ButtonsI18nKeys.Retry` button
 - **AND** activating Retry SHALL request the folder again
 - **AND** under All the alert SHALL be shown only when every source that has been shown fails
 
@@ -157,7 +171,7 @@ file=<binary a.pdf>  bucket=abc  path=docs/a.pdf  uploadMode=create-only
 
 ### Requirement: Upload conflict resolution labels
 
-When an upload meets same-named files, the conflict popup of `DialFileManager` SHALL be labelled from the `common` namespace: titles `ConflictSingleTitle` / `ConflictMultipleTitle`, per-file actions `ConflictReplace`, `ConflictDuplicate` and `common` `Cancel`, strategies `ConflictReplaceAll`, `ConflictDuplicateAll` and `ConflictDecideForEach`. Choosing Replace SHALL keep the file name and so upload it with `uploadMode=overwrite`, as defined in "Uploading files".
+When an upload meets same-named files, the conflict popup of `DialFileManager` SHALL be labelled from the `dialFileManager` group: titles `ConflictSingleTitle` / `ConflictMultipleTitle`, per-file actions `ConflictReplace`, `ConflictDuplicate` and `ButtonsI18nKeys.Cancel`, strategies `ConflictReplaceAll`, `ConflictDuplicateAll` and `ConflictDecideForEach`. Choosing Replace SHALL keep the file name and so upload it with `uploadMode=overwrite`, as defined in "Uploading files".
 
 #### Scenario: Conflict popup text
 
@@ -227,7 +241,7 @@ POST /api/v1/files/rename
 
 ### Requirement: Deleting items
 
-Delete SHALL first show the file manager's confirmation, titled `DeleteConfirmTitleSingle` or `DeleteConfirmTitleMultiple`, whose body names the single item (`DeleteConfirmBodySingle`) or gives the item count (`DeleteConfirmBodyMultiple` + count + `DeleteConfirmBodyItems`), with `common` `Cancel`, `DeleteConfirmButton` and a close control named `CloseDialog`. Confirmed items SHALL be sent as `POST /api/v1/files/delete` (`filesApi.deleteFiles`, `DeleteItemDto[]`), with node types mapped to `folder` / `item`. When at least one item is deleted, a success notification SHALL be titled `ItemDeletedSuccessfully` / `ItemsDeletedSuccessfully` with `ItemDeletedFromFolder` (`fileName`, `folder`) / `ItemsDeletedFromFolder` (`count`, `folder`). When some fail, an error notification `ItemsDeletingFailed` SHALL list up to three failed names in `SomeItemsNotDeleted`, adding `AndOtherItems` with the remaining count. If the request fails, `DeleteFilesError` SHALL be shown. The affected folders SHALL be dropped from the cache and the current folder listed again, and when the open folder was deleted the current path SHALL move up to its parent.
+Delete SHALL first show the file manager's confirmation, titled `DeleteConfirmTitleSingle` or `DeleteConfirmTitleMultiple`, whose body names the single item (`DeleteConfirmBodySingle`) or gives the item count (`DeleteConfirmBodyMultiple` + count + `DeleteConfirmBodyItems`), with `ButtonsI18nKeys.Cancel`, `DeleteConfirmButton` and a close control named `BasicI18nKeys.CloseDialog`. Confirmed items SHALL be sent as `POST /api/v1/files/delete` (`filesApi.deleteFiles`, `DeleteItemDto[]`), with node types mapped to `folder` / `item`. When at least one item is deleted, a success notification SHALL be titled `ItemDeletedSuccessfully` / `ItemsDeletedSuccessfully` with `ItemDeletedFromFolder` (`fileName`, `folder`) / `ItemsDeletedFromFolder` (`count`, `folder`). When some fail, an error notification `ItemsDeletingFailed` SHALL list up to three failed names in `SomeItemsNotDeleted`, adding `AndOtherItems` with the remaining count. If the request fails, `DeleteFilesError` SHALL be shown. The affected folders SHALL be dropped from the cache and the current folder listed again, and when the open folder was deleted the current path SHALL move up to its parent.
 
 Example:
 
@@ -296,7 +310,7 @@ The file manager SHALL work with decoded names internally. A virtual path SHALL 
 
 ### Requirement: Notifications, busy states, direction and accessibility
 
-Notifications from file operations SHALL appear as a banner at the top of the popup body, with an error or success background for those variants and a neutral one otherwise, showing the optional title in semibold above the message; a banner SHALL disappear after four seconds and a new one SHALL replace it. The banner SHALL be rendered inside a live region that exists while the popup is open, whether or not a banner is shown (`aria-live="polite"`, `aria-atomic="true"`), so screen readers announce each new banner; an error banner SHALL additionally carry `role="alert"`. Deleting and renaming SHALL each cover the browser with a busy overlay whose spinner is named `DeletingLabel` or `RenamingLabel` and which is announced politely (`aria-live="polite"`). All text SHALL come from the `common` namespace; the folder chips SHALL be named `TabsAriaLabel` ("File sources") and the popup's close control `CloseDialog`. Direction SHALL follow the document `dir` through the file manager and kit components; the app's own layout SHALL use only logical or direction-agnostic classes (the upload queue anchored with `end-4`, overlays with `inset-0`), and no icon SHALL be mirrored by the app.
+Notifications from file operations SHALL appear as a banner at the top of the popup body, with an error or success background for those variants and a neutral one otherwise, showing the optional title in semibold above the message; a banner SHALL disappear after four seconds and a new one SHALL replace it. The banner SHALL be rendered inside a live region that exists while the popup is open, whether or not a banner is shown (`aria-live="polite"`, `aria-atomic="true"`), so screen readers announce each new banner; an error banner SHALL additionally carry `role="alert"`. Deleting and renaming SHALL each cover the browser with a busy overlay whose spinner is named `DeletingLabel` or `RenamingLabel` and which is announced politely (`aria-live="polite"`). All text SHALL come from the `dialFileManager` translation group (`DialFileManagerI18nKeys`); the folder chips SHALL be named `TabsAriaLabel` ("File sources") and the popup's close control `CloseDialog`. Direction SHALL follow the document `dir` through the file manager and kit components; the app's own layout SHALL use only logical or direction-agnostic classes (the upload queue anchored with `end-4`, overlays with `inset-0`), and no icon SHALL be mirrored by the app.
 
 #### Scenario: Notification auto-dismiss
 
@@ -319,4 +333,3 @@ Notifications from file operations SHALL appear as a banner at the top of the po
 - **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
 - **THEN** the popup SHALL render without errors
 - **AND** the upload queue SHALL sit at the inline-end corner
-

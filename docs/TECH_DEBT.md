@@ -179,8 +179,20 @@ OpenSpec change).
       above. (A non-OK response now falls back and a late response after unmount is discarded —
       change `fix-file-manager-and-theme-load-defects`.)
 - [x] **i18n and RTL docs** — `.claude/rules/rtl.md` and AGENTS.md now describe the real layout
-      (per-namespace locale files, `i18n.dir()`, no language selector, English only so `dir` is
-      `ltr` in production, `index.html`'s `lang="en"` as the pre-mount default).
+      (one `en.json`, `config.ts` from ai-dial-chat, no language selector, English only so `dir` is
+      `ltr` in production, `index.html`'s `lang="en"` as the default until the config runs).
+- [x] **i18n stack aligned with ai-dial-chat** — one `translation` namespace with semantic keys,
+      enums in `translation-keys.ts`, typed keys, language detector, global `react-i18next` test
+      mock (change `align-i18n-with-dial-chat`).
+- [ ] **Editor UI language from the host** — QuickApps runs on its own origin, so the detected
+      language is the browser's, not the host's choice. Following the host (e.g. a language in the
+      init `postMessage`) needs a `host-integration` change.
+- [ ] **Shared i18n config with ai-dial-chat** — `src/i18n/config.ts` is a copy of chat's; switch to
+      a shared package if chat extracts one.
+- [ ] **Untranslated library defaults** — `FileManagerModal` passes no `newButtonLabel` in
+      `toolbarOptions`, so the file manager's English "Add" shows on the toolbar's new-item button;
+      the skill details folder path `nav` is named by a library's English "Folder path" default.
+      Both predate `align-i18n-with-dial-chat`.
 - [x] **RTL wording in specs** — every RTL scenario is now conditional on the document direction
       being `rtl` and notes that no RTL locale ships yet (see the `i18n` spec).
 - [ ] **`buildLocalizedText` drops the primary value** when `primaryLocale` is missing but
@@ -390,10 +402,11 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 ### i18n
 
-- src/i18n/**, I18nProvider.tsx, hooks/use-translation.ts, utils/get-localized-text.ts
+- src/i18n/**, constants/translation-keys.ts, utils/get-localized-text.ts
 - Standalone → i18n
 - **Spec written** (`openspec/specs/i18n`, change `specify-uncovered-capabilities`): English is the
-  only shipped locale, so `dir` is always `ltr` today.
+  only shipped locale, so `dir` is always `ltr` today. Stack aligned with ai-dial-chat in change
+  `align-i18n-with-dial-chat`.
 
 ### Feature flags / runtime config
 

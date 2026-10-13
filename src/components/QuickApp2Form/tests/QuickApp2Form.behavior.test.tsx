@@ -2,7 +2,7 @@ import { act } from 'react';
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import type { QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form/QuickApp2Form';
 import type { QuickApp2Form } from '@/form/quickApp2Form';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
@@ -56,7 +56,6 @@ const testContext = vi.hoisted(() => {
   };
 });
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 
 vi.mock('@/context/AppContext', () => ({
   useAppContext: () => testContext.appContext,
@@ -355,17 +354,17 @@ describe('QuickApp2Form observable behavior', () => {
     testContext.appContext.app = { id: 'app', applicationProperties: {} };
     const { onSave } = renderForm();
 
-    expect(dom.container.textContent).not.toContain(QuickAppEditorI18nKeys.InstructionsRequired);
+    expect(dom.container.textContent).not.toContain(ApplicationEditorI18nKeys.InstructionsRequired);
 
     await submitForm();
     expect(onSave).not.toHaveBeenCalled();
-    expect(dom.container.textContent).toContain(QuickAppEditorI18nKeys.InstructionsRequired);
+    expect(dom.container.textContent).toContain(ApplicationEditorI18nKeys.InstructionsRequired);
 
     const instructions = dom.container.querySelector(
       '[aria-label="Instructions"]',
     ) as HTMLInputElement;
     await dispatchInput(instructions, 'Be helpful');
-    expect(dom.container.textContent).not.toContain(QuickAppEditorI18nKeys.InstructionsRequired);
+    expect(dom.container.textContent).not.toContain(ApplicationEditorI18nKeys.InstructionsRequired);
 
     await submitForm();
     expect(onSave).toHaveBeenCalledTimes(1);
@@ -542,7 +541,7 @@ describe('QuickApp2Form observable behavior', () => {
     click(getButton('Turn attachments on'));
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
     expect(dom.container.querySelector('[data-testid="attachment-error"]')?.textContent).toBe(
-      QuickAppEditorI18nKeys.AttachmentTypesRequired,
+      ApplicationEditorI18nKeys.AttachmentsTypesRequired,
     );
 
     await submitForm();

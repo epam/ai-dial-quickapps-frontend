@@ -1,4 +1,4 @@
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ChatSettingsI18nKeys } from '@/constants/translation-keys';
 import { decodeApiUrl, isApplicationId, parseEntityApiKey, splitEntityId } from '@/utils/api';
 import type { DialAIEntityModel } from '@/types/dial-entities';
 import {
@@ -72,8 +72,8 @@ export const doesModelAllowTemperature = (model?: DialAIEntityModel): boolean =>
   !!(model as { features?: { temperature?: boolean } } | undefined)?.features?.temperature;
 
 // Half-step thresholds keep 0.3 / 0.7 (and float noise like 0.1 + 0.2) in the intended band.
-export const getTemperatureScaleLabelKey = (value: number): QuickAppEditorI18nKeys => {
-  if (value < 0.35) return QuickAppEditorI18nKeys.TemperaturePrecise;
-  if (value > 0.65) return QuickAppEditorI18nKeys.TemperatureCreative;
-  return QuickAppEditorI18nKeys.TemperatureNeutral;
+export const getTemperatureScaleLabelKey = (value: number): ChatSettingsI18nKeys => {
+  if (value < 0.35) return ChatSettingsI18nKeys.TemperaturePrecise;
+  if (value > 0.65) return ChatSettingsI18nKeys.TemperatureCreative;
+  return ChatSettingsI18nKeys.TemperatureNeutral;
 };

@@ -96,7 +96,7 @@ Its target origins SHALL follow `host-integration` "Origin validation": one post
 
 Requesting credentials SHALL NOT change the editor's form state. The `addOns` value, the saved transport and the dirty state SHALL stay as they were, and nothing SHALL be written to the application's configuration.
 
-The click handler SHALL be wrapped in `useCallback` keyed on `onClose`, `agentId` and `settings.allowedOrigins`. The action uses the existing `quickAppEditor` key `ApplicationCredentials` ("Application credentials") and adds no new i18n string. Its accessible name SHALL be that label. It SHALL be a ui-kit `GhostButton` and so can be reached and activated from the keyboard. RTL impact: none of its own. The ui-kit button places its leading key icon at the inline start. The key icon has no navigational direction, so it SHALL NOT be mirrored.
+The click handler SHALL be wrapped in `useCallback` keyed on `onClose`, `agentId` and `settings.allowedOrigins`. The action uses the existing `ApplicationCredentialsI18nKeys.Title` ("Application credentials") and adds no new i18n string. Its accessible name SHALL be that label. It SHALL be a ui-kit `GhostButton` and so can be reached and activated from the keyboard. RTL impact: none of its own. The ui-kit button places its leading key icon at the inline start. The key icon has no navigational direction, so it SHALL NOT be mirrored.
 
 #### Scenario: User hands over to the host
 
@@ -123,4 +123,3 @@ The editor SHALL define no inbound message for the result of an application cred
 - **WHEN** the editor has posted `REQUEST_APPLICATION_CREDENTIALS` and the host later closes its credential forms
 - **THEN** the editor SHALL NOT reopen the details popup or issue any request on its own
 - **AND** when the user next opens that agent's details popup, the editor SHALL fetch the external-services list again and render Credentials based on the new result
-

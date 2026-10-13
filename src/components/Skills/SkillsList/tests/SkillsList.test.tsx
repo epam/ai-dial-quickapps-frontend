@@ -1,6 +1,7 @@
 import { act, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { getButton } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
 import { DialEntityType } from '@/types/dial-entities';
@@ -22,8 +23,6 @@ const SKILLS_MAP: Record<string, DialSkill> = {
   }),
   'skills/public/user-research': makeSkill('skills/public/user-research', 'User Research'),
 };
-
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({ skillsMap: SKILLS_MAP }),
@@ -83,6 +82,21 @@ const render = async (initial: string[], isReadonly?: boolean) => {
   });
 };
 
+// The labels come from `t`, which the test mock returns as bare keys, so an
+// item's buttons are found inside the list item showing the skill's name.
+const getItem = (name: string) =>
+  [...dom.container.querySelectorAll('li')].find((item) => item.textContent?.includes(name));
+
+const getDetailsButton = (name: string) => {
+  const item = getItem(name);
+  return item && getButton(ApplicationEditorI18nKeys.AddOnsDetails, item);
+};
+
+const getRemoveButton = (name: string) => {
+  const item = getItem(name);
+  return item && getButton(ApplicationEditorI18nKeys.AddOnsRemove, item);
+};
+
 const click = async (element?: Element | null) => {
   expect(element).toBeTruthy();
   await act(async () => {
@@ -120,7 +134,7 @@ describe('SkillsList', () => {
   it('names a skill missing from the catalog after its id', async () => {
     await render(['skills/public/deleted-skill']);
 
-    expect(getButton('deleted-skill details')).toBeTruthy();
+    expect(getDetailsButton('deleted-skill')).toBeTruthy();
   });
 
   it('gives each item a details button followed by a remove button', async () => {
@@ -129,13 +143,16 @@ describe('SkillsList', () => {
     const labels = [...dom.container.querySelectorAll('li button')].map((button) =>
       button.getAttribute('aria-label'),
     );
-    expect(labels).toEqual(['Web Search details', 'Remove Web Search']);
+    expect(labels).toEqual([
+      ApplicationEditorI18nKeys.AddOnsDetails,
+      ApplicationEditorI18nKeys.AddOnsRemove,
+    ]);
   });
 
   it('keeps the remove button hidden until the item is hovered or focused', async () => {
     await render(['skills/public/web-search']);
 
-    const remove = getButton('Remove Web Search') as HTMLButtonElement;
+    const remove = getRemoveButton('Web Search') as HTMLButtonElement;
     expect(remove.className).toContain('opacity-0');
     expect(remove.className).toContain('group-hover:opacity-100');
     expect(remove.className).toContain('group-has-[:focus-visible]:opacity-100');
@@ -146,19 +163,20 @@ describe('SkillsList', () => {
   it('removes a skill from the list without opening its details', async () => {
     await render(['skills/public/web-search', 'skills/public/user-research']);
 
-    await click(getButton('Remove User Research'));
+    await click(getRemoveButton('User Research'));
 
     expect(dom.container.querySelector('[data-testid="value"]')?.textContent).toBe(
       'skills/public/web-search',
     );
     expect(dom.container.querySelector('[role="dialog"]')).toBeNull();
-    expect(document.activeElement).toBe(getButton('Web Search details'));
+    expect(document.activeElement).toBe(getDetailsButton('Web Search'));
   });
 
   it('renders no remove button in a read-only application', async () => {
     await render(['skills/public/web-search'], true);
 
-    expect(getButton('Remove Web Search')).toBeUndefined();
+    expect(getDetailsButton('Web Search')).toBeTruthy();
+    expect(getRemoveButton('Web Search')).toBeUndefined();
   });
 
   it('renders nothing without attached skills', async () => {
@@ -170,7 +188,7 @@ describe('SkillsList', () => {
   it('opens the details popup of the activated skill', async () => {
     await render(['skills/public/web-search', 'skills/public/user-research']);
 
-    await click(getButton('User Research details'));
+    await click(getDetailsButton('User Research'));
 
     expect(dom.container.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe(
       'User Research',
@@ -182,7 +200,7 @@ describe('SkillsList', () => {
 
   it('detaches the skill on Delete and moves focus to the remaining list', async () => {
     await render(['skills/public/web-search', 'skills/public/user-research']);
-    await click(getButton('User Research details'));
+    await click(getDetailsButton('User Research'));
 
     await click(getButton('Delete'));
 
@@ -190,12 +208,12 @@ describe('SkillsList', () => {
       'skills/public/web-search',
     );
     expect(dom.container.querySelector('[role="dialog"]')).toBeNull();
-    expect(document.activeElement).toBe(getButton('Web Search details'));
+    expect(document.activeElement).toBe(getDetailsButton('Web Search'));
   });
 
   it('closes without changes', async () => {
     await render(['skills/public/web-search']);
-    await click(getButton('Web Search details'));
+    await click(getDetailsButton('Web Search'));
 
     await click(getButton('Close'));
 
@@ -207,7 +225,7 @@ describe('SkillsList', () => {
 
   it('still opens details in a read-only application, without Delete', async () => {
     await render(['skills/public/web-search'], true);
-    await click(getButton('Web Search details'));
+    await click(getDetailsButton('Web Search'));
 
     expect(dom.container.querySelector('[role="dialog"]')).not.toBeNull();
     expect(getButton('Delete')).toBeUndefined();
@@ -217,7 +235,7 @@ describe('SkillsList', () => {
     document.documentElement.dir = 'rtl';
     await render(['skills/public/web-search']);
 
-    const button = getButton('Web Search details') as HTMLButtonElement;
+    const button = getDetailsButton('Web Search') as HTMLButtonElement;
     const [avatar, header] = [...button.children];
     expect(avatar.getAttribute('aria-hidden')).toBe('true');
     expect(header.textContent).toContain('Web Search');

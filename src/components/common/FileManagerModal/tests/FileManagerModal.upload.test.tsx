@@ -2,7 +2,7 @@ import { NotificationVariant } from '@epam/ai-dial-ui-kit';
 import { act } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { DialFileManagerI18nKeys } from '@/constants/i18n';
+import { DialFileManagerI18nKeys } from '@/constants/translation-keys';
 import { click } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
 import type { UseDialFileManagerResult } from '@/hooks/use-dial-file-manager';
@@ -11,13 +11,6 @@ import { FileUploadStatus, type FileUploadBatchState } from '@/types/file-manage
 
 import FileManagerModal from '../FileManagerModal';
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({
-    t: (key: string, options?: Record<string, string>) =>
-      options?.name == null ? key : `${key}:${options.name}`,
-    language: 'en',
-  }),
-}));
 vi.mock('@/context/AuthContext', () => ({
   useAuthContext: () => ({ user: { bucket: 'mine' } }),
 }));
@@ -122,11 +115,17 @@ describe('FileManagerModal upload queue', () => {
   });
 
   it('cancels a single file from its row', () => {
-    renderWith(batch(FileUploadStatus.Uploading));
+    renderWith(batch(FileUploadStatus.Uploading, FileUploadStatus.Uploading));
 
-    click(button(`${DialFileManagerI18nKeys.QueueCancelItem}:file-0.pdf`));
+    // Every row's cancel button shares one label key; rows follow the batch order.
+    const cancelButtons = [...dialog().querySelectorAll('button')].filter(
+      (node) => node.getAttribute('aria-label') === DialFileManagerI18nKeys.QueueCancelItem,
+    );
+    expect(cancelButtons).toHaveLength(2);
+    click(cancelButtons[1]);
 
-    expect(cancelUploadItem).toHaveBeenCalledWith('id-0');
+    expect(cancelUploadItem).toHaveBeenCalledTimes(1);
+    expect(cancelUploadItem).toHaveBeenCalledWith('id-1');
     expect(cancelUpload).not.toHaveBeenCalled();
   });
 

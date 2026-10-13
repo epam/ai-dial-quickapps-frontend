@@ -7,11 +7,11 @@ import { DialEntityType } from '@/types/dial-entities';
 import type { DialModel } from '@/types/dial-entities';
 
 import { DefaultModelBlock } from '../DefaultModelBlock';
+import { ApplicationEditorI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
 
 let models: DialModel[] = [];
 let status: 'idle' | 'loading' | 'ready' | 'error' = 'ready';
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({
     modelsMap: Object.fromEntries(models.map((model) => [model.id, model])),
@@ -53,7 +53,7 @@ const render = (props: Partial<Parameters<typeof DefaultModelBlock>[0]> = {}) =>
 
 const getPicker = () => dom.container.querySelector('[role="dialog"]');
 
-const getChangeButton = () => getButton('Change');
+const getChangeButton = () => getButton(ButtonsI18nKeys.Change);
 
 // The picker is lazy-loaded; let the import settle before asserting on it.
 const openPicker = () => act(async () => getChangeButton()?.click());
@@ -75,14 +75,14 @@ describe('DefaultModelBlock', () => {
   it('is a "Default model" section with the Change button in it', () => {
     render();
 
-    expect(getSectionName()).toBe('Default model');
+    expect(getSectionName()).toBe(ApplicationEditorI18nKeys.OrchestratorDefaultModel);
     expect(getChangeButton()?.closest('section')).toBe(dom.container.querySelector('section'));
   });
 
   it('shows the type label, the name as a level-4 heading and the version as text', () => {
     render();
 
-    expect(hasElementWithText('Model')).toBe(true);
+    expect(hasElementWithText(ApplicationEditorI18nKeys.OrchestratorModel)).toBe(true);
     expect(dom.container.querySelector('h4')?.textContent).toBe('Google Gemini 3.5 Flash Lite');
     expect(dom.container.textContent).toContain('1.0.3');
     expect(dom.container.querySelector('[role="combobox"]')).toBeNull();
@@ -157,7 +157,7 @@ describe('DefaultModelBlock', () => {
 
     expect(dom.container.textContent).toContain('models/removed-model');
     expect(dom.container.querySelector('h4')).toBeNull();
-    expect(hasElementWithText('Model')).toBe(false);
+    expect(hasElementWithText(ApplicationEditorI18nKeys.OrchestratorModel)).toBe(false);
   });
 
   it('still shows a saved application on the card', () => {
@@ -172,6 +172,6 @@ describe('DefaultModelBlock', () => {
     render({ value: 'applications/bucket/some-agent__1.0.0' });
 
     expect(dom.container.querySelector('h4')?.textContent).toBe('Some agent');
-    expect(hasElementWithText('Model')).toBe(true);
+    expect(hasElementWithText(ApplicationEditorI18nKeys.OrchestratorModel)).toBe(true);
   });
 });

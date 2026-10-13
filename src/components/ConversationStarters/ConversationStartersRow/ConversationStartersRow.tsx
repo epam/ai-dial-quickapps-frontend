@@ -3,10 +3,9 @@ import { IconPencil } from '@tabler/icons-react';
 import { FC, memo, useCallback, useMemo, useState } from 'react';
 
 import { AddOnRow } from '@/components/AddOns/AddOnRow/AddOnRow';
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/use-translation';
+import { ApplicationEditorI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
+import { useTranslation } from 'react-i18next';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
-import { Translation } from '@/types/translation';
 import { isSavedVisibleStarter } from '@/utils/conversation-starters';
 
 import { ConversationStartersList } from '../ConversationStartersList/ConversationStartersList';
@@ -25,7 +24,7 @@ const ConversationStartersRow: FC<ConversationStartersRowProps> = ({
   tooltip,
   onSave,
 }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const visibleStarters = useMemo(
@@ -46,12 +45,12 @@ const ConversationStartersRow: FC<ConversationStartersRowProps> = ({
   return (
     <>
       <AddOnRow
-        label={t(QuickAppEditorI18nKeys.ConversationStarters)}
-        emptyDescription={t(QuickAppEditorI18nKeys.ConversationStartersAddOnDescription)}
+        label={t(ApplicationEditorI18nKeys.StartersTitle)}
+        emptyDescription={t(ApplicationEditorI18nKeys.StartersDescription)}
         isEmpty={isEmpty}
         isAddDisabled={isReadonly}
         addTooltip={tooltip}
-        actionLabel={isEmpty ? undefined : t(QuickAppEditorI18nKeys.Manage)}
+        actionLabel={isEmpty ? undefined : t(ButtonsI18nKeys.Manage)}
         actionIcon={
           isEmpty ? undefined : (
             <IconPencil size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} />

@@ -6,6 +6,7 @@ import { setupTestRoot } from '@/test-utils/test-root';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 
 import SettingsSection from '../SettingsSection';
+import { ApplicationEditorI18nKeys, BasicI18nKeys } from '@/constants/translation-keys';
 
 interface MockButtonProps {
   label: string;
@@ -13,7 +14,6 @@ interface MockButtonProps {
   onClick?: () => void;
 }
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 interface MockPopupProps {
   isOpen: boolean;
   advancedSettings: AdvancedSettingsValues;
@@ -41,7 +41,7 @@ const MockPopup = ({
       <button
         type="button"
         role="switch"
-        aria-label="Built-in file tools"
+        aria-label={ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileTools}
         aria-checked={draft.fileTools}
         onClick={() => setDraft({ ...draft, fileTools: !draft.fileTools })}
       />
@@ -103,7 +103,8 @@ const renderSection = (
 
 const dom = setupTestRoot();
 
-const getAdvancedButton = () => getButton('Advanced') as HTMLButtonElement;
+const getAdvancedButton = () =>
+  getButton(ApplicationEditorI18nKeys.AdvancedSettingsAdvanced) as HTMLButtonElement;
 
 afterEach(() => {
   document.documentElement.removeAttribute('dir');
@@ -113,7 +114,7 @@ describe('SettingsSection', () => {
   it('renders the Settings row with an Advanced action', () => {
     renderSection(false);
 
-    expect(dom.container.querySelector('h3')?.textContent).toBe('Settings');
+    expect(dom.container.querySelector('h3')?.textContent).toBe(BasicI18nKeys.Settings);
     expect(getAdvancedButton().disabled).toBe(false);
     expect(dom.container.querySelector('[role="dialog"]')).toBeNull();
   });

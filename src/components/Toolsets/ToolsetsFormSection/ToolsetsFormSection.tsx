@@ -1,8 +1,7 @@
 import { FC, lazy, memo, Suspense, useCallback, useState } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/use-translation';
-import { Translation } from '@/types/translation';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
+import { useTranslation } from 'react-i18next';
 
 import { AddOnRow } from '@/components/AddOns/AddOnRow/AddOnRow';
 import ToolsetsList from '@/components/Toolsets/ToolsetsList/ToolsetsList';
@@ -32,7 +31,7 @@ const ToolsetsFormSection: FC<ToolsetsFormSectionProps> = ({
   tooltip,
   onChange,
 }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const handleCloseModal = useCallback(() => setIsAddModalOpen(false), []);
@@ -47,11 +46,11 @@ const ToolsetsFormSection: FC<ToolsetsFormSectionProps> = ({
 
   return (
     <AddOnRow
-      label={t(QuickAppEditorI18nKeys.Toolsets)}
-      emptyDescription={t(QuickAppEditorI18nKeys.ToolsetsDescription)}
+      label={t(ApplicationEditorI18nKeys.ToolsetsTitle)}
+      emptyDescription={t(ApplicationEditorI18nKeys.ToolsetsDescription)}
       isEmpty={toolsetIds.length === 0}
       isAddDisabled={isReadonly}
-      addTooltip={tooltip ?? t(QuickAppEditorI18nKeys.AddToolsets)}
+      addTooltip={tooltip ?? t(ApplicationEditorI18nKeys.ToolsetsAddMany)}
       onAdd={() => setIsAddModalOpen(true)}
     >
       <ToolsetsList ids={toolsetIds} allIds={allIds} isReadonly={isReadonly} onChange={onChange} />

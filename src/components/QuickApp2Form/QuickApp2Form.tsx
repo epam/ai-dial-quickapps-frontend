@@ -1,7 +1,7 @@
 import { FC, useCallback, useEffect, useMemo } from 'react';
 
 import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { getQuickApp2FormData } from '@/form/quickApp2Form';
@@ -12,8 +12,7 @@ import type { QuickApp2Config } from '@/types/quick-apps';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
 import type { DialAIEntityModel, LocalizedText } from '@/types/dial-entities';
-import { Translation } from '@/types/translation';
-import { useTranslation } from '@/hooks/use-translation';
+import { useTranslation } from 'react-i18next';
 
 import AddOnsSection from '../AddOns/AddOnsSection/AddOnsSection';
 import InstructionsSection from '../InstructionsSection/InstructionsSection';
@@ -43,7 +42,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   onModelReady,
   isReadonly: isReadonlyProp,
 }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation();
   const { app, settings } = useAppContext();
   const { models, modelsMap, toolsetsMap, mcpAgentsMap, status } = useDataContext();
 
@@ -53,7 +52,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   );
   const availableModelIds = useMemo(() => models.map((model) => model.id), [models]);
   const sharedTooltip = app.isShared
-    ? t(QuickAppEditorI18nKeys.CannotChangeSharedApp, { context: 'field' })
+    ? t(ApplicationEditorI18nKeys.CannotChangeSharedApp, { target: 'field' })
     : undefined;
   const isReadonly = isReadonlyProp || !!app.isShared;
   const defaultValues = getQuickApp2FormData(

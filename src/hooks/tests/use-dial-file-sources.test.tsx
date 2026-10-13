@@ -7,7 +7,7 @@ import {
   type DialFile,
 } from '@epam/ai-dial-react-file-manager';
 
-import { DialFileManagerI18nKeys } from '@/constants/i18n';
+import { DialFileManagerI18nKeys } from '@/constants/translation-keys';
 import {
   useDialFileManager,
   type UseDialFileManagerOptions,
@@ -16,7 +16,6 @@ import {
 import { useDialFileSources, type UseDialFileSourcesOptions } from '@/hooks/use-dial-file-sources';
 import { setupTestRoot } from '@/test-utils/test-root';
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/hooks/use-dial-file-manager', () => ({ useDialFileManager: vi.fn() }));
 
 const LABELS = {

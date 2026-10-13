@@ -8,7 +8,7 @@ import {
   REPRESENTATION_TOOLING_FEATURE_VALUE,
   WEB_FETCH_FEATURE_VALUE,
 } from '@/constants/quick-apps';
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import {
   doesAgentSupportMcp,
   doesModelAllowTemperature,
@@ -75,7 +75,7 @@ export const QuickApp2Schema = z
   .object({
     // `refine`, not `trim()`: the saved system prompt must keep its whitespace as typed.
     instructions: z.string().refine((value) => value.trim().length > 0, {
-      message: QuickAppEditorI18nKeys.InstructionsRequired,
+      message: ApplicationEditorI18nKeys.InstructionsRequired,
     }),
     temperature: z.number(),
     documentRelativeUrl: z.array(z.string()),
@@ -110,7 +110,7 @@ export const QuickApp2Schema = z
       ctx.addIssue({
         code: 'custom',
         path: ['inputAttachmentTypes'],
-        message: QuickAppEditorI18nKeys.AttachmentTypesRequired,
+        message: ApplicationEditorI18nKeys.AttachmentsTypesRequired,
       });
     }
 

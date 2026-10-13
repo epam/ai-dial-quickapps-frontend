@@ -1,19 +1,18 @@
 import { useMemo } from 'react';
 
-import { CommonI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/use-translation';
+import { BasicI18nKeys, CatalogI18nKeys } from '@/constants/translation-keys';
+import { useTranslation } from 'react-i18next';
 import { ResourceScope } from '@/types/resource-scope';
-import { Translation } from '@/types/translation';
 
 /** Translated scope labels for catalog folder paths (Personal / Shared / Organization). */
 export const useScopeLabels = (): Record<ResourceScope, string> => {
-  const { t } = useTranslation(Translation.Common);
+  const { t } = useTranslation();
 
   return useMemo(
     () => ({
-      [ResourceScope.Personal]: t(CommonI18nKeys.PersonalScope),
-      [ResourceScope.Shared]: t(CommonI18nKeys.SharedScope),
-      [ResourceScope.Organization]: t(CommonI18nKeys.OrganizationScope),
+      [ResourceScope.Personal]: t(CatalogI18nKeys.FolderPersonal),
+      [ResourceScope.Shared]: t(CatalogI18nKeys.FolderSharedScope),
+      [ResourceScope.Organization]: t(BasicI18nKeys.Organization),
     }),
     [t],
   );

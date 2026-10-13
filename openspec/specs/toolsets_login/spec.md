@@ -13,7 +13,7 @@ labels are in `toolsets_selection`; message envelope and origin rules are in `ho
 
 `useToolsetCredentials(toolset)` (`src/hooks/use-toolset-credentials.ts`) SHALL own the sign-in and sign-out flows for one toolset and SHALL return `{ onLogin({ apiKey? }), onLogout() }`, the handlers the toolset details popup passes to the catalog `DetailsHeader` credentials action (the entry point and its labels are specified by `toolsets_selection`, "Toolset login from the details popup"; this capability does not repeat them). The flow SHALL be picked from `toolset.authSettings.authenticationType`: `OAUTH` SHALL go through the host (see "OAuth request to the host"), and any other type SHALL go to chat-api directly (see "API key sign-in through chat-api"). Neither promise SHALL ever reject: each SHALL resolve once its flow is done, on success and on failure alike, and a failure SHALL leave the toolset's status as it was. The only state the hook keeps is the one host request waiting for its result, held in a ref; toolset auth status itself SHALL be owned by `DataContext` (`toolsets` / `toolsetsMap`). `onLogin` and `onLogout` SHALL be wrapped in `useCallback`.
 
-This capability renders no UI and introduces no user-visible string or i18n key of its own; the action labels (`quickAppEditor` `LoginToolsetAction`, `LogoutToolsetAction`, `ApiKeyLabel`, `ToolsetChangeApiKeyAction`) belong to `toolsets_selection`. RTL impact: none — the capability is direction-agnostic. Accessibility: none of its own; the OAuth sign-in window is the host's, and keyboard and ARIA requirements for the action are those of `toolsets_selection`.
+This capability renders no UI and introduces no user-visible string or i18n key of its own; the action labels (`ButtonsI18nKeys.LogIn`, `ButtonsI18nKeys.LogOut`, `ToolsetSigninI18nKeys.ApiKeyLabel`, `CatalogI18nKeys.CredentialsChangeApiKeyActionLabel`) belong to `toolsets_selection`. RTL impact: none — the capability is direction-agnostic. Accessibility: none of its own; the OAuth sign-in window is the host's, and keyboard and ARIA requirements for the action are those of `toolsets_selection`.
 
 #### Scenario: OAuth toolset uses the host
 
@@ -73,7 +73,12 @@ Payload (`ToolsetAuthResultPayload`, `src/types/editor-messages.ts`): `toolsetId
 ```
 
 ```json
-{ "type": "TOOLSET_LOGIN_RESULT", "toolsetId": "toolsets/public/figma", "success": false, "reason": "access_denied" }
+{
+  "type": "TOOLSET_LOGIN_RESULT",
+  "toolsetId": "toolsets/public/figma",
+  "success": false,
+  "reason": "access_denied"
+}
 ```
 
 #### Scenario: Matching success
@@ -214,4 +219,3 @@ The message listener of `useToolsetCredentials` SHALL be registered only while t
 
 - **WHEN** the hook is mounted for an API-key toolset and the host posts a `TOOLSET_LOGOUT_RESULT` for it
 - **THEN** the hook SHALL not react to it
-

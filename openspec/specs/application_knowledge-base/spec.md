@@ -8,13 +8,13 @@ Defines the Quick App editor's Knowledge base add-on: the Add-ons row that lists
 
 ### Requirement: Knowledge base add-on row
 
-The Add-ons section SHALL contain a **Knowledge base** row titled with the `quickAppEditor` key `KnowledgeBase`, rendered with the same row header, typography and Add button as the other Add-ons rows. The row SHALL be driven by the editor form value `documentRelativeUrl` (owned by `useQuickApp2Form`) and hold no state of its own beyond the popup's open flag. It SHALL introduce no context and call no chat-api endpoint of its own.
+The Add-ons section SHALL contain a **Knowledge base** row titled with the `ApplicationEditorI18nKeys.KnowledgeBaseTitle`, rendered with the same row header, typography and Add button as the other Add-ons rows. The row SHALL be driven by the editor form value `documentRelativeUrl` (owned by `useQuickApp2Form`) and hold no state of its own beyond the popup's open flag. It SHALL introduce no context and call no chat-api endpoint of its own.
 
 #### Scenario: Empty row
 
 - **WHEN** the application has no context files
-- **THEN** the row SHALL show its description `KnowledgeBaseDescription` ("Documentation and resources for your agent.")
-- **AND** the header SHALL show an **Add** action labelled with the `common` key `Add` and a plus icon
+- **THEN** the row SHALL show its description `ApplicationEditorI18nKeys.KnowledgeBaseDescription` ("Documentation and resources for your agent.")
+- **AND** the header SHALL show an **Add** action labelled with the `ButtonsI18nKeys.Add` and a plus icon
 - **AND** no items list and no "No context files added" box SHALL be rendered
 
 #### Scenario: Populated row
@@ -50,7 +50,7 @@ Activating Add in an editable editor SHALL open the same file-manager popup that
 
 Each item SHALL be a single line made of a file-type icon and a read-only path. The icon SHALL be the UI kit `FileIcon`: a folder glyph for a folder (stored id ending in `/`) and a glyph chosen by extension for a file. The path SHALL be the UI kit `Breadcrumbs`: a root label, then each folder, then the item's name, drawn on one line without wrapping. Path segments SHALL NOT be links. The last segment SHALL be the item name, drawn semibold in primary text; earlier segments SHALL be secondary text separated by chevrons. A path with more segments than fit the trail's visible limit SHALL collapse its middle behind an ellipsis, always keeping the root label and the item name.
 
-The root label SHALL be `Personal` (`KnowledgeBasePersonal`) for the signed-in user's own bucket, `Organization` (`KnowledgeBaseOrganization`) for the `public` bucket, and `Shared with me` (`KnowledgeBaseShared`) for any other bucket. An item stored at the root of a bucket SHALL show the root label alone as its single, semibold segment.
+The root label SHALL be `Personal` (`CatalogI18nKeys.FolderPersonal`) for the signed-in user's own bucket, `Organization` (`BasicI18nKeys.Organization`) for the `public` bucket, and `Shared with me` (`CatalogI18nKeys.FolderShared`) for any other bucket. An item stored at the root of a bucket SHALL show the root label alone as its single, semibold segment.
 
 #### Scenario: Folder in the organization bucket
 
@@ -81,7 +81,7 @@ The root label SHALL be `Personal` (`KnowledgeBasePersonal`) for the signed-in u
 
 ### Requirement: Knowledge base items are removed with a hover trash button
 
-Each item in an editable editor SHALL have a trash icon button named by `RemoveKnowledgeBaseItem` ("Remove {{name}} from knowledge base"). The button SHALL be visually hidden until the item is hovered or contains keyboard focus, but SHALL stay in the tab order. The item SHALL show a subtle background while hovered. Activating the button SHALL remove only that item from the context files and mark the editor dirty, without a confirmation step.
+Each item in an editable editor SHALL have a trash icon button named by `ApplicationEditorI18nKeys.KnowledgeBaseRemoveItem` ("Remove {{name}} from knowledge base"). The button SHALL be visually hidden until the item is hovered or contains keyboard focus, but SHALL stay in the tab order. The item SHALL show a subtle background while hovered. Activating the button SHALL remove only that item from the context files and mark the editor dirty, without a confirmation step.
 
 #### Scenario: Reveal on hover
 
@@ -115,7 +115,7 @@ The Knowledge base items SHALL be saved as the application's context files in th
 
 ### Requirement: Knowledge base UI is localized, direction-aware and accessible
 
-All user-visible text SHALL come from the `quickAppEditor` and `common` namespaces and none SHALL be hardcoded. The row SHALL be exposed as a section labelled by its title. Layout SHALL use logical (start/end) alignment; the breadcrumb chevron separators SHALL mirror when the document direction is `rtl`. The trail SHALL have an accessible name (`KnowledgeBasePathLabel`, "Path of {{name}}") and the file icon SHALL be decorative, since the path already names the item.
+All user-visible text SHALL come from translation keys and none SHALL be hardcoded. The row SHALL be exposed as a section labelled by its title. Layout SHALL use logical (start/end) alignment; the breadcrumb chevron separators SHALL mirror when the document direction is `rtl`. The trail SHALL have an accessible name (`ApplicationEditorI18nKeys.KnowledgeBasePathLabel`, "Path of {{name}}") and the file icon SHALL be decorative, since the path already names the item.
 
 #### Scenario: Right-to-left document
 
@@ -131,7 +131,7 @@ All user-visible text SHALL come from the `quickAppEditor` and `common` namespac
 
 ### Requirement: Knowledge base file popup presentation
 
-The popup opened by the Knowledge base Add action SHALL be titled with the `common` key `dialFileManager.addTitle` ("Add knowledge base file"). It SHALL show a header close control, a divider under the header, a divider above the footer and the default popup surface. The folders panel SHALL NOT show a heading. The popup SHALL keep the Show hidden files toggle and the Add (upload, new folder) menu, and SHALL show no "+" icon on that menu.
+The popup opened by the Knowledge base Add action SHALL be titled with the key `dialFileManager.addTitle` ("Add knowledge base file"). It SHALL show a header close control, a divider under the header, a divider above the footer and the default popup surface. The folders panel SHALL NOT show a heading. The popup SHALL keep the Show hidden files toggle and the Add (upload, new folder) menu, and SHALL show no "+" icon on that menu.
 
 #### Scenario: Popup shell
 
@@ -266,7 +266,7 @@ Every selectable row SHALL show a checkbox and the header SHALL show a select-al
 
 ### Requirement: Knowledge base popup is localized and direction-aware
 
-All popup text SHALL come from the `common` namespace (`dialFileManager.*`) and none SHALL be hardcoded. The Shared chip SHALL read "Shared". Layout SHALL follow the document direction. The search field and the checkbox column SHALL be keyboard operable and have accessible names.
+All popup text SHALL come from the `dialFileManager` group (`DialFileManagerI18nKeys`) and none SHALL be hardcoded. The Shared chip SHALL read "Shared". Layout SHALL follow the document direction. The search field and the checkbox column SHALL be keyboard operable and have accessible names.
 
 #### Scenario: Right-to-left document
 
@@ -276,7 +276,7 @@ All popup text SHALL come from the `common` namespace (`dialFileManager.*`) and 
 
 ### Requirement: Knowledge base popup upload progress
 
-When the user uploads files from the Knowledge base popup, the popup SHALL show the kit `TransferQueue` at the bottom-end corner of the viewport, titled with `dialFileManager.uploadProgressTitle` ("Uploading files"). It SHALL list every file of the batch with its own status — in progress (with its percentage once the upload has started), completed, failed or canceled — and SHALL offer a cancel control for each file still in progress. Closing the queue while a file is in progress or has failed SHALL ask for confirmation and then cancel every file still in progress. When every file has completed, the queue SHALL close itself after the kit's default delay; a failed or canceled file SHALL keep it open until the user closes it. While any file is still in progress the file browser SHALL NOT accept input and Add SHALL be disabled; once no file is in progress both SHALL be available again, even while the queue is still shown. One queue SHALL be shown at a time for all source tabs, and starting a new upload SHALL replace a finished queue. Every queue string, including accessible names, SHALL come from the `common` namespace, and the queue's position SHALL follow the text direction.
+When the user uploads files from the Knowledge base popup, the popup SHALL show the kit `TransferQueue` at the bottom-end corner of the viewport, titled with `dialFileManager.uploadProgressTitle` ("Uploading files"). It SHALL list every file of the batch with its own status — in progress (with its percentage once the upload has started), completed, failed or canceled — and SHALL offer a cancel control for each file still in progress. Closing the queue while a file is in progress or has failed SHALL ask for confirmation and then cancel every file still in progress. When every file has completed, the queue SHALL close itself after the kit's default delay; a failed or canceled file SHALL keep it open until the user closes it. While any file is still in progress the file browser SHALL NOT accept input and Add SHALL be disabled; once no file is in progress both SHALL be available again, even while the queue is still shown. One queue SHALL be shown at a time for all source tabs, and starting a new upload SHALL replace a finished queue. Every queue string, including accessible names, SHALL come from the `dialFileManager` translation group, and the queue's position SHALL follow the text direction.
 
 #### Scenario: Per-file progress
 

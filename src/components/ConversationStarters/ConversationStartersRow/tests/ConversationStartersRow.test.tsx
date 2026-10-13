@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { click, getButton } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
 
-import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
 
 import ConversationStartersRow from '../ConversationStartersRow';
@@ -15,7 +15,6 @@ interface MockModalProps {
   onClose: () => void;
 }
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock(
   '@/components/ConversationStarters/ConversationStartersModal/ConversationStartersModal',
   () => ({
@@ -57,9 +56,7 @@ const renderRow = (props: Partial<React.ComponentProps<typeof ConversationStarte
 
 const getActionButton = () =>
   [...dom.container.querySelectorAll('button')].find((button) =>
-    [CommonI18nKeys.Add, QuickAppEditorI18nKeys.Manage].includes(
-      button.textContent as CommonI18nKeys & QuickAppEditorI18nKeys,
-    ),
+    [ButtonsI18nKeys.Add, ButtonsI18nKeys.Manage].includes(button.textContent as ButtonsI18nKeys),
   ) as HTMLButtonElement;
 
 const getModal = () => dom.container.querySelector('[role="dialog"][aria-label="Starters modal"]');
@@ -69,12 +66,10 @@ describe('ConversationStartersRow', () => {
     renderRow();
 
     expect(dom.container.querySelector('h3')?.textContent).toBe(
-      QuickAppEditorI18nKeys.ConversationStarters,
+      ApplicationEditorI18nKeys.StartersTitle,
     );
-    expect(dom.container.textContent).toContain(
-      QuickAppEditorI18nKeys.ConversationStartersAddOnDescription,
-    );
-    expect(getActionButton().textContent).toBe(CommonI18nKeys.Add);
+    expect(dom.container.textContent).toContain(ApplicationEditorI18nKeys.StartersDescription);
+    expect(getActionButton().textContent).toBe(ButtonsI18nKeys.Add);
     expect(dom.container.querySelector('ul')).toBeNull();
   });
 
@@ -91,10 +86,8 @@ describe('ConversationStartersRow', () => {
     expect(items).toHaveLength(2);
     expect(items[0].textContent).toBe('Visual hierarchyAnalyze visual hierarchy on the page:');
     expect(items[1].textContent).toBe('Prompt only');
-    expect(getActionButton().textContent).toBe(QuickAppEditorI18nKeys.Manage);
-    expect(dom.container.textContent).not.toContain(
-      QuickAppEditorI18nKeys.ConversationStartersAddOnDescription,
-    );
+    expect(getActionButton().textContent).toBe(ButtonsI18nKeys.Manage);
+    expect(dom.container.textContent).not.toContain(ApplicationEditorI18nKeys.StartersDescription);
   });
 
   it('mirrors the starter message icon for right-to-left locales', () => {
@@ -129,7 +122,7 @@ describe('ConversationStartersRow', () => {
   it('disables the action and keeps the list visible when read-only', () => {
     renderRow({
       isReadonly: true,
-      tooltip: QuickAppEditorI18nKeys.CannotChangeSharedApp,
+      tooltip: ApplicationEditorI18nKeys.CannotChangeSharedApp,
       values: createValues([{ id: 'a', title: 'A', text: 'a' }, blankStarter]),
     });
 
@@ -163,10 +156,17 @@ describe('ConversationStartersRow', () => {
       );
     };
 
-    const getRemoveButton = (name: string) =>
-      dom.container.querySelector<HTMLButtonElement>(`button[aria-label="Remove starter ${name}"]`);
+    const removeSelector = `button[aria-label="${ApplicationEditorI18nKeys.StartersRemove}"]`;
 
-    it('gives each starter a remove button that shows on hover or focus, named by its title or prompt', () => {
+    // Every remove button shares one label key, so find it by the row showing the starter.
+    const getRemoveButton = (name: string) =>
+      [...dom.container.querySelectorAll('li')]
+        .find((item) =>
+          [...item.querySelectorAll('span')].some((span) => span.textContent === name),
+        )
+        ?.querySelector<HTMLButtonElement>(removeSelector) ?? null;
+
+    it('gives each starter, titled or prompt-only, a remove button that shows on hover or focus', () => {
       renderRow({ values: createValues(starters) });
 
       const remove = getRemoveButton('B');
@@ -175,6 +175,7 @@ describe('ConversationStartersRow', () => {
       expect(remove?.className).toContain('group-hover:opacity-100');
       expect(remove?.className).toContain('group-focus-within:opacity-100');
       expect(getRemoveButton('Summarize this page')).not.toBeNull();
+      expect(dom.container.querySelectorAll(removeSelector)).toHaveLength(3);
     });
 
     it('removes the starter, keeps the settings, and does not open the modal', () => {
@@ -209,13 +210,13 @@ describe('ConversationStartersRow', () => {
       act(() => getRemoveButton('Summarize this page')?.click());
 
       expect(dom.container.querySelector('ul')).toBeNull();
-      expect(getActionButton().textContent).toBe(CommonI18nKeys.Add);
+      expect(getActionButton().textContent).toBe(ButtonsI18nKeys.Add);
     });
 
     it('renders no remove buttons when read-only', () => {
       renderRow({ isReadonly: true, values: createValues(starters) });
 
-      expect(dom.container.querySelector('button[aria-label^="Remove starter"]')).toBeNull();
+      expect(dom.container.querySelector(removeSelector)).toBeNull();
     });
   });
 });

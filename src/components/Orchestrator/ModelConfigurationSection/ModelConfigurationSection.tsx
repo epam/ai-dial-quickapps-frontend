@@ -1,11 +1,10 @@
 import { FC, memo, useMemo } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { useDataContext } from '@/context/DataContext';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import type { QuickApp2FormErrors } from '@/types/quick-app-form';
-import { useTranslation } from '@/hooks/use-translation';
-import { Translation } from '@/types/translation';
+import { useTranslation } from 'react-i18next';
 import { doesModelAllowTemperature } from '@/utils/application';
 
 import AttachmentsSection from '@/components/Attachments/AttachmentsSection/AttachmentsSection';
@@ -48,7 +47,7 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
   inputAttachmentTypes,
   onInputAttachmentTypesChange,
 }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation();
   const { modelsMap } = useDataContext();
 
   const isTemperatureAvailable = useMemo(() => {
@@ -59,7 +58,7 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
   return (
     <section aria-labelledby="model-configuration-heading" className="px-8">
       <h2 id="model-configuration-heading" className="dial-small-semi-text">
-        {t(QuickAppEditorI18nKeys.Configuration)}
+        {t(ApplicationEditorI18nKeys.Configuration)}
       </h2>
       <div className="mt-3 flex flex-col gap-3">
         <DefaultModelBlock

@@ -1,8 +1,7 @@
 import { FC, ReactNode } from 'react';
 
-import { CommonI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/use-translation';
-import { Translation } from '@/types/translation';
+import { BasicI18nKeys } from '@/constants/translation-keys';
+import { useTranslation } from 'react-i18next';
 
 export interface SectionProps {
   title: string;
@@ -11,7 +10,7 @@ export interface SectionProps {
 }
 
 export const Section: FC<SectionProps> = ({ title, isRequired = false, children }) => {
-  const { t } = useTranslation(Translation.Common);
+  const { t } = useTranslation();
 
   return (
     <section
@@ -25,7 +24,7 @@ export const Section: FC<SectionProps> = ({ title, isRequired = false, children 
             <span aria-hidden="true" className="text-error dial-tiny-text">
               *
             </span>
-            <span className="sr-only">{t(CommonI18nKeys.Required)}</span>
+            <span className="sr-only">{t(BasicI18nKeys.Required)}</span>
           </>
         )}
       </h2>

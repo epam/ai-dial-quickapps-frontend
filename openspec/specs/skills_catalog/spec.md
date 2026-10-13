@@ -3,7 +3,9 @@
 ## Purpose
 
 Defines how the Quick App editor lists, inspects, removes and picks skills in the Skills row of the Add-ons card: the attached skills list (with a hover remove button), the skill details popup (rendered `SKILL.md`, Overview metadata, Delete that detaches the skill from the app only), and the Add skill popup (catalog list with search, From filter, sort and multi-selection confirmed with Add). The attached skills stay in the editor's form state (`useQuickApp2Form`) as `agentSkills`, skill data comes from `DataContext`, and the popups keep their own UI state locally.
+
 ## Requirements
+
 ### Requirement: Attached skills list
 
 The Skills row of the Add-ons card SHALL list the application's attached skills (the `agentSkills` form value, owned by `useQuickApp2Form`) in saved order. Each item SHALL show:
@@ -12,9 +14,9 @@ The Skills row of the Add-ons card SHALL list the application's attached skills 
 - the skill name,
 - the version as secondary text, only when the catalog listing supplies one.
 
-Each item SHALL hold a button whose accessible name comes from `quickAppEditor` key `AddOnDetails` with the skill name interpolated (e.g. "Web Search details"); activating it SHALL open the skill details popup for that skill. Items SHALL NOT render a bordered chip box or a tooltip.
+Each item SHALL hold a button whose accessible name comes from `ApplicationEditorI18nKeys.AddOnsDetails` with the skill name interpolated (e.g. "Web Search details"); activating it SHALL open the skill details popup for that skill. Items SHALL NOT render a bordered chip box or a tooltip.
 
-In an editable application, each item SHALL also hold a remove button at its end: a ui-kit 2.0 ghost icon button with a trash icon, named by `quickAppEditor` key `RemoveAddOn` with the skill name interpolated (e.g. "Remove Web Search"). It SHALL be visible only while the item is hovered or holds keyboard focus (`:focus-visible`), and SHALL stay in the tab order. Focus that returns to the item after a popup is closed with the mouse SHALL NOT reveal it. Activating it SHALL remove that skill id from `agentSkills` without opening the details popup, and SHALL move focus to the first remaining item. Read-only and shared applications SHALL NOT render it. The list SHALL be read from `DataContext.skillsMap` and SHALL make no chat-api request of its own.
+In an editable application, each item SHALL also hold a remove button at its end: a ui-kit 2.0 ghost icon button with a trash icon, named by `ApplicationEditorI18nKeys.AddOnsRemove` with the skill name interpolated (e.g. "Remove Web Search"). It SHALL be visible only while the item is hovered or holds keyboard focus (`:focus-visible`), and SHALL stay in the tab order. Focus that returns to the item after a popup is closed with the mouse SHALL NOT reveal it. Activating it SHALL remove that skill id from `agentSkills` without opening the details popup, and SHALL move focus to the first remaining item. Read-only and shared applications SHALL NOT render it. The list SHALL be read from `DataContext.skillsMap` and SHALL make no chat-api request of its own.
 
 #### Scenario: Attached skills are listed
 
@@ -57,11 +59,11 @@ In an editable application, each item SHALL also hold a remove button at its end
 
 Activating a Skills row item SHALL open a modal dialog (ui-kit 2.0 `Popup`) for that skill. Layout, top to bottom:
 
-- **Header:** the avatar, a caption from `quickAppEditor` key `SkillTypeLabel` ("Skill"), the skill name, and a close (×) control labelled by `common` key `CloseDialog`. The dialog's accessible name SHALL be the skill name.
-- **Tabs:** ui-kit 2.0 `Tabs`, **Details** (`quickAppEditor` key `DetailsTab`) and **Overview** (`quickAppEditor` key `OverviewTab`). The popup SHALL open on Details.
+- **Header:** the avatar, a caption from `CatalogI18nKeys.DetailsSkillSection` ("Skill"), the skill name, and a close (×) control labelled by `BasicI18nKeys.CloseDialog`. The dialog's accessible name SHALL be the skill name.
+- **Tabs:** ui-kit 2.0 `Tabs`, **Details** (`CatalogI18nKeys.DetailsTabContent`) and **Overview** (`CatalogI18nKeys.DetailsTabOverview`). The popup SHALL open on Details.
 - **Footer:**
-  - **Delete** (`quickAppEditor` key `RemoveAddOnFromApp`, label "Delete") at the start edge: a red (danger), outlined, standard-size button with a leading trash icon.
-  - **Close** (`quickAppEditor` key `Close`) at the end edge.
+  - **Delete** (`ButtonsI18nKeys.Delete`, label "Delete") at the start edge: a red (danger), outlined, standard-size button with a leading trash icon.
+  - **Close** (`ButtonsI18nKeys.Close`) at the end edge.
 
 The open popup's skill id SHALL be local `useState` in the Skills list component. No new context SHALL be introduced.
 
@@ -89,9 +91,10 @@ The Details tab SHALL show the skill's description followed by the rendered Mark
   - Markdown as rendered Markdown;
   - JSON, code and plain text in a code block.
 
-  A type the canvas cannot render SHALL show `quickAppEditor` `ContentFileUnsupported`.
+  A type the canvas cannot render SHALL show `CatalogI18nKeys.DetailsContentFileUnsupported`.
+
 - **Supporting file loading:** while a picked file downloads or the canvas prepares it, the preview SHALL show the canvas loading state. A response for a file that is no longer picked, or for a popup that has closed, SHALL NOT be shown.
-- **Supporting file failure:** a download that fails SHALL show `quickAppEditor` `ContentFileError`. A `403` response SHALL show `quickAppEditor` `ContentFileForbidden` instead. Picking another file and coming back SHALL request the file again.
+- **Supporting file failure:** a download that fails SHALL show `CatalogI18nKeys.DetailsContentFileError`. A `403` response SHALL show `AttachmentCanvasI18nKeys.ForbiddenErrorLabel` instead. Picking another file and coming back SHALL request the file again.
 - **Fetch:** the manifest SHALL be fetched only while the popup is open, through `skillsApi.downloadSkillFileRaw` from `@epam/ai-dial-chat-api-client`, by the catalog's `useSkillItemDetails` (inside `useCatalogItemDetails`). Supporting files SHALL be downloaded only when picked.
 - **State ownership:** `useEntityDetails` (`src/hooks/use-entity-details.ts`) owns the details fetch state and exposes `onLoadSkillDetailsFile`. `useContentFileSelection` (`src/hooks/use-content-file-selection.ts`) owns which file is picked. The preview component owns the picked file's download and canvas state, in an `AttachmentCanvasProvider` keyed by the file id, so nothing carries over from one file to the next. The details fetch SHALL ignore a response that arrives after the popup closed or switched skills.
 - **Loading the renderer:** the attachment canvas and its PDF, Office and code-highlighting dependencies SHALL be loaded on demand, the first time a supporting file is picked, and SHALL NOT be part of the app's initial bundle.
@@ -145,12 +148,12 @@ Rendered result: a table with the headers "name" and "role" and two rows.
 #### Scenario: Manifest loading
 
 - **WHEN** the manifest request is pending
-- **THEN** the Details tab SHALL show the listing description, and the loading indicator with accessible label `quickAppEditor` `LoadingDetails` SHALL be shown next to the tab row
+- **THEN** the Details tab SHALL show the listing description, and the loading indicator with accessible label `CatalogI18nKeys.DetailsLoading` SHALL be shown next to the tab row
 
 #### Scenario: Manifest fails to load
 
 - **WHEN** the manifest and the file listing both fail
-- **THEN** the Details tab SHALL show the listing description, and the `quickAppEditor` `FailedToLoadDetails` message with a **Retry** button (`quickAppEditor` key `Retry`) that repeats the requests
+- **THEN** the Details tab SHALL show the listing description, and the `CatalogI18nKeys.DetailsLoadError` message with a **Retry** button (`ButtonsI18nKeys.Retry`) that repeats the requests
 - **AND** the footer actions SHALL remain usable
 
 #### Scenario: Manifest without frontmatter
@@ -162,7 +165,7 @@ Rendered result: a table with the headers "name" and "role" and two rows.
 
 - **WHEN** the popup opens for an attached skill id that is not in `skillsMap`
 - **THEN** no manifest request SHALL be made
-- **AND** the Details tab SHALL show `quickAppEditor` `SkillUnavailable` ("This skill is no longer available")
+- **AND** the Details tab SHALL show `ApplicationEditorI18nKeys.SkillsUnavailable` ("This skill is no longer available")
 - **AND** Delete SHALL still be offered in an editable application
 
 #### Scenario: Choose another package file
@@ -190,18 +193,18 @@ Rendered result: a table with the headers "name" and "role" and two rows.
 #### Scenario: Unsupported file type
 
 - **WHEN** the user picks `bin/tool.exe`
-- **THEN** the Details tab SHALL show `quickAppEditor` `ContentFileUnsupported` ("Preview is not supported for this file")
+- **THEN** the Details tab SHALL show `CatalogI18nKeys.DetailsContentFileUnsupported` ("Preview is not supported for this file")
 
 #### Scenario: Supporting file fails to load
 
 - **WHEN** the download for a picked supporting file fails with a 5xx or a network error
-- **THEN** the Details tab SHALL show `quickAppEditor` `ContentFileError`
+- **THEN** the Details tab SHALL show `CatalogI18nKeys.DetailsContentFileError`
 - **AND** the file selector and the footer actions SHALL remain usable
 
 #### Scenario: Supporting file is forbidden
 
 - **WHEN** the download for a picked supporting file returns `403`
-- **THEN** the Details tab SHALL show `quickAppEditor` `ContentFileForbidden`
+- **THEN** the Details tab SHALL show `AttachmentCanvasI18nKeys.ForbiddenErrorLabel`
 
 #### Scenario: Superseded pick
 
@@ -218,15 +221,15 @@ Rendered result: a table with the headers "name" and "role" and two rows.
 
 The Overview tab SHALL be the catalog's `OverviewTab`, with the sections the catalog's `buildSkillOverview` produces, as defined by `catalog-entity-details`:
 
-- **Specification** (`quickAppEditor` `OverviewSpecification`), from the `SKILL.md` frontmatter (parsed by the catalog's manifest parser):
-  - **When to use** (`SkillWhenToUse`);
-  - **Allowed tools** (`SkillAllowedTools`), joined with " · ";
-  - **Bundled resources** (`SkillBundledResources`), joined with " · ";
+- **Specification** (`CatalogI18nKeys.DetailsOverviewSpecification`), from the `SKILL.md` frontmatter (parsed by the catalog's manifest parser):
+  - **When to use** (`CatalogI18nKeys.DetailsSkillWhenToUse`);
+  - **Allowed tools** (`CatalogI18nKeys.DetailsSkillAllowedTools`), joined with " · ";
+  - **Bundled resources** (`CatalogI18nKeys.DetailsSkillBundledResources`), joined with " · ";
   - the section is omitted when none of them is present.
-- **Skill** (`quickAppEditor` `SkillTypeLabel`):
-  - **Author** (`SkillAuthor`), when known;
-  - **Last updated** (`OverviewLastUpdated`), as the catalog's calendar date;
-  - **Files** (`SkillFileCount`): the number of files in the skill package.
+- **Skill** (`CatalogI18nKeys.DetailsSkillSection`):
+  - **Author** (`CatalogI18nKeys.DetailsSkillAuthor`), when known;
+  - **Last updated** (`CatalogI18nKeys.DetailsOverviewLastUpdated`), as the catalog's calendar date;
+  - **Files** (`CatalogI18nKeys.DetailsSkillFileCount`): the number of files in the skill package.
 
 The Overview data SHALL come from three requests, made in parallel when the popup opens (as the chat catalog does), together with the manifest download from "Skill details content":
 
@@ -242,10 +245,20 @@ GET /api/v1/skills/files?bucket=public&path=research%2Fuser-research&filePath=&r
 ```
 
 ```json
-{ "items": [
-  { "name": "SKILL.md", "url": "skills/public/research/user-research/SKILL.md", "nodeType": "ITEM" },
-  { "name": "guide.md", "url": "skills/public/research/user-research/guide.md", "nodeType": "ITEM" }
-] }
+{
+  "items": [
+    {
+      "name": "SKILL.md",
+      "url": "skills/public/research/user-research/SKILL.md",
+      "nodeType": "ITEM"
+    },
+    {
+      "name": "guide.md",
+      "url": "skills/public/research/user-research/guide.md",
+      "nodeType": "ITEM"
+    }
+  ]
+}
 ```
 
 Rendered result:
@@ -301,9 +314,9 @@ It SHALL NOT show Favorites/Catalog tabs, a selected-items strip, a favorites co
 
 Layout, top to bottom:
 
-- **Dialog header:** title from `quickAppEditor` key `AddSkill` ("Add skill") and a close (×) control, separated from the body by a divider.
-- **Heading row:** `quickAppEditor` key `SkillsCatalog` ("Skills catalog") followed by the number of rows currently listed, and the sort menu at the end side.
-- **Toolbar:** a search input (placeholder and accessible name `quickAppEditor` key `SearchAgentSkills`, "Search skills...") followed by the From filter.
+- **Dialog header:** title from `ApplicationEditorI18nKeys.SkillsAdd` ("Add skill") and a close (×) control, separated from the body by a divider.
+- **Heading row:** `ApplicationEditorI18nKeys.SkillsCatalogTitle` ("Skills catalog") followed by the number of rows currently listed, and the sort menu at the end side.
+- **Toolbar:** a search input (placeholder and accessible name `ApplicationEditorI18nKeys.SkillsSearchPlaceholder`, "Search skills...") followed by the From filter.
 - **List:** a selection column whose header holds a select-all checkbox, then the columns **Name**, **Type**, **Folder**, **Tags**.
 - **Footer:** separated from the list by a divider, with **Cancel** (ghost) and **Add** at the end side.
 
@@ -336,11 +349,11 @@ The Add skill popup SHALL let the user narrow and reorder the rows with the same
 
 - **WHEN** the user types "web" in the search box
 - **THEN** only rows whose name contains "web" (case-insensitive, trimmed) SHALL be listed, with the matching text highlighted
-- **AND** clearing the search (clear button labelled by `common` key `ClearSearch`) SHALL restore all rows
+- **AND** clearing the search (clear button labelled by `BasicI18nKeys.ClearSearch`) SHALL restore all rows
 
 #### Scenario: Filter
 
-- **WHEN** the user checks "My" (`quickAppEditor` key `FilterMy`) in the From filter and applies it
+- **WHEN** the user checks "My" (`CatalogI18nKeys.BrowseSettingsMy`) in the From filter and applies it
 - **THEN** only the user's own skills (`isMy`) SHALL be listed
 - **AND** the topic list SHALL contain the distinct tags of the listed skills, and is empty while chat-api supplies no tags
 
@@ -348,12 +361,12 @@ The Add skill popup SHALL let the user narrow and reorder the rows with the same
 
 - **WHEN** the popup opens
 - **THEN** rows SHALL be sorted by "Recently updated" (`updatedAt` descending; rows without it last)
-- **AND** the sort menu SHALL also offer "Newest" and "Name A-Z" (`quickAppEditor` keys `SortRecentlyUpdated`, `SortNewest`, `SortNameAZ`)
+- **AND** the sort menu SHALL also offer "Newest" and "Name A-Z" (`CatalogI18nKeys.SortsUpdated`, `CatalogI18nKeys.SortNewest`, `CatalogI18nKeys.SortNameAZ`)
 
 #### Scenario: No results
 
 - **WHEN** search or filter leave no rows
-- **THEN** the list area SHALL show the `quickAppEditor` `NoResultsFound` empty state and the count SHALL show 0
+- **THEN** the list area SHALL show the `BasicI18nKeys.NoResults` empty state and the count SHALL show 0
 - **AND** **Add** SHALL stay enabled so that the checked set can still be applied
 
 ### Requirement: Add skill popup multi-selection
@@ -381,13 +394,13 @@ The Add skill popup SHALL support checking any number of skills and SHALL commit
 
 #### Scenario: Confirm with Add
 
-- **WHEN** `agentSkills` is `["a", "b"]`, the user unchecks `a`, checks `c` and `d` in that order, and activates **Add** (`common` key `Add`)
+- **WHEN** `agentSkills` is `["a", "b"]`, the user unchecks `a`, checks `c` and `d` in that order, and activates **Add** (`ButtonsI18nKeys.Add`)
 - **THEN** `agentSkills` SHALL become `["b", "c", "d"]`: previously attached skills that are still checked keep their order, and newly checked ones follow in the order they were checked
 - **AND** the popup SHALL close
 
 #### Scenario: Discard
 
-- **WHEN** the user activates **Cancel** (`common` key `Cancel`) or ×, presses Escape, or clicks outside the dialog
+- **WHEN** the user activates **Cancel** (`ButtonsI18nKeys.Cancel`) or ×, presses Escape, or clicks outside the dialog
 - **THEN** the popup SHALL close and `agentSkills` SHALL remain unchanged
 - **AND** reopening it SHALL show the attached skills checked, with search, filter and sort reset
 
@@ -408,19 +421,19 @@ The Add skill popup SHALL keep explicit loading, error and empty states while pr
 #### Scenario: Skills loading
 
 - **WHEN** the `DataContext` status is `idle` or `loading`
-- **THEN** the list area SHALL show a spinner with accessible label `quickAppEditor` key `LoadingSkills`
+- **THEN** the list area SHALL show a spinner with accessible label `ApplicationEditorI18nKeys.SkillsLoading`
 - **AND** **Add** SHALL be disabled
 
 #### Scenario: Load error
 
 - **WHEN** the `DataContext` status is `error`
-- **THEN** the list area SHALL show `quickAppEditor` `FailedToLoadSkills` with the error text and a **Retry** button that calls `refreshAll`
+- **THEN** the list area SHALL show `CatalogI18nKeys.SkillsLoadError` with the error text and a **Retry** button that calls `refreshAll`
 - **AND** **Add** SHALL be disabled
 
 #### Scenario: Empty catalog
 
 - **WHEN** skills have loaded, no search or filter is active, and the catalog has no skills
-- **THEN** the list area SHALL show the `quickAppEditor` `NoAgentSkillsAdded` empty state
+- **THEN** the list area SHALL show the `ApplicationEditorI18nKeys.SkillsEmpty` empty state
 
 ### Requirement: Skills accessibility and direction
 
@@ -430,9 +443,9 @@ The Skills row, Add skill popup and details popup SHALL be keyboard operable, SH
 
 - **WHEN** the Add skill popup opens
 - **THEN** focus SHALL move into the dialog, and Tab SHALL reach search, From, sort, the list, Cancel and Add in reading order
-- **AND** the list SHALL be exposed as a grid named by `quickAppEditor` key `SkillsCatalog`
-- **AND** each row checkbox SHALL be named by `quickAppEditor` key `SelectAddOn` with the skill name interpolated
-- **AND** the select-all checkbox SHALL be named by `quickAppEditor` key `SelectAllSkills` and expose `aria-checked="mixed"` for a partial selection
+- **AND** the list SHALL be exposed as a grid named by `ApplicationEditorI18nKeys.SkillsCatalogTitle`
+- **AND** each row checkbox SHALL be named by `ApplicationEditorI18nKeys.AddOnsSelect` with the skill name interpolated
+- **AND** the select-all checkbox SHALL be named by `ApplicationEditorI18nKeys.SkillsSelectAll` and expose `aria-checked="mixed"` for a partial selection
 
 #### Scenario: Keyboard in the details popup
 
@@ -451,5 +464,4 @@ The Skills row, Add skill popup and details popup SHALL be keyboard operable, SH
 #### Scenario: Localization
 
 - **WHEN** any of the three surfaces is rendered in a supported locale
-- **THEN** every user-visible string SHALL come from the `quickAppEditor` or `common` namespace keys named in this spec, and none SHALL be hardcoded
-
+- **THEN** every user-visible string SHALL come from the translation keys named in this spec, and none SHALL be hardcoded

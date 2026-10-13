@@ -1,7 +1,7 @@
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DialFileManagerI18nKeys } from '@/constants/i18n';
+import { ButtonsI18nKeys, DialFileManagerI18nKeys } from '@/constants/translation-keys';
 import { click } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
 import { FilesApiNodeType, type ListFilesItem } from '@/types/dial-files';
@@ -9,7 +9,6 @@ import { listFiles, listPublicFiles, listSharedFiles } from '@/utils/dial-files-
 
 import FileManagerModal from '../FileManagerModal';
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/AuthContext', () => ({
   useAuthContext: () => ({ user: { bucket: 'mine' } }),
 }));
@@ -117,15 +116,15 @@ describe('FileManagerModal shell', () => {
   it('offers Cancel and a disabled Add until something is selected', async () => {
     await renderModal();
 
-    expect(findButton('Cancel')?.disabled).toBe(false);
+    expect(findButton(ButtonsI18nKeys.Cancel)?.disabled).toBe(false);
     expect(findButton(DialFileManagerI18nKeys.Add)?.disabled).toBe(true);
-    expect(findButton('dialFileManager.attach')).toBeUndefined();
+    expect(findButton(DialFileManagerI18nKeys.Attach)).toBeUndefined();
   });
 
   it('closes with no selection from Cancel', async () => {
     const { onClose } = await renderModal();
 
-    click(findButton('Cancel'));
+    click(findButton(ButtonsI18nKeys.Cancel));
 
     expect(onClose).toHaveBeenCalledWith([]);
   });

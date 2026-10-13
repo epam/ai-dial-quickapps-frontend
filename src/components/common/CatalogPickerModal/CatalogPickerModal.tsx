@@ -18,11 +18,10 @@ import {
   type DropdownItem,
 } from '@epam/ai-dial-ui-kit';
 
-import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { BasicI18nKeys, ButtonsI18nKeys, CatalogI18nKeys } from '@/constants/translation-keys';
 import { useDataContext } from '@/context/DataContext';
-import { useTranslation } from '@/hooks/use-translation';
+import { useTranslation } from 'react-i18next';
 import { LoadStatus } from '@/types/load-status';
-import { Translation } from '@/types/translation';
 import { filterCatalogItemsByQuery } from '@/utils/filter-catalog-items';
 
 export interface CatalogPickerModalLabels {
@@ -52,9 +51,9 @@ export interface CatalogPickerModalProps {
 }
 
 const SORT_KEYS = [
-  { value: CatalogSortKey.RecentlyUpdated, labelKey: QuickAppEditorI18nKeys.SortRecentlyUpdated },
-  { value: CatalogSortKey.Newest, labelKey: QuickAppEditorI18nKeys.SortNewest },
-  { value: CatalogSortKey.NameAZ, labelKey: QuickAppEditorI18nKeys.SortNameAZ },
+  { value: CatalogSortKey.RecentlyUpdated, labelKey: CatalogI18nKeys.SortsUpdated },
+  { value: CatalogSortKey.Newest, labelKey: CatalogI18nKeys.SortNewest },
+  { value: CatalogSortKey.NameAZ, labelKey: CatalogI18nKeys.SortNameAZ },
 ];
 
 /**
@@ -72,8 +71,7 @@ export const CatalogPickerModal: FC<CatalogPickerModalProps> = ({
   onClose,
   renderList,
 }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
-  const { t: tCommon } = useTranslation(Translation.Common);
+  const { t } = useTranslation();
   const { status, error: dataError, refreshAll } = useDataContext();
 
   const [search, setSearch] = useState('');
@@ -110,7 +108,7 @@ export const CatalogPickerModal: FC<CatalogPickerModalProps> = ({
 
   const activeSortLabel =
     sortOptions.find((option) => option.value === sortKey)?.label ??
-    t(QuickAppEditorI18nKeys.SortLabel);
+    t(ButtonsI18nKeys.Sort);
 
   const handleSearchChange = useCallback((next?: string) => setSearch(next ?? ''), []);
 
@@ -121,18 +119,18 @@ export const CatalogPickerModal: FC<CatalogPickerModalProps> = ({
   const mainButtons = useMemo(
     () => [
       {
-        label: tCommon(CommonI18nKeys.Cancel),
+        label: t(ButtonsI18nKeys.Cancel),
         variant: ButtonVariant.Primary,
         appearance: ButtonAppearance.Ghost,
         onClick: onClose,
       },
       {
-        label: tCommon(CommonI18nKeys.Add),
+        label: t(ButtonsI18nKeys.Add),
         disabled: !canConfirm,
         onClick: handleConfirm,
       },
     ],
-    [tCommon, onClose, canConfirm, handleConfirm],
+    [t, onClose, canConfirm, handleConfirm],
   );
 
   const renderBody = (): ReactNode => {
@@ -148,7 +146,7 @@ export const CatalogPickerModal: FC<CatalogPickerModalProps> = ({
       return (
         <div className="flex flex-col items-center justify-center gap-3 py-8">
           <NoDataContent title={labels.failedToLoad} description={dataError} />
-          <NeutralButton label={t(QuickAppEditorI18nKeys.Retry)} onClick={refreshAll} />
+          <NeutralButton label={t(ButtonsI18nKeys.Retry)} onClick={refreshAll} />
         </div>
       );
     }
@@ -158,7 +156,7 @@ export const CatalogPickerModal: FC<CatalogPickerModalProps> = ({
       return (
         <div className="py-8">
           <NoDataContent
-            title={isFiltered ? t(QuickAppEditorI18nKeys.NoResultsFound) : labels.empty}
+            title={isFiltered ? t(BasicI18nKeys.NoResults) : labels.empty}
           />
         </div>
       );
@@ -174,7 +172,7 @@ export const CatalogPickerModal: FC<CatalogPickerModalProps> = ({
       headerDivider
       footerDivider
       size={PopupSize.Lg}
-      closeAriaLabel={tCommon(CommonI18nKeys.CloseDialog)}
+      closeAriaLabel={t(BasicI18nKeys.CloseDialog)}
       bodyClassName="flex h-[70vh] flex-col overflow-hidden px-6 pb-5 pt-6"
       mainButtons={mainButtons}
       onClose={onClose}
@@ -207,7 +205,7 @@ export const CatalogPickerModal: FC<CatalogPickerModalProps> = ({
               wrapperClassName="dial-kit-input-large"
               placeholder={labels.search}
               aria-label={labels.search}
-              clearLabel={tCommon(CommonI18nKeys.ClearSearch)}
+              clearLabel={t(BasicI18nKeys.ClearSearch)}
             />
           </div>
           <Filter
@@ -216,11 +214,11 @@ export const CatalogPickerModal: FC<CatalogPickerModalProps> = ({
             values={topicOptions}
             isMyAppsActive={isMyOnly}
             onMyAppsChange={setIsMyOnly}
-            defaultLabel={t(QuickAppEditorI18nKeys.FilterFrom)}
-            myAppsLabel={t(QuickAppEditorI18nKeys.FilterMy)}
-            topicsLabel={t(QuickAppEditorI18nKeys.FilterTopics)}
-            clearLabel={t(QuickAppEditorI18nKeys.FilterClear)}
-            applyLabel={t(QuickAppEditorI18nKeys.FilterApply)}
+            defaultLabel={t(CatalogI18nKeys.BrowseSettingsFrom)}
+            myAppsLabel={t(CatalogI18nKeys.BrowseSettingsMy)}
+            topicsLabel={t(CatalogI18nKeys.BrowseSettingsTopics)}
+            clearLabel={t(ButtonsI18nKeys.Clear)}
+            applyLabel={t(ButtonsI18nKeys.Apply)}
           />
         </div>
       </div>

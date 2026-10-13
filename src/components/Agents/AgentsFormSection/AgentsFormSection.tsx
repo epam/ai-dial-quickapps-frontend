@@ -1,11 +1,10 @@
 import { FC, lazy, memo, Suspense, useCallback, useState } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { AddOnsModalQueryParams } from '@/constants/quick-apps';
 import { useSearchParams } from '@/hooks/use-search-params';
-import { useTranslation } from '@/hooks/use-translation';
+import { useTranslation } from 'react-i18next';
 import type { DialAppTransportType } from '@/types/quick-apps';
-import { Translation } from '@/types/translation';
 
 import { AddOnRow } from '@/components/AddOns/AddOnRow/AddOnRow';
 import AgentsList from '@/components/Agents/AgentsList/AgentsList';
@@ -39,7 +38,7 @@ const AgentsFormSection: FC<AgentsFormSectionProps> = ({
   transports,
   onConfigure,
 }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   // The host can deep-link straight into the picker (`agentsAndToolsetsModal=1`).
   const [isAddModalOpen, setIsAddModalOpen] = useState(
@@ -58,11 +57,11 @@ const AgentsFormSection: FC<AgentsFormSectionProps> = ({
 
   return (
     <AddOnRow
-      label={t(QuickAppEditorI18nKeys.Agents)}
-      emptyDescription={t(QuickAppEditorI18nKeys.AgentsDescription)}
+      label={t(ApplicationEditorI18nKeys.AgentsTitle)}
+      emptyDescription={t(ApplicationEditorI18nKeys.AgentsDescription)}
       isEmpty={agentIds.length === 0}
       isAddDisabled={isReadonly}
-      addTooltip={tooltip ?? t(QuickAppEditorI18nKeys.AddAgents)}
+      addTooltip={tooltip ?? t(ApplicationEditorI18nKeys.AgentsAddMany)}
       onAdd={() => setIsAddModalOpen(true)}
     >
       <AgentsList
