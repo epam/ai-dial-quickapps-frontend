@@ -18,7 +18,6 @@ export interface ModelConfigurationSectionProps {
   onModelChange: (value: string) => void;
   errors: QuickApp2FormErrors;
   isReadonly: boolean;
-  tooltip?: string;
   isProcessLargeFilesAvailable: boolean;
   isCodeInterpreterEnabled: boolean;
   isAddAttachmentEnabled: boolean;
@@ -36,7 +35,6 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
   onModelChange,
   errors,
   isReadonly,
-  tooltip,
   isProcessLargeFilesAvailable,
   isCodeInterpreterEnabled,
   isAddAttachmentEnabled,
@@ -66,7 +64,6 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
           value={model}
           onChange={onModelChange}
           isDisabled={isReadonly}
-          tooltip={tooltip}
           error={errors.model}
         />
 

@@ -22,7 +22,6 @@ export interface AgentsFormSectionProps {
   /** The agent entries among them. */
   agentIds: string[];
   isReadonly: boolean;
-  tooltip?: string;
   onChange: (allIds: string[]) => void;
   /** The transport saved per agent entry, if any. */
   transports: Record<string, DialAppTransportType | undefined>;
@@ -34,7 +33,6 @@ const AgentsFormSection: FC<AgentsFormSectionProps> = ({
   allIds,
   agentIds,
   isReadonly,
-  tooltip,
   onChange,
   transports,
   onConfigure,
@@ -62,7 +60,7 @@ const AgentsFormSection: FC<AgentsFormSectionProps> = ({
       emptyDescription={t(QuickAppEditorI18nKeys.AgentsDescription)}
       isEmpty={agentIds.length === 0}
       isAddDisabled={isReadonly}
-      addTooltip={tooltip ?? t(QuickAppEditorI18nKeys.AddAgents)}
+      addTooltip={t(QuickAppEditorI18nKeys.AddAgents)}
       onAdd={() => setIsAddModalOpen(true)}
     >
       <AgentsList
