@@ -118,6 +118,11 @@ The editor SHALL render an Add-ons section directly below Instructions. The sect
 - **THEN** that row's selection modal SHALL open: Add skill, Add toolset or Add agent
 - **AND** confirming the modal SHALL update the `agentSkills` value, or the corresponding entries of the `addOns` value, and close the modal
 
+#### Scenario: Selection modals on a narrow viewport
+- **WHEN** the Add skill, Add toolset, Add agent, Add knowledge base file or Change model modal opens in a viewport narrower than the `md` breakpoint (768px), as on a phone
+- **THEN** the modal SHALL fill the viewport edge to edge, from the top of the screen to the bottom, with no rounded corners
+- **AND** from the `md` breakpoint up the modal SHALL keep the centred dialog presentation
+
 #### Scenario: No standalone starters section
 - **WHEN** the editor renders its primary content column
 - **THEN** no collapsible Conversation starters section SHALL be rendered outside the Add-ons card

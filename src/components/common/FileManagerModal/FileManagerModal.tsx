@@ -26,6 +26,7 @@ import {
 } from '@epam/ai-dial-react-file-manager';
 
 import { CommonI18nKeys, DialFileManagerI18nKeys } from '@/constants/i18n';
+import { MOBILE_FULLSCREEN_POPUP_CLASS_NAMES } from '@/constants/popup';
 import { useAuthContext } from '@/context/AuthContext';
 import { useDialFileSources } from '@/hooks/use-dial-file-sources';
 import { useTranslation } from '@/hooks/use-translation';
@@ -421,12 +422,11 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
         open={isOpen}
         header={t(DialFileManagerI18nKeys.AddTitle)}
         size={PopupSize.Lg}
-        // Below `md` the dialog fills the screen and drops the nested insets, so the file list
-        // keeps the room on a phone (Issue #252); from `md` up it stays the kit's centred dialog.
-        overlayClassName="p-0 md:p-4"
-        className="flex !h-[min(800px,100dvh)] w-full flex-col rounded-none md:rounded-xl"
-        headerClassName="px-4 py-3 md:px-6 md:py-4"
-        footerClassName="px-4 py-3 md:px-6 md:py-4"
+        {...MOBILE_FULLSCREEN_POPUP_CLASS_NAMES}
+        className={mergeClasses(
+          MOBILE_FULLSCREEN_POPUP_CLASS_NAMES.className,
+          'flex !h-[min(800px,100dvh)] w-full flex-col',
+        )}
         bodyClassName="flex min-h-0 flex-col"
         closeAriaLabel={t(DialFileManagerI18nKeys.CloseDialog)}
         headerDivider
