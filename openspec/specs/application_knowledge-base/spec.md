@@ -148,6 +148,13 @@ The popup opened by the Knowledge base Add action SHALL be titled with the `comm
 - **AND** a close control, a header divider and a footer divider SHALL be visible
 - **AND** no "Files" heading SHALL appear above the tabs
 
+#### Scenario: Narrow viewport
+
+- **WHEN** the user opens the popup in a viewport narrower than the `md` breakpoint (768px), as on a phone
+- **THEN** the popup SHALL fill the viewport with no surrounding margin or rounded corners
+- **AND** the header, footer and file manager SHALL use reduced insets so the file list keeps most of the height
+- **AND** from the `md` breakpoint up the popup SHALL keep the centred dialog presentation
+
 #### Scenario: Close without selecting
 
 - **WHEN** the user activates the close control, Cancel, Escape or an outside click
