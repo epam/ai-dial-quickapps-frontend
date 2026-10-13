@@ -47,7 +47,7 @@ Activating Add in an editable editor SHALL open the same file-manager popup that
 - **THEN** the row for that file SHALL be checked once it is listed, including when its folder is opened later
 - **AND** a stored id SHALL match its row whether the listing reports it decoded or percent-encoded
 - **AND** a row the user has cleared SHALL NOT be checked again by a later listing
-- **AND** a folder row SHALL NOT be pre-checked, because folders are saved as the files inside them
+- **AND** a saved folder (stored id ending in `/`) SHALL be pre-checked in the same way, once its row is listed
 
 #### Scenario: Dismiss without selection
 
@@ -155,7 +155,7 @@ The popup opened by the Knowledge base Add action SHALL be titled with the `comm
 
 ### Requirement: Knowledge base popup footer
 
-The footer SHALL contain a **Cancel** button in link appearance and an **Add** button (`dialFileManager.add`, "Add") in the neutral style as the main action. Add SHALL be disabled while nothing is selected, while the listing is loading, or while an upload, rename, delete, download or folder creation is in progress. Activating Add SHALL confirm the selection exactly as the former Attach action did: files stay as their stored ids and each selected folder is expanded to the files inside it, hidden files excluded.
+The footer SHALL contain a **Cancel** button in link appearance and an **Add** button (`dialFileManager.add`, "Add") in the neutral style as the main action. Add SHALL be disabled while nothing is selected, while the listing is loading, or while an upload, rename, delete, download or folder creation is in progress. Activating Add SHALL confirm the selection exactly as the former Attach action did: files stay as their stored ids and each selected folder is reported as the folder itself, by its id ending in `/`, without listing the files inside it; hidden items are excluded.
 
 #### Scenario: Add disabled without selection
 
@@ -165,7 +165,8 @@ The footer SHALL contain a **Cancel** button in link appearance and an **Add** b
 #### Scenario: Confirm a selection
 
 - **WHEN** the user selects a file and a folder and activates Add
-- **THEN** the popup SHALL close and report the file id plus the ids of the files inside the folder
+- **THEN** the popup SHALL close and report the file id plus the folder's own id, ending in `/`
+- **AND** the popup SHALL NOT list the folder's contents or report the files inside it
 - **AND** the Knowledge base row SHALL receive them as in "Add opens the file-manager popup"
 
 ### Requirement: Knowledge base popup source tabs
