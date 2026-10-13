@@ -285,7 +285,6 @@ export enum DialFileManagerI18nKeys {
   Downloading = 'dialFileManager.downloading',
   UploadProgressTitle = 'dialFileManager.uploadProgressTitle',
   AttachingHiddenFilesNotAllowed = 'dialFileManager.attachingHiddenFilesNotAllowed',
-  AttachFolderFailed = 'dialFileManager.attachFolderFailed',
   DeleteAction = 'dialFileManager.deleteAction',
   DeletingLabel = 'dialFileManager.deletingLabel',
   DeleteConfirmTitleSingle = 'dialFileManager.deleteConfirmTitleSingle',

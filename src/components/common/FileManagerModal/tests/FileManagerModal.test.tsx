@@ -247,40 +247,22 @@ describe('FileManagerModal row selection', () => {
     });
   };
 
-  it('adds every file inside a ticked folder', async () => {
+  it('pre-checks a saved folder', async () => {
+    dom.render(<FileManagerModal isOpen initialFileIds={['files/mine/docs/']} onClose={vi.fn()} />);
+    await until(() => rowCheckbox('docs')?.checked === true);
+
+    expect(rowCheckbox('docs')?.checked).toBe(true);
+  });
+
+  it('adds a ticked folder as the folder itself', async () => {
     const { onClose } = await renderModal();
-    vi.mocked(listFiles).mockResolvedValue({
-      items: [
-        { name: 'a.md', path: 'files/mine/docs/a.md', nodeType: FilesApiNodeType.Item },
-        { name: 'b.md', path: 'files/mine/docs/sub/b.md', nodeType: FilesApiNodeType.Item },
-        { name: 'sub', path: 'files/mine/docs/sub/', nodeType: FilesApiNodeType.Folder },
-      ],
-    } as never);
     await selectDocsFolder();
 
     await act(async () => findButton(DialFileManagerI18nKeys.Add)?.click());
     await until(() => onClose.mock.calls.length > 0);
 
-    expect(listFiles).toHaveBeenLastCalledWith({
-      bucket: 'mine',
-      path: 'docs/',
-      recursive: true,
-    });
-    expect(onClose).toHaveBeenCalledWith(['files/mine/docs/a.md', 'files/mine/docs/sub/b.md']);
-  });
-
-  it('stays open with an error when the folder contents cannot be loaded', async () => {
-    const { onClose } = await renderModal();
-    vi.mocked(listFiles).mockRejectedValue(new Error('boom'));
-    await selectDocsFolder();
-
-    await act(async () => findButton(DialFileManagerI18nKeys.Add)?.click());
-    await until(() => dialog().querySelector('[role="alert"]') != null);
-
-    expect(onClose).not.toHaveBeenCalled();
-    expect(dialog().querySelector('[role="alert"]')?.textContent).toBe(
-      DialFileManagerI18nKeys.AttachFolderFailed,
-    );
+    expect(listFiles).not.toHaveBeenCalledWith(expect.objectContaining({ recursive: true }));
+    expect(onClose).toHaveBeenCalledWith(['files/mine/docs/']);
   });
 });
 
