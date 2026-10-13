@@ -238,6 +238,7 @@ export enum QuickAppEditorI18nKeys {
   MaxAttachmentsHint = 'Valid only for the cases when attachments enabled for the agent',
   MaxAttachmentsPlaceholder = 'Enter the maximum number of attachments',
   MaxAttachmentsInvalid = 'Enter a whole number greater than 0',
+  MaxAttachmentsRequired = 'Maximum attachments amount is required',
   TimeAwarenessDescription = 'Gives the agent the current date and time, helping it understand references like "today," deadlines, and schedules.',
   BuiltInFileTools = 'Built-in file tools',
   BuiltInFileToolsDescription = 'Lets the agent browse, search, read, and edit files within the app’s file context. Includes write access, so worth reviewing for agents handling sensitive files.',

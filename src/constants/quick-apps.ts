@@ -33,3 +33,6 @@ export const WEB_FETCH_FEATURE_VALUE: WebFetchFeature = {
 export const MIN_TEMPERATURE = 0;
 export const MAX_TEMPERATURE = 1;
 export const TEMPERATURE_STEP = 0.1;
+
+/** Seeded when Attachments is on and no max is set; equals the host's own fallback. */
+export const DEFAULT_MAX_INPUT_ATTACHMENTS = 1;

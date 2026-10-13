@@ -36,6 +36,7 @@ const testContext = vi.hoisted(() => {
         isShared?: boolean;
         sharedWithMe?: boolean;
         inputAttachmentTypes?: string[];
+        maxInputAttachments?: unknown;
       },
       settings: {
         defaultModelId: 'model-1',
@@ -115,6 +116,13 @@ vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationS
     <div>
       <output data-testid="attachments-enabled">{String(isAttachmentsEnabled)}</output>
       <output data-testid="attachment-value">{inputAttachmentTypes.join('|')}</output>
+      <output data-testid="max-value">{String(advancedSettings.maxInputAttachments ?? '')}</output>
+      <button
+        type="button"
+        onClick={() => onAdvancedSettingsSave({ ...advancedSettings, maxInputAttachments: 1 })}
+      >
+        Save max 1
+      </button>
       <output data-testid="attachment-error">{errors.inputAttachmentTypes ?? ''}</output>
       <button type="button" onClick={() => onAttachmentsEnabledChange(true)}>
         Turn attachments on
@@ -601,6 +609,80 @@ describe('QuickApp2Form observable behavior', () => {
 
     expect(onDirtyChange).toHaveBeenLastCalledWith(false);
     expect(dom.container.querySelector('[data-testid="attachment-error"]')?.textContent).toBe('');
+  });
+
+  const getMaxValue = () => dom.container.querySelector('[data-testid="max-value"]')?.textContent;
+
+  it('seeds the default max when attachments are turned on without a max', async () => {
+    const { onSave, onDirtyChange } = renderForm();
+
+    click(getButton('Turn attachments on'));
+    expect(getMaxValue()).toBe('1');
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+
+    click(getButton('Select PDF'));
+    await submitForm();
+    expect(onSave.mock.calls[0][0]).toMatchObject({ maxInputAttachments: 1 });
+  });
+
+  it('keeps an existing max when attachments are turned on', () => {
+    testContext.appContext.app = {
+      id: 'app',
+      applicationProperties: { orchestrator: SAVED_ORCHESTRATOR },
+      maxInputAttachments: 5,
+    };
+    renderForm();
+
+    click(getButton('Turn attachments on'));
+    expect(getMaxValue()).toBe('5');
+
+    click(getButton('Turn attachments off'));
+    expect(getMaxValue()).toBe('5');
+  });
+
+  it('restores the max set in Advanced settings when attachments are turned off and on', () => {
+    renderForm();
+
+    click(getButton('Save changed advanced settings'));
+    click(getButton('Turn attachments on'));
+    click(getButton('Turn attachments off'));
+    click(getButton('Turn attachments on'));
+
+    expect(getMaxValue()).toBe('5');
+  });
+
+  it('keeps a max of 1 confirmed in Advanced settings when attachments are turned off', () => {
+    const { onDirtyChange } = renderForm();
+
+    click(getButton('Turn attachments on'));
+    click(getButton('Save max 1'));
+    click(getButton('Turn attachments off'));
+
+    expect(getMaxValue()).toBe('1');
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+  });
+
+  it('keeps the seeded max after a save when attachments are turned off', async () => {
+    renderForm();
+
+    click(getButton('Turn attachments on'));
+    click(getButton('Select PDF'));
+    await submitForm();
+    click(getButton('Turn attachments off'));
+
+    expect(getMaxValue()).toBe('1');
+  });
+
+  it('loads an app with attachment types and no max with the default max and a clean form', () => {
+    testContext.appContext.app = {
+      id: 'app',
+      applicationProperties: { orchestrator: SAVED_ORCHESTRATOR },
+      inputAttachmentTypes: ['application/pdf'],
+    };
+    const { onDirtyChange } = renderForm();
+
+    expect(getMaxValue()).toBe('1');
+    expect(onDirtyChange).not.toHaveBeenCalledWith(true);
   });
 
   it('resolves the model and reports ready when model data arrives asynchronously', () => {
