@@ -27,6 +27,7 @@ export interface AdvancedSettingsPopupProps {
   isCodeInterpreterEnabled: boolean;
   isAddAttachmentEnabled: boolean;
   isWebFetchEnabled: boolean;
+  isAttachmentsEnabled: boolean;
   maxInputAttachmentsError?: string;
   onSave: (values: AdvancedSettingsValues) => void;
   onClose: () => void;
@@ -40,6 +41,7 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
   isCodeInterpreterEnabled,
   isAddAttachmentEnabled,
   isWebFetchEnabled,
+  isAttachmentsEnabled,
   maxInputAttachmentsError,
   onSave,
   onClose,
@@ -117,13 +119,18 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
   );
 
   const handleSave = useCallback(() => {
-    if (!isValidMaxInputAttachments(draft.maxInputAttachments)) {
+    if (!isValidMaxInputAttachments(draft.maxInputAttachments, isAttachmentsEnabled)) {
       setHasMaxAttachmentsError(true);
       return;
     }
     onSave(draft);
     onClose();
-  }, [draft, onClose, onSave]);
+  }, [draft, isAttachmentsEnabled, onClose, onSave]);
+
+  const maxAttachmentsErrorKey =
+    draft.maxInputAttachments == null || draft.maxInputAttachments === ''
+      ? QuickAppEditorI18nKeys.MaxAttachmentsRequired
+      : QuickAppEditorI18nKeys.MaxAttachmentsInvalid;
 
   return (
     <Popup
@@ -194,9 +201,7 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
           caption={t(QuickAppEditorI18nKeys.MaxAttachmentsHint)}
           placeholder={t(QuickAppEditorI18nKeys.MaxAttachmentsPlaceholder)}
           invalid={hasMaxAttachmentsError}
-          error={
-            hasMaxAttachmentsError ? t(QuickAppEditorI18nKeys.MaxAttachmentsInvalid) : undefined
-          }
+          error={hasMaxAttachmentsError ? t(maxAttachmentsErrorKey) : undefined}
         />
 
         <Switch

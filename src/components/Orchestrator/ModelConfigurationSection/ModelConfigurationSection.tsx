@@ -78,6 +78,7 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
           isCodeInterpreterEnabled={isCodeInterpreterEnabled}
           isAddAttachmentEnabled={isAddAttachmentEnabled}
           isWebFetchEnabled={isWebFetchEnabled}
+          isAttachmentsEnabled={isAttachmentsEnabled}
           maxInputAttachmentsError={errors.maxInputAttachments}
           onAdvancedSettingsSave={onAdvancedSettingsSave}
         />

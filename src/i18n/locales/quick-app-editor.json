@@ -30,6 +30,7 @@
   "Valid only for the cases when attachments enabled for the agent": "Valid only for the cases when attachments enabled for the agent",
   "Enter the maximum number of attachments": "Enter the maximum number of attachments",
   "Enter a whole number greater than 0": "Enter a whole number greater than 0",
+  "Maximum attachments amount is required": "Maximum attachments amount is required",
   "Gives the agent the current date and time, helping it understand references like \"today,\" deadlines, and schedules.": "Gives the agent the current date and time, helping it understand references like \"today,\" deadlines, and schedules.",
   "Built-in file tools": "Built-in file tools",
   "Handle attachments by reading file content on demand instead of including all attachment content in the initial prompt.": "Handle attachments by reading file content on demand instead of including all attachment content in the initial prompt.",
