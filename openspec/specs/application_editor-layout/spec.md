@@ -17,6 +17,7 @@ The editor SHALL present its primary content and Configuration areas as side-by-
 - **WHEN** a Quick App editor is rendered below the desktop layout breakpoint
 - **THEN** the primary content area and Configuration area SHALL stack in a readable order
 - **AND** no editor content SHALL require horizontal scrolling
+- **AND** the Instructions formatting toolbar SHALL wrap within the field rather than extend past its edge
 - **AND** Add-ons SHALL remain directly below Instructions in the primary content flow
 
 #### Scenario: Toggling a switch keeps the scroll position

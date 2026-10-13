@@ -29,7 +29,7 @@
     "@epam/ai-dial-quotations": "1.2.0-rc.0",
     "@epam/ai-dial-react-file-manager": "^0.3.0",
     "@epam/ai-dial-skill-editor": "1.2.0-rc.0",
-    "@epam/ai-dial-ui-kit": "^0.15.0",
+    "@epam/ai-dial-ui-kit": "^0.15.4",
     "@fontsource-variable/inter": "^5.2.6",
     "@hookform/resolvers": "^5.4.0",
     "@monaco-editor/react": "^4.7.0",
