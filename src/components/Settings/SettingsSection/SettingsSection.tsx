@@ -1,11 +1,10 @@
 import { IconSettings } from '@tabler/icons-react';
 import { FC, memo, useCallback, useState } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/use-translation';
+import { ApplicationEditorI18nKeys, BasicI18nKeys } from '@/constants/translation-keys';
+import { useTranslation } from 'react-i18next';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import { SectionRowVariant } from '@/types/section-row';
-import { Translation } from '@/types/translation';
 
 import { SectionRow } from '@/components/common/SectionRow/SectionRow';
 
@@ -38,7 +37,7 @@ const SettingsSection: FC<SettingsSectionProps> = ({
   onAdvancedSettingsSave,
   ...popupProps
 }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   const handleOpen = useCallback(() => setIsPopupOpen(true), []);
@@ -47,11 +46,11 @@ const SettingsSection: FC<SettingsSectionProps> = ({
   return (
     <>
       <SectionRow
-        title={t(QuickAppEditorI18nKeys.Settings)}
+        title={t(BasicI18nKeys.Settings)}
         variant={SectionRowVariant.Caption}
         action={
           <Button
-            label={t(QuickAppEditorI18nKeys.Advanced)}
+            label={t(ApplicationEditorI18nKeys.AdvancedSettingsAdvanced)}
             iconBefore={
               <IconSettings
                 size={DIAL_ICON_SIZE.SM}

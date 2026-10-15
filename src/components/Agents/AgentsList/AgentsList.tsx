@@ -1,12 +1,11 @@
 import { FC, lazy, memo, Suspense, useCallback, useState } from 'react';
 
-import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { useAddOnEntityMap } from '@/hooks/use-add-on-entity-map';
 import { useListRemoveFocus } from '@/hooks/use-list-remove-focus';
-import { useTranslation } from '@/hooks/use-translation';
+import { useTranslation } from 'react-i18next';
 import type { DialModel } from '@/types/dial-entities';
 import type { DialAppTransportType } from '@/types/quick-apps';
-import { Translation } from '@/types/translation';
 import { getAddOnDisplay } from '@/utils/get-add-on-display';
 import { getEntityStatus, getEntityStatusMessage } from '@/utils/get-entity-status';
 
@@ -39,8 +38,8 @@ const AgentsList: FC<AgentsListProps> = ({
   transports,
   onConfigure,
 }) => {
-  const { t, language } = useTranslation(Translation.QuickAppEditor);
-  const { t: tCommon } = useTranslation(Translation.Common);
+  const { t, i18n } = useTranslation();
+  const language = i18n.resolvedLanguage ?? i18n.language;
   const entityMap = useAddOnEntityMap();
   const { listRef, markRemoval } = useListRemoveFocus(ids);
 
@@ -66,8 +65,8 @@ const AgentsList: FC<AgentsListProps> = ({
           const statusText = getEntityStatusMessage(
             getEntityStatus(agent, id),
             true,
-            tCommon,
-            tCommon(CommonI18nKeys.AgentEntityType),
+            t,
+            t(ApplicationEditorI18nKeys.AddOnsEntityTypeAgent),
           );
           return (
             <li key={id}>
@@ -77,8 +76,8 @@ const AgentsList: FC<AgentsListProps> = ({
                 version={version}
                 iconUrl={iconUrl}
                 statusText={statusText}
-                detailsLabel={t(QuickAppEditorI18nKeys.AddOnDetails, { name })}
-                removeLabel={t(QuickAppEditorI18nKeys.RemoveAddOn, { name })}
+                detailsLabel={t(ApplicationEditorI18nKeys.AddOnsDetails, { name })}
+                removeLabel={t(ApplicationEditorI18nKeys.AddOnsRemove, { name })}
                 onClick={setOpenAgentId}
                 onRemove={isReadonly ? undefined : handleRemove}
               />

@@ -1,9 +1,8 @@
 import { FC, lazy, memo, Suspense, useCallback, useState } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import type { QuickApp2FormValues } from '@/types/quick-app-form';
-import { useTranslation } from '@/hooks/use-translation';
-import { Translation } from '@/types/translation';
+import { useTranslation } from 'react-i18next';
 
 import { AddOnRow } from '@/components/AddOns/AddOnRow/AddOnRow';
 import SkillsList from '@/components/Skills/SkillsList/SkillsList';
@@ -25,7 +24,7 @@ const AgentSkillsFormSection: FC<AgentSkillsFormSectionProps> = ({
   onChange,
   isReadonly,
 }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation();
   const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
 
   const handleRemove = useCallback(
@@ -45,11 +44,11 @@ const AgentSkillsFormSection: FC<AgentSkillsFormSectionProps> = ({
 
   return (
     <AddOnRow
-      label={t(QuickAppEditorI18nKeys.Skills)}
-      emptyDescription={t(QuickAppEditorI18nKeys.AgentSkillsDescription)}
+      label={t(ApplicationEditorI18nKeys.SkillsTitle)}
+      emptyDescription={t(ApplicationEditorI18nKeys.SkillsDescription)}
       isEmpty={!value?.length}
       isAddDisabled={isReadonly}
-      addTooltip={t(QuickAppEditorI18nKeys.AddAgentSkills)}
+      addTooltip={t(ApplicationEditorI18nKeys.SkillsAddMany)}
       onAdd={() => setIsSkillsModalOpen(true)}
     >
       <SkillsList value={value} isReadonly={isReadonly} onRemove={handleRemove} />

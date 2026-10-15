@@ -1,9 +1,8 @@
 import { FC } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/use-translation';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
+import { useTranslation } from 'react-i18next';
 import type { DialModel } from '@/types/dial-entities';
-import { Translation } from '@/types/translation';
 import { getLocalizedText } from '@/utils/get-localized-text';
 import { resolveIconUrl } from '@/utils/resolve-icon-url';
 import {
@@ -44,7 +43,8 @@ export const SelectedModelCard: FC<SelectedModelCardProps> = ({
   isDisabled,
   error,
 }) => {
-  const { t, language } = useTranslation(Translation.QuickAppEditor);
+  const { t, i18n } = useTranslation();
+  const language = i18n.resolvedLanguage ?? i18n.language;
 
   const renderContent = () => {
     if (isLoading) return <CardSkeleton />;
@@ -52,7 +52,7 @@ export const SelectedModelCard: FC<SelectedModelCardProps> = ({
     if (model == null) {
       return (
         <span className="dial-body-semi-text block truncate text-secondary">
-          {modelId || t(QuickAppEditorI18nKeys.SelectModel)}
+          {modelId || t(ApplicationEditorI18nKeys.OrchestratorSelectModel)}
         </span>
       );
     }
@@ -65,7 +65,7 @@ export const SelectedModelCard: FC<SelectedModelCardProps> = ({
           version: model.version,
           iconUrl: model.iconUrl ? resolveIconUrl(model.iconUrl) : undefined,
         }}
-        labels={{ type: t(QuickAppEditorI18nKeys.Model) }}
+        labels={{ type: t(ApplicationEditorI18nKeys.OrchestratorModel) }}
         hasFeaturedTag={false}
         iconSize={44}
         headingLevel={4}

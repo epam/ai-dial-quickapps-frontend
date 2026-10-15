@@ -1,11 +1,10 @@
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { FC, useMemo } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys, CatalogI18nKeys } from '@/constants/translation-keys';
 import { useDataContext } from '@/context/DataContext';
 import { useScopeLabels } from '@/hooks/use-scope-labels';
-import { useTranslation } from '@/hooks/use-translation';
-import { Translation } from '@/types/translation';
+import { useTranslation } from 'react-i18next';
 import { isHiddenDialFolderId } from '@/utils/api';
 import { mapSkillToCatalogItem } from '@/utils/map-skill-to-catalog-item';
 
@@ -24,7 +23,7 @@ export interface AddSkillsModalProps {
 
 /** Skill picker: the skills catalog with multi-selection. */
 export const AddSkillsModal: FC<AddSkillsModalProps> = ({ value, onConfirm, onClose }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation();
   const { skills, userBucket } = useDataContext();
   const scopeLabels = useScopeLabels();
 
@@ -38,14 +37,14 @@ export const AddSkillsModal: FC<AddSkillsModalProps> = ({ value, onConfirm, onCl
 
   const labels = useMemo<AddOnCatalogModalLabels>(
     () => ({
-      title: t(QuickAppEditorI18nKeys.AddSkill),
-      catalog: t(QuickAppEditorI18nKeys.SkillsCatalog),
-      search: t(QuickAppEditorI18nKeys.SearchAgentSkills),
-      loading: t(QuickAppEditorI18nKeys.LoadingSkills),
-      failedToLoad: t(QuickAppEditorI18nKeys.FailedToLoadSkills),
-      empty: t(QuickAppEditorI18nKeys.NoAgentSkillsAdded),
-      selectAll: t(QuickAppEditorI18nKeys.SelectAllSkills),
-      selectRow: (name) => t(QuickAppEditorI18nKeys.SelectAddOn, { name }),
+      title: t(ApplicationEditorI18nKeys.SkillsAdd),
+      catalog: t(ApplicationEditorI18nKeys.SkillsCatalogTitle),
+      search: t(ApplicationEditorI18nKeys.SkillsSearchPlaceholder),
+      loading: t(ApplicationEditorI18nKeys.SkillsLoading),
+      failedToLoad: t(CatalogI18nKeys.SkillsLoadError),
+      empty: t(ApplicationEditorI18nKeys.SkillsEmpty),
+      selectAll: t(ApplicationEditorI18nKeys.SkillsSelectAll),
+      selectRow: (name) => t(ApplicationEditorI18nKeys.AddOnsSelect, { name }),
     }),
     [t],
   );

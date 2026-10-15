@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The app editor’s skill, toolset and agent details popups show the same tabs, order and content as the DIAL chat catalog. The popups render the catalog’s own tab components, fed by the catalog’s data pipeline (`useCatalogItemDetails` from `@epam/ai-dial-chat-hooks`) over this app’s chat-api client, with every catalog label translated through `quickAppEditor` keys.
+The app editor’s skill, toolset and agent details popups show the same tabs, order and content as the DIAL chat catalog. The popups render the catalog’s own tab components, fed by the catalog’s data pipeline (`useCatalogItemDetails` from `@epam/ai-dial-chat-hooks`) over this app’s chat-api client, with every catalog label translated through translation keys keys.
 
 ## Requirements
 
@@ -21,7 +21,7 @@ Which tabs show, and in what order, SHALL be decided by the catalog's exported t
 4. **Pricing:** shown when `details.pricing` is present.
 5. **Limits:** shown when `details.limits` is present.
 6. **Tools:** shown when `details.tools` is present.
-7. **Connect** (`ApiTab`): shown when `details.api` names a connectable endpoint and the app settings carry `dialCoreExternalUrl`; hidden otherwise (`isConnectHidden`). Its section, field and copy labels SHALL be translated through `quickAppEditor` (`ConnectTab`, `ConnectResourceSection`, `ConnectSnippetSection`, `ConnectModelId`, `ConnectEndpoint` (also the endpoint section title), `ConnectRequestExample`, `ConnectResponseSchema`, `ConnectCopy`, and `MarkdownCopiedCode` for the copied status).
+7. **Connect** (`ApiTab`): shown when `details.api` names a connectable endpoint and the app settings carry `dialCoreExternalUrl`; hidden otherwise (`isConnectHidden`). Its section, field and copy labels SHALL be translated through translation keys (`CatalogI18nKeys.DetailsTabConnect`, `CatalogI18nKeys.DetailsApiResourceSection`, `CatalogI18nKeys.DetailsApiSnippetSection`, `CatalogI18nKeys.DetailsApiModelId`, `CatalogI18nKeys.DetailsApiEndpoint` (also the endpoint section title), `CatalogI18nKeys.DetailsApiRequestExample`, `CatalogI18nKeys.DetailsApiResponseSchema`, `ButtonsI18nKeys.Copy`, and `ButtonsI18nKeys.Copied` for the copied status).
 
 App-owned tabs ("App-owned tabs in add-on details popups") follow these, after
 Connect.
@@ -165,7 +165,7 @@ Rendered result:
 
 ### Requirement: Details loading and failure
 
-While details load, the popup SHALL show the About tab from the listing (`description`, `topics`). It SHALL show a loading indicator next to the tab row, with accessible label `quickAppEditor` `LoadingDetails`, as `DetailsPanel` does with `isDetailsLoading`. When the details request fails, the popup SHALL keep About, SHALL show `quickAppEditor` `FailedToLoadDetails` with a **Retry** (`quickAppEditor` `Retry`) that repeats the requests, and the header actions and footer SHALL stay usable.
+While details load, the popup SHALL show the About tab from the listing (`description`, `topics`). It SHALL show a loading indicator next to the tab row, with accessible label `CatalogI18nKeys.DetailsLoading`, as `DetailsPanel` does with `isDetailsLoading`. When the details request fails, the popup SHALL keep About, SHALL show `CatalogI18nKeys.DetailsLoadError` with a **Retry** (`ButtonsI18nKeys.Retry`) that repeats the requests, and the header actions and footer SHALL stay usable.
 
 #### Scenario: Loading
 
@@ -181,17 +181,17 @@ While details load, the popup SHALL show the About tab from the listing (`descri
 
 ### Requirement: Localised catalog content
 
-Every catalog component and mapper SHALL receive translated text from this app's `quickAppEditor` namespace. No catalog English default SHALL be shown:
+Every catalog component and mapper SHALL receive translated text from this app's translation keys. No catalog English default SHALL be shown:
 
-- **Tab labels:** `AboutTab`, `DetailsTab`, `OverviewTab`, `PricingTab`, `LimitsTab`, `ToolsTab`.
-- **Overview:** the section titles and spec labels passed to `mapEntityDetailsToCatalogDetails`'s `labels` (e.g. `OverviewCapabilities`, `OverviewSpecification`, `OverviewProvider`, `OverviewHostedBy`, …), `OverviewYes` / `OverviewNo` for boolean values, and the skill overview labels passed to `buildSkillOverview`: `SkillWhenToUse`, `SkillAllowedTools`, `SkillBundledResources`, `SkillAuthor`, `OverviewLastUpdated`, `SkillFileCount`, plus the section titles (`OverviewSpecification`, `SkillTypeLabel`).
+- **Tab labels:** `CatalogI18nKeys.DetailsTabAbout`, `CatalogI18nKeys.DetailsTabContent`, `CatalogI18nKeys.DetailsTabOverview`, `CatalogI18nKeys.DetailsTabPricing`, `CatalogI18nKeys.DetailsTabLimits`, `CatalogI18nKeys.DetailsTabTools`.
+- **Overview:** the section titles and spec labels passed to `mapEntityDetailsToCatalogDetails`'s `labels` (e.g. `CatalogI18nKeys.DetailsOverviewCapabilities`, `CatalogI18nKeys.DetailsOverviewSpecification`, `CatalogI18nKeys.DetailsOverviewProvider`, `CatalogI18nKeys.DetailsOverviewHostedBy`, …), `CatalogI18nKeys.DetailsOverviewYes` / `CatalogI18nKeys.DetailsOverviewNo` for boolean values, and the skill overview labels passed to `buildSkillOverview`: `CatalogI18nKeys.DetailsSkillWhenToUse`, `CatalogI18nKeys.DetailsSkillAllowedTools`, `CatalogI18nKeys.DetailsSkillBundledResources`, `CatalogI18nKeys.DetailsSkillAuthor`, `CatalogI18nKeys.DetailsOverviewLastUpdated`, `CatalogI18nKeys.DetailsSkillFileCount`, plus the section titles (`CatalogI18nKeys.DetailsOverviewSpecification`, `CatalogI18nKeys.DetailsSkillSection`).
 - **Pricing and Limits:** the section labels and the limits row labels passed to `mapDeploymentLimitsDtoToCatalogLimits`.
 - **Markdown:** the code-block and table labels the catalog forwards to its Markdown renderer.
 
 #### Scenario: Translated Overview
 
 - **WHEN** the Overview of a toolset is rendered
-- **THEN** its section titles and spec labels SHALL be the translated `quickAppEditor` values, not the catalog's English defaults
+- **THEN** its section titles and spec labels SHALL be the translated values, not the catalog's English defaults
 
 ### Requirement: Catalog content accessibility and direction
 
@@ -208,53 +208,53 @@ The catalog tab row SHALL follow the ARIA tabs pattern. Its panels SHALL be reac
 
 The skill, toolset and agent details popups SHALL keep the ui-kit `Popup` shell (Delete at the start, Close at the end of the footer) and SHALL lay out their content as the catalog `DetailsPanel` details view does, with the components it uses:
 
-- **Header:** the catalog `DetailsHeader` from `@epam/ai-dial-catalog`: a 52 px icon, the type caption, the name with the version and the folder path, and the action row. The caption SHALL be translated per entity type through `texts.entityTypeLabels` (`SkillTypeLabel`, `ToolsetTypeLabel`, `AgentTypeLabel`, `Model`). `DetailsHeader` SHALL show only the toolset credentials action (`toolsets_selection`); Use in chat, Share, Publish, Edit, Download and the Manage menu SHALL be hidden.
+- **Header:** the catalog `DetailsHeader` from `@epam/ai-dial-catalog`: a 52 px icon, the type caption, the name with the version and the folder path, and the action row. The caption SHALL be translated per entity type through `texts.entityTypeLabels` (`CatalogI18nKeys.DetailsSkillSection`, `ApplicationEditorI18nKeys.ToolsetsTypeLabel`, `ApplicationEditorI18nKeys.AgentsTypeLabel`, `ApplicationEditorI18nKeys.OrchestratorModel`). `DetailsHeader` SHALL show only the toolset credentials action (`toolsets_selection`); Use in chat, Share, Publish, Edit, Download and the Manage menu SHALL be hidden.
 - **Actions this app owns** (only the agent Credentials action) SHALL sit in a row
   under the header, where the catalog shows a toolset's Log in, indented by the icon
   width plus its gap (`ps-[60px]`). Settings this app owns live in app-owned tabs,
   not in this row.
 - **Sections:** the tab row and the tab panel SHALL follow the header, separated by
   the catalog's 16 px gap.
-- **Loading:** the loading indicator next to the tab row SHALL be the ui-kit `Skeleton` (one 72 px line) in a `role="status"` element labelled `quickAppEditor` `LoadingDetails`.
-- **Markdown:** `AboutTab` and `ContentTab` SHALL receive `markdownLabels` translated through `quickAppEditor` (`MarkdownCopyCode`, `MarkdownCopiedCode`, `MarkdownDownloadCode`, `MarkdownTableScrollRegion`, `MarkdownMathScrollRegion`), so no catalog English default is shown.
-- **Content files:** `ContentTab` SHALL receive the package files, the selection and the file-selector labels (`ContentFileSelectorAriaLabel`, `ContentFileCount`, `ContentFileLoading`, `ContentFileUnsupported`), as specified by `skills_catalog`. While a file other than the base file is picked, `ContentTab` SHALL receive the attachment-canvas preview in `filePreviewContent`.
-- **File preview:** the preview SHALL be a `role="group"` region named by the picked file's name. Its canvas SHALL receive every label translated through `quickAppEditor`, so no English default from the canvas is shown:
-  - `unsupportedLabel` → `ContentFileUnsupported`;
-  - `loadErrorLabel` → `ContentFileError`;
-  - `forbiddenErrorLabel` → `ContentFileForbidden`;
-  - `htmlFrameBlockedLabel` → `HtmlPreviewBlocked`;
-  - `htmlOpenInNewTabLabel` → `OpenInNewTab`;
-  - `pdfThumbnailsLabel` → `PdfThumbnails`;
-  - `pdfShowThumbnailsLabel` → `PdfShowThumbnails`;
-  - `pdfHideThumbnailsLabel` → `PdfHideThumbnails`;
-  - `pdfPageNumberLabel` → `PdfPageNumber`;
-  - `pdfContentLoadingLabel` → `PdfViewerLoading`, `pdfContentErrorLabel` → `PdfViewerError`, `pdfContentRetryLabel` → `Retry`;
-  - `codeContentLoadingLabel` → `CodeHighlightingLoading`, `codeContentErrorLabel` → `CodeHighlightingError`, `codeContentRetryLabel` → `Retry`;
-  - `xlsxFormulaLabel` → `SpreadsheetFormula`;
-  - `tableCopyLabel` → `ConnectCopy`, `tableCopiedLabel` → `MarkdownCopiedCode`, `tableDownloadCsvLabel` → `TableDownloadCsv`;
-  - the code-block and scroll-region labels reuse `MarkdownCopyCode`, `MarkdownCopiedCode`, `MarkdownDownloadCode`, `MarkdownTableScrollRegion` and `MarkdownMathScrollRegion`.
+- **Loading:** the loading indicator next to the tab row SHALL be the ui-kit `Skeleton` (one 72 px line) in a `role="status"` element labelled `CatalogI18nKeys.DetailsLoading`.
+- **Markdown:** `AboutTab` and `ContentTab` SHALL receive `markdownLabels` translated through translation keys (`ChatI18nKeys.CopyCode`, `ButtonsI18nKeys.Copied`, `ChatI18nKeys.DownloadCode`, `ChatI18nKeys.ScrollableTable`, `ChatI18nKeys.ScrollableFormula`), so no catalog English default is shown.
+- **Content files:** `ContentTab` SHALL receive the package files, the selection and the file-selector labels (`CatalogI18nKeys.DetailsContentFileSelectorAriaLabel`, `CatalogI18nKeys.DetailsContentFileCount`, `CatalogI18nKeys.DetailsContentFileLoading`, `CatalogI18nKeys.DetailsContentFileUnsupported`), as specified by `skills_catalog`. While a file other than the base file is picked, `ContentTab` SHALL receive the attachment-canvas preview in `filePreviewContent`.
+- **File preview:** the preview SHALL be a `role="group"` region named by the picked file's name. Its canvas SHALL receive every label translated through translation keys, so no English default from the canvas is shown:
+  - `unsupportedLabel` → `CatalogI18nKeys.DetailsContentFileUnsupported`;
+  - `loadErrorLabel` → `CatalogI18nKeys.DetailsContentFileError`;
+  - `forbiddenErrorLabel` → `AttachmentCanvasI18nKeys.ForbiddenErrorLabel`;
+  - `htmlFrameBlockedLabel` → `AttachmentCanvasI18nKeys.HtmlFrameBlocked`;
+  - `htmlOpenInNewTabLabel` → `AttachmentCanvasI18nKeys.HtmlOpenInNewTab`;
+  - `pdfThumbnailsLabel` → `AttachmentCanvasI18nKeys.PdfThumbnailsLabel`;
+  - `pdfShowThumbnailsLabel` → `AttachmentCanvasI18nKeys.PdfShowThumbnailsLabel`;
+  - `pdfHideThumbnailsLabel` → `AttachmentCanvasI18nKeys.PdfHideThumbnailsLabel`;
+  - `pdfPageNumberLabel` → `AttachmentCanvasI18nKeys.PdfPageNumberLabel`;
+  - `pdfContentLoadingLabel` → `AttachmentCanvasI18nKeys.PdfContentLoadingLabel`, `pdfContentErrorLabel` → `AttachmentCanvasI18nKeys.PdfContentErrorLabel`, `pdfContentRetryLabel` → `Retry`;
+  - `codeContentLoadingLabel` → `AttachmentCanvasI18nKeys.CodeContentLoadingLabel`, `codeContentErrorLabel` → `AttachmentCanvasI18nKeys.CodeContentErrorLabel`, `codeContentRetryLabel` → `Retry`;
+  - `xlsxFormulaLabel` → `AttachmentCanvasI18nKeys.XlsxFormulaLabel`;
+  - `tableCopyLabel` → `ButtonsI18nKeys.Copy`, `tableCopiedLabel` → `ButtonsI18nKeys.Copied`, `tableDownloadCsvLabel` → `ButtonsI18nKeys.DownloadAsCsv`;
+  - the code-block and scroll-region labels reuse `ChatI18nKeys.CopyCode`, `ButtonsI18nKeys.Copied`, `ChatI18nKeys.DownloadCode`, `ChatI18nKeys.ScrollableTable` and `ChatI18nKeys.ScrollableFormula`.
 
   The visualizer and cited-location labels are not passed: a skill file never opens a custom visualizer or carries citations.
 
   The code-block theme SHALL follow the active app theme (dark or light). The preview SHALL fill the tab panel's height and own its own scrolling. The canvas PDF toolbar SHALL be hidden, as in the chat catalog.
 
-New `quickAppEditor` keys (each key is its English text):
+Keys used by the file preview (members of `src/constants/translation-keys.ts`):
 
-| Key                       | English                                       |
-| ------------------------- | --------------------------------------------- |
-| `ContentFileForbidden`    | You don't have permission to access this file |
-| `HtmlPreviewBlocked`      | This page cannot be displayed in preview      |
-| `OpenInNewTab`            | Open in new tab                               |
-| `PdfThumbnails`           | Thumbnails                                    |
-| `PdfShowThumbnails`       | Show thumbnails                               |
-| `PdfHideThumbnails`       | Hide thumbnails                               |
-| `PdfPageNumber`           | Page number                                   |
-| `PdfViewerLoading`        | Loading the PDF viewer…                       |
-| `PdfViewerError`          | Failed to load the PDF viewer                 |
-| `CodeHighlightingLoading` | Loading syntax highlighting…                  |
-| `CodeHighlightingError`   | Failed to load syntax highlighting            |
-| `SpreadsheetFormula`      | Formula                                       |
-| `TableDownloadCsv`        | Download as CSV                               |
+| Key                                                | English                                       |
+| -------------------------------------------------- | --------------------------------------------- |
+| `AttachmentCanvasI18nKeys.ForbiddenErrorLabel`     | You don't have permission to access this file |
+| `AttachmentCanvasI18nKeys.HtmlFrameBlocked`        | This page cannot be displayed in preview      |
+| `AttachmentCanvasI18nKeys.HtmlOpenInNewTab`        | Open in new tab                               |
+| `AttachmentCanvasI18nKeys.PdfThumbnailsLabel`      | Thumbnails                                    |
+| `AttachmentCanvasI18nKeys.PdfShowThumbnailsLabel`  | Show thumbnails                               |
+| `AttachmentCanvasI18nKeys.PdfHideThumbnailsLabel`  | Hide thumbnails                               |
+| `AttachmentCanvasI18nKeys.PdfPageNumberLabel`      | Page number                                   |
+| `AttachmentCanvasI18nKeys.PdfContentLoadingLabel`  | Loading the PDF viewer…                       |
+| `AttachmentCanvasI18nKeys.PdfContentErrorLabel`    | Failed to load the PDF viewer                 |
+| `AttachmentCanvasI18nKeys.CodeContentLoadingLabel` | Loading syntax highlighting…                  |
+| `AttachmentCanvasI18nKeys.CodeContentErrorLabel`   | Failed to load syntax highlighting            |
+| `AttachmentCanvasI18nKeys.XlsxFormulaLabel`        | Formula                                       |
+| `ButtonsI18nKeys.DownloadAsCsv`                    | Download as CSV                               |
 
 #### Scenario: Toolset header
 
@@ -271,19 +271,19 @@ New `quickAppEditor` keys (each key is its English text):
 #### Scenario: Loading skeleton
 
 - **WHEN** details are loading
-- **THEN** a skeleton line with accessible label `LoadingDetails` SHALL be shown next to the tab row
+- **THEN** a skeleton line with accessible label `CatalogI18nKeys.DetailsLoading` SHALL be shown next to the tab row
 
 #### Scenario: Translated Markdown controls
 
 - **WHEN** the About tab renders a code block
-- **THEN** its copy control SHALL be labelled with `quickAppEditor` `MarkdownCopyCode`
+- **THEN** its copy control SHALL be labelled with `ChatI18nKeys.CopyCode`
 
 #### Scenario: File preview region
 
 - **WHEN** a skill's supporting file `guide.pdf` is picked in the Details tab
 - **THEN** `ContentTab` SHALL receive the canvas preview in `filePreviewContent`
 - **AND** the preview SHALL be a `role="group"` region named "guide.pdf"
-- **AND** the PDF thumbnails control SHALL be labelled with `quickAppEditor` `PdfShowThumbnails`
+- **AND** the PDF thumbnails control SHALL be labelled with `AttachmentCanvasI18nKeys.PdfShowThumbnailsLabel`
 
 #### Scenario: Base file shows no canvas
 
