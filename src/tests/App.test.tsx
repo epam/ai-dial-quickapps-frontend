@@ -12,7 +12,15 @@ const mocks = vi.hoisted(() => ({
   fetchAppSettings: vi.fn(),
   authState: { status: 'authenticated', user: undefined as unknown, logout: vi.fn() },
   onReadyToSave: undefined as (() => void) | undefined,
+  editorSettings: undefined as unknown,
+  authListeners: new Set<() => void>(),
 }));
+
+// Replaces the auth snapshot and re-renders its subscribers, as AuthContext does.
+const setAuth = async (next: Partial<typeof mocks.authState>) => {
+  mocks.authState = { ...mocks.authState, ...next };
+  await act(async () => mocks.authListeners.forEach((listener) => listener()));
+};
 
 vi.mock('@epam/ai-dial-chat-visualizer-connector', () => ({
   ChatVisualizerConnector: class {
@@ -24,12 +32,22 @@ vi.mock('@epam/ai-dial-chat-visualizer-connector', () => ({
     destroy = mocks.destroy;
   },
 }));
-vi.mock('@/context/AuthContext', () => ({ useAuthContext: () => mocks.authState }));
+vi.mock('@/context/AuthContext', async () => {
+  const { useSyncExternalStore } = await import('react');
+  const subscribe = (listener: () => void) => {
+    mocks.authListeners.add(listener);
+    return () => mocks.authListeners.delete(listener);
+  };
+  return {
+    useAuthContext: () => useSyncExternalStore(subscribe, () => mocks.authState),
+  };
+});
 vi.mock('@/utils/auth-api', () => ({ getAuthProviders: () => Promise.resolve([]) }));
 vi.mock('@/utils/dial-client', () => ({ fetchAppSettings: mocks.fetchAppSettings }));
 vi.mock('@/components/EditorClient/EditorClient', () => ({
-  default: ({ onReadyToSave }: { onReadyToSave?: () => void }) => {
+  default: ({ settings, onReadyToSave }: { settings: unknown; onReadyToSave?: () => void }) => {
     mocks.onReadyToSave = onReadyToSave;
+    mocks.editorSettings = settings;
     return null;
   },
 }));
@@ -51,7 +69,8 @@ const renderApp = async (search: string) => {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mocks.authState.status = AuthStatus.Authenticated;
+  mocks.authState = { status: AuthStatus.Authenticated, user: undefined, logout: vi.fn() };
+  mocks.editorSettings = undefined;
   mocks.fetchAppSettings.mockResolvedValue({ dialChatHost: HOST });
   postMessage = vi.spyOn(window.parent, 'postMessage').mockImplementation(() => {});
 });
@@ -108,5 +127,50 @@ describe('App host connector', () => {
     await act(async () => mocks.onReadyToSave?.());
 
     expect(postMessage).not.toHaveBeenCalled();
+  });
+});
+
+describe('App settings', () => {
+  it('waits for the auth status before requesting the client config', async () => {
+    mocks.authState.status = AuthStatus.Loading;
+    await renderApp('?applicationName=X');
+
+    expect(mocks.fetchAppSettings).not.toHaveBeenCalled();
+  });
+
+  it('requests the client config once per session user and passes it to the editor', async () => {
+    const settings = { dialChatHost: HOST, allowedOrigins: [HOST] };
+    mocks.fetchAppSettings.mockResolvedValue(settings);
+    mocks.authState.user = { sub: 'u1' };
+    await renderApp('?applicationName=X');
+
+    // A same-user session revalidation hands out a new user object.
+    await setAuth({ user: { sub: 'u1' } });
+
+    expect(mocks.fetchAppSettings).toHaveBeenCalledTimes(1);
+    expect(mocks.editorSettings).toBe(settings);
+  });
+
+  it("reloads the client config on sign-in and renders the editor with the user's copy", async () => {
+    const anonymous = { dialChatHost: HOST };
+    const signedIn = { dialChatHost: HOST, isWebFetchEnabled: true };
+    mocks.fetchAppSettings.mockResolvedValueOnce(anonymous).mockResolvedValueOnce(signedIn);
+    mocks.authState.status = AuthStatus.Unauthenticated;
+    await renderApp('?applicationName=X&authProvider=p');
+
+    await setAuth({ status: AuthStatus.Authenticated, user: { sub: 'u1' } });
+
+    expect(mocks.fetchAppSettings).toHaveBeenCalledTimes(2);
+    expect(mocks.editorSettings).toBe(signedIn);
+  });
+
+  it('does not repeat the handshake when sign-in keeps the same host keys', async () => {
+    mocks.authState.status = AuthStatus.Unauthenticated;
+    await renderApp('?applicationName=X&authProvider=p');
+
+    await setAuth({ status: AuthStatus.Authenticated, user: { sub: 'u1' } });
+
+    expect(mocks.connectorCtor).toHaveBeenCalledTimes(1);
+    expect(mocks.sendReady).toHaveBeenCalledTimes(1);
   });
 });

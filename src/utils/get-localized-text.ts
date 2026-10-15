@@ -30,12 +30,17 @@ export const getLocalizedText = (
   return fallback;
 };
 
+// chat-api's `composeLocalizedFields` stores the primary value under this
+// locale when the host sends `locales` without a `primaryLocale`.
+const DEFAULT_PRIMARY_LOCALE = 'en';
+
 /**
  * Recombines a General-step field split across `TriggerSaveGeneralPayload`
- * (primary-locale value + other locales in `locales`) back into the single
- * `LocalizedText` dictionary DIAL Core expects. Returns a plain string when
- * there's nothing to merge (no `primaryLocale`, or no other-locale value for
- * this field), so untranslated apps still round-trip as a bare string.
+ * (primary-locale value + other locales in `locales`) into the `LocalizedText`
+ * chat-api stores for the same request. Mirrors chat-api's
+ * `composeLocalizedFields`, so change detection compares against what is
+ * actually saved: a plain value without `locales`, otherwise a dictionary of the
+ * primary value plus every non-empty translation.
  */
 export const buildLocalizedText = (
   primaryValue: string | undefined,
@@ -43,14 +48,16 @@ export const buildLocalizedText = (
   locales: HostLocaleTextEntry[] | undefined,
   field: 'name' | 'description',
 ): LocalizedText | undefined => {
+  if (!locales?.length) return primaryValue;
+
   const dict: Record<string, string> = {};
-  if (primaryLocale && primaryValue != null) {
-    dict[primaryLocale] = primaryValue;
+  if (primaryValue != null) {
+    dict[primaryLocale ?? DEFAULT_PRIMARY_LOCALE] = primaryValue;
   }
-  locales?.forEach((entry) => {
+  locales.forEach((entry) => {
     const value = entry[field];
-    if (value != null) dict[entry.language] = value;
+    if (value) dict[entry.language] = value;
   });
 
-  return Object.keys(dict).length > 0 ? dict : primaryValue;
+  return Object.keys(dict).length > 0 ? dict : undefined;
 };

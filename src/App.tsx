@@ -12,13 +12,19 @@ import { AppSettings } from '@/types/dial-entities';
 import { getAuthProviders } from '@/utils/auth-api';
 import { fetchAppSettings } from '@/utils/dial-client';
 
+// The settings and the user they were loaded for (`null` = signed out).
+interface LoadedSettings {
+  userSub: string | null;
+  settings: AppSettings;
+}
+
 const HomePageContent: FC = () => {
   const searchParams = useSearchParams();
   const provider = searchParams.get('authProvider') ?? undefined;
   const applicationName = searchParams.get('applicationName') || undefined;
   const { status, user, logout } = useAuthContext();
   const [providers, setProviders] = useState<AuthProviderInfo[] | null>(null);
-  const [settings, setSettings] = useState<AppSettings | null>(null);
+  const [loadedSettings, setLoadedSettings] = useState<LoadedSettings | null>(null);
   const [isModelReady, setIsModelReady] = useState(false);
   const chatVisualizerConnector = useRef<ChatVisualizerConnector | null>(null);
   const connectorTargetRef = useRef<{ host: string; applicationName: string } | null>(null);
@@ -41,16 +47,30 @@ const HomePageContent: FC = () => {
     }
   }, [user, provider, logout]);
 
+  // The only client-config request. chat-api resolves role-restricted values for
+  // the session user, so it waits for the auth status and reloads only when the
+  // user changes — not on a same-user session revalidation.
+  const isAuthResolved = status !== AuthStatus.Loading;
+  const userSub = user?.sub ?? null;
   useEffect(() => {
+    if (!isAuthResolved) return;
+    let isActive = true;
     // fetchAppSettings never rejects: a failed load resolves to `{}`.
-    const loadSettings = async () => setSettings(await fetchAppSettings());
+    const loadSettings = async () => {
+      const settings = await fetchAppSettings();
+      if (isActive) setLoadedSettings({ userSub, settings });
+    };
     void loadSettings();
-  }, []);
+    return () => {
+      isActive = false;
+    };
+  }, [isAuthResolved, userSub]);
 
+  // Keyed on the host keys, not the settings object, so reloading the settings
+  // after sign-in does not repeat the handshake.
+  const { dialAdminHost, dialChatHost } = loadedSettings?.settings ?? {};
   useEffect(() => {
-    const { dialAdminHost, dialChatHost } = settings ?? {};
     if (chatVisualizerConnector.current) return;
-    if (!settings) return;
     if (!(dialAdminHost || dialChatHost) || !applicationName) {
       return;
     }
@@ -77,15 +97,15 @@ const HomePageContent: FC = () => {
       chatVisualizerConnector.current = null;
       connectorTargetRef.current = null;
     };
-  }, [settings, applicationName]);
+  }, [dialAdminHost, dialChatHost, applicationName]);
 
   // Sent once the editor's own model state has finished loading and is safe
   // to save. Mirrors the same host/appName targeting as sendReadyToInteract,
   // but posts directly since `readyToSave` isn't part of the connector's
   // typed event set.
   //
-  // The model can finish loading before the connector (which waits on
-  // `settings`) exists, so this can't fire-and-forget on model-ready alone —
+  // The model can finish loading before the connector (which waits on the
+  // host keys) exists, so this can't fire-and-forget on model-ready alone —
   // it re-checks whenever either the model becomes ready or the connector
   // target becomes available, whichever happens second.
   useEffect(() => {
@@ -95,7 +115,7 @@ const HomePageContent: FC = () => {
       return;
     }
     window.parent.postMessage({ type: `${target.applicationName}/readyToSave` }, target.host);
-  }, [isModelReady, settings]);
+  }, [isModelReady, dialAdminHost, dialChatHost]);
 
   // Sent when the user is signed out (session ended or errored) so the host
   // knows to show its own logged-out handling instead of an idle iframe.
@@ -108,7 +128,7 @@ const HomePageContent: FC = () => {
       return;
     }
     window.parent.postMessage({ type: `${target.applicationName}/loggedOut` }, target.host);
-  }, [status, settings]);
+  }, [status, dialAdminHost, dialChatHost]);
 
   const handleReadyToSave = () => {
     setIsModelReady(true);
@@ -121,7 +141,9 @@ const HomePageContent: FC = () => {
   }
 
   if (status === AuthStatus.Authenticated) {
-    return <EditorClient onReadyToSave={handleReadyToSave} />;
+    // Settings loaded while signed out (or for another user) are not this user's.
+    if (loadedSettings?.userSub !== userSub) return <FullScreenSpinner />;
+    return <EditorClient settings={loadedSettings.settings} onReadyToSave={handleReadyToSave} />;
   }
 
   if (provider == null) {

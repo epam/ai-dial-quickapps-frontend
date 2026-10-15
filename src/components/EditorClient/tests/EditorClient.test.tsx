@@ -36,6 +36,7 @@ const mocks = vi.hoisted(() => ({
   hasQuickAppChanges: vi.fn(),
   formMounts: 0,
   formProps: null as FormStandInProps | null,
+  formSettings: undefined as unknown,
 }));
 
 
@@ -67,8 +68,9 @@ vi.mock('@/components/QuickApp2Form/QuickApp2Form', async () => {
   const { useAppContext } = await import('@/context/AppContext');
 
   const QuickApp2FormStandIn = (props: FormStandInProps) => {
-    const { app } = useAppContext();
+    const { app, settings } = useAppContext();
     mocks.formProps = props;
+    mocks.formSettings = settings;
     useEffect(() => {
       mocks.formMounts += 1;
     }, []);
@@ -83,6 +85,7 @@ import EditorClient from '@/components/EditorClient/EditorClient';
 const APP_ID = 'applications/bucket/support-bot__1.0.0';
 const HOST = 'https://chat.example.com';
 const OTHER_ORIGIN = 'https://evil.example.com';
+const SETTINGS = { allowedOrigins: [HOST], defaultModelId: 'gpt-4o' };
 const BUILT_CONFIG = { orchestrator: { system_prompt: { content: 'Be helpful' } } };
 const FORM_DATA = { inputAttachmentTypes: ['application/pdf'], maxInputAttachments: 3 };
 
@@ -102,7 +105,7 @@ const flush = async () => {
 
 const renderEditor = async (search = `?id=${encodeURIComponent(APP_ID)}`) => {
   window.history.replaceState(null, '', `/${search}`);
-  await act(async () => dom.root.render(<EditorClient />));
+  await act(async () => dom.root.render(<EditorClient settings={SETTINGS} />));
   await flush();
 };
 
@@ -133,7 +136,6 @@ beforeEach(() => {
   mocks.formMounts = 0;
   mocks.formProps = null;
   mocks.fetchDialApp.mockResolvedValue({ id: APP_ID, name: 'Support bot' });
-  mocks.fetchAppSettings.mockResolvedValue({ allowedOrigins: [HOST] });
   mocks.saveDialApp.mockResolvedValue({ id: APP_ID, name: 'Support bot' });
   mocks.buildQuickApp2Config.mockReturnValue(BUILT_CONFIG);
   mocks.hasQuickAppChanges.mockReturnValue({ hasChanges: true });
@@ -154,6 +156,16 @@ describe('EditorClient host handshake', () => {
     await renderEditor();
 
     expect(postedMessages()[0]).toEqual({ type: OutboundMessageType.Ready });
+    expect(postMessage.mock.calls[0][1]).toBe(HOST);
+  });
+});
+
+describe('EditorClient settings', () => {
+  it('uses the settings prop and does not request the client config', async () => {
+    await renderEditor();
+
+    expect(mocks.fetchAppSettings).not.toHaveBeenCalled();
+    expect(mocks.formSettings).toBe(SETTINGS);
   });
 });
 
@@ -367,7 +379,7 @@ describe('EditorClient reset', () => {
 
     expect(mocks.formMounts).toBe(2);
     expect(mocks.fetchDialApp).toHaveBeenCalledTimes(1);
-    expect(mocks.fetchAppSettings).toHaveBeenCalledTimes(1);
+    expect(mocks.fetchAppSettings).not.toHaveBeenCalled();
     expect(mocks.saveDialApp).not.toHaveBeenCalled();
     expect(postMessage.mock.calls.length).toBe(postCount);
   });

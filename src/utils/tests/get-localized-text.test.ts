@@ -33,7 +33,10 @@ describe('buildLocalizedText', () => {
       buildLocalizedText(
         'Hello',
         'en',
-        [{ language: 'fr', name: 'Bonjour' }, { language: 'de', name: 'Hallo' }],
+        [
+          { language: 'fr', name: 'Bonjour' },
+          { language: 'de', name: 'Hallo' },
+        ],
         'name',
       ),
     ).toEqual({ en: 'Hello', fr: 'Bonjour', de: 'Hallo' });
@@ -53,5 +56,28 @@ describe('buildLocalizedText', () => {
   it('returns the primary value when no locale dictionary can be built', () => {
     expect(buildLocalizedText('Hello', undefined, undefined, 'name')).toBe('Hello');
     expect(buildLocalizedText(undefined, undefined, undefined, 'description')).toBeUndefined();
+  });
+
+  it('keeps the primary value under en when the primary locale is missing', () => {
+    expect(
+      buildLocalizedText('Hello', undefined, [{ language: 'fr', name: 'Bonjour' }], 'name'),
+    ).toEqual({ en: 'Hello', fr: 'Bonjour' });
+  });
+
+  it('returns the plain primary value when there are no other locales', () => {
+    expect(buildLocalizedText('Hello', 'en', [], 'name')).toBe('Hello');
+    expect(buildLocalizedText('Hello', 'en', undefined, 'name')).toBe('Hello');
+  });
+
+  it('skips empty translations', () => {
+    expect(buildLocalizedText('Hello', 'en', [{ language: 'fr', name: '' }], 'name')).toEqual({
+      en: 'Hello',
+    });
+  });
+
+  it('returns undefined when no locale has a description', () => {
+    expect(
+      buildLocalizedText(undefined, 'en', [{ language: 'fr', name: 'Bonjour' }], 'description'),
+    ).toBeUndefined();
   });
 });

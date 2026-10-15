@@ -120,8 +120,7 @@ because provider variable names differ per provider.
 | `DIAL_CHAT_URL`               | `CUSTOM_CLIENT_VARIABLES.dialChatHost`                                               |                                                                               |
 | `QUICK_APPS_APPLICATION_NAME` | **Not an env var any more** — the `applicationName` query parameter of the entry URL | See [Host integration](#host-integration).                                    |
 
-Identity provider variables follow the same rule. The ones documented in the
-[CHANGELOG](../CHANGELOG.md):
+Identity provider variables follow the same rule:
 
 | Before                        | Now                    |
 | ----------------------------- | ---------------------- |
@@ -454,7 +453,6 @@ After the switch, in a non-production deployment embedded in the real hosts:
 ## Related
 
 - [README](../README.md) — setup, commands, Docker, the full configuration reference and message tables
-- [CHANGELOG](../CHANGELOG.md) — release-by-release notes, including the breaking changes summarized here
 - [`openspec/specs/`](../openspec/specs/) — the current, normative behavior of every area above
 - [`TRANSITION_PLAN.md`](./TRANSITION_PLAN.md) — why the platform moved and how, as historical context
 - [`TECH_DEBT.md`](./TECH_DEBT.md) — known gaps and follow-ups
