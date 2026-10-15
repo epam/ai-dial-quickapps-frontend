@@ -231,9 +231,11 @@ QuickApps SHALL handle the outcome of the details call
 - `403` — QuickApps SHALL render the forbidden state defined by `auth`
   ("Denied-access presentation") instead of the editor, and SHALL NOT render the form.
 - any other failure — QuickApps SHALL render an error state in place of the editor showing
-  the failure's message, and SHALL NOT render the form.
+  `AppsEditorI18nKeys.SchemaFormLoadFailed` (`appsEditor.schemaForm.loadFailed`, "Failed to
+  load the application settings. Please try again.", the same key path as ai-dial-chat), and
+  SHALL NOT render the form. The raw error message SHALL NOT be shown.
 
-The state is owned by `EditorClient` (`isForbidden`, `error`). The forbidden state's strings
+The state is owned by `EditorClient` (`isForbidden`, `hasLoadError`). The forbidden state's strings
 and accessibility are specified by `auth`; the error state is a centred text block,
 direction-agnostic (RTL impact: none).
 
@@ -253,8 +255,9 @@ direction-agnostic (RTL impact: none).
 
 - **WHEN** the details call fails with a status other than `403` or `404`, or the request
   itself fails
-- **THEN** QuickApps SHALL render the error state with the failure's message and SHALL NOT
-  render the editor form
+- **THEN** QuickApps SHALL render the error state with the `SchemaFormLoadFailed` text and
+  SHALL NOT render the editor form
+- **AND** the generated client's "Response returned an error code" SHALL NOT be shown
 
 ### Requirement: Editor form state and dirty tracking
 
@@ -507,8 +510,15 @@ host (envelope and targeting per `host-integration`):
 - auto-save accepted by chat-api — AutoSaveComplete `{ type: "AUTO_SAVE_COMPLETE" }`, with no
   payload and no `hasChanges`.
 - any failure while building the configuration or of the update request, for a manual save
-  or an auto-save — SaveError `{ type: "SAVE_ERROR", payload: { error } }`, where `error`
-  is the thrown error's message.
+  or an auto-save — SaveError `{ type: "SAVE_ERROR", payload: { error } }`. `error` SHALL
+  be the message chat-api put in the error response body (`message`, a `message` array joined
+  with line breaks, or `error`), read with `getApiErrorMessage` from
+  `@epam/ai-dial-chat-hooks`. When the failure carries no such message — a network error, a
+  response without a message body, or an error while building the configuration — `error` SHALL
+  be the translation of `AppsEditorI18nKeys.ErrorSaveFailed` (`appsEditor.error.saveFailed`,
+  "Failed to save application settings. Please try again.", the same key the host uses for its
+  own save failures). The generated client's generic "Response returned an error code" SHALL NOT
+  be sent. The resolution lives in `getChatApiErrorMessage` (`src/utils/chat-api-error.ts`).
 
 A successful save of either kind SHALL mark the application as saved (`hasSavedOnce`), which
 enables TriggerAutoSave and the auto-save interval for an application that did not exist on
@@ -530,6 +540,17 @@ load.
 
 - **WHEN** an auto-save passes the gating and the update request fails
 - **THEN** QuickApps SHALL post SaveError and SHALL NOT post AutoSaveComplete
+
+#### Scenario: chat-api explains the failure
+
+- **WHEN** the update request fails with `400` and the body
+  `{ "message": ["version must be a valid semantic version"] }`
+- **THEN** SaveError SHALL carry `error` "version must be a valid semantic version"
+
+#### Scenario: Failure without a chat-api message
+
+- **WHEN** the update request fails with `500` and an empty body, or the network request fails
+- **THEN** SaveError SHALL carry the translation of `AppsEditorI18nKeys.ErrorSaveFailed`
 
 ### Requirement: Meaning of SaveSuccess hasChanges
 

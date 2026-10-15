@@ -171,7 +171,7 @@ The picker SHALL keep explicit loading, error and empty states while preserving 
 #### Scenario: Load error
 
 - **WHEN** the `DataContext` status is `error`
-- **THEN** the list area SHALL show `DeploymentSelectorI18nKeys.Error` with the error text and a **Retry** button (`ButtonsI18nKeys.Retry`) that calls `refreshAll`
+- **THEN** the list area SHALL show `DeploymentSelectorI18nKeys.Error` and a **Retry** button (`ButtonsI18nKeys.Retry`) that calls `refreshAll`. Below the title it SHALL show `DataContext.error`, which is the chat-api error message of the failed load (`getChatApiErrorMessage`), or nothing when the failure carries none; the raw client or browser error text SHALL NOT be shown
 
 #### Scenario: No selectable models
 
@@ -297,7 +297,18 @@ The `model` value is owned by the editor form state (`useQuickApp2Form` in `src/
 
 ### Requirement: Default model loading and error states
 
-The Default model block SHALL keep explicit loading and validation-error states.
+The Default model block SHALL keep explicit loading and validation-error states. The `model`
+field's validation messages SHALL be `ApplicationEditorI18nKeys` members, translated where the
+card renders them:
+
+- `OrchestratorModelUnavailable` (`applicationEditor.orchestrator.modelUnavailable`, "Not
+  available agent selected. Please, change the agent to proceed") when the model is not among
+  the available models;
+- `OrchestratorModelToolsUnsupported` (`applicationEditor.orchestrator.modelToolsUnsupported`,
+  "Selected model does not support tools") when it does not support tools.
+
+A manual save blocked by these errors SHALL send the same translated text in SaveError
+(`application_editing`, "Save trigger gating").
 
 #### Scenario: Models still loading
 
@@ -307,9 +318,10 @@ The Default model block SHALL keep explicit loading and validation-error states.
 
 #### Scenario: Validation error on model
 
-- **WHEN** the `model` field has a validation error (e.g. "Selected model does not support tools")
+- **WHEN** the `model` field has the `OrchestratorModelToolsUnsupported` validation error
 - **THEN** the card SHALL render with the error border colour
-- **AND** the error message SHALL be shown below the card
+- **AND** the translation of `OrchestratorModelToolsUnsupported` ("Selected model does not support
+  tools") SHALL be shown below the card, not the key
 
 ### Requirement: Default model block direction support
 
