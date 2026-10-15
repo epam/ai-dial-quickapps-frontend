@@ -152,9 +152,8 @@ OpenSpec change).
       save always ends in exactly one outcome message.
 - [ ] **`application_properties` keys outside the editor's six are dropped on save**
       (`quickApp2Form.ts:289-328`; chat-api replaces the stored object).
-- [ ] **General summary lookup misses encoded ids** — `fetchApplicationSummary` compares the
-      decoded id with the encoded listing id (`dial-client.ts:325`), so description, icon,
-      topics and version load empty for such apps.
+- [x] **General summary lookup misses encoded ids** — `fetchApplicationSummary` now matches the
+      listing entry by its decoded id (change `match-summary-by-decoded-id`).
 - [ ] **Read-only mode is unreachable** — `isReadonly` is never passed to `QuickApp2Form` (shared apps are
       deliberately NOT read-only, #208), yet `application_editor-layout` and
       `application_user-attachments` specify a read-only editor.

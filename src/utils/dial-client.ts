@@ -321,7 +321,8 @@ export const fetchAppSettings = async (): Promise<AppSettings> => {
  */
 const fetchApplicationSummary = async (appId: string): Promise<DeploymentItemDto | undefined> => {
   const res = await deploymentsApi.listDeployments({ interfaceType: [CHAT_DEPLOYMENT_INTERFACE] });
-  return res.deployments.find((d) => d.id === appId);
+  // Listing ids come percent-encoded per segment; `appId` is held decoded.
+  return res.deployments.find((d) => decodeDialPath(d.id) === appId);
 };
 
 export const fetchDialApp = async (appId: string): Promise<DialApp | null> => {
