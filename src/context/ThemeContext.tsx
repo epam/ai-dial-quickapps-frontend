@@ -71,7 +71,9 @@ const ThemeProvider: FC<ThemeProviderProps> = ({ children }) => {
   }, []);
 
   // Fetch theme configuration from chat-api's theme-config endpoint, through
-  // chatApiFetch (a deliberate raw call; chat-api-client has a typed ThemesApi).
+  // chatApiFetch. A deliberate raw call, as in ai-dial-chat: the typed ThemesApi's
+  // generated DTOs camelCase the body's kebab-case keys (`app-logo` → `appLogo`)
+  // without mapping the JSON, so their types don't match the response.
   useEffect(() => {
     let isCancelled = false;
     const loadThemes = async () => {

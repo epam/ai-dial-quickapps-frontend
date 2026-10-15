@@ -104,10 +104,12 @@
       Confirm whether a host still opens the modal this way. If one does, add the parameter to
       `host-integration` and keep it as a single named constant instead of a one-member enum. If none
       does, remove the parameter and the code that reads it.
-- [ ] Themes: `src/context/ThemeContext.tsx` loads themes with `chatApiFetch('/api/themes')`, but
-      `@epam/ai-dial-chat-api-client` has a typed `ThemesApi`. Decide whether to switch to it or keep
-      the raw call as a documented exception (see "API-layer exceptions and configuration keys" below).
-      Switching changes the endpoint, so it needs its own OpenSpec change.
+- [x] Themes: `src/context/ThemeContext.tsx` keeps the raw `chatApiFetch('/api/themes')` call as a
+      documented exception instead of the typed `ThemesApi`. Both hit the same `@Public()` endpoint, but
+      the generated `ThemeDto` / `ThemeImagesDto` camelCase the kebab-case keys (`appLogo`,
+      `defaultAddon`…) without mapping the JSON, so their types do not match the real body
+      (`app-logo`, `default-addon`…). ai-dial-chat's own `ThemeContext` makes the same raw call
+      (`get<ThemeConfiguration>(ApiEndpoints.THEMES)`). Revisit if the client generator maps those keys.
 - [x] Agent transport default: the save (`src/form/quickApp2Form.ts`) and the agent Settings tab
       (`AgentSettingsTab`) both read `DEFAULT_AGENT_TRANSPORT` (`src/constants/quick-apps.ts`), so an
       MCP-capable application with no saved `transport` shows and saves the same value.
@@ -129,12 +131,14 @@ Behaviour found while writing the specs that looks unintended or contradicts ano
 None of it is specified as intended; each needs a decision (and, for a behaviour change, its own
 OpenSpec change).
 
-- [ ] **Disabled flag strips stored features** — when `isCodeInterpreterEnabled` /
+- [x] **Disabled flag strips stored features** — when `isCodeInterpreterEnabled` /
       `isWebFetchEnabled` / `isAddAttachmentEnabled` is off (including when the client-config
       call fails and resolves to `{}`), `useQuickApp2Form` forces the value to `false` without
       dirtying the form, and the next save removes the stored code-interpreter toolset,
       `web_fetch` or `representation_tooling` (`use-quick-app2-form.ts:159-170`,
-      `quickApp2Form.ts:325-326,422-429`). Possible data loss.
+      `quickApp2Form.ts:325-326,422-429`). Decided: intended — a feature the deployment does not
+      offer is not kept on the application (`app-configuration`, "Feature flags gate the Advanced
+      Settings switches").
 - [ ] **Load-time baseline is never refreshed after a save** — `appState` is set once
       (`EditorClient.tsx:111`), so after a successful save the form stays dirty and auto-save
       keeps re-saving, a second no-edit save still reports `SaveSuccess.hasChanges: true`, and
@@ -174,9 +178,8 @@ OpenSpec change).
   - The forbidden-symbols tooltip omits the backslash and control characters the kit also forbids.
   - Sanitizing runs in `onValidateUpload` instead of `prepareUploadFileName`.
 - [ ] **Themes** — a failed theme load leaves a light page with a dark Markdown editor
-      (`InstructionsSection.tsx:28`); `setTheme` has no caller. Switching to the typed `ThemesApi`
-      would not change the endpoint (both call `GET /api/themes`), contrary to the Themes item
-      above. (A non-OK response now falls back and a late response after unmount is discarded —
+      (`InstructionsSection.tsx:28`); `setTheme` has no caller. (The raw `GET /api/themes` call
+      stays, see the Themes item above.) (A non-OK response now falls back and a late response after unmount is discarded —
       change `fix-file-manager-and-theme-load-defects`.)
 - [x] **i18n and RTL docs** — `.claude/rules/rtl.md` and AGENTS.md now describe the real layout
       (per-namespace locale files, `i18n.dir()`, no language selector, English only so `dir` is

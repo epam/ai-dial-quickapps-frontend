@@ -12,7 +12,8 @@ colours as CSS custom properties. The `theme` entry parameter itself is in `host
 once per mount with `GET /api/themes` (the provider is mounted at the root of the app, above
 every route), sent through `chatApiFetch` (`src/utils/chat-api-fetch.ts`) so the request
 carries the session cookie (`credentials: 'include'`). This is a raw call, not the typed
-`ThemesApi` of `@epam/ai-dial-chat-api-client`. The response body SHALL be read as a theme
+`ThemesApi` of `@epam/ai-dial-chat-api-client` (whose generated DTOs camelCase the body's
+kebab-case keys without mapping them), the same raw call ai-dial-chat makes. The response body SHALL be read as a theme
 configuration: a `themes` array, each entry with an `id`, a `displayName`, a `colors` map of
 CSS custom-property names (without the leading `--`) to values, and an `app-logo`, plus an
 `images` object. Example response:
