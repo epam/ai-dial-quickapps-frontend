@@ -86,6 +86,12 @@ Default behavior:
 - New feature or behaviour work starts from an OpenSpec change (see above), not straight from code.
 - Before merge (or on explicit review requests), run the five-axis quality review.
 
+## Pull requests
+
+When creating a PR (title, body, or commit messages), **never use GitHub closing keywords** next to an issue reference: `close(s/d)`, `fix(es/ed)`, `resolve(s/d)` (e.g. `Fixes #265`, `Closes #265`). They auto-close the issue on merge, but issues are closed by the test team after verification, not by the merge.
+
+Reference the issue neutrally instead, e.g. `Related to #265` or `Issue #265`, and keep the issue open. Commit messages follow the same rule: `fix(popup): ... (Issue #265)` is fine, `fixes #265` is not.
+
 ## TypeScript module imports
 
 - In `.ts` and `.tsx` source files, omit `.js`, `.jsx`, `.ts`, and `.tsx` from module specifiers. Write `@/utils/api` or `./Component`, not `@/utils/api.ts`.
