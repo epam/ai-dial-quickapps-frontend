@@ -337,19 +337,23 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
       ariaLabel={name}
       overlayStyle={{ overflow: 'hidden' }}
       // The catalog's own details header. It brings its own `px-6 py-4`, so
-      // the popup header drops its padding but keeps the close control's.
+      // the popup header drops its padding but keeps the close control's. The
+      // wrapper lets it shrink to the card, so a long name or folder path
+      // truncates instead of pushing past the card on a narrow screen.
       header={
-        <DetailsHeader
-          item={headerItem}
-          texts={labels.header}
-          isShareVisible={hideHeaderAction}
-          isPublishVisible={hideHeaderAction}
-          isDownloadVisible={hideHeaderAction}
-          onLogin={credentials && ((_, { apiKey }) => credentials.onLogin({ apiKey }))}
-          onLogout={credentials && (() => credentials.onLogout())}
-          // The catalog starts an OAuth Log out only through this; it runs directly here.
-          onRequestLogout={credentials && (() => void credentials.onLogout())}
-        />
+        <div className="min-w-0 flex-1">
+          <DetailsHeader
+            item={headerItem}
+            texts={labels.header}
+            isShareVisible={hideHeaderAction}
+            isPublishVisible={hideHeaderAction}
+            isDownloadVisible={hideHeaderAction}
+            onLogin={credentials && ((_, { apiKey }) => credentials.onLogin({ apiKey }))}
+            onLogout={credentials && (() => credentials.onLogout())}
+            // The catalog starts an OAuth Log out only through this; it runs directly here.
+            onRequestLogout={credentials && (() => void credentials.onLogout())}
+          />
+        </div>
       }
       headerClassName="items-start p-0 pe-6 pt-4"
       titleClassName="me-0 overflow-visible whitespace-normal"
