@@ -2,6 +2,7 @@ import {
   ButtonAppearance,
   ButtonVariant,
   Input,
+  mergeClasses,
   Popup,
   PopupSize,
   RadioGroup,
@@ -25,7 +26,12 @@ import {
 } from '@dnd-kit/sortable';
 import { FC, memo, useCallback, useMemo, useRef, useState } from 'react';
 
-import { ApplicationEditorI18nKeys, BasicI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
+import { MOBILE_FULLSCREEN_POPUP_CLASS_NAMES } from '@/constants/popup';
+import {
+  ApplicationEditorI18nKeys,
+  BasicI18nKeys,
+  ButtonsI18nKeys,
+} from '@/constants/translation-keys';
 import { useTranslation } from 'react-i18next';
 import {
   StarterSelectionBehavior,
@@ -82,10 +88,16 @@ const ConversationStartersModal: FC<ConversationStartersModalProps> = ({
     const getPosition = (id?: UniqueIdentifier) => starterIds.indexOf(String(id)) + 1;
     const announcements: Announcements = {
       onDragStart: ({ active }) =>
-        t(ApplicationEditorI18nKeys.StartersDragPickedUp, { position: getPosition(active.id), total }),
+        t(ApplicationEditorI18nKeys.StartersDragPickedUp, {
+          position: getPosition(active.id),
+          total,
+        }),
       onDragOver: ({ over }) =>
         over
-          ? t(ApplicationEditorI18nKeys.StartersDragMovedOver, { position: getPosition(over.id), total })
+          ? t(ApplicationEditorI18nKeys.StartersDragMovedOver, {
+              position: getPosition(over.id),
+              total,
+            })
           : undefined,
       onDragEnd: ({ active, over }) =>
         t(ApplicationEditorI18nKeys.StartersDragDropped, {
@@ -97,7 +109,9 @@ const ConversationStartersModal: FC<ConversationStartersModalProps> = ({
 
     return {
       announcements,
-      screenReaderInstructions: { draggable: t(ApplicationEditorI18nKeys.StartersDragInstructions) },
+      screenReaderInstructions: {
+        draggable: t(ApplicationEditorI18nKeys.StartersDragInstructions),
+      },
     };
   }, [starterIds, t]);
 
@@ -183,13 +197,14 @@ const ConversationStartersModal: FC<ConversationStartersModalProps> = ({
     <Popup
       open
       size={PopupSize.Md}
-      className="md:max-w-[1000px]"
+      {...MOBILE_FULLSCREEN_POPUP_CLASS_NAMES}
+      className={mergeClasses(MOBILE_FULLSCREEN_POPUP_CLASS_NAMES.className, 'md:max-w-[1000px]')}
       header={t(ApplicationEditorI18nKeys.StartersSetUp)}
       closeAriaLabel={t(ApplicationEditorI18nKeys.StartersClose)}
       headerDivider
       footerDivider
       onClose={handleDismiss}
-      bodyClassName="max-w-full px-6 py-4"
+      bodyClassName="max-w-full px-4 py-4 md:px-6"
       additionalButtons={[
         {
           label: t(ButtonsI18nKeys.Cancel),
@@ -234,9 +249,7 @@ const ConversationStartersModal: FC<ConversationStartersModalProps> = ({
 
         <div className="flex flex-col gap-4">
           <div>
-            <h3 className="dial-small-semi-text text-primary">
-              {t(BasicI18nKeys.Settings)}
-            </h3>
+            <h3 className="dial-small-semi-text text-primary">{t(BasicI18nKeys.Settings)}</h3>
             <p className="dial-tiny-text mt-1 text-secondary">
               {t(ApplicationEditorI18nKeys.StartersSettingsRequireStarter)}
             </p>
