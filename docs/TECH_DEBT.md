@@ -193,10 +193,11 @@ OpenSpec change).
       init `postMessage`) needs a `host-integration` change.
 - [ ] **Shared i18n config with ai-dial-chat** — `src/i18n/config.ts` is a copy of chat's; switch to
       a shared package if chat extracts one.
-- [ ] **Untranslated library defaults** — `FileManagerModal` passes no `newButtonLabel` in
-      `toolbarOptions`, so the file manager's English "Add" shows on the toolbar's new-item button;
-      the skill details folder path `nav` is named by a library's English "Folder path" default.
-      Both predate `align-i18n-with-dial-chat`.
+- [ ] **Untranslated library defaults** — done: the file manager toolbar's new-item menu and
+      compact "More actions" trigger are translated (change `translate-file-manager-toolbar-labels`).
+      Open, ai-dial-chat ask: the add-on details folder path `nav` is named by the ui-kit
+      `FolderPath` default "Folder path", because `@epam/ai-dial-catalog` renders `FolderPath` in
+      both details headers without an `ariaLabel` and has no prop to pass one through.
 - [x] **RTL wording in specs** — every RTL scenario is now conditional on the document direction
       being `rtl` and notes that no RTL locale ships yet (see the `i18n` spec).
 - [x] **`buildLocalizedText` drops the primary value** — it now mirrors chat-api's

@@ -51,6 +51,10 @@ export enum ChatI18nKeys {
   ScrollableFormula = 'chat.scrollableFormula',
 }
 
+export enum ConversationPanelI18nKeys {
+  ActionsLabel = 'conversationPanel.actions.actionsLabel',
+}
+
 export enum ChatSettingsI18nKeys {
   TemperatureLabel = 'chatSettings.temperatureLabel',
   TemperaturePrecise = 'chatSettings.temperaturePrecise',

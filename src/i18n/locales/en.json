@@ -44,6 +44,11 @@
     "scrollableTable": "Scrollable table",
     "scrollableFormula": "Scrollable formula"
   },
+  "conversationPanel": {
+    "actions": {
+      "actionsLabel": "More actions"
+    }
+  },
   "chatSettings": {
     "temperatureLabel": "Temperature",
     "temperaturePrecise": "Precise",
