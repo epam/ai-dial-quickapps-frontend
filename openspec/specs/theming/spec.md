@@ -5,7 +5,9 @@
 How the editor picks and applies a colour theme: the theme configuration from chat-api, the
 precedence of the URL theme, a stored choice and the default, the system theme, and applying the
 colours as CSS custom properties. The `theme` entry parameter itself is in `host-integration`.
+
 ## Requirements
+
 ### Requirement: Theme configuration is loaded once from chat-api
 
 `ThemeProvider` (`src/context/ThemeContext.tsx`) SHALL request the theme configuration exactly
@@ -63,6 +65,12 @@ and SHALL leave the page rendering with the fallback values built into its style
 configuration. A response that settles after the provider has unmounted SHALL be discarded
 without updating state.
 
+The stylesheet defaults are the light palette, so components that pick their own light or dark
+variant SHALL pick light while `currentTheme` is `undefined`. The Instructions Markdown editor
+(`src/components/InstructionsSection/InstructionsSection.tsx`) SHALL use the ui-kit
+`EditorThemes.dark` only when `currentTheme` is defined and its `id` is not `light`. In every
+other case, including `currentTheme: undefined`, it SHALL use `EditorThemes.light`.
+
 #### Scenario: Themes endpoint is unreachable
 
 - **WHEN** `GET /api/themes` rejects or returns a body that cannot be parsed as JSON
@@ -87,6 +95,17 @@ without updating state.
 
 - **WHEN** the provider unmounts while `GET /api/themes` is still pending
 - **THEN** the response SHALL be discarded and no state update SHALL happen after unmount
+
+#### Scenario: Markdown editor matches the fallback page
+
+- **WHEN** no theme configuration is available, so `currentTheme` is `undefined`, and the
+  resolved theme id is `dark`
+- **THEN** the Instructions Markdown editor SHALL use `EditorThemes.light`
+
+#### Scenario: Markdown editor follows a loaded dark theme
+
+- **WHEN** `currentTheme` is the loaded `dark` theme
+- **THEN** the Instructions Markdown editor SHALL use `EditorThemes.dark`
 
 ### Requirement: Active theme id is chosen from the URL, then the stored choice, then light
 
@@ -226,4 +245,3 @@ otherwise.
 
 - **WHEN** `resolveIconUrl('dial-icon')` is called
 - **THEN** it SHALL return `/api/themes/icon?iconName=dial-icon`
-
