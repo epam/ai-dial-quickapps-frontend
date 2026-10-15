@@ -27,6 +27,7 @@ import { IconTrash } from '@tabler/icons-react';
 import type { SkillFileContent } from '@epam/ai-dial-chat-hooks/skill-editor';
 import { FC, lazy, ReactNode, Suspense, useCallback, useMemo, useState } from 'react';
 
+import { MOBILE_FULLSCREEN_POPUP_CLASS_NAMES } from '@/constants/popup';
 import { BasicI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
 import { useAppContext } from '@/context/AppContext';
 import { useCatalogDetailsLabels } from '@/hooks/use-catalog-details-labels';
@@ -338,27 +339,33 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
     <Popup
       open
       ariaLabel={name}
+      {...MOBILE_FULLSCREEN_POPUP_CLASS_NAMES}
       overlayStyle={{ overflow: 'hidden' }}
       // The catalog's own details header. It brings its own `px-6 py-4`, so
-      // the popup header drops its padding but keeps the close control's.
+      // the popup header drops its padding but keeps the close control's. The
+      // wrapper lets it shrink to the card, so a long name or folder path
+      // truncates instead of pushing past the card on a narrow screen.
       header={
-        <DetailsHeader
-          item={headerItem}
-          texts={labels.header}
-          isShareVisible={hideHeaderAction}
-          isPublishVisible={hideHeaderAction}
-          isDownloadVisible={hideHeaderAction}
-          onLogin={credentials && ((_, { apiKey }) => credentials.onLogin({ apiKey }))}
-          onLogout={credentials && (() => credentials.onLogout())}
-          // The catalog starts an OAuth Log out only through this; it runs directly here.
-          onRequestLogout={credentials && (() => void credentials.onLogout())}
-        />
+        <div className="min-w-0 flex-1">
+          <DetailsHeader
+            item={headerItem}
+            texts={labels.header}
+            isShareVisible={hideHeaderAction}
+            isPublishVisible={hideHeaderAction}
+            isDownloadVisible={hideHeaderAction}
+            onLogin={credentials && ((_, { apiKey }) => credentials.onLogin({ apiKey }))}
+            onLogout={credentials && (() => credentials.onLogout())}
+            // The catalog starts an OAuth Log out only through this; it runs directly here.
+            onRequestLogout={credentials && (() => void credentials.onLogout())}
+          />
+        </div>
       }
-      headerClassName="items-start p-0 pe-6 pt-4"
+      headerClassName="items-start p-0 pe-4 pt-4 md:pe-6"
       titleClassName="me-0 overflow-visible whitespace-normal"
       size={PopupSize.Lg}
       closeAriaLabel={t(BasicI18nKeys.CloseDialog)}
-      bodyClassName="flex h-[70vh] flex-col gap-4 overflow-hidden px-6 pb-5"
+      // Below `md` the body takes what the full-screen popup leaves; from `md` up it is fixed.
+      bodyClassName="flex min-h-0 flex-col gap-4 overflow-hidden px-4 pb-4 md:h-[70vh] md:px-6 md:pb-5"
       additionalButtons={additionalButtons}
       additionalButtonsOnLeft
       mainButtons={mainButtons}
