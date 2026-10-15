@@ -7,7 +7,9 @@
  * `mergeClasses` with the caller's own classes.
  */
 export const MOBILE_FULLSCREEN_POPUP_CLASS_NAMES = {
-  overlayClassName: 'p-0 md:p-4',
+  // `!overflow-hidden` beats the overlay's inline `overflow: auto`: the dialog already fits the
+  // overlay, and without this a few stray pixels of overflow draw a scrollbar beside the dialog.
+  overlayClassName: 'p-0 md:p-4 !overflow-hidden',
   className: 'h-full rounded-none md:h-auto md:rounded-xl',
   headerClassName: 'px-4 py-3 md:px-6 md:py-4',
   footerClassName: 'px-4 py-3 md:px-6 md:py-4',
