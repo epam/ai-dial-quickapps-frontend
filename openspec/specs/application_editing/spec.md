@@ -148,7 +148,9 @@ with empty settings (`app-configuration`, "Client config failure fallback").
 After the details call succeeds, QuickApps SHALL call
 `GET /api/v1/deployments?interface_type=chat` (`deploymentsApi.listDeployments`, response
 `DeploymentsResponseDto`) to read the application's General-step display fields
-(`description`, `iconUrl`, `topics`, `displayVersion`) from its listing entry. A failure of
+(`description`, `iconUrl`, `topics`, `displayVersion`) from its listing entry. The listing entry
+SHALL be the one whose `id`, decoded per path segment (`decodeDialPath`), equals the editor's
+decoded id: chat-api returns listing ids percent-encoded, while the editor holds the id decoded. A failure of
 this call SHALL NOT fail the load. When `applicationDetails.displayName` is present it SHALL
 be used as the application's name in preference to the listing entry's.
 
@@ -200,6 +202,13 @@ The loading spinner is direction-agnostic; RTL impact: none.
 - **WHEN** `EditorClient` initializes
 - **THEN** it SHALL NOT call `fetchAppSettings`, and `AppContext.settings` SHALL be the
   `settings` prop it received
+
+#### Scenario: Id with special characters
+
+- **WHEN** the editor opens `applications/<bucket>/My agent__1.0.0` and the listing has an
+  entry with `id` `applications/<bucket>/My%20agent__1.0.0` and `iconUrl`
+  `"https://example.com/icon.png"`
+- **THEN** the loaded application's icon URL SHALL be `"https://example.com/icon.png"`
 
 #### Scenario: Deployments listing fails
 
