@@ -132,16 +132,18 @@ The `id` value SHALL be decoded per path segment (`decodeDialPath`) and held dec
 chat-api path parameter built from it SHALL be re-encoded per segment (`encodeDialPath`) to
 chat-api's canonical id form, which the generated client then wraps once more for transport.
 
-QuickApps SHALL issue these chat-api calls in parallel (`fetchDialApp` and
-`fetchAppSettings`, `src/utils/dial-client.ts`):
+`EditorClient` SHALL load the application with `fetchDialApp` (`src/utils/dial-client.ts`). It
+SHALL NOT request the client config itself. It receives the settings from the root route, which
+loads them before rendering it (`app-configuration`, "Settings are loaded before the editor
+renders"). The application load calls:
 
 - `GET /api/v1/deployments/{deployment}/details` — `deploymentsApi.getDeploymentDetails`,
   response `DeploymentDetailsDto`. Its `applicationDetails` (`ApplicationDetailsDto`)
   supplies `displayName`, `applicationProperties`, `inputAttachmentTypes`,
   `maxInputAttachments` and `applicationTypeSchemaId`.
-- `GET /api/v1/client-config?appId=chat-ui` — `appConfigApi.getClientConfig`, response
-  `ClientConfigDto`. A failure of this call SHALL NOT fail the load; the editor opens with
-  empty settings.
+
+A failed `GET /api/v1/client-config?appId=chat-ui` SHALL NOT fail the load; the editor opens
+with empty settings (`app-configuration`, "Client config failure fallback").
 
 After the details call succeeds, QuickApps SHALL call
 `GET /api/v1/deployments?interface_type=chat` (`deploymentsApi.listDeployments`, response
@@ -189,9 +191,15 @@ The loading spinner is direction-agnostic; RTL impact: none.
 
 - **WHEN** QuickApps is loaded with `id=applications%2F<bucket>%2Fsupport-bot__1.0.0` and
   the details call returns the application
-- **THEN** QuickApps SHALL show the loading spinner until both the details call and the
-  client-config call have settled
+- **THEN** QuickApps SHALL show the loading spinner until both the client-config call and the
+  details call have settled
 - **AND** it SHALL then render the editor initialised from the loaded application
+
+#### Scenario: Editor does not request the client config
+
+- **WHEN** `EditorClient` initializes
+- **THEN** it SHALL NOT call `fetchAppSettings`, and `AppContext.settings` SHALL be the
+  `settings` prop it received
 
 #### Scenario: Deployments listing fails
 

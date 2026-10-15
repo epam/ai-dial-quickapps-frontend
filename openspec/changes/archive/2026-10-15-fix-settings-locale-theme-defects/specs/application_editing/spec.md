@@ -4,7 +4,7 @@
 
 QuickApps SHALL load the application named by the entry URL's `id` (see `host-integration`,
 "Entry URL query parameters") once per mount and SHALL show the full-screen loading
-spinner, labelled with the `common` namespace key `CommonI18nKeys.Loading` ("Loading…"),
+spinner, labelled with the key `BasicI18nKeys.Loading` ("Loading…"),
 until the load settles. The state is owned by `EditorClient`
 (`src/components/EditorClient/EditorClient.tsx`) as `appState`; it is passed to the form
 through `AppContextProvider`. No other context or hook owns it.
