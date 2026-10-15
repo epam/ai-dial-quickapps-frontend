@@ -12,6 +12,7 @@ import { QuickApp2Config } from '@/types/quick-apps';
 import { isOriginAllowed, postToHost } from '@/utils/allowed-origins';
 import { ForbiddenError } from '@/utils/forbidden-error';
 import { decodeDialPath, fetchDialApp, saveDialApp } from '@/utils/dial-client';
+import { getChatApiErrorMessage } from '@/utils/chat-api-error';
 import { buildLocalizedText } from '@/utils/get-localized-text';
 import { hasQuickAppChanges, type StoredGeneralFields } from '@/utils/has-quick-app-changes';
 import {
@@ -19,6 +20,7 @@ import {
   type QuickApp2AllEntitiesMap,
 } from '@/components/QuickApp2Form/QuickApp2Form';
 import { AUTO_SAVE_INTERVAL_MS } from '@/constants/editor';
+import { AppsEditorI18nKeys } from '@/constants/translation-keys';
 import {
   InboundMessage,
   InboundMessageType,
@@ -94,10 +96,10 @@ interface EditorClientProps {
 }
 
 const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const language = i18n.resolvedLanguage ?? i18n.language;
   const [appState, setAppState] = useState<AppState | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [hasLoadError, setHasLoadError] = useState(false);
   const [isForbidden, setIsForbidden] = useState(false);
   const [resetKey, setResetKey] = useState(0);
   const [hasSavedOnce, setHasSavedOnce] = useState(false);
@@ -136,7 +138,7 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
           setIsForbidden(true);
           return;
         }
-        setError(err instanceof Error ? err.message : 'Initialization failed');
+        setHasLoadError(true);
       }
     };
 
@@ -307,7 +309,8 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
         }
         return true;
       } catch (err) {
-        const error = err instanceof Error ? err.message : 'Save failed';
+        // chat-api's own reason when it gave one, else the host's translated save failure.
+        const error = (await getChatApiErrorMessage(err)) ?? t(AppsEditorI18nKeys.ErrorSaveFailed);
         postToHost(
           {
             type: OutboundMessageType.SaveError,
@@ -318,7 +321,7 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
         return false;
       }
     },
-    [appState, language],
+    [appState, language, t],
   );
 
   const handleDirtyChange = useCallback((isDirty: boolean) => {
@@ -362,8 +365,12 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
     return <ForbiddenPage />;
   }
 
-  if (error) {
-    return <div className="flex h-screen items-center justify-center text-error">{error}</div>;
+  if (hasLoadError) {
+    return (
+      <div className="flex h-screen items-center justify-center text-error">
+        {t(AppsEditorI18nKeys.SchemaFormLoadFailed)}
+      </div>
+    );
   }
 
   if (!appState) {

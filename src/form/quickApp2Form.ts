@@ -140,7 +140,7 @@ export const QuickApp2Schema = z
       ctx.addIssue({
         code: 'custom',
         path: ['model'],
-        message: 'Not available agent selected. Please, change the agent to proceed',
+        message: ApplicationEditorI18nKeys.OrchestratorModelUnavailable,
       });
       return;
     }
@@ -149,7 +149,7 @@ export const QuickApp2Schema = z
       ctx.addIssue({
         code: 'custom',
         path: ['model'],
-        message: 'Selected model does not support tools',
+        message: ApplicationEditorI18nKeys.OrchestratorModelToolsUnsupported,
       });
     }
   });

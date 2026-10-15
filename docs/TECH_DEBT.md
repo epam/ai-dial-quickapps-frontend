@@ -158,8 +158,10 @@ OpenSpec change).
 - [ ] **Read-only mode is unreachable** — `isReadonly` is never passed to `QuickApp2Form` (shared apps are
       deliberately NOT read-only, #208), yet `application_editor-layout` and
       `application_user-attachments` specify a read-only editor.
-- [ ] **SaveError text** — chat-api rejections surface the client's generic "Response returned
-      an error code"; the 'Save failed' / 'Initialization failed' fallbacks are hard-coded English.
+- [x] **SaveError text** — SaveError now carries chat-api's own message or the translated
+      `appsEditor.error.saveFailed`; the load error screen, the two `model` validation messages and
+      the picker's load-error description no longer show raw English (change
+      `translate-editor-error-messages`).
 - [x] **Client config fetched twice** — `App.tsx` now loads it once per session user and passes
       it to `EditorClient` (change `fix-settings-locale-theme-defects`).
 - [ ] **Application credentials stay "required" after sign-in** — any non-empty external-services

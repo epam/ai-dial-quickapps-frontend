@@ -190,6 +190,14 @@
   "toolsetSignin": {
     "apiKeyLabel": "API key"
   },
+  "appsEditor": {
+    "error": {
+      "saveFailed": "Failed to save application settings. Please try again."
+    },
+    "schemaForm": {
+      "loadFailed": "Failed to load the application settings. Please try again."
+    }
+  },
   "applicationEditor": {
     "addOns": {
       "unavailableRemovalRequired": "The {{entityType}} is not available and needs to be removed.",
@@ -284,7 +292,9 @@
       "selectModel": "Select model",
       "changeModel": "Change model",
       "catalogTitle": "Models catalog",
-      "searchPlaceholder": "Search models…"
+      "searchPlaceholder": "Search models…",
+      "modelUnavailable": "Not available agent selected. Please, change the agent to proceed",
+      "modelToolsUnsupported": "Selected model does not support tools"
     },
     "instructions": {
       "label": "Instructions",

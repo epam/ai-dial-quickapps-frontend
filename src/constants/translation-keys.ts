@@ -180,6 +180,11 @@ export enum ToolsetSigninI18nKeys {
   ApiKeyLabel = 'toolsetSignin.apiKeyLabel',
 }
 
+export enum AppsEditorI18nKeys {
+  ErrorSaveFailed = 'appsEditor.error.saveFailed',
+  SchemaFormLoadFailed = 'appsEditor.schemaForm.loadFailed',
+}
+
 export enum ApplicationEditorI18nKeys {
   AddOnsUnavailableRemovalRequired = 'applicationEditor.addOns.unavailableRemovalRequired',
   AddOnsLoggedOutToolset = 'applicationEditor.addOns.loggedOutToolset',
@@ -294,6 +299,8 @@ export enum ApplicationEditorI18nKeys {
   OrchestratorChangeModel = 'applicationEditor.orchestrator.changeModel',
   OrchestratorCatalogTitle = 'applicationEditor.orchestrator.catalogTitle',
   OrchestratorSearchPlaceholder = 'applicationEditor.orchestrator.searchPlaceholder',
+  OrchestratorModelUnavailable = 'applicationEditor.orchestrator.modelUnavailable',
+  OrchestratorModelToolsUnsupported = 'applicationEditor.orchestrator.modelToolsUnsupported',
 }
 
 export enum DialFileManagerI18nKeys {
