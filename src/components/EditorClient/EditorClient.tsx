@@ -34,7 +34,7 @@ interface EditorInnerProps {
     allEntitiesMap: QuickApp2AllEntitiesMap,
     isAutoSave?: boolean,
     general?: TriggerSaveGeneralPayload,
-  ) => Promise<void>;
+  ) => Promise<boolean>;
   onDirtyChange: (isDirty: boolean) => void;
   onValidationError: (messages: string[]) => void;
   onValidityChange: (isValid: boolean) => void;
@@ -58,7 +58,7 @@ const EditorInner = ({
       isAutoSave = false,
       general?: TriggerSaveGeneralPayload,
     ) => {
-      await onSave(data, allEntitiesMap, isAutoSave, general);
+      return onSave(data, allEntitiesMap, isAutoSave, general);
     },
     [onSave],
   );
@@ -212,7 +212,7 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
       isAutoSave = false,
       general?: TriggerSaveGeneralPayload,
     ) => {
-      if (!appState) return;
+      if (!appState) return false;
       const existingConfig = appState.app.applicationProperties as QuickApp2Config | undefined;
       try {
         const newConfig = buildQuickApp2Config({
@@ -277,6 +277,21 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
           storedGeneral,
         );
         const updatedApp = await saveDialApp(appWithFormValues, newConfig, effectiveGeneral);
+        // What was just stored is the baseline for the next save, hasChanges and Reset.
+        // Built from the request: it is already in the editor's shape (decoded URLs,
+        // `_rawForSave`), and the General fields are recombined as chat-api stores them.
+        const savedApp = {
+          ...appWithFormValues,
+          applicationProperties: newConfig,
+          _rawForSave: {
+            displayName: effectiveGeneral.name,
+            description: effectiveGeneral.description,
+            iconUrl: effectiveGeneral.iconUrl,
+            topics: effectiveGeneral.topics,
+            displayVersion: general?.display_version?.trim() || rawForSave.displayVersion,
+          },
+        };
+        setAppState((current) => (current ? { ...current, app: savedApp } : current));
         setHasSavedOnce(true);
         if (isAutoSave) {
           postToHost({ type: OutboundMessageType.AutoSaveComplete }, allowedOriginsRef.current);
@@ -290,6 +305,7 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
             allowedOriginsRef.current,
           );
         }
+        return true;
       } catch (err) {
         const error = err instanceof Error ? err.message : 'Save failed';
         postToHost(
@@ -299,6 +315,7 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
           },
           allowedOriginsRef.current,
         );
+        return false;
       }
     },
     [appState, language],

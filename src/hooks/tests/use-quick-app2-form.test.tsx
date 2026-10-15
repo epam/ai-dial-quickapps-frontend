@@ -76,6 +76,26 @@ describe('useQuickApp2Form values and validation', () => {
     expect(latestForm.isDirty).toBe(false);
   });
 
+  it('makes the saved values the baseline and keeps later edits dirty', () => {
+    renderHook();
+
+    act(() => latestForm.setField('instructions', 'Saved'));
+    const savedValues = latestForm.values;
+    act(() => latestForm.setField('instructions', 'Typed during the save'));
+    act(() => latestForm.markSaved(savedValues));
+
+    expect(latestForm.isDirty).toBe(true);
+
+    act(() => latestForm.setField('instructions', 'Saved'));
+    expect(latestForm.isDirty).toBe(false);
+
+    act(() => {
+      latestForm.setField('instructions', 'Discarded');
+      latestForm.reset();
+    });
+    expect(latestForm.values.instructions).toBe('Saved');
+  });
+
   it('maps Zod errors to field and nested array paths and gates submit data', async () => {
     renderHook();
     act(() => {

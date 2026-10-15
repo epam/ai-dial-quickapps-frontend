@@ -20,7 +20,7 @@ type FormSaveHandler = (
   allEntitiesMap: QuickApp2AllEntitiesMap,
   isAutoSave?: boolean,
   general?: TriggerSaveGeneralPayload,
-) => Promise<void>;
+) => Promise<boolean>;
 
 interface FormStandInProps {
   onSave: FormSaveHandler;
@@ -37,8 +37,8 @@ const mocks = vi.hoisted(() => ({
   formMounts: 0,
   formProps: null as FormStandInProps | null,
   formSettings: undefined as unknown,
+  formApp: undefined as Record<string, unknown> | undefined,
 }));
-
 
 vi.mock('@/utils/dial-client', () => ({
   fetchDialApp: mocks.fetchDialApp,
@@ -69,6 +69,7 @@ vi.mock('@/components/QuickApp2Form/QuickApp2Form', async () => {
 
   const QuickApp2FormStandIn = (props: FormStandInProps) => {
     const { app, settings } = useAppContext();
+    mocks.formApp = app;
     mocks.formProps = props;
     mocks.formSettings = settings;
     useEffect(() => {
@@ -122,9 +123,16 @@ const postedTypes = () => postedMessages().map((msg: unknown) => (msg as { type:
 const getForm = () => dom.container.querySelector('form[aria-label="Quick app form"]');
 
 const saveFromForm = async (isAutoSave: boolean, general?: TriggerSaveGeneralPayload) => {
+  let isSaved: boolean | undefined;
   await act(async () => {
-    await mocks.formProps?.onSave(FORM_DATA as unknown as QuickApp2Form, {}, isAutoSave, general);
+    isSaved = await mocks.formProps?.onSave(
+      FORM_DATA as unknown as QuickApp2Form,
+      {},
+      isAutoSave,
+      general,
+    );
   });
+  return isSaved;
 };
 
 beforeEach(() => {
@@ -327,6 +335,65 @@ describe('EditorClient save outcome messages', () => {
       HOST,
     );
     expect(postedTypes()).not.toContain(OutboundMessageType.AutoSaveComplete);
+  });
+});
+
+describe('EditorClient saved application', () => {
+  const GENERAL: TriggerSaveGeneralPayload = {
+    name: 'Support bot',
+    iconUrl: 'https://example.com/new.png',
+    topics: ['support'],
+    display_version: '1.0.1',
+  };
+
+  it('reports whether the save succeeded', async () => {
+    await renderEditor();
+    expect(await saveFromForm(true)).toBe(true);
+
+    mocks.saveDialApp.mockRejectedValueOnce(new Error('Update failed'));
+    expect(await saveFromForm(true)).toBe(false);
+  });
+
+  it('compares the next save against the last saved configuration', async () => {
+    await renderEditor();
+
+    await saveFromForm(false);
+    await saveFromForm(false);
+
+    expect(mocks.hasQuickAppChanges.mock.calls[0][0]).toBeUndefined();
+    expect(mocks.hasQuickAppChanges.mock.calls[1][0]).toBe(BUILT_CONFIG);
+  });
+
+  it('keeps the General fields of a manual save for a later auto-save', async () => {
+    await renderEditor();
+
+    await saveFromForm(false, GENERAL);
+    await saveFromForm(true);
+
+    expect(mocks.saveDialApp.mock.calls[1][2]).toMatchObject({
+      iconUrl: 'https://example.com/new.png',
+      topics: ['support'],
+    });
+    expect(mocks.hasQuickAppChanges.mock.calls[1][3]).toMatchObject({ display_version: '1.0.1' });
+  });
+
+  it('remounts the form on Reset from the last saved application', async () => {
+    await renderEditor();
+
+    await saveFromForm(false);
+    await sendHostMessage({ type: InboundMessageType.Reset });
+
+    expect(mocks.formMounts).toBe(2);
+    expect(mocks.formApp).toMatchObject({ id: APP_ID, applicationProperties: BUILT_CONFIG });
+  });
+
+  it('keeps the held application when the save fails', async () => {
+    mocks.saveDialApp.mockRejectedValueOnce(new Error('Update failed'));
+    await renderEditor();
+
+    await saveFromForm(false);
+
+    expect(mocks.formApp).toEqual({ id: APP_ID, name: 'Support bot' });
   });
 });
 

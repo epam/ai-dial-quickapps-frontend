@@ -139,11 +139,14 @@ OpenSpec change).
       `quickApp2Form.ts:325-326,422-429`). Decided: intended — a feature the deployment does not
       offer is not kept on the application (`app-configuration`, "Feature flags gate the Advanced
       Settings switches").
-- [ ] **Load-time baseline is never refreshed after a save** — `appState` is set once
-      (`EditorClient.tsx:111`), so after a successful save the form stays dirty and auto-save
-      keeps re-saving, a second no-edit save still reports `SaveSuccess.hasChanges: true`, and
-      `RESET` reverts to load-time values. Overlaps "Save, auto-save, and reset semantics" and
-      "Stale General fields on auto-save" below.
+- [x] **Load-time baseline is never refreshed after a save** — a successful save now makes the
+      submitted values the dirty baseline and replaces the held application with the saved state,
+      so `hasChanges`, auto-save and `RESET` start from it (change `refresh-baseline-after-save`).
+- [ ] **A save without `general` drops translations** — an auto-save sends `name` / `description`
+      as the primary-locale text without `locales` (`saveDialApp`), and chat-api's
+      `composeLocalizedFields` then stores a plain string, replacing a stored per-locale
+      dictionary. Sending the held translations as `locales` (or omitting the fields) would keep
+      them; needs a chat-api check of what an omitted `name` does.
 - [ ] **Ignored saves post no outcome** — a not-yet-saved auto-save, a clean auto-save, a
       validation failure and a read-only form all end silently, while `host-integration` says a
       save always ends in exactly one outcome message.
@@ -260,11 +263,10 @@ documentation correction.
 - [ ] **Save, auto-save, and reset semantics** — document the conditions under which saves are
       ignored, the actual meaning of `SaveSuccess.hasChanges`, and that `RESET` remounts the current
       state rather than refetching from the API.
-- [ ] **Stale General fields on auto-save** — a save without a `general` payload (auto-save)
-      rebuilds `name`/`description`/`iconUrl`/`topics` from the load-time `_rawForSave` snapshot
-      (`src/utils/dial-client.ts` `fetchDialApp`), which is never refreshed after a save. A dirty
-      auto-save after a host Metadata edit can therefore revert those fields. `display_version` is
-      already excluded (see change `fix-quickapp-display-version-save`).
+- [x] **Stale General fields on auto-save** — a save without a `general` payload now takes
+      `name`/`description`/`iconUrl`/`topics` from the last successful save, not the load-time
+      `_rawForSave` snapshot (change `refresh-baseline-after-save`). A host Metadata edit that was
+      never saved through the editor is still unknown to it.
 - [ ] **Origin validation defaults** — decide and document behavior while runtime settings are
       unresolved and when `allowedOrigin` is empty, including the current `*` fallback and its
       security implications.
