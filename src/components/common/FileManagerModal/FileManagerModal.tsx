@@ -25,12 +25,11 @@ import {
   type FileManagerGridRow,
 } from '@epam/ai-dial-react-file-manager';
 
-import { CommonI18nKeys, DialFileManagerI18nKeys } from '@/constants/i18n';
 import { MOBILE_FULLSCREEN_POPUP_CLASS_NAMES } from '@/constants/popup';
+import { ButtonsI18nKeys, DialFileManagerI18nKeys } from '@/constants/translation-keys';
 import { useAuthContext } from '@/context/AuthContext';
 import { useDialFileSources } from '@/hooks/use-dial-file-sources';
-import { useTranslation } from '@/hooks/use-translation';
-import { Translation } from '@/types/translation';
+import { useTranslation } from 'react-i18next';
 import { isHiddenPath } from '@/utils/dial-file-path';
 import {
   isUploadInProgress,
@@ -59,7 +58,7 @@ const NOTIFICATION_BG_CLASSES: Partial<Record<NotificationVariant, string>> = {
 const DEFAULT_NOTIFICATION_BG_CLASS = 'bg-layer-sunken';
 
 const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, onClose }) => {
-  const { t } = useTranslation(Translation.Common);
+  const { t } = useTranslation();
   const { user } = useAuthContext();
   const bucket = user?.bucket ?? '';
   const [notification, setNotification] = useState<Notification | null>(null);
@@ -335,22 +334,22 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
       actionLabels: {
         replace: t(DialFileManagerI18nKeys.ConflictReplace),
         duplicate: t(DialFileManagerI18nKeys.ConflictDuplicate),
-        cancel: t(CommonI18nKeys.Cancel),
+        cancel: t(ButtonsI18nKeys.Cancel),
       },
       strategyLabels: {
         replaceAll: t(DialFileManagerI18nKeys.ConflictReplaceAll),
         duplicateAll: t(DialFileManagerI18nKeys.ConflictDuplicateAll),
         decideForEach: t(DialFileManagerI18nKeys.ConflictDecideForEach),
       },
-      confirmLabel: t(CommonI18nKeys.Attach),
-      cancelLabel: t(CommonI18nKeys.Cancel),
+      confirmLabel: t(DialFileManagerI18nKeys.Attach),
+      cancelLabel: t(ButtonsI18nKeys.Cancel),
     }),
     [t],
   );
 
   const deleteConfirmationOptions = useMemo(
     () => ({
-      cancelLabel: t(CommonI18nKeys.Cancel),
+      cancelLabel: t(ButtonsI18nKeys.Cancel),
       closeLabel: t(DialFileManagerI18nKeys.CloseDialog),
       confirmLabel: t(DialFileManagerI18nKeys.DeleteConfirmButton),
       titleRenderer: (names: string[]) =>
@@ -434,7 +433,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
         onClose={handleCancel}
         additionalButtons={[
           {
-            label: t(CommonI18nKeys.Cancel),
+            label: t(ButtonsI18nKeys.Cancel),
             variant: ButtonVariant.Primary,
             appearance: ButtonAppearance.Link,
             onClick: handleCancel,

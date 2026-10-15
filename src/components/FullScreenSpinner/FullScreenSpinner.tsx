@@ -1,15 +1,14 @@
 import { Spinner } from '@epam/ai-dial-ui-kit';
 import { FC } from 'react';
 
-import { CommonI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/use-translation';
-import { Translation } from '@/types/translation';
+import { BasicI18nKeys } from '@/constants/translation-keys';
+import { useTranslation } from 'react-i18next';
 
 const FullScreenSpinner: FC = () => {
-  const { t } = useTranslation(Translation.Common);
+  const { t } = useTranslation();
 
   return (
-    <Spinner fullWidth className="h-screen bg-layer-base" ariaLabel={t(CommonI18nKeys.Loading)} />
+    <Spinner fullWidth className="h-screen bg-layer-base" ariaLabel={t(BasicI18nKeys.Loading)} />
   );
 };
 

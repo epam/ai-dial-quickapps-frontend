@@ -1,11 +1,10 @@
 import { FC, lazy, memo, Suspense, useCallback, useState } from 'react';
 
-import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys, CatalogI18nKeys } from '@/constants/translation-keys';
 import { useAddOnEntityMap } from '@/hooks/use-add-on-entity-map';
 import { useListRemoveFocus } from '@/hooks/use-list-remove-focus';
-import { useTranslation } from '@/hooks/use-translation';
+import { useTranslation } from 'react-i18next';
 import type { DialToolset } from '@/types/dial-entities';
-import { Translation } from '@/types/translation';
 import { getAddOnDisplay } from '@/utils/get-add-on-display';
 import { getEntityStatus, getEntityStatusMessage } from '@/utils/get-entity-status';
 
@@ -34,8 +33,8 @@ export interface ToolsetsListProps {
 
 /** The attached toolsets of the Toolsets row; each item opens that toolset's details. */
 const ToolsetsList: FC<ToolsetsListProps> = ({ ids, allIds, isReadonly, onChange }) => {
-  const { t, language } = useTranslation(Translation.QuickAppEditor);
-  const { t: tCommon } = useTranslation(Translation.Common);
+  const { t, i18n } = useTranslation();
+  const language = i18n.resolvedLanguage ?? i18n.language;
   const entityMap = useAddOnEntityMap();
   const { listRef, markRemoval } = useListRemoveFocus(ids);
 
@@ -61,8 +60,8 @@ const ToolsetsList: FC<ToolsetsListProps> = ({ ids, allIds, isReadonly, onChange
           const statusText = getEntityStatusMessage(
             getEntityStatus(toolset, id),
             true,
-            tCommon,
-            tCommon(CommonI18nKeys.ToolsetEntityType),
+            t,
+            t(ApplicationEditorI18nKeys.AddOnsEntityTypeToolset),
           );
           return (
             <li key={id}>
@@ -77,13 +76,13 @@ const ToolsetsList: FC<ToolsetsListProps> = ({ ids, allIds, isReadonly, onChange
                     <Suspense fallback={null}>
                       <ToolsetBadge
                         toolset={toolset}
-                        label={t(QuickAppEditorI18nKeys.ToolsetLoggedOutBadge)}
+                        label={t(CatalogI18nKeys.CredentialsBadgeLoggedOut)}
                       />
                     </Suspense>
                   )
                 }
-                detailsLabel={t(QuickAppEditorI18nKeys.AddOnDetails, { name })}
-                removeLabel={t(QuickAppEditorI18nKeys.RemoveAddOn, { name })}
+                detailsLabel={t(ApplicationEditorI18nKeys.AddOnsDetails, { name })}
+                removeLabel={t(ApplicationEditorI18nKeys.AddOnsRemove, { name })}
                 onClick={setOpenToolsetId}
                 onRemove={isReadonly ? undefined : handleRemove}
               />

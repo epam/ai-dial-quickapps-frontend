@@ -1,14 +1,13 @@
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { FC, useCallback, useMemo } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
 import { useDataContext } from '@/context/DataContext';
 import { useEntityDetails } from '@/hooks/use-entity-details';
 import { useScopeLabels } from '@/hooks/use-scope-labels';
 import { useToolsetCredentials } from '@/hooks/use-toolset-credentials';
-import { useTranslation } from '@/hooks/use-translation';
+import { useTranslation } from 'react-i18next';
 import { type DialToolset, ToolsetAuthType } from '@/types/dial-entities';
-import { Translation } from '@/types/translation';
 import { getCatalogFolder, getEntityScopeInfo } from '@/utils/entity-scope';
 import { getAddOnDisplay } from '@/utils/get-add-on-display';
 import { mapToolsetToCatalogItem } from '@/utils/map-toolset-to-catalog-item';
@@ -39,7 +38,8 @@ export const ToolsetDetailsPopup: FC<ToolsetDetailsPopupProps> = ({
   onRemove,
   onClose,
 }) => {
-  const { t, language } = useTranslation(Translation.QuickAppEditor);
+  const { t, i18n } = useTranslation();
+  const language = i18n.resolvedLanguage ?? i18n.language;
   const { userBucket } = useDataContext();
   const scopeLabels = useScopeLabels();
   const credentials = useToolsetCredentials(toolset);
@@ -84,9 +84,9 @@ export const ToolsetDetailsPopup: FC<ToolsetDetailsPopupProps> = ({
       item={item}
       detailsStatus={status}
       onRetry={retry}
-      unavailableText={toolset == null ? t(QuickAppEditorI18nKeys.ToolsetUnavailable) : undefined}
+      unavailableText={toolset == null ? t(ApplicationEditorI18nKeys.ToolsetsUnavailable) : undefined}
       isReadonly={isReadonly}
-      deleteLabel={t(QuickAppEditorI18nKeys.RemoveAddOnFromApp)}
+      deleteLabel={t(ButtonsI18nKeys.Delete)}
       onDelete={handleDelete}
       onClose={onClose}
     />

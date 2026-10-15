@@ -1,6 +1,7 @@
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { describe, expect, it, vi } from 'vitest';
 
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { setupTestRoot } from '@/test-utils/test-root';
 
 import { DialEntityType } from '@/types/dial-entities';
@@ -19,7 +20,6 @@ const RESEARCH = makeAgent('applications/public/research', 'Research', DialEntit
 const SELF = makeAgent('applications/me/this-app__1.0', 'This app', DialEntityType.Application);
 const MCP = makeAgent('applications/public/mcp-agent', 'MCP agent', DialEntityType.Application);
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/AppContext', () => ({
   useAppContext: () => ({ app: { id: 'applications/me/this-app__2.0' } }),
 }));
@@ -62,12 +62,12 @@ describe('AddAgentsModal', () => {
 
     const { labels } = captured.props as AddOnCatalogModalProps;
     expect(labels).toMatchObject({
-      title: 'Add agent',
-      catalog: 'Agents catalog',
-      search: 'Search agents...',
-      empty: 'No agents available',
-      selectAll: 'Select all agents',
+      title: ApplicationEditorI18nKeys.AgentsAdd,
+      catalog: ApplicationEditorI18nKeys.AgentsCatalogTitle,
+      search: ApplicationEditorI18nKeys.AgentsSearchPlaceholder,
+      empty: ApplicationEditorI18nKeys.AgentsEmpty,
+      selectAll: ApplicationEditorI18nKeys.AgentsSelectAll,
     });
-    expect(labels.selectRow('Research')).toBe('Select Research');
+    expect(labels.selectRow('Research')).toBe(ApplicationEditorI18nKeys.AddOnsSelect);
   });
 });

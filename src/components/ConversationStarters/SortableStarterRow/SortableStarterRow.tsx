@@ -13,10 +13,9 @@ import { IconGripVertical, IconTrashX } from '@tabler/icons-react';
 import { FC } from 'react';
 
 import { STARTER_TITLE_MAX_LENGTH } from '@/constants/conversation-starters';
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/use-translation';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
+import { useTranslation } from 'react-i18next';
 import type { StarterField, StarterWithId } from '@/types/conversation-starters';
-import { Translation } from '@/types/translation';
 
 export interface SortableStarterRowProps {
   starter: StarterWithId;
@@ -33,7 +32,7 @@ export const SortableStarterRow: FC<SortableStarterRowProps> = ({
   onChange,
   onDelete,
 }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation();
   const {
     attributes,
     listeners,
@@ -63,7 +62,7 @@ export const SortableStarterRow: FC<SortableStarterRowProps> = ({
         type="button"
         {...attributes}
         {...listeners}
-        aria-label={t(QuickAppEditorI18nKeys.ReorderStarter, { name: handleName })}
+        aria-label={t(ApplicationEditorI18nKeys.StartersReorder, { name: handleName })}
         disabled={isTrailing}
         className={mergeClasses(
           'flex shrink-0 items-center justify-center rounded text-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-focus',
@@ -73,8 +72,8 @@ export const SortableStarterRow: FC<SortableStarterRowProps> = ({
         <IconGripVertical size={DIAL_ICON_SIZE.MD} stroke={DIAL_KIT_ICON_STROKE} aria-hidden="true" />
       </button>
       <Input
-        aria-label={t(QuickAppEditorI18nKeys.ButtonLabel)}
-        placeholder={t(QuickAppEditorI18nKeys.ButtonLabel)}
+        aria-label={t(ApplicationEditorI18nKeys.StartersButtonLabel)}
+        placeholder={t(ApplicationEditorI18nKeys.StartersButtonLabel)}
         value={starter.title}
         onChange={(value) => onChange(index, 'title', value ?? '')}
         invalid={isTitleOverLimit}
@@ -93,15 +92,15 @@ export const SortableStarterRow: FC<SortableStarterRowProps> = ({
         containerClassName="min-w-0 flex-1"
       />
       <Input
-        aria-label={t(QuickAppEditorI18nKeys.PromptToSendInChat)}
-        placeholder={t(QuickAppEditorI18nKeys.PromptToSendInChat)}
+        aria-label={t(ApplicationEditorI18nKeys.StartersPromptPlaceholder)}
+        placeholder={t(ApplicationEditorI18nKeys.StartersPromptPlaceholder)}
         value={starter.text}
         onChange={(value) => onChange(index, 'text', value ?? '')}
         containerClassName="min-w-0 flex-1"
       />
       <IconButton
         type="button"
-        aria-label={t(QuickAppEditorI18nKeys.DeleteStarter)}
+        aria-label={t(ApplicationEditorI18nKeys.StartersDelete)}
         variant={ButtonVariant.Danger}
         appearance={ButtonAppearance.Ghost}
         icon={<IconTrashX size={DIAL_ICON_SIZE.MD} stroke={DIAL_KIT_ICON_STROKE} />}

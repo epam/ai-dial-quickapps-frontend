@@ -1,17 +1,25 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import {
+  ApplicationEditorI18nKeys,
+  BasicI18nKeys,
+  CatalogI18nKeys,
+} from '@/constants/translation-keys';
 import { click } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
 
 import { KnowledgeBaseList } from '../KnowledgeBaseList';
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/AuthContext', () => ({
   useAuthContext: () => ({ user: { bucket: 'abc' } }),
 }));
 
 const dom = setupTestRoot();
+
+const getItem = (text: string) =>
+  [...dom.container.querySelectorAll('ul > li')].find((item) =>
+    item.textContent?.includes(text),
+  ) as HTMLElement;
 
 const files = [
   'files/public/user-research-reports/',
@@ -25,17 +33,23 @@ describe('KnowledgeBaseList', () => {
 
     const items = [...dom.container.querySelectorAll('ul > li')];
     expect(items).toHaveLength(3);
-    expect(items[0].textContent).toContain(QuickAppEditorI18nKeys.KnowledgeBaseOrganization);
+    expect(items[0].textContent).toContain(BasicI18nKeys.Organization);
     expect(items[0].textContent).toContain('user-research-reports');
-    expect(items[1].textContent).toBe(QuickAppEditorI18nKeys.KnowledgeBasePersonal);
+    expect(items[1].textContent).toBe(CatalogI18nKeys.FolderPersonal);
     expect(items[2].textContent).toContain('Dial-Design');
     expect(items[2].textContent).toContain('survey.pdf');
   });
 
-  it('names each path navigation by the item', () => {
+  it('labels the path navigation of each item', () => {
     dom.render(<KnowledgeBaseList files={files} onRemove={vi.fn()} />);
 
-    expect(dom.container.querySelector('nav[aria-label="Path of survey.pdf"]')).not.toBeNull();
+    const items = [...dom.container.querySelectorAll('ul > li')];
+    expect(items).toHaveLength(3);
+    items.forEach((item) => {
+      expect(item.querySelector('nav')?.getAttribute('aria-label')).toBe(
+        ApplicationEditorI18nKeys.KnowledgeBasePathLabel,
+      );
+    });
   });
 
   it('marks the last path segment as the current item', () => {
@@ -52,7 +66,9 @@ describe('KnowledgeBaseList', () => {
     dom.render(<KnowledgeBaseList files={files} onRemove={onRemove} />);
 
     click(
-      dom.container.querySelector('button[aria-label="Remove survey.pdf from knowledge base"]'),
+      getItem('survey.pdf').querySelector(
+        `button[aria-label="${ApplicationEditorI18nKeys.KnowledgeBaseRemoveItem}"]`,
+      ),
     );
 
     expect(onRemove).toHaveBeenCalledTimes(1);

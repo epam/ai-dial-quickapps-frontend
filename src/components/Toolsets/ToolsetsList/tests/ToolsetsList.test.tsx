@@ -2,6 +2,7 @@ import { act, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { CatalogItemCredentials } from '@epam/ai-dial-catalog';
+import { ApplicationEditorI18nKeys, CatalogI18nKeys } from '@/constants/translation-keys';
 import { getButton } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
 import { type DialToolset, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
@@ -22,7 +23,6 @@ const JIRA = makeToolset('toolsets/public/jira', 'Jira', {
   authSettings: { authenticationType: ToolsetAuthType.None },
 });
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/hooks/use-add-on-entity-map', () => ({
   useAddOnEntityMap: () => ({ [FIGMA.id]: FIGMA, [JIRA.id]: JIRA }),
 }));
@@ -98,6 +98,21 @@ const render = async (initial: string[], isReadonly?: boolean) => {
   });
 };
 
+// The labels come from `t`, which the test mock returns as bare keys, so an
+// item's buttons are found inside the list item showing the toolset's name.
+const getItem = (name: string) =>
+  [...dom.container.querySelectorAll('li')].find((item) => item.textContent?.includes(name));
+
+const getDetailsButton = (name: string) => {
+  const item = getItem(name);
+  return item && getButton(ApplicationEditorI18nKeys.AddOnsDetails, item);
+};
+
+const getRemoveButton = (name: string) => {
+  const item = getItem(name);
+  return item && getButton(ApplicationEditorI18nKeys.AddOnsRemove, item);
+};
+
 const getValue = () => dom.container.querySelector('[data-testid="value"]')?.textContent;
 
 afterEach(() => {
@@ -112,7 +127,7 @@ describe('ToolsetsList', () => {
     expect(items[0]).toContain('Figma');
     expect(items[0]).toContain('1.0.0');
     expect(items[1]).toContain('Jira');
-    expect(getButton('Figma details')).toBeTruthy();
+    expect(getDetailsButton('Figma')).toBeTruthy();
   });
 
   it('badges a signed-out toolset and describes it as logged out', async () => {
@@ -121,39 +136,41 @@ describe('ToolsetsList', () => {
     const badges = dom.container.querySelectorAll('[data-testid="badge"]');
     expect(badges).toHaveLength(1);
     expect(badges[0].closest('li')?.textContent).toContain('Figma');
-    expect(badges[0].textContent).toBe('Authorize to use this toolset.');
-    expect(dom.container.textContent).toContain('Logged out toolset.');
+    expect(badges[0].textContent).toBe(CatalogI18nKeys.CredentialsBadgeLoggedOut);
+    expect(dom.container.textContent).toContain(ApplicationEditorI18nKeys.AddOnsLoggedOutToolset);
   });
 
   it('names a toolset missing from the catalog after its id and flags it', async () => {
     await render(['toolsets/public/old-tool']);
 
-    expect(getButton('old-tool details')).toBeTruthy();
-    expect(dom.container.textContent).toContain('needs to be removed');
+    expect(getDetailsButton('old-tool')).toBeTruthy();
+    expect(dom.container.textContent).toContain(
+      ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired,
+    );
   });
 
   it('removes only that toolset and moves focus to the remaining one', async () => {
     await render(['applications/public/agent', FIGMA.id, JIRA.id]);
 
-    await act(async () => getButton('Remove Figma')?.click());
+    await act(async () => getRemoveButton('Figma')?.click());
 
     expect(getValue()).toBe(`applications/public/agent|${JIRA.id}`);
-    expect(document.activeElement).toBe(getButton('Jira details'));
+    expect(document.activeElement).toBe(getDetailsButton('Jira'));
   });
 
   it('renders no remove button in a read-only application', async () => {
     await render([FIGMA.id], true);
 
-    expect(getButton('Figma details')).toBeTruthy();
-    expect(getButton('Remove Figma')).toBeUndefined();
+    expect(getDetailsButton('Figma')).toBeTruthy();
+    expect(getRemoveButton('Figma')).toBeUndefined();
   });
 
   it('keeps avatar, name and trash in reading order in a right-to-left document', async () => {
     document.documentElement.dir = 'rtl';
     await render([FIGMA.id]);
 
-    const details = getButton('Figma details') as HTMLButtonElement;
-    const remove = getButton('Remove Figma') as HTMLButtonElement;
+    const details = getDetailsButton('Figma') as HTMLButtonElement;
+    const remove = getRemoveButton('Figma') as HTMLButtonElement;
     expect(details.firstElementChild?.getAttribute('aria-hidden')).toBe('true');
     expect(details.className).toContain('text-start');
     expect(details.compareDocumentPosition(remove) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -171,7 +188,7 @@ describe('ToolsetsList details popup', () => {
     await render([FIGMA.id, JIRA.id]);
 
     await act(async () => {
-      getButton('Jira details')?.click();
+      getDetailsButton('Jira')?.click();
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
     expect(dom.container.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe(

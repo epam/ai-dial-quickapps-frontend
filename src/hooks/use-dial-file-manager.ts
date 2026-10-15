@@ -16,8 +16,8 @@ import {
 } from '@epam/ai-dial-react-file-manager';
 
 import { DIAL_HIDDEN_FOLDER_MARKER } from '@/constants/dial-paths';
-import { DialFileManagerI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/use-translation';
+import { DialFileManagerI18nKeys } from '@/constants/translation-keys';
+import { useTranslation } from 'react-i18next';
 import type {
   FileManagerNotification,
   FileUploadBatchState,
@@ -26,7 +26,6 @@ import type {
   SharedRootMeta,
 } from '@/types/file-manager';
 import { FileUploadStatus } from '@/types/file-manager';
-import { Translation } from '@/types/translation';
 import {
   buildFromCache,
   ensureTrailingSlash,
@@ -136,7 +135,8 @@ export const useDialFileManager = ({
   onNotification,
   forbiddenSymbolsRegExp,
 }: UseDialFileManagerOptions): UseDialFileManagerResult => {
-  const { t, language } = useTranslation(Translation.Common);
+  const { t, i18n } = useTranslation();
+  const language = i18n.resolvedLanguage ?? i18n.language;
   const [folderPath, setFolderPath] = useState('');
   const [cache, setCache] = useState<Map<string, ListFilesItem[]>>(() => new Map());
   const [listingPermissionsCache, setListingPermissionsCache] = useState<

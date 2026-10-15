@@ -104,10 +104,12 @@
       Confirm whether a host still opens the modal this way. If one does, add the parameter to
       `host-integration` and keep it as a single named constant instead of a one-member enum. If none
       does, remove the parameter and the code that reads it.
-- [ ] Themes: `src/context/ThemeContext.tsx` loads themes with `chatApiFetch('/api/themes')`, but
-      `@epam/ai-dial-chat-api-client` has a typed `ThemesApi`. Decide whether to switch to it or keep
-      the raw call as a documented exception (see "API-layer exceptions and configuration keys" below).
-      Switching changes the endpoint, so it needs its own OpenSpec change.
+- [x] Themes: `src/context/ThemeContext.tsx` keeps the raw `chatApiFetch('/api/themes')` call as a
+      documented exception instead of the typed `ThemesApi`. Both hit the same `@Public()` endpoint, but
+      the generated `ThemeDto` / `ThemeImagesDto` camelCase the kebab-case keys (`appLogo`,
+      `defaultAddon`…) without mapping the JSON, so their types do not match the real body
+      (`app-logo`, `default-addon`…). ai-dial-chat's own `ThemeContext` makes the same raw call
+      (`get<ThemeConfiguration>(ApiEndpoints.THEMES)`). Revisit if the client generator maps those keys.
 - [x] Agent transport default: the save (`src/form/quickApp2Form.ts`) and the agent Settings tab
       (`AgentSettingsTab`) both read `DEFAULT_AGENT_TRANSPORT` (`src/constants/quick-apps.ts`), so an
       MCP-capable application with no saved `transport` shows and saves the same value.
@@ -129,12 +131,14 @@ Behaviour found while writing the specs that looks unintended or contradicts ano
 None of it is specified as intended; each needs a decision (and, for a behaviour change, its own
 OpenSpec change).
 
-- [ ] **Disabled flag strips stored features** — when `isCodeInterpreterEnabled` /
+- [x] **Disabled flag strips stored features** — when `isCodeInterpreterEnabled` /
       `isWebFetchEnabled` / `isAddAttachmentEnabled` is off (including when the client-config
       call fails and resolves to `{}`), `useQuickApp2Form` forces the value to `false` without
       dirtying the form, and the next save removes the stored code-interpreter toolset,
       `web_fetch` or `representation_tooling` (`use-quick-app2-form.ts:159-170`,
-      `quickApp2Form.ts:325-326,422-429`). Possible data loss.
+      `quickApp2Form.ts:325-326,422-429`). Decided: intended — a feature the deployment does not
+      offer is not kept on the application (`app-configuration`, "Feature flags gate the Advanced
+      Settings switches").
 - [ ] **Load-time baseline is never refreshed after a save** — `appState` is set once
       (`EditorClient.tsx:111`), so after a successful save the form stays dirty and auto-save
       keeps re-saving, a second no-edit save still reports `SaveSuccess.hasChanges: true`, and
@@ -174,13 +178,25 @@ OpenSpec change).
   - The forbidden-symbols tooltip omits the backslash and control characters the kit also forbids.
   - Sanitizing runs in `onValidateUpload` instead of `prepareUploadFileName`.
 - [ ] **Themes** — `setTheme` has no caller. (A failed theme load no longer leaves a dark
-      Markdown editor on the light page — change `fix-settings-locale-theme-defects`.) Switching to the typed `ThemesApi`
-      would not change the endpoint (both call `GET /api/themes`), contrary to the Themes item
-      above. (A non-OK response now falls back and a late response after unmount is discarded —
+      Markdown editor on the light page — change `fix-settings-locale-theme-defects`.) (The raw
+      `GET /api/themes` call stays, see the Themes item above.) (A non-OK response now falls back
+      and a late response after unmount is discarded —
       change `fix-file-manager-and-theme-load-defects`.)
 - [x] **i18n and RTL docs** — `.claude/rules/rtl.md` and AGENTS.md now describe the real layout
-      (per-namespace locale files, `i18n.dir()`, no language selector, English only so `dir` is
-      `ltr` in production, `index.html`'s `lang="en"` as the pre-mount default).
+      (one `en.json`, `config.ts` from ai-dial-chat, no language selector, English only so `dir` is
+      `ltr` in production, `index.html`'s `lang="en"` as the default until the config runs).
+- [x] **i18n stack aligned with ai-dial-chat** — one `translation` namespace with semantic keys,
+      enums in `translation-keys.ts`, typed keys, language detector, global `react-i18next` test
+      mock (change `align-i18n-with-dial-chat`).
+- [ ] **Editor UI language from the host** — QuickApps runs on its own origin, so the detected
+      language is the browser's, not the host's choice. Following the host (e.g. a language in the
+      init `postMessage`) needs a `host-integration` change.
+- [ ] **Shared i18n config with ai-dial-chat** — `src/i18n/config.ts` is a copy of chat's; switch to
+      a shared package if chat extracts one.
+- [ ] **Untranslated library defaults** — `FileManagerModal` passes no `newButtonLabel` in
+      `toolbarOptions`, so the file manager's English "Add" shows on the toolbar's new-item button;
+      the skill details folder path `nav` is named by a library's English "Folder path" default.
+      Both predate `align-i18n-with-dial-chat`.
 - [x] **RTL wording in specs** — every RTL scenario is now conditional on the document direction
       being `rtl` and notes that no RTL locale ships yet (see the `i18n` spec).
 - [x] **`buildLocalizedText` drops the primary value** — it now mirrors chat-api's
@@ -391,10 +407,11 @@ Update this matrix as each capability is explored, specified, tested, and checke
 
 ### i18n
 
-- src/i18n/**, I18nProvider.tsx, hooks/use-translation.ts, utils/get-localized-text.ts
+- src/i18n/**, constants/translation-keys.ts, utils/get-localized-text.ts
 - Standalone → i18n
 - **Spec written** (`openspec/specs/i18n`, change `specify-uncovered-capabilities`): English is the
-  only shipped locale, so `dir` is always `ltr` today.
+  only shipped locale, so `dir` is always `ltr` today. Stack aligned with ai-dial-chat in change
+  `align-i18n-with-dial-chat`.
 
 ### Feature flags / runtime config
 
