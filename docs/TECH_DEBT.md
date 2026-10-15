@@ -142,11 +142,10 @@ OpenSpec change).
 - [x] **Load-time baseline is never refreshed after a save** — a successful save now makes the
       submitted values the dirty baseline and replaces the held application with the saved state,
       so `hasChanges`, auto-save and `RESET` start from it (change `refresh-baseline-after-save`).
-- [ ] **A save without `general` drops translations** — an auto-save sends `name` / `description`
-      as the primary-locale text without `locales` (`saveDialApp`), and chat-api's
-      `composeLocalizedFields` then stores a plain string, replacing a stored per-locale
-      dictionary. Sending the held translations as `locales` (or omitting the fields) would keep
-      them; needs a chat-api check of what an omitted `name` does.
+- [x] **A save without `general` drops translations** — such a save now sends the held
+      translations back as `locales` with `primaryLocale: "en"`, rebuilt with ai-dial-chat's
+      `decomposeLocalizedFields` / `composeLocalePayload` (change
+      `keep-translations-on-save-without-general`).
 - [ ] **Ignored saves post no outcome** — a not-yet-saved auto-save, a clean auto-save, a
       validation failure and a read-only form all end silently, while `host-integration` says a
       save always ends in exactly one outcome message.

@@ -15,6 +15,7 @@ import type {
   LocalizedText,
   ToolsetAuthSettings,
 } from '@/types/dial-entities';
+import { composeLocalePayload, decomposeLocalizedFields } from '@epam/ai-dial-chat-hooks/utils';
 import { DialEntityType } from '@/types/dial-entities';
 import type { QuickApp2Config } from '@/types/quick-apps';
 import { decodeApiUrl, isHiddenDialFolderId, isPublicToolsetId } from '@/utils/api';
@@ -51,6 +52,8 @@ const MCP_DEPLOYMENT_INTERFACE = ListDeploymentsInterfaceTypeEnum.Mcp;
 
 /** chat-api client-config app id whose config QuickApps reads (default model, custom variables). */
 const CLIENT_CONFIG_APP_ID = 'chat-ui';
+// The host's PRIMARY_LOCALE, and chat-api's default when `locales` come without one.
+const HOST_PRIMARY_LOCALE = 'en';
 
 /**
  * Encode each path segment individually, preserving '/' as a separator.
@@ -381,7 +384,7 @@ export const saveDialApp = async (
   [key: string]: unknown;
 }> => {
   const rawForSave = (app._rawForSave as Record<string, unknown>) ?? {};
-  const primaryLocale = general?.primaryLocale ?? 'en';
+  const primaryLocale = general?.primaryLocale ?? HOST_PRIMARY_LOCALE;
   const name =
     getLocalizedText(general?.name as LocalizedText | undefined, primaryLocale, '') ||
     getLocalizedText(rawForSave.displayName as LocalizedText | undefined, primaryLocale, app.name);
@@ -390,6 +393,20 @@ export const saveDialApp = async (
       ? getLocalizedText(general.description as LocalizedText | undefined, primaryLocale, '') ||
         undefined
       : toDisplayText(rawForSave.description as LocalizedText | undefined);
+  // chat-api replaces displayName with what it composes from name + locales, so
+  // a save without `general` must send the held translations back as `locales`
+  // or they collapse to the primary text.
+  const heldLocales =
+    general == null
+      ? composeLocalePayload(
+          decomposeLocalizedFields(
+            rawForSave.displayName as LocalizedText | undefined,
+            rawForSave.description as LocalizedText | undefined,
+            HOST_PRIMARY_LOCALE,
+          ),
+          HOST_PRIMARY_LOCALE,
+        )
+      : undefined;
 
   const updated = await applicationsApi.updateApplication({
     // Re-encode to chat-api's canonical id form — see encodeDialPath's comment.
@@ -406,8 +423,8 @@ export const saveDialApp = async (
       inputAttachmentTypes: app.inputAttachmentTypes as string[] | undefined,
       maxInputAttachments: app.maxInputAttachments as number | undefined,
       applicationProperties: encodeApplicationPropertiesForApi(applicationProperties) as object,
-      locales: general?.locales,
-      primaryLocale: general?.primaryLocale,
+      locales: general ? general.locales : heldLocales,
+      primaryLocale: general ? general.primaryLocale : heldLocales && HOST_PRIMARY_LOCALE,
     },
   });
 
