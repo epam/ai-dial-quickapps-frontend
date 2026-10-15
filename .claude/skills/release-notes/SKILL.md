@@ -53,7 +53,6 @@ This app is a static Vite SPA served by `chat-api`; it has no server code or bui
 - `git diff <prev-tag>..<tag> -- .env.template Dockerfile` — new, renamed or removed variables and runtime-image changes. A change of the chat-api base image or a `ai-dial-chat` dependency bump in the Dockerfile can change operator-visible behavior; read what it pulls in.
 - `git diff <prev-tag>..<tag> -- src/types/dial-entities.ts` — the `AppSettings` interface. Its keys map 1:1 onto the `CUSTOM_CLIENT_VARIABLES` JSON keys (`allowedOrigin`, `dialAdminHost`, `dialChatHost`, …). Added or removed keys are deployment changes.
 - `git diff <prev-tag>..<tag> -- openspec/specs/host-integration openspec/specs/auth openspec/specs/deployment_docker-image` — the externally observable host contract (entry-URL query parameters, `postMessage` messages, sign-in flow) and the image contract.
-- `[Unreleased]` / the matching version in `CHANGELOG.md` — the maintainers' own breaking-change and migration notes. Reuse their wording for migration steps rather than inventing new ones, but verify the names against the code and README. Note when the CHANGELOG version heading does not match the tag being released (report it, do not fix it).
 
 Names and defaults: the README table and `.env.template` win over PR bodies; where README and code disagree (e.g. `src/utils/dial-client.ts` reads a different key), the code wins and the mismatch goes to the editorial notes. There is no feature-flag registry in this repo — optional UI features are gated through `CUSTOM_CLIENT_VARIABLES` keys or chat-api env vars; document them as environment variables or settings keys, not as "feature flags".
 
@@ -184,7 +183,7 @@ Add this section **only** when the range changes at least one env var, `CUSTOM_C
 
 What does **not** belong here: per-user editor behavior and UI changes. Those stay in the `Features` bullet where they are introduced.
 
-Descriptions and defaults come from the README table row when it exists, else from `.env.template`, else from the code. Cite defaults verbatim. If the change is breaking, also point at the matching `CHANGELOG.md` section rather than restating a long migration.
+Descriptions and defaults come from the README table row when it exists, else from `.env.template`, else from the code. Cite defaults verbatim. If the change is breaking, also point at the matching section of `docs/quickapps-migration-guide.md` rather than restating a long migration.
 
 ### 7. Pre-release / delta handling
 
@@ -200,7 +199,7 @@ Create `.claude/release-notes/` if missing, then write:
   - The commit/tag range used and why.
   - Rename mapping (raw → enhanced) for non-trivial rewrites.
   - Dropped items, one line of reason each.
-  - Open questions (e.g. the `CHANGELOG.md` heading version doesn't match the tag; an env-var name that differs between README and code).
+  - Open questions (e.g. an env-var name that differs between README and code).
 
 ### 9. Never touch GitHub
 
