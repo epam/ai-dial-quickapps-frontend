@@ -1,11 +1,10 @@
 import { FC, lazy, Suspense, useCallback, useState } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
 import { useDataContext } from '@/context/DataContext';
-import { useTranslation } from '@/hooks/use-translation';
+import { useTranslation } from 'react-i18next';
 import { LoadStatus } from '@/types/load-status';
 import { SectionRowVariant } from '@/types/section-row';
-import { Translation } from '@/types/translation';
 import {
   DIAL_ICON_SIZE,
   DIAL_KIT_ICON_STROKE,
@@ -37,7 +36,7 @@ export const DefaultModelBlock: FC<DefaultModelBlockProps> = ({
   isDisabled,
   error,
 }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation();
   const { modelsMap, status } = useDataContext();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -59,7 +58,7 @@ export const DefaultModelBlock: FC<DefaultModelBlockProps> = ({
 
   return (
     <SectionRow
-      title={t(QuickAppEditorI18nKeys.DefaultModel)}
+      title={t(ApplicationEditorI18nKeys.OrchestratorDefaultModel)}
       variant={SectionRowVariant.Caption}
       action={
         <NeutralButton
@@ -67,7 +66,7 @@ export const DefaultModelBlock: FC<DefaultModelBlockProps> = ({
           iconBefore={
             <IconPencil size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} aria-hidden="true" />
           }
-          label={t(QuickAppEditorI18nKeys.Change)}
+          label={t(ButtonsI18nKeys.Change)}
           onClick={handleOpen}
           disabled={isDisabled || isLoading}
         />

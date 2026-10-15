@@ -8,7 +8,7 @@ import { CodeBlockTheme } from '@epam/ai-dial-chat-shared';
 import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { AttachmentCanvasI18nKeys, ButtonsI18nKeys, CatalogI18nKeys, ChatI18nKeys } from '@/constants/translation-keys';
 import { setupTestRoot } from '@/test-utils/test-root';
 import { ThemeId } from '@/types/theme';
 
@@ -33,7 +33,6 @@ const mocks = vi.hoisted(() => ({
   theme: { currentTheme: { id: 'light' } as { id: string } | undefined },
 }));
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/ThemeContext', () => ({ useThemeContext: () => mocks.theme }));
 vi.mock('@epam/ai-dial-chat-hooks/catalog', async (importOriginal) => ({
   ...(await importOriginal<object>()),
@@ -165,13 +164,13 @@ describe('SkillFilePreview', () => {
     await render('guide.pdf', 'guide.pdf');
 
     expect(mocks.bodyProps?.labels).toMatchObject({
-      unsupportedLabel: QuickAppEditorI18nKeys.ContentFileUnsupported,
-      loadErrorLabel: QuickAppEditorI18nKeys.ContentFileError,
-      forbiddenErrorLabel: QuickAppEditorI18nKeys.ContentFileForbidden,
-      pdfShowThumbnailsLabel: QuickAppEditorI18nKeys.PdfShowThumbnails,
-      xlsxFormulaLabel: QuickAppEditorI18nKeys.SpreadsheetFormula,
-      tableDownloadCsvLabel: QuickAppEditorI18nKeys.TableDownloadCsv,
-      codeBlockCopyLabel: QuickAppEditorI18nKeys.MarkdownCopyCode,
+      unsupportedLabel: CatalogI18nKeys.DetailsContentFileUnsupported,
+      loadErrorLabel: CatalogI18nKeys.DetailsContentFileError,
+      forbiddenErrorLabel: AttachmentCanvasI18nKeys.ForbiddenErrorLabel,
+      pdfShowThumbnailsLabel: AttachmentCanvasI18nKeys.PdfShowThumbnailsLabel,
+      xlsxFormulaLabel: AttachmentCanvasI18nKeys.XlsxFormulaLabel,
+      tableDownloadCsvLabel: ButtonsI18nKeys.DownloadAsCsv,
+      codeBlockCopyLabel: ChatI18nKeys.CopyCode,
     });
     expect(Object.values(mocks.bodyProps?.labels ?? {}).every(Boolean)).toBe(true);
     expect(mocks.bodyProps?.hidePdfToolbar).toBe(true);

@@ -54,3 +54,28 @@ const handleChange = (value: string) => { ... };
 // Wrong
 <MyComponent change={onChange} save={doSave} />
 ```
+
+## i18n translation keys
+
+Same rule as ai-dial-chat. In app TypeScript code, never pass a raw string literal translation
+key to `t()` or `<Trans i18nKey>`. Every translation key must be declared in the appropriate
+string enum in `src/constants/translation-keys.ts` and referenced through that enum (for
+example, `t(DialFileManagerI18nKeys.ConflictReplace)`). When adding a key to
+`src/i18n/locales/en.json`, add the matching enum member in the same change.
+
+### Avoid duplicate translation values
+
+Before adding a new key to `src/i18n/locales/en.json`, check whether the exact English string
+already exists under `ButtonsI18nKeys` / `BasicI18nKeys` (or another shared group) in
+`translation-keys.ts`. Generic, short UI strings — button/action labels such as "Copy",
+"Log out", "Cancel", "Save" — belong in `ButtonsI18nKeys` and must be reused via that one key,
+not re-declared per feature. Give a string its own feature-scoped key only when the wording is
+genuinely feature-specific. When the same string already exists in ai-dial-chat's
+`apps/chat/src/i18n/locales/en.json`, use chat's group and key path for it.
+
+### Tests
+
+`src/test-utils/setup.ts` mocks `react-i18next` for every test: `t` returns the key and ignores
+interpolation values, `Trans` renders its `i18nKey`. Do not mock `react-i18next` again in a test
+file; assert on enum members, and tell repeated items apart by their own visible data
+(`within(row)`), not by interpolated labels.

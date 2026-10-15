@@ -25,14 +25,13 @@ import {
 } from '@dnd-kit/sortable';
 import { FC, memo, useCallback, useMemo, useRef, useState } from 'react';
 
-import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/use-translation';
+import { ApplicationEditorI18nKeys, BasicI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
+import { useTranslation } from 'react-i18next';
 import {
   StarterSelectionBehavior,
   type ConversationStartersValues,
   type StarterField,
 } from '@/types/conversation-starters';
-import { Translation } from '@/types/translation';
 import {
   getAutoSubmit,
   getStarterSelectionBehavior,
@@ -61,13 +60,12 @@ const ConversationStartersModal: FC<ConversationStartersModalProps> = ({
   onSave,
   onClose,
 }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
-  const { t: tCommon } = useTranslation(Translation.Common);
+  const { t } = useTranslation();
   // Seeded once per mount; ConversationStartersRow mounts the modal only while it is open.
   const [draft, setDraft] = useState<ConversationStartersValues>(values);
   const isSettingsDisabled = !hasCompleteStarter(draft.starters);
   const settingsHint = isSettingsDisabled
-    ? t(QuickAppEditorI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings)
+    ? t(ApplicationEditorI18nKeys.StartersSettingsRequireStarter)
     : undefined;
   // Escape both cancels a keyboard drag and dismisses the popup; while a drag is active (and for the
   // rest of the event that ended it) the popup must stay open.
@@ -84,22 +82,22 @@ const ConversationStartersModal: FC<ConversationStartersModalProps> = ({
     const getPosition = (id?: UniqueIdentifier) => starterIds.indexOf(String(id)) + 1;
     const announcements: Announcements = {
       onDragStart: ({ active }) =>
-        t(QuickAppEditorI18nKeys.StarterPickedUp, { position: getPosition(active.id), total }),
+        t(ApplicationEditorI18nKeys.StartersDragPickedUp, { position: getPosition(active.id), total }),
       onDragOver: ({ over }) =>
         over
-          ? t(QuickAppEditorI18nKeys.StarterMovedOver, { position: getPosition(over.id), total })
+          ? t(ApplicationEditorI18nKeys.StartersDragMovedOver, { position: getPosition(over.id), total })
           : undefined,
       onDragEnd: ({ active, over }) =>
-        t(QuickAppEditorI18nKeys.StarterDropped, {
+        t(ApplicationEditorI18nKeys.StartersDragDropped, {
           position: getPosition(over?.id ?? active.id),
           total,
         }),
-      onDragCancel: () => t(QuickAppEditorI18nKeys.StarterDragCancelled),
+      onDragCancel: () => t(ApplicationEditorI18nKeys.StartersDragCancelled),
     };
 
     return {
       announcements,
-      screenReaderInstructions: { draggable: t(QuickAppEditorI18nKeys.StarterDragInstructions) },
+      screenReaderInstructions: { draggable: t(ApplicationEditorI18nKeys.StartersDragInstructions) },
     };
   }, [starterIds, t]);
 
@@ -134,11 +132,11 @@ const ConversationStartersModal: FC<ConversationStartersModalProps> = ({
     () => [
       {
         value: StarterSelectionBehavior.SendPrompt,
-        label: t(QuickAppEditorI18nKeys.SendPromptToTheChat),
+        label: t(ApplicationEditorI18nKeys.StartersSendPrompt),
       },
       {
         value: StarterSelectionBehavior.PopulateInput,
-        label: t(QuickAppEditorI18nKeys.PopulatePromptInTheChatInput),
+        label: t(ApplicationEditorI18nKeys.StartersPopulatePrompt),
       },
     ],
     [t],
@@ -186,15 +184,15 @@ const ConversationStartersModal: FC<ConversationStartersModalProps> = ({
       open
       size={PopupSize.Md}
       className="md:max-w-[1000px]"
-      header={t(QuickAppEditorI18nKeys.SetUpConversationStarters)}
-      closeAriaLabel={t(QuickAppEditorI18nKeys.CloseConversationStarters)}
+      header={t(ApplicationEditorI18nKeys.StartersSetUp)}
+      closeAriaLabel={t(ApplicationEditorI18nKeys.StartersClose)}
       headerDivider
       footerDivider
       onClose={handleDismiss}
       bodyClassName="max-w-full px-6 py-4"
       additionalButtons={[
         {
-          label: tCommon(CommonI18nKeys.Cancel),
+          label: t(ButtonsI18nKeys.Cancel),
           onClick: onClose,
           variant: ButtonVariant.Primary,
           appearance: ButtonAppearance.Link,
@@ -202,7 +200,7 @@ const ConversationStartersModal: FC<ConversationStartersModalProps> = ({
       ]}
       mainButtons={[
         {
-          label: t(QuickAppEditorI18nKeys.Save),
+          label: t(ButtonsI18nKeys.Save),
           variant: ButtonVariant.Neutral,
           onClick: handleSave,
         },
@@ -237,19 +235,19 @@ const ConversationStartersModal: FC<ConversationStartersModalProps> = ({
         <div className="flex flex-col gap-4">
           <div>
             <h3 className="dial-small-semi-text text-primary">
-              {t(QuickAppEditorI18nKeys.Settings)}
+              {t(BasicI18nKeys.Settings)}
             </h3>
             <p className="dial-tiny-text mt-1 text-secondary">
-              {t(QuickAppEditorI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings)}
+              {t(ApplicationEditorI18nKeys.StartersSettingsRequireStarter)}
             </p>
           </div>
 
           <Input
             labelProps={{
-              label: t(QuickAppEditorI18nKeys.IntroMessage),
+              label: t(ApplicationEditorI18nKeys.StartersIntroMessage),
               className: SETTING_LABEL_CLASS_NAME,
             }}
-            placeholder={t(QuickAppEditorI18nKeys.EnterIntroText)}
+            placeholder={t(ApplicationEditorI18nKeys.StartersIntroMessagePlaceholder)}
             value={draft.introText ?? ''}
             onChange={handleIntroTextChange}
             disabled={isSettingsDisabled}
@@ -262,15 +260,15 @@ const ConversationStartersModal: FC<ConversationStartersModalProps> = ({
             onChange={handleChatInputDisabledChange}
             disabled={isSettingsDisabled}
             labelProps={{
-              label: t(QuickAppEditorI18nKeys.RequireStarterToStartNewChat),
+              label: t(ApplicationEditorI18nKeys.StartersRequireStarter),
               caption: settingsHint,
             }}
-            caption={t(QuickAppEditorI18nKeys.RequireStarterToStartNewChatDescription)}
+            caption={t(ApplicationEditorI18nKeys.StartersRequireStarterDescription)}
           />
 
           <RadioGroup
             labelProps={{
-              label: t(QuickAppEditorI18nKeys.WhenStarterIsSelected),
+              label: t(ApplicationEditorI18nKeys.StartersWhenSelected),
               className: SETTING_LABEL_CLASS_NAME,
               caption: settingsHint,
             }}

@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { click, getButton, typeInto } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
 
-import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
 
 import ConversationStartersModal from '../ConversationStartersModal';
@@ -52,9 +52,6 @@ interface MockRadioGroupProps {
   onChange: (value: string) => void;
 }
 
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({ language: 'en', t: (key: string) => key }),
-}));
 vi.mock('@epam/ai-dial-ui-kit', () => ({
   ButtonAppearance: { Link: 'link', Ghost: 'ghost' },
   ButtonVariant: {
@@ -156,18 +153,18 @@ const getInputs = (name: string) => [
   ...dom.container.querySelectorAll<HTMLInputElement>(`input[aria-label="${name}"]`),
 ];
 
-const getTitleInputs = () => getInputs(QuickAppEditorI18nKeys.ButtonLabel);
-const getPromptInputs = () => getInputs(QuickAppEditorI18nKeys.PromptToSendInChat);
+const getTitleInputs = () => getInputs(ApplicationEditorI18nKeys.StartersButtonLabel);
+const getPromptInputs = () => getInputs(ApplicationEditorI18nKeys.StartersPromptPlaceholder);
 const getDeleteButtons = () => [
   ...dom.container.querySelectorAll<HTMLButtonElement>(
-    `button[aria-label="${QuickAppEditorI18nKeys.DeleteStarter}"]`,
+    `button[aria-label="${ApplicationEditorI18nKeys.StartersDelete}"]`,
   ),
 ];
 const getSwitch = () =>
   dom.container.querySelector(
-    `[role="switch"][aria-label="${QuickAppEditorI18nKeys.RequireStarterToStartNewChat}"]`,
+    `[role="switch"][aria-label="${ApplicationEditorI18nKeys.StartersRequireStarter}"]`,
   ) as HTMLButtonElement;
-const getIntroInput = () => getInputs(QuickAppEditorI18nKeys.IntroMessage)[0];
+const getIntroInput = () => getInputs(ApplicationEditorI18nKeys.StartersIntroMessage)[0];
 const getRadio = (name: string) => getInputs(name)[0];
 
 describe('ConversationStartersModal', () => {
@@ -181,17 +178,17 @@ describe('ConversationStartersModal', () => {
 
     expect(
       dom.container.querySelector(
-        `[role="dialog"][aria-label="${QuickAppEditorI18nKeys.SetUpConversationStarters}"]`,
+        `[role="dialog"][aria-label="${ApplicationEditorI18nKeys.StartersSetUp}"]`,
       ),
     ).toBeTruthy();
     expect(getTitleInputs().map((input) => input.value)).toEqual(['Visual hierarchy', '']);
     expect(getPromptInputs().map((input) => input.value)).toEqual(['Analyze', '']);
     expect(getIntroInput().value).toBe('Hi!');
     expect(getSwitch().getAttribute('aria-checked')).toBe('true');
-    expect(getRadio(QuickAppEditorI18nKeys.PopulatePromptInTheChatInput).checked).toBe(true);
+    expect(getRadio(ApplicationEditorI18nKeys.StartersPopulatePrompt).checked).toBe(true);
     expect(
       dom.container.querySelector(
-        `[role="radiogroup"][aria-label="${QuickAppEditorI18nKeys.WhenStarterIsSelected}"]`,
+        `[role="radiogroup"][aria-label="${ApplicationEditorI18nKeys.StartersWhenSelected}"]`,
       ),
     ).toBeTruthy();
   });
@@ -229,7 +226,7 @@ describe('ConversationStartersModal', () => {
     expect(counter?.className).toContain('text-error');
     expect(getTitleInputs()[0].getAttribute('aria-invalid')).toBe('true');
 
-    click(getButton(QuickAppEditorI18nKeys.Save));
+    click(getButton(ButtonsI18nKeys.Save));
     expect(onSave.mock.calls[0][0].starters[0].title).toBe(legacy);
   });
 
@@ -246,7 +243,7 @@ describe('ConversationStartersModal', () => {
 
   it('explains on each disabled setting that a complete starter is required', () => {
     renderModal();
-    const hint = QuickAppEditorI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings;
+    const hint = ApplicationEditorI18nKeys.StartersSettingsRequireStarter;
     const radioGroup = dom.container.querySelector('[role="radiogroup"]');
 
     expect(getIntroInput().title).toBe(hint);
@@ -265,11 +262,11 @@ describe('ConversationStartersModal', () => {
     renderModal();
 
     expect(dom.container.textContent).toContain(
-      QuickAppEditorI18nKeys.AtLeastOneStarterIsRequiredToEnableSettings,
+      ApplicationEditorI18nKeys.StartersSettingsRequireStarter,
     );
     expect(getIntroInput().disabled).toBe(true);
     expect(getSwitch().disabled).toBe(true);
-    expect(getRadio(QuickAppEditorI18nKeys.SendPromptToTheChat).disabled).toBe(true);
+    expect(getRadio(ApplicationEditorI18nKeys.StartersSendPrompt).disabled).toBe(true);
 
     typeInto(getTitleInputs()[0], 'Travel tips');
     expect(getIntroInput().disabled).toBe(true);
@@ -277,7 +274,7 @@ describe('ConversationStartersModal', () => {
     typeInto(getPromptInputs()[0], 'Can you suggest some travel destinations?');
     expect(getIntroInput().disabled).toBe(false);
     expect(getSwitch().disabled).toBe(false);
-    expect(getRadio(QuickAppEditorI18nKeys.SendPromptToTheChat).disabled).toBe(false);
+    expect(getRadio(ApplicationEditorI18nKeys.StartersSendPrompt).disabled).toBe(false);
 
     click(getSwitch());
     click(getDeleteButtons()[0]);
@@ -290,8 +287,8 @@ describe('ConversationStartersModal', () => {
     const { onSave, onClose } = renderModal();
 
     typeInto(getTitleInputs()[0], 'Unsaved');
-    click(getButton(CommonI18nKeys.Cancel));
-    click(getButton(QuickAppEditorI18nKeys.CloseConversationStarters));
+    click(getButton(ButtonsI18nKeys.Cancel));
+    click(getButton(ApplicationEditorI18nKeys.StartersClose));
 
     expect(onClose).toHaveBeenCalledTimes(2);
     expect(onSave).not.toHaveBeenCalled();
@@ -304,8 +301,8 @@ describe('ConversationStartersModal', () => {
     typeInto(getPromptInputs()[0], 'Suggest destinations');
     typeInto(getIntroInput(), 'Hi!');
     click(getSwitch());
-    click(getRadio(QuickAppEditorI18nKeys.PopulatePromptInTheChatInput));
-    click(getButton(QuickAppEditorI18nKeys.Save));
+    click(getRadio(ApplicationEditorI18nKeys.StartersPopulatePrompt));
+    click(getButton(ButtonsI18nKeys.Save));
 
     expect(onSave).toHaveBeenCalledWith({
       starters: [
@@ -385,7 +382,7 @@ describe('ConversationStartersModal', () => {
       expect(handles).toHaveLength(4);
       expect(
         handles.every(
-          (handle) => handle.getAttribute('aria-label') === QuickAppEditorI18nKeys.ReorderStarter,
+          (handle) => handle.getAttribute('aria-label') === ApplicationEditorI18nKeys.StartersReorder,
         ),
       ).toBe(true);
       expect(handles[3].disabled || handles[3].getAttribute('aria-disabled') === 'true').toBe(true);
@@ -403,7 +400,7 @@ describe('ConversationStartersModal', () => {
 
       expect(titles()).toEqual(['B', 'A', 'C', '']);
 
-      click(getButton(QuickAppEditorI18nKeys.Save));
+      click(getButton(ButtonsI18nKeys.Save));
       expect(onSave.mock.calls[0][0].starters.map(({ id }: { id: string }) => id)).toEqual([
         'b',
         'a',
@@ -420,13 +417,13 @@ describe('ConversationStartersModal', () => {
       await pressKey(handle, 'Space');
       await pressKey(handle, 'ArrowUp');
       // The popup's own dismissal (Escape / outside click / ×) is ignored while a drag is active.
-      click(getButton(QuickAppEditorI18nKeys.CloseConversationStarters));
+      click(getButton(ApplicationEditorI18nKeys.StartersClose));
       await pressKey(handle, 'Escape');
 
       expect(titles()).toEqual(['A', 'B', 'C', '']);
       expect(onClose).not.toHaveBeenCalled();
 
-      click(getButton(QuickAppEditorI18nKeys.CloseConversationStarters));
+      click(getButton(ApplicationEditorI18nKeys.StartersClose));
       expect(onClose).toHaveBeenCalledTimes(1);
     });
 
@@ -457,10 +454,10 @@ describe('ConversationStartersModal', () => {
       );
 
       expect(controls).toEqual([
-        QuickAppEditorI18nKeys.ReorderStarter,
-        QuickAppEditorI18nKeys.ButtonLabel,
-        QuickAppEditorI18nKeys.PromptToSendInChat,
-        QuickAppEditorI18nKeys.DeleteStarter,
+        ApplicationEditorI18nKeys.StartersReorder,
+        ApplicationEditorI18nKeys.StartersButtonLabel,
+        ApplicationEditorI18nKeys.StartersPromptPlaceholder,
+        ApplicationEditorI18nKeys.StartersDelete,
       ]);
       expect(dom.container.querySelector('[class*="scale-x"]')).toBeNull();
       expect(
@@ -476,7 +473,7 @@ describe('ConversationStartersModal', () => {
   it('saves the original values when nothing was edited', () => {
     const { onSave } = renderModal();
 
-    click(getButton(QuickAppEditorI18nKeys.Save));
+    click(getButton(ButtonsI18nKeys.Save));
 
     expect(onSave).toHaveBeenCalledWith(emptyValues);
   });

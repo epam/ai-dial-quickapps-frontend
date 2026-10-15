@@ -3,6 +3,7 @@ import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { CatalogI18nKeys } from '@/constants/translation-keys';
 import { useEntityDetails, type UseEntityDetailsResult } from '@/hooks/use-entity-details';
 import { setupTestRoot } from '@/test-utils/test-root';
 import type { DialSkill } from '@/types/dial-entities';
@@ -18,14 +19,6 @@ const { deploymentsApi, skillsApi, dataContext, appContext } = vi.hoisted(() => 
 vi.mock('@/utils/chat-api-client', () => ({ deploymentsApi, skillsApi }));
 vi.mock('@/context/DataContext', () => ({ useDataContext: () => dataContext }));
 vi.mock('@/context/AppContext', () => ({ useAppContext: () => appContext }));
-// Prefixes every text, so a catalog English default that slips through shows.
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({
-    language: 'en',
-    t: (key: string, options?: Record<string, string>) =>
-      `tr:${key.replace(/\{\{(\w+)\}\}/g, (_, name: string) => options?.[name] ?? '')}`,
-  }),
-}));
 
 const item = (id: string, type: CatalogEntityType, name = id): CatalogItem => ({
   id,
@@ -139,9 +132,13 @@ describe('useEntityDetails', () => {
     });
 
     expect(latest.status).toBe(DetailsStatus.Ready);
-    expect(sectionTitles()).toEqual(['tr:Specification']);
+    expect(sectionTitles()).toEqual([CatalogI18nKeys.DetailsOverviewSpecification]);
     const labels = latest.details?.overview?.sections?.[0]?.specs.map((spec) => spec.label);
-    expect(labels).toEqual(['tr:Authentication', 'tr:Provider', 'tr:Hosted by']);
+    expect(labels).toEqual([
+      CatalogI18nKeys.DetailsAuthentication,
+      CatalogI18nKeys.DetailsOverviewProvider,
+      CatalogI18nKeys.DetailsOverviewHostedBy,
+    ]);
     expect(latest.details?.tools?.tools.map((tool) => tool.name)).toEqual(['edit_design']);
     // Connect: the toolset's MCP endpoint, built on the configured DIAL Core URL.
     expect(JSON.stringify(latest.details?.api)).toContain('https://core.example.com');
@@ -152,8 +149,12 @@ describe('useEntityDetails', () => {
 
     expect(latest.status).toBe(DetailsStatus.Ready);
     expect(latest.details?.pricing?.prices?.length).toBe(2);
-    expect(latest.details?.limits?.groups[0]?.label).toBe('tr:Token limits');
-    expect(latest.details?.limits?.groups[0]?.rows[0]?.label).toBe('tr:Today');
+    expect(latest.details?.limits?.groups[0]?.label).toBe(
+      CatalogI18nKeys.DetailsLimitsTokenGroupLabel,
+    );
+    expect(latest.details?.limits?.groups[0]?.rows[0]?.label).toBe(
+      CatalogI18nKeys.DetailsLimitsToday,
+    );
   });
 
   it('keeps a model’s details when its limits fail', async () => {
@@ -173,7 +174,9 @@ describe('useEntityDetails', () => {
     expect(latest.details?.promptContent?.content).not.toContain('name: research');
     expect(latest.details?.promptContent?.description).toBe('Finds sources');
     const specs = latest.details?.overview?.sections?.flatMap((section) => section.specs);
-    expect(specs?.find((spec) => spec.label === 'tr:Author')?.value).toBe('Ann');
+    expect(specs?.find((spec) => spec.label === CatalogI18nKeys.DetailsSkillAuthor)?.value).toBe(
+      'Ann',
+    );
   });
 
   it('downloads the bytes and MIME type of a picked skill file', async () => {

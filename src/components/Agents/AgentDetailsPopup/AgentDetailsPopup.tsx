@@ -3,19 +3,18 @@ import { DIAL_ICON_SIZE, DIAL_KIT_ICON_STROKE, GhostButton } from '@epam/ai-dial
 import { IconKey } from '@tabler/icons-react';
 import { FC, useCallback, useMemo } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationCredentialsI18nKeys, ApplicationEditorI18nKeys, BasicI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { useApplicationAuthentication } from '@/hooks/use-application-authentication';
 import { useEntityDetails } from '@/hooks/use-entity-details';
 import { useScopeLabels } from '@/hooks/use-scope-labels';
 import { useSearchParams } from '@/hooks/use-search-params';
-import { useTranslation } from '@/hooks/use-translation';
+import { useTranslation } from 'react-i18next';
 import type { DialModel } from '@/types/dial-entities';
 import { DialEntityType } from '@/types/dial-entities';
 import { type AddOnAppTab, AppDetailsTab } from '@/types/entity-details';
 import type { DialAppTransportType } from '@/types/quick-apps';
-import { Translation } from '@/types/translation';
 import { getCatalogFolder } from '@/utils/entity-scope';
 import { getAddOnDisplay } from '@/utils/get-add-on-display';
 import { canChooseAgentTransport, mapAgentToCatalogItem } from '@/utils/map-agent-to-catalog-item';
@@ -53,7 +52,8 @@ export const AgentDetailsPopup: FC<AgentDetailsPopupProps> = ({
   onConfigure,
   onClose,
 }) => {
-  const { t, language } = useTranslation(Translation.QuickAppEditor);
+  const { t, i18n } = useTranslation();
+  const language = i18n.resolvedLanguage ?? i18n.language;
   const { settings } = useAppContext();
   const { userBucket, modelsMap } = useDataContext();
   const searchParams = useSearchParams();
@@ -112,7 +112,7 @@ export const AgentDetailsPopup: FC<AgentDetailsPopupProps> = ({
     return [
       {
         id: AppDetailsTab.Settings,
-        label: t(QuickAppEditorI18nKeys.Settings),
+        label: t(BasicI18nKeys.Settings),
         content: (
           <AgentSettingsTab
             agentId={agentId}
@@ -127,7 +127,7 @@ export const AgentDetailsPopup: FC<AgentDetailsPopupProps> = ({
 
   const actions = isAuthenticationRequired && (
     <GhostButton
-      label={t(QuickAppEditorI18nKeys.ApplicationCredentials)}
+      label={t(ApplicationCredentialsI18nKeys.Title)}
       iconBefore={<IconKey size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} />}
       onClick={handleRequestCredentials}
     />
@@ -145,9 +145,9 @@ export const AgentDetailsPopup: FC<AgentDetailsPopupProps> = ({
       appTabs={appTabs}
       detailsStatus={status}
       onRetry={retry}
-      unavailableText={agent == null ? t(QuickAppEditorI18nKeys.AgentUnavailable) : undefined}
+      unavailableText={agent == null ? t(ApplicationEditorI18nKeys.AgentsUnavailable) : undefined}
       isReadonly={isReadonly}
-      deleteLabel={t(QuickAppEditorI18nKeys.RemoveAddOnFromApp)}
+      deleteLabel={t(ButtonsI18nKeys.Delete)}
       onDelete={handleDelete}
       onClose={onClose}
     />

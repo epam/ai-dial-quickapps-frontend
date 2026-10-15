@@ -4,8 +4,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { setupTestRoot } from '@/test-utils/test-root';
 
 import InstructionsSection from '../InstructionsSection';
+import { ApplicationEditorI18nKeys, ChatSettingsI18nKeys } from '@/constants/translation-keys';
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/ThemeContext', () => ({
   useThemeContext: () => ({ currentTheme: { id: 'light' } }),
 }));
@@ -46,16 +46,23 @@ describe('InstructionsSection', () => {
   it('renders the instructions editor in a standalone section', async () => {
     await act(async () => dom.root.render(<TestForm />));
 
-    expect(dom.container.textContent).toContain('Instructions');
-    const heading = dom.container.querySelector('section[aria-label="Instructions"] > h2');
+    expect(dom.container.textContent).toContain(ApplicationEditorI18nKeys.InstructionsLabel);
+    const instructionsSelector = `section[aria-label="${ApplicationEditorI18nKeys.InstructionsLabel}"]`;
+    const heading = dom.container.querySelector(`${instructionsSelector} > h2`);
     expect(heading?.className).toContain('text-primary');
-    expect(heading?.querySelector('.dial-h3-text')?.textContent).toBe('Instructions');
+    expect(heading?.querySelector('.dial-h3-text')?.textContent).toBe(
+      ApplicationEditorI18nKeys.InstructionsLabel,
+    );
     expect(heading?.textContent).toContain('*');
-    expect(dom.container.textContent).not.toContain('Orchestrator');
-    expect(dom.container.textContent).not.toContain('Model');
-    expect(dom.container.textContent).not.toContain('Temperature');
-    expect(dom.container.textContent).not.toContain('Process files');
-    const instructionsSection = dom.container.querySelector('section[aria-label="Instructions"]');
+    expect(dom.container.textContent).not.toContain(
+      ApplicationEditorI18nKeys.OrchestratorDefaultModel,
+    );
+    expect(dom.container.textContent).not.toContain(ApplicationEditorI18nKeys.OrchestratorModel);
+    expect(dom.container.textContent).not.toContain(ChatSettingsI18nKeys.TemperatureLabel);
+    expect(dom.container.textContent).not.toContain(
+      ApplicationEditorI18nKeys.AdvancedSettingsProcessFiles,
+    );
+    const instructionsSection = dom.container.querySelector(instructionsSelector);
     expect(instructionsSection?.className).toContain('rounded-[20px]');
     expect(instructionsSection?.className).toContain('bg-layer-raised');
     expect(instructionsSection?.className).toContain('shadow-md');

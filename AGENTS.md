@@ -15,11 +15,11 @@ lives under `src/`:
 - `context/` — React context providers (`AppContext`, `DataContext`, `AuthContext`, `ThemeContext`).
 - `form/` — `react-hook-form` schema definitions and form data builders (validated with `zod`).
 - `hooks/` — Custom React hooks.
-- `i18n/` — i18next setup and locale JSON files (namespaces: `quickAppEditor`, `common`).
+- `i18n/` — i18next setup (`config.ts`, same as ai-dial-chat), typed resources (`i18next.d.ts`) and the one locale file `locales/en.json` (default `translation` namespace).
 - `types/` — TypeScript types, interfaces, and enums.
 - `utils/` — Pure utility functions, including the chat-api client layer (`chat-api-client.ts`,
   `chat-api-fetch.ts`, `auth-api.ts`, `dial-client.ts`, `dial-files-api.ts`, `user-config.ts`).
-- `constants/` — App-wide constants including i18n key enums.
+- `constants/` — App-wide constants including the i18n key enums (`translation-keys.ts`).
 
 Use the `@/*` path alias (resolves to `src/`) for all imports that would otherwise require multiple `../` traversals.
 
@@ -113,7 +113,7 @@ Place enums in `src/types/` or `src/constants/`.
 
 All UI must support Arabic (`ar`) and any other right-to-left locale. Arabic changes the visual direction of the entire UI.
 
-The `<html dir>` attribute is set dynamically from `src/components/I18nProvider/I18nProvider.tsx` (mounted in `main.tsx`) through `i18n.dir()`. Only English ships today, so `dir` is `ltr` in production, but every UI change must still work in RTL. See `.claude/rules/rtl.md` for the full ruleset — it applies to every file — and the `i18n` spec for what ships.
+The `<html lang/dir>` attributes are set dynamically from `src/i18n/config.ts` (imported by `main.tsx`) from i18next's resolved language and its `RTL_LANGUAGES` set, as in ai-dial-chat. Only English ships today, so `dir` is `ltr` in production, but every UI change must still work in RTL. See `.claude/rules/rtl.md` for the full ruleset — it applies to every file — and the `i18n` spec for what ships.
 
 ## @epam/ai-dial-ui-kit MCP tools
 

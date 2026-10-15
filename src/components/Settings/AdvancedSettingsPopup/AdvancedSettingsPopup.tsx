@@ -1,10 +1,9 @@
 import { FC, memo, useCallback, useId, useState } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys, ButtonsI18nKeys, ChatSettingsI18nKeys } from '@/constants/translation-keys';
 import { isValidMaxInputAttachments } from '@/form/quickApp2Form';
-import { useTranslation } from '@/hooks/use-translation';
+import { useTranslation } from 'react-i18next';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
-import { Translation } from '@/types/translation';
 import { getTemperatureScaleLabelKey } from '@/utils/application';
 import { snapToStep } from '@/utils/snap-to-step';
 import { MAX_TEMPERATURE, MIN_TEMPERATURE, TEMPERATURE_STEP } from '@/constants/quick-apps';
@@ -46,7 +45,7 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
   onSave,
   onClose,
 }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation();
   const maxAttachmentsId = useId();
   // The draft is seeded once per mount; SettingsSection remounts the popup on every open.
   const [draft, setDraft] = useState<AdvancedSettingsValues>(advancedSettings);
@@ -129,8 +128,8 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
 
   const maxAttachmentsErrorKey =
     draft.maxInputAttachments == null || draft.maxInputAttachments === ''
-      ? QuickAppEditorI18nKeys.MaxAttachmentsRequired
-      : QuickAppEditorI18nKeys.MaxAttachmentsInvalid;
+      ? ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachmentsRequired
+      : ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachmentsInvalid;
 
   return (
     <Popup
@@ -138,15 +137,15 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
       size={PopupSize.Sm}
       // The design is ~586px wide: between the kit's Sm (400px) and Md (800px) presets.
       className="md:max-w-[586px]"
-      header={t(QuickAppEditorI18nKeys.AdvancedSettings)}
-      closeAriaLabel={t(QuickAppEditorI18nKeys.CloseAdvancedSettings)}
+      header={t(ApplicationEditorI18nKeys.AdvancedSettingsTitle)}
+      closeAriaLabel={t(ApplicationEditorI18nKeys.AdvancedSettingsClose)}
       headerDivider
       footerDivider
       onClose={onClose}
       bodyClassName="min-h-[min(30rem,60vh)] max-w-full px-6 py-4"
       additionalButtons={[
         {
-          label: t(QuickAppEditorI18nKeys.Close),
+          label: t(ButtonsI18nKeys.Close),
           onClick: onClose,
           variant: ButtonVariant.Primary,
           appearance: ButtonAppearance.Link,
@@ -154,7 +153,7 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
       ]}
       mainButtons={[
         {
-          label: t(QuickAppEditorI18nKeys.Save),
+          label: t(ButtonsI18nKeys.Save),
           variant: ButtonVariant.Neutral,
           onClick: handleSave,
         },
@@ -163,7 +162,7 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
       <div className="flex flex-col gap-6 text-start">
         {isTemperatureAvailable && (
           <Slider
-            labelProps={{ label: t(QuickAppEditorI18nKeys.Temperature) }}
+            labelProps={{ label: t(ChatSettingsI18nKeys.TemperatureLabel) }}
             value={draft.temperature}
             min={MIN_TEMPERATURE}
             max={MAX_TEMPERATURE}
@@ -173,7 +172,7 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
             formatValue={formatTemperature}
             rightContent={
               <NumberInput
-                aria-label={t(QuickAppEditorI18nKeys.TemperatureValue)}
+                aria-label={t(ApplicationEditorI18nKeys.AdvancedSettingsTemperatureValue)}
                 value={temperatureText ?? draft.temperature.toFixed(1)}
                 min={MIN_TEMPERATURE}
                 max={MAX_TEMPERATURE}
@@ -191,15 +190,15 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
         <NumberInput
           id={maxAttachmentsId}
           labelProps={{
-            label: t(QuickAppEditorI18nKeys.MaxAttachmentsUserCanAdd),
+            label: t(ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachments),
             htmlFor: maxAttachmentsId,
           }}
           value={draft.maxInputAttachments?.toString() ?? ''}
           onChange={handleMaxAttachmentsChange}
           integer
           min={1}
-          caption={t(QuickAppEditorI18nKeys.MaxAttachmentsHint)}
-          placeholder={t(QuickAppEditorI18nKeys.MaxAttachmentsPlaceholder)}
+          caption={t(ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachmentsHint)}
+          placeholder={t(ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachmentsPlaceholder)}
           invalid={hasMaxAttachmentsError}
           error={hasMaxAttachmentsError ? t(maxAttachmentsErrorKey) : undefined}
         />
@@ -207,23 +206,23 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
         <Switch
           isOn={draft.timestamp}
           onChange={handleTimestampChange}
-          labelProps={{ label: t(QuickAppEditorI18nKeys.TimeAwareness) }}
-          caption={t(QuickAppEditorI18nKeys.TimeAwarenessDescription)}
+          labelProps={{ label: t(ApplicationEditorI18nKeys.AdvancedSettingsTimeAwareness) }}
+          caption={t(ApplicationEditorI18nKeys.AdvancedSettingsTimeAwarenessDescription)}
         />
 
         <Switch
           isOn={draft.fileTools}
           onChange={handleFileToolsChange}
-          labelProps={{ label: t(QuickAppEditorI18nKeys.BuiltInFileTools) }}
-          caption={t(QuickAppEditorI18nKeys.BuiltInFileToolsDescription)}
+          labelProps={{ label: t(ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileTools) }}
+          caption={t(ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileToolsDescription)}
         />
 
         {isProcessLargeFilesAvailable && (
           <Switch
             isOn={draft.processLargeFiles}
             onChange={handleProcessLargeFilesChange}
-            labelProps={{ label: t(QuickAppEditorI18nKeys.AllowOrchestratorToProcessFiles) }}
-            caption={t(QuickAppEditorI18nKeys.ProcessFilesOnDemandDescription)}
+            labelProps={{ label: t(ApplicationEditorI18nKeys.AdvancedSettingsProcessFiles) }}
+            caption={t(ApplicationEditorI18nKeys.AdvancedSettingsProcessFilesDescription)}
           />
         )}
 
@@ -231,8 +230,8 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
           <Switch
             isOn={draft.codeInterpreter}
             onChange={handleCodeInterpreterChange}
-            labelProps={{ label: t(QuickAppEditorI18nKeys.CodeInterpreter) }}
-            caption={t(QuickAppEditorI18nKeys.CodeInterpreterInfo)}
+            labelProps={{ label: t(ApplicationEditorI18nKeys.CodeInterpreterTitle) }}
+            caption={t(ApplicationEditorI18nKeys.CodeInterpreterDescription)}
           />
         )}
 
@@ -240,8 +239,8 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
           <Switch
             isOn={draft.addAttachment}
             onChange={handleAddAttachmentChange}
-            labelProps={{ label: t(QuickAppEditorI18nKeys.AddAttachment) }}
-            caption={t(QuickAppEditorI18nKeys.AddAttachmentDescription)}
+            labelProps={{ label: t(ApplicationEditorI18nKeys.AdvancedSettingsAddAttachment) }}
+            caption={t(ApplicationEditorI18nKeys.AdvancedSettingsAddAttachmentDescription)}
           />
         )}
 
@@ -249,8 +248,8 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
           <Switch
             isOn={draft.webFetch}
             onChange={handleWebFetchChange}
-            labelProps={{ label: t(QuickAppEditorI18nKeys.WebFetch) }}
-            caption={t(QuickAppEditorI18nKeys.WebFetchDescription)}
+            labelProps={{ label: t(ApplicationEditorI18nKeys.AdvancedSettingsWebFetch) }}
+            caption={t(ApplicationEditorI18nKeys.AdvancedSettingsWebFetchDescription)}
           />
         )}
       </div>

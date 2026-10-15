@@ -1,13 +1,12 @@
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { FC, useCallback, useMemo } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
 import { useDataContext } from '@/context/DataContext';
 import { useEntityDetails } from '@/hooks/use-entity-details';
 import { useScopeLabels } from '@/hooks/use-scope-labels';
-import { useTranslation } from '@/hooks/use-translation';
+import { useTranslation } from 'react-i18next';
 import type { DialSkill } from '@/types/dial-entities';
-import { Translation } from '@/types/translation';
 import { getCatalogFolder, getEntityScopeInfo } from '@/utils/entity-scope';
 import { mapSkillToCatalogItem } from '@/utils/map-skill-to-catalog-item';
 
@@ -37,7 +36,7 @@ export const SkillDetailsPopup: FC<SkillDetailsPopupProps> = ({
   onRemove,
   onClose,
 }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation();
   const { userBucket } = useDataContext();
   const scopeLabels = useScopeLabels();
 
@@ -71,9 +70,9 @@ export const SkillDetailsPopup: FC<SkillDetailsPopupProps> = ({
       detailsStatus={status}
       onRetry={retry}
       onLoadSkillDetailsFile={onLoadSkillDetailsFile}
-      unavailableText={skill == null ? t(QuickAppEditorI18nKeys.SkillUnavailable) : undefined}
+      unavailableText={skill == null ? t(ApplicationEditorI18nKeys.SkillsUnavailable) : undefined}
       isReadonly={isReadonly}
-      deleteLabel={t(QuickAppEditorI18nKeys.RemoveAddOnFromApp)}
+      deleteLabel={t(ButtonsI18nKeys.Delete)}
       onDelete={handleDelete}
       onClose={onClose}
     />

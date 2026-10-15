@@ -9,6 +9,13 @@ import type { CatalogPickerModalProps } from '@/components/common/CatalogPickerM
 import { DialEntityType } from '@/types/dial-entities';
 import type { DialModel } from '@/types/dial-entities';
 
+import {
+  ApplicationEditorI18nKeys,
+  BasicI18nKeys,
+  CatalogI18nKeys,
+  DeploymentSelectorI18nKeys,
+} from '@/constants/translation-keys';
+
 import { ModelCatalogModal } from '../ModelCatalogModal';
 
 const USER_BUCKET = 'user-bucket-123';
@@ -19,7 +26,6 @@ const { shell } = vi.hoisted(() => ({
 
 let models: DialModel[] = [];
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({ modelsWithFavorites: models, userBucket: USER_BUCKET }),
 }));
@@ -139,12 +145,12 @@ describe('ModelCatalogModal', () => {
       render();
 
       expect(dom.container.querySelector('[role="grid"]')?.getAttribute('aria-label')).toBe(
-        'Models catalog',
+        ApplicationEditorI18nKeys.OrchestratorCatalogTitle,
       );
       expect(getRows()).toEqual([
-        'Gemini 1.0.3 | Organization',
-        'Gemini 2.0.0 | Organization',
-        'Anthropic Claude 1.0.0 | Personal',
+        `Gemini 1.0.3 | ${BasicI18nKeys.Organization}`,
+        `Gemini 2.0.0 | ${BasicI18nKeys.Organization}`,
+        `Anthropic Claude 1.0.0 | ${CatalogI18nKeys.FolderPersonal}`,
       ]);
     });
 
@@ -153,12 +159,12 @@ describe('ModelCatalogModal', () => {
 
       const props = shell.props as CatalogPickerModalProps;
       expect(props.labels).toEqual({
-        title: 'Change model',
-        catalog: 'Models catalog',
-        search: 'Search models…',
-        loading: 'Loading models…',
-        failedToLoad: 'Failed to load models',
-        empty: 'N/A',
+        title: ApplicationEditorI18nKeys.OrchestratorChangeModel,
+        catalog: ApplicationEditorI18nKeys.OrchestratorCatalogTitle,
+        search: ApplicationEditorI18nKeys.OrchestratorSearchPlaceholder,
+        loading: DeploymentSelectorI18nKeys.Loading,
+        failedToLoad: DeploymentSelectorI18nKeys.Error,
+        empty: BasicI18nKeys.NotAvailable,
       });
       expect(props.onClose).toBe(onClose);
     });
@@ -224,7 +230,7 @@ describe('ModelCatalogModal', () => {
       render();
       click(getAddButton());
 
-      expect(getRows()).toEqual(['Anthropic Claude 1.0.0 | Personal']);
+      expect(getRows()).toEqual([`Anthropic Claude 1.0.0 | ${CatalogI18nKeys.FolderPersonal}`]);
       expect(getAddButton()?.disabled).toBe(false);
       expect(onConfirm).toHaveBeenCalledWith(geminiV2.id);
     });

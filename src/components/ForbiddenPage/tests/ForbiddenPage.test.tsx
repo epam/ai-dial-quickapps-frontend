@@ -1,14 +1,13 @@
 import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CommonI18nKeys } from '@/constants/i18n';
+import { AuthI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
 import { setupTestRoot } from '@/test-utils/test-root';
 
 import ForbiddenPage from '../ForbiddenPage';
 
 const logout = vi.fn<() => Promise<void>>();
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/AuthContext', () => ({
   useAuthContext: () => ({ logout }),
 }));
@@ -38,10 +37,10 @@ beforeEach(() => {
 
 describe('ForbiddenPage', () => {
   it('shows the title as a heading, the description and a single "Log out" button', () => {
-    expect(dom.container.querySelector('h1')?.textContent).toBe(CommonI18nKeys.ForbiddenTitle);
-    expect(dom.container.textContent).toContain(CommonI18nKeys.ForbiddenDescription);
+    expect(dom.container.querySelector('h1')?.textContent).toBe(AuthI18nKeys.ForbiddenTitle);
+    expect(dom.container.textContent).toContain(AuthI18nKeys.ForbiddenDescription);
     expect(dom.container.querySelectorAll('button')).toHaveLength(1);
-    expect(getButton().textContent).toBe(CommonI18nKeys.ForbiddenAction);
+    expect(getButton().textContent).toBe(ButtonsI18nKeys.LogOut);
   });
 
   it('hides the badge icon from assistive technology', () => {
@@ -56,7 +55,7 @@ describe('ForbiddenPage', () => {
 
     expect(logout).toHaveBeenCalledTimes(1);
     expect(getButton().disabled).toBe(true);
-    expect(getButton().textContent).toBe(CommonI18nKeys.ForbiddenActionPending);
+    expect(getButton().textContent).toBe(AuthI18nKeys.LoggingOutPending);
 
     await act(async () => pending.resolve());
   });
@@ -69,6 +68,6 @@ describe('ForbiddenPage', () => {
     await act(async () => pending.reject(new Error('network')));
 
     expect(getButton().disabled).toBe(false);
-    expect(getButton().textContent).toBe(CommonI18nKeys.ForbiddenAction);
+    expect(getButton().textContent).toBe(ButtonsI18nKeys.LogOut);
   });
 });

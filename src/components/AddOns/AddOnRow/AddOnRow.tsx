@@ -8,9 +8,8 @@ import { IconPlus } from '@tabler/icons-react';
 import { FC, MouseEvent, ReactNode } from 'react';
 
 import { SectionRow } from '@/components/common/SectionRow/SectionRow';
-import { CommonI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/use-translation';
-import { Translation } from '@/types/translation';
+import { ButtonsI18nKeys } from '@/constants/translation-keys';
+import { useTranslation } from 'react-i18next';
 
 export interface AddOnRowProps {
   label: string;
@@ -35,7 +34,7 @@ export const AddOnRow: FC<AddOnRowProps> = ({
   children,
   onAdd,
 }) => {
-  const { t } = useTranslation(Translation.Common);
+  const { t } = useTranslation();
 
   const handleAdd = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -52,7 +51,7 @@ export const AddOnRow: FC<AddOnRowProps> = ({
           iconBefore={
             actionIcon ?? <IconPlus size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} />
           }
-          label={actionLabel ?? t(CommonI18nKeys.Add)}
+          label={actionLabel ?? t(ButtonsI18nKeys.Add)}
           disabled={isAddDisabled}
           tooltipProps={addTooltip ? { tooltip: addTooltip } : undefined}
           onClick={handleAdd}

@@ -7,10 +7,9 @@ import {
 import { IconMessage, IconTrash } from '@tabler/icons-react';
 import { FC, useCallback, useEffect, useRef } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/use-translation';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
+import { useTranslation } from 'react-i18next';
 import type { StarterWithId } from '@/types/conversation-starters';
-import { Translation } from '@/types/translation';
 
 export interface ConversationStartersListProps {
   starters: StarterWithId[];
@@ -22,7 +21,7 @@ export const ConversationStartersList: FC<ConversationStartersListProps> = ({
   starters,
   onRemove,
 }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation();
   const listRef = useRef<HTMLUListElement>(null);
   // Set when a starter is removed, so focus lands on the list instead of being
   // lost with the removed button.
@@ -68,7 +67,7 @@ export const ConversationStartersList: FC<ConversationStartersListProps> = ({
             <GhostIconButton
               size={ElementSize.Small}
               icon={<IconTrash size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} />}
-              aria-label={t(QuickAppEditorI18nKeys.RemoveStarter, {
+              aria-label={t(ApplicationEditorI18nKeys.StartersRemove, {
                 name: starter.title.trim() || starter.text.trim(),
               })}
               className="shrink-0 self-center opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100"

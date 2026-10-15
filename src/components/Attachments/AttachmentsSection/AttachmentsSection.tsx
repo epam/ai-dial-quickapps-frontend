@@ -1,10 +1,9 @@
 import { FC, memo, useCallback, useId } from 'react';
 
 import { ATTACHMENT_TYPE_SUGGESTIONS } from '@/constants/attachment-types';
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/use-translation';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
+import { useTranslation } from 'react-i18next';
 import { SectionRowVariant } from '@/types/section-row';
-import { Translation } from '@/types/translation';
 
 import { SectionRow } from '@/components/common/SectionRow/SectionRow';
 
@@ -27,25 +26,25 @@ const AttachmentsSection: FC<AttachmentsSectionProps> = ({
   onEnabledChange,
   onChange,
 }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation();
   const inputId = useId();
 
   const getRemoveTagLabel = useCallback(
-    (type: string) => t(QuickAppEditorI18nKeys.RemoveAttachmentType, { type }),
+    (type: string) => t(ApplicationEditorI18nKeys.AttachmentsRemoveType, { type }),
     [t],
   );
 
   return (
     <SectionRow
-      title={t(QuickAppEditorI18nKeys.Attachments)}
-      description={t(QuickAppEditorI18nKeys.AttachmentsDescription)}
+      title={t(ApplicationEditorI18nKeys.AttachmentsTitle)}
+      description={t(ApplicationEditorI18nKeys.AttachmentsDescription)}
       variant={SectionRowVariant.Setting}
       action={
         <Switch
           isOn={isEnabled}
           disabled={isReadonly}
           onChange={onEnabledChange}
-          aria-label={t(QuickAppEditorI18nKeys.Attachments)}
+          aria-label={t(ApplicationEditorI18nKeys.AttachmentsTitle)}
         />
       }
     >
@@ -55,12 +54,12 @@ const AttachmentsSection: FC<AttachmentsSectionProps> = ({
           suggestions={ATTACHMENT_TYPE_SUGGESTIONS}
           value={value}
           onChange={onChange}
-          labelProps={{ label: t(QuickAppEditorI18nKeys.AttachmentTypes), required: true }}
-          placeholder={t(QuickAppEditorI18nKeys.EnterAttachmentTypes)}
-          error={error ? t(error) : undefined}
+          labelProps={{ label: t(ApplicationEditorI18nKeys.AttachmentsTypesLabel), required: true }}
+          placeholder={t(ApplicationEditorI18nKeys.AttachmentsTypesPlaceholder)}
+          error={error ? t(error as ApplicationEditorI18nKeys) : undefined}
           invalid={!!error}
           disabled={isReadonly}
-          tagListLabel={t(QuickAppEditorI18nKeys.AttachmentTypes)}
+          tagListLabel={t(ApplicationEditorI18nKeys.AttachmentsTypesLabel)}
           getRemoveTagLabel={getRemoveTagLabel}
         />
       ) : undefined}

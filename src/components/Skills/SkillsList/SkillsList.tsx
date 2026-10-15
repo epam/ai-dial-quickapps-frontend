@@ -1,10 +1,9 @@
 import { FC, lazy, memo, Suspense, useCallback, useState } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { useDataContext } from '@/context/DataContext';
 import { useListRemoveFocus } from '@/hooks/use-list-remove-focus';
-import { useTranslation } from '@/hooks/use-translation';
-import { Translation } from '@/types/translation';
+import { useTranslation } from 'react-i18next';
 import { getEntityNameFromId } from '@/utils/api';
 
 import { AddOnListItem } from '@/components/common/AddOnListItem/AddOnListItem';
@@ -24,7 +23,7 @@ export interface SkillsListProps {
 
 /** The attached skills of the Skills row; each item opens that skill's details. */
 const SkillsList: FC<SkillsListProps> = ({ value, isReadonly, onRemove }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation();
   const { skillsMap } = useDataContext();
   const [openSkillId, setOpenSkillId] = useState<string | null>(null);
   // Delete removes the item that opened the popup, so focus lands on the list
@@ -57,8 +56,8 @@ const SkillsList: FC<SkillsListProps> = ({ value, isReadonly, onRemove }) => {
                 id={id}
                 name={name}
                 version={skill?.version}
-                detailsLabel={t(QuickAppEditorI18nKeys.AddOnDetails, { name })}
-                removeLabel={t(QuickAppEditorI18nKeys.RemoveAddOn, { name })}
+                detailsLabel={t(ApplicationEditorI18nKeys.AddOnsDetails, { name })}
+                removeLabel={t(ApplicationEditorI18nKeys.AddOnsRemove, { name })}
                 onClick={setOpenSkillId}
                 onRemove={isReadonly ? undefined : handleRemove}
               />

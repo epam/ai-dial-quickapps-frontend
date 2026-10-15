@@ -2,6 +2,7 @@ import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { AddOnCatalogModalProps } from '@/components/common/AddOnCatalogModal/AddOnCatalogModal';
+import { ApplicationEditorI18nKeys, CatalogI18nKeys } from '@/constants/translation-keys';
 import { setupTestRoot } from '@/test-utils/test-root';
 import { type DialToolset, ToolsetAuthType } from '@/types/dial-entities';
 
@@ -18,7 +19,6 @@ const FIGMA = makeToolset('toolsets/public/figma', 'Figma', {
 const JIRA = makeToolset('toolsets/public/jira', 'Jira');
 const HIDDEN = makeToolset('toolsets/public/.dial_folder', 'Hidden');
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({ toolsets: [FIGMA, JIRA, HIDDEN], userBucket: 'me' }),
 }));
@@ -59,13 +59,15 @@ describe('AddToolsetsModal', () => {
 
     const { labels } = captured.props as AddOnCatalogModalProps;
     expect(labels).toMatchObject({
-      title: 'Add toolset',
-      catalog: 'Toolsets catalog',
-      search: 'Search toolsets...',
-      empty: 'No toolsets available',
-      selectAll: 'Select all toolsets',
-      credentialsBadge: 'Authorize to use this toolset.',
+      title: ApplicationEditorI18nKeys.ToolsetsAdd,
+      catalog: ApplicationEditorI18nKeys.ToolsetsCatalogTitle,
+      search: ApplicationEditorI18nKeys.ToolsetsSearchPlaceholder,
+      loading: ApplicationEditorI18nKeys.ToolsetsLoading,
+      failedToLoad: ApplicationEditorI18nKeys.ToolsetsLoadError,
+      empty: ApplicationEditorI18nKeys.ToolsetsEmpty,
+      selectAll: ApplicationEditorI18nKeys.ToolsetsSelectAll,
+      credentialsBadge: CatalogI18nKeys.CredentialsBadgeLoggedOut,
     });
-    expect(labels.selectRow('Figma')).toBe('Select Figma');
+    expect(labels.selectRow('Figma')).toBe(ApplicationEditorI18nKeys.AddOnsSelect);
   });
 });

@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CatalogContentNodeType, type CatalogItem } from '@epam/ai-dial-catalog';
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ButtonsI18nKeys, CatalogI18nKeys, ChatI18nKeys } from '@/constants/translation-keys';
 import { click } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
 import { AppDetailsTab, DetailsStatus } from '@/types/entity-details';
@@ -17,7 +17,6 @@ const { appContext, previewChunk } = vi.hoisted(() => ({
   previewChunk: { pending: null as Promise<void> | null },
 }));
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/AppContext', () => ({ useAppContext: () => appContext }));
 // The canvas preview has its own tests; here it only marks where it renders.
 vi.mock('@/components/SkillFilePreview/SkillFilePreview', () => ({
@@ -99,7 +98,7 @@ describe('AddOnDetailsPopup — catalog layout', () => {
     render({ detailsStatus: DetailsStatus.Loading });
 
     const status = dialog().querySelector(
-      `[role="status"][aria-label="${QuickAppEditorI18nKeys.LoadingDetails}"]`,
+      `[role="status"][aria-label="${CatalogI18nKeys.DetailsLoading}"]`,
     );
     expect(status).not.toBeNull();
     expect(status?.parentElement?.querySelector('[role="tablist"]')).not.toBeNull();
@@ -113,9 +112,7 @@ describe('AddOnDetailsPopup — catalog layout', () => {
     } as unknown as CatalogItem;
     render({ entityType: CatalogEntityType.Toolset, item: toolset });
 
-    expect(
-      dialog().querySelector(`button[aria-label="${QuickAppEditorI18nKeys.MarkdownCopyCode}"]`),
-    ).not.toBeNull();
+    expect(dialog().querySelector(`button[aria-label="${ChatI18nKeys.CopyCode}"]`)).not.toBeNull();
   });
 
   it('offers the package file selector on a multi-file skill', () => {
@@ -123,7 +120,7 @@ describe('AddOnDetailsPopup — catalog layout', () => {
 
     expect(dialog().textContent).toContain('Manifest body');
     expect(dialog().textContent).toContain('SKILL.md');
-    expect(dialog().textContent).toContain('2 files');
+    expect(dialog().textContent).toContain(CatalogI18nKeys.DetailsContentFileCount);
   });
 });
 
@@ -177,7 +174,7 @@ describe('AddOnDetailsPopup — package file preview', () => {
     await pick('guide.md');
 
     const status = [...dialog().querySelectorAll('[role="status"]')].find(
-      (node) => node.textContent === QuickAppEditorI18nKeys.ContentFileLoading,
+      (node) => node.textContent === CatalogI18nKeys.DetailsContentFileLoading,
     );
     expect(status).toBeDefined();
     previewChunk.pending = null;
@@ -269,7 +266,7 @@ describe('AddOnDetailsPopup — Connect', () => {
     appContext.settings.dialCoreExternalUrl = 'https://core.example.com';
     render({ entityType: CatalogEntityType.Toolset, item: toolset });
 
-    expect(tabNames().at(-1)).toBe(QuickAppEditorI18nKeys.ConnectTab);
+    expect(tabNames().at(-1)).toBe(CatalogI18nKeys.DetailsTabConnect);
 
     const connect = [...dialog().querySelectorAll<HTMLElement>('[role="tab"]')].at(-1);
     click(connect);
@@ -280,7 +277,7 @@ describe('AddOnDetailsPopup — Connect', () => {
   it('hides Connect without a DIAL Core URL', () => {
     render({ entityType: CatalogEntityType.Toolset, item: toolset });
 
-    expect(tabNames()).not.toContain(QuickAppEditorI18nKeys.ConnectTab);
+    expect(tabNames()).not.toContain(CatalogI18nKeys.DetailsTabConnect);
   });
 });
 
@@ -307,13 +304,13 @@ describe('AddOnDetailsPopup — catalog header actions', () => {
       credentials: { onLogin, onLogout: vi.fn() },
     });
 
-    expect(buttonLabels()).toContain(QuickAppEditorI18nKeys.LoginToolsetAction);
+    expect(buttonLabels()).toContain(ButtonsI18nKeys.LogIn);
     expect(buttonLabels()).not.toContain('Share');
-    expect(buttonLabels()).not.toContain('Manage');
+    expect(buttonLabels()).not.toContain(ButtonsI18nKeys.Manage);
     expect(buttonLabels()).not.toContain('Use in chat');
 
     const login = [...dialog().querySelectorAll('button')].find(
-      (button) => button.textContent?.trim() === QuickAppEditorI18nKeys.LoginToolsetAction,
+      (button) => button.textContent?.trim() === ButtonsI18nKeys.LogIn,
     );
     click(login);
 
@@ -323,6 +320,6 @@ describe('AddOnDetailsPopup — catalog header actions', () => {
   it('shows no credentials action without credentials handlers', () => {
     render({ entityType: CatalogEntityType.Toolset, item: ownedToolset });
 
-    expect(buttonLabels()).not.toContain(QuickAppEditorI18nKeys.LoginToolsetAction);
+    expect(buttonLabels()).not.toContain(ButtonsI18nKeys.LogIn);
   });
 });

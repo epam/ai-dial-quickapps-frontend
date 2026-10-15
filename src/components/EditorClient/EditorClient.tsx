@@ -1,9 +1,8 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import { AppContextProvider, type AppState } from '@/context/AppContext';
-import { useTranslation } from '@/hooks/use-translation';
+import { useTranslation } from 'react-i18next';
 import type { MaybeLocalizedText } from '@/types/dial-entities';
-import { Translation } from '@/types/translation';
 import ForbiddenPage from '@/components/ForbiddenPage/ForbiddenPage';
 import FullScreenSpinner from '@/components/FullScreenSpinner/FullScreenSpinner';
 import { DataContextProvider } from '@/context/DataContext';
@@ -87,7 +86,8 @@ interface EditorClientProps {
 }
 
 const EditorClient = ({ onReadyToSave }: EditorClientProps) => {
-  const { language } = useTranslation(Translation.Common);
+  const { i18n } = useTranslation();
+  const language = i18n.resolvedLanguage ?? i18n.language;
   const [appState, setAppState] = useState<AppState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isForbidden, setIsForbidden] = useState(false);

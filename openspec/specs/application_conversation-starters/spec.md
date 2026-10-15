@@ -8,22 +8,22 @@ Defines the Quick App editor's Conversation starters add-on: the Add-ons row tha
 
 ### Requirement: Conversation starters add-on row
 
-The Add-ons section SHALL contain a **Conversation starters** row, titled with the `quickAppEditor` key `ConversationStarters`, rendered after the other Add-ons rows. The row's content SHALL be driven by the editor form state field `starters` owned by `useQuickApp2Form`; the row SHALL hold only the modal's open/closed flag in local component state. It SHALL introduce no context and call no chat-api endpoint. The row component SHALL be wrapped in `memo`, and the callbacks it receives from `QuickApp2Form` SHALL be stable (`useCallback`) so that typing in unrelated fields does not re-render the starters list.
+The Add-ons section SHALL contain a **Conversation starters** row, titled with the `ApplicationEditorI18nKeys.StartersTitle`, rendered after the other Add-ons rows. The row's content SHALL be driven by the editor form state field `starters` owned by `useQuickApp2Form`; the row SHALL hold only the modal's open/closed flag in local component state. It SHALL introduce no context and call no chat-api endpoint. The row component SHALL be wrapped in `memo`, and the callbacks it receives from `QuickApp2Form` SHALL be stable (`useCallback`) so that typing in unrelated fields does not re-render the starters list.
 
 A starter is **saved-visible** when its title or its prompt is non-blank (the same rows that are persisted, see "Saving conversation starters").
 
 #### Scenario: No starters
 
 - **WHEN** the application has no saved-visible starter
-- **THEN** the row SHALL show its description `ConversationStartersAddOnDescription` ("Pre-built prompts shown at conversation start to help users get going quickly.")
-- **AND** the row header SHALL show an **Add** action labelled with the `common` key `Add` and a plus icon
+- **THEN** the row SHALL show its description `ApplicationEditorI18nKeys.StartersDescription` ("Pre-built prompts shown at conversation start to help users get going quickly.")
+- **AND** the row header SHALL show an **Add** action labelled with the `ButtonsI18nKeys.Add` and a plus icon
 - **AND** no starters list SHALL be rendered
 
 #### Scenario: Starters present
 
 - **WHEN** the application has the starters `[{ title: "Visual hierarchy", text: "Analyze visual hierarchy on the page:" }, { title: "WCAG 2.0 compatibility", text: "Analyze WCAG 2.0 compatibility" }]`
 - **THEN** the row SHALL NOT show its description
-- **AND** the row header SHALL show a **Manage** action labelled with `quickAppEditor` key `Manage` and a pencil icon, in place of Add
+- **AND** the row header SHALL show a **Manage** action labelled with `ButtonsI18nKeys.Manage` and a pencil icon, in place of Add
 - **AND** the row SHALL list both starters in saved order, each with a message icon, the title in semibold primary text and the prompt in secondary text on a single line truncated with an ellipsis
 - **AND** a starter with a blank title SHALL show only its prompt line, and a starter with a blank prompt SHALL show only its title line
 
@@ -41,7 +41,7 @@ A starter is **saved-visible** when its title or its prompt is non-blank (the sa
 
 ### Requirement: Set up conversation starters modal
 
-Add and Manage SHALL open a modal dialog (kit `Popup`) titled with `quickAppEditor` key `SetUpConversationStarters` ("Set up conversation starters"). It SHALL have a header close control named by `CloseConversationStarters`, a header divider, a footer divider, a **Cancel** footer action (`common` key `Cancel`, link appearance) and a **Save** footer action (`Save`, neutral). Its body SHALL contain the starters list followed by the starters settings.
+Add and Manage SHALL open a modal dialog (kit `Popup`) titled with `ApplicationEditorI18nKeys.StartersSetUp` ("Set up conversation starters"). It SHALL have a header close control named by `ApplicationEditorI18nKeys.StartersClose`, a header divider, a footer divider, a **Cancel** footer action (`ButtonsI18nKeys.Cancel`, link appearance) and a **Save** footer action (`ButtonsI18nKeys.Save`, neutral). Its body SHALL contain the starters list followed by the starters settings.
 
 On open, the modal SHALL seed a local draft from the current form values `starters`, `introText`, `autoSubmit` and `chatMessageInputDisabled`. Edits SHALL change only the draft. The modal SHALL change the form state only on Save.
 
@@ -73,7 +73,7 @@ On open, the modal SHALL seed a local draft from the current form values `starte
 
 ### Requirement: Starters list
 
-The modal's starters list SHALL show one row per draft starter. Each row SHALL have, in order: a drag handle, a title input (placeholder `ButtonLabel`), a prompt input (placeholder `PromptToSendInChat`, "Prompt to send in chat"), and a delete button with a trash icon. Rows SHALL be shown on a raised card surface. The list SHALL always end with one blank row.
+The modal's starters list SHALL show one row per draft starter. Each row SHALL have, in order: a drag handle, a title input (placeholder `ApplicationEditorI18nKeys.StartersButtonLabel`), a prompt input (placeholder `ApplicationEditorI18nKeys.StartersPromptPlaceholder`, "Prompt to send in chat"), and a delete button with a trash icon. Rows SHALL be shown on a raised card surface. The list SHALL always end with one blank row.
 
 #### Scenario: New application
 
@@ -114,8 +114,8 @@ Each non-trailing starter row SHALL have a drag handle at its start. The user SH
 #### Scenario: Reorder announcements
 
 - **WHEN** a keyboard or assistive-technology user picks up, moves, drops or cancels a starter
-- **THEN** a live region SHALL announce it using `StarterPickedUp`, `StarterMovedOver`, `StarterDropped` or `StarterDragCancelled` with the starter's position
-- **AND** the handle SHALL be described by `StarterDragInstructions`
+- **THEN** a live region SHALL announce it using `ApplicationEditorI18nKeys.StartersDragPickedUp`, `ApplicationEditorI18nKeys.StartersDragMovedOver`, `ApplicationEditorI18nKeys.StartersDragDropped` or `ApplicationEditorI18nKeys.StartersDragCancelled` with the starter's position
+- **AND** the handle SHALL be described by `ApplicationEditorI18nKeys.StartersDragInstructions`
 
 #### Scenario: Order is saved
 
@@ -139,7 +139,7 @@ The starter title input SHALL accept at most 30 characters. While the title is n
 #### Scenario: Empty title
 
 - **WHEN** the title is empty
-- **THEN** no counter SHALL be shown and the placeholder `ButtonLabel` ("Button label") SHALL be shown
+- **THEN** no counter SHALL be shown and the placeholder `ApplicationEditorI18nKeys.StartersButtonLabel` ("Button label") SHALL be shown
 
 #### Scenario: Legacy long title
 
@@ -155,7 +155,7 @@ The modal's starters settings (Intro message, Require a starter to start a new c
 
 - **WHEN** no draft starter has both a non-blank title and a non-blank prompt
 - **THEN** the three settings SHALL be disabled
-- **AND** the hint `AtLeastOneStarterIsRequiredToEnableSettings` ("At least one starter is required to enable settings.") SHALL be shown below the Settings heading
+- **AND** the hint `ApplicationEditorI18nKeys.StartersSettingsRequireStarter` ("At least one starter is required to enable settings.") SHALL be shown below the Settings heading
 - **AND** each setting SHALL also expose that hint itself, as before the redesign: Intro message as the disabled input's tooltip, Require a starter and When starter is selected through an info button next to their labels
 
 #### Scenario: Complete starter added
@@ -172,11 +172,11 @@ The modal's starters settings (Intro message, Require a starter to start a new c
 
 ### Requirement: Starters settings controls
 
-Below the list, the modal SHALL show a **Settings** heading (`quickAppEditor` key `Settings`) with the gating hint, followed by:
+Below the list, the modal SHALL show a **Settings** heading (`BasicI18nKeys.Settings`) with the gating hint, followed by:
 
-- **Intro message**: an input labelled `IntroMessage` with placeholder `EnterIntroText` ("e.g., What do you want to talk about?"), bound to `introText`;
-- **Require a starter to start a new chat**: the kit `Switch` labelled `RequireStarterToStartNewChat` with caption `RequireStarterToStartNewChatDescription` ("Disables the chat input on a new chat until the user picks a starter. Typing works normally after that."), bound to `chatMessageInputDisabled`;
-- **When starter is selected**: a kit `RadioGroup` labelled `WhenStarterIsSelected` with two options, `SendPromptToTheChat` ("Send prompt to the chat", sets `autoSubmit` to `true`) and `PopulatePromptInTheChatInput` (sets `autoSubmit` to `false`).
+- **Intro message**: an input labelled `ApplicationEditorI18nKeys.StartersIntroMessage` with placeholder `ApplicationEditorI18nKeys.StartersIntroMessagePlaceholder` ("e.g., What do you want to talk about?"), bound to `introText`;
+- **Require a starter to start a new chat**: the kit `Switch` labelled `ApplicationEditorI18nKeys.StartersRequireStarter` with caption `ApplicationEditorI18nKeys.StartersRequireStarterDescription` ("Disables the chat input on a new chat until the user picks a starter. Typing works normally after that."), bound to `chatMessageInputDisabled`;
+- **When starter is selected**: a kit `RadioGroup` labelled `ApplicationEditorI18nKeys.StartersWhenSelected` with two options, `ApplicationEditorI18nKeys.StartersSendPrompt` ("Send prompt to the chat", sets `autoSubmit` to `true`) and `ApplicationEditorI18nKeys.StartersPopulatePrompt` (sets `autoSubmit` to `false`).
 
 #### Scenario: Defaults
 
@@ -226,15 +226,15 @@ On save, the starters form values SHALL be written to `application_properties.co
 
 ### Requirement: Conversation starters localization and accessibility
 
-Every user-visible string of the row and modal SHALL be translated through the `quickAppEditor` namespace (except `Add`, from `common`). No visible label SHALL be hardcoded.
+Every user-visible string of the row and modal SHALL be translated through translation keys. No visible label SHALL be hardcoded.
 
 #### Scenario: Keyboard and screen-reader access
 
 - **WHEN** a keyboard user reaches the Conversation starters row
 - **THEN** Add or Manage SHALL be a keyboard-reachable button
-- **AND** the open modal SHALL expose a dialog role named by `SetUpConversationStarters`, with focus managed by the kit `Popup`
-- **AND** each row's handle SHALL be a focusable button named by `ReorderStarter` (with the starter's title interpolated, falling back to its position), each delete button SHALL be named by `DeleteStarter`, and the title and prompt inputs SHALL have accessible names from `ButtonLabel` and `PromptToSendInChat`
-- **AND** the Settings heading SHALL be a heading element, and the radio options SHALL form a radio group named by `WhenStarterIsSelected`
+- **AND** the open modal SHALL expose a dialog role named by `ApplicationEditorI18nKeys.StartersSetUp`, with focus managed by the kit `Popup`
+- **AND** each row's handle SHALL be a focusable button named by `ApplicationEditorI18nKeys.StartersReorder` (with the starter's title interpolated, falling back to its position), each delete button SHALL be named by `ApplicationEditorI18nKeys.StartersDelete`, and the title and prompt inputs SHALL have accessible names from `ApplicationEditorI18nKeys.StartersButtonLabel` and `ApplicationEditorI18nKeys.StartersPromptPlaceholder`
+- **AND** the Settings heading SHALL be a heading element, and the radio options SHALL form a radio group named by `ApplicationEditorI18nKeys.StartersWhenSelected`
 
 ### Requirement: Conversation starters direction support
 
@@ -255,7 +255,7 @@ The row and the modal SHALL follow the document direction.
 In an editable application, each starter listed in the Conversation starters Add-ons row SHALL have a remove button at the end of its item:
 
 - a ui-kit 2.0 ghost icon button with a trash icon;
-- named by the `quickAppEditor` key `RemoveStarter` ("Remove starter {{name}}"), where `{{name}}` is the starter's title, or its prompt when the title is blank;
+- named by the `ApplicationEditorI18nKeys.StartersRemove` ("Remove starter {{name}}"), where `{{name}}` is the starter's title, or its prompt when the title is blank;
 - visible only while the item is hovered or holds keyboard focus;
 - kept in the tab order while invisible.
 

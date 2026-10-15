@@ -1,11 +1,10 @@
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { FC, useMemo } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys, CatalogI18nKeys } from '@/constants/translation-keys';
 import { useDataContext } from '@/context/DataContext';
 import { useScopeLabels } from '@/hooks/use-scope-labels';
-import { useTranslation } from '@/hooks/use-translation';
-import { Translation } from '@/types/translation';
+import { useTranslation } from 'react-i18next';
 import { isHiddenDialFolderId } from '@/utils/api';
 import { mapToolsetToCatalogItem } from '@/utils/map-toolset-to-catalog-item';
 
@@ -30,7 +29,8 @@ export const AddToolsetsModal: FC<AddToolsetsModalProps> = ({
   onConfirm,
   onClose,
 }) => {
-  const { t, language } = useTranslation(Translation.QuickAppEditor);
+  const { t, i18n } = useTranslation();
+  const language = i18n.resolvedLanguage ?? i18n.language;
   const { toolsets, userBucket } = useDataContext();
   const scopeLabels = useScopeLabels();
 
@@ -44,15 +44,15 @@ export const AddToolsetsModal: FC<AddToolsetsModalProps> = ({
 
   const labels = useMemo<AddOnCatalogModalLabels>(
     () => ({
-      title: t(QuickAppEditorI18nKeys.AddToolset),
-      catalog: t(QuickAppEditorI18nKeys.ToolsetsCatalog),
-      search: t(QuickAppEditorI18nKeys.SearchToolsets),
-      loading: t(QuickAppEditorI18nKeys.LoadingToolsets),
-      failedToLoad: t(QuickAppEditorI18nKeys.FailedToLoadToolsets),
-      empty: t(QuickAppEditorI18nKeys.NoToolsetsAvailable),
-      selectAll: t(QuickAppEditorI18nKeys.SelectAllToolsets),
-      selectRow: (name) => t(QuickAppEditorI18nKeys.SelectAddOn, { name }),
-      credentialsBadge: t(QuickAppEditorI18nKeys.ToolsetLoggedOutBadge),
+      title: t(ApplicationEditorI18nKeys.ToolsetsAdd),
+      catalog: t(ApplicationEditorI18nKeys.ToolsetsCatalogTitle),
+      search: t(ApplicationEditorI18nKeys.ToolsetsSearchPlaceholder),
+      loading: t(ApplicationEditorI18nKeys.ToolsetsLoading),
+      failedToLoad: t(ApplicationEditorI18nKeys.ToolsetsLoadError),
+      empty: t(ApplicationEditorI18nKeys.ToolsetsEmpty),
+      selectAll: t(ApplicationEditorI18nKeys.ToolsetsSelectAll),
+      selectRow: (name) => t(ApplicationEditorI18nKeys.AddOnsSelect, { name }),
+      credentialsBadge: t(CatalogI18nKeys.CredentialsBadgeLoggedOut),
     }),
     [t],
   );

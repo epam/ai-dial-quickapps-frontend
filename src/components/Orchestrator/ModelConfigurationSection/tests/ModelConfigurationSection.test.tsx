@@ -3,10 +3,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { setupTestRoot } from '@/test-utils/test-root';
 
 import ModelConfigurationSection from '../ModelConfigurationSection';
+import { ApplicationEditorI18nKeys, ChatSettingsI18nKeys } from '@/constants/translation-keys';
 
 let modelsMap: Record<string, { allowTemperature?: boolean }> = {};
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({ modelsMap }),
 }));
@@ -95,7 +95,7 @@ describe('ModelConfigurationSection', () => {
   it('renders the Default model, then Settings, then Attachments', () => {
     dom.render(<TestForm />);
 
-    expect(dom.container.textContent).toContain('Configuration');
+    expect(dom.container.textContent).toContain(ApplicationEditorI18nKeys.Configuration);
     expect(
       dom.container.querySelector('section[aria-labelledby="model-configuration-heading"]')
         ?.className,
@@ -111,7 +111,7 @@ describe('ModelConfigurationSection', () => {
 
     expect(dom.container.querySelector('[role="slider"]')).toBeNull();
     expect(dom.container.querySelector('[role="switch"]')).toBeNull();
-    expect(dom.container.textContent).not.toContain('Temperature');
+    expect(dom.container.textContent).not.toContain(ChatSettingsI18nKeys.TemperatureLabel);
     expect(dom.container.textContent).not.toContain('Process files');
     expect(dom.container.querySelectorAll('h3')).toHaveLength(0);
   });

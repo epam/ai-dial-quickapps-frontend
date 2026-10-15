@@ -1,7 +1,7 @@
 import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CommonI18nKeys } from '@/constants/i18n';
+import { AuthI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
 import { setupTestRoot } from '@/test-utils/test-root';
 
 import LoginScreen from '../LoginScreen';
@@ -9,7 +9,6 @@ import LoginScreen from '../LoginScreen';
 const openLoginWindow = vi.fn();
 const authState = { isWindowOpen: false };
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/hooks/use-auth', () => ({
   useAuth: () => ({ openLoginWindow, isWindowOpen: authState.isWindowOpen }),
 }));
@@ -35,10 +34,10 @@ describe('LoginScreen', () => {
   it('shows the title as a heading, the description and a single "Log in" button', () => {
     renderPrompt();
 
-    expect(dom.container.querySelector('h1')?.textContent).toBe(CommonI18nKeys.LoginScreenTitle);
-    expect(dom.container.textContent).toContain(CommonI18nKeys.LoginScreenDescription);
+    expect(dom.container.querySelector('h1')?.textContent).toBe(AuthI18nKeys.ConfigureTitle);
+    expect(dom.container.textContent).toContain(AuthI18nKeys.ConfigureDescription);
     expect(dom.container.querySelectorAll('button')).toHaveLength(1);
-    expect(getButton().textContent).toBe(CommonI18nKeys.LoginScreenAction);
+    expect(getButton().textContent).toBe(ButtonsI18nKeys.LogIn);
     expect(getButton().disabled).toBe(false);
   });
 
@@ -55,7 +54,7 @@ describe('LoginScreen', () => {
     renderPrompt();
 
     expect(getButton().disabled).toBe(true);
-    expect(getButton().textContent).toBe(CommonI18nKeys.LoginScreenWindowOpen);
+    expect(getButton().textContent).toBe(AuthI18nKeys.LoginWindowOpen);
   });
 
   it('hides the decorative icons from assistive technology', () => {

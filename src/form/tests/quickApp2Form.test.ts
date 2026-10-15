@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { DEFAULT_MAX_INPUT_ATTACHMENTS } from '@/constants/quick-apps';
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import {
   buildQuickApp2Config,
   QuickApp2Schema,
@@ -53,7 +53,7 @@ describe('QuickApp2Schema', () => {
       expect(result.success).toBe(false);
       expect(result.error?.issues[0]).toMatchObject({
         path: ['instructions'],
-        message: QuickAppEditorI18nKeys.InstructionsRequired,
+        message: ApplicationEditorI18nKeys.InstructionsRequired,
       });
     }
 
@@ -136,7 +136,7 @@ describe('QuickApp2Schema', () => {
         expect.arrayContaining([
           expect.objectContaining({
             path: ['maxInputAttachments'],
-            message: QuickAppEditorI18nKeys.MaxAttachmentsRequired,
+            message: ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachmentsRequired,
           }),
         ]),
       );
@@ -161,7 +161,7 @@ describe('QuickApp2Schema', () => {
       expect(result.error.issues).toEqual([
         expect.objectContaining({
           path: ['inputAttachmentTypes'],
-          message: QuickAppEditorI18nKeys.AttachmentTypesRequired,
+          message: ApplicationEditorI18nKeys.AttachmentsTypesRequired,
         }),
       ]);
     }

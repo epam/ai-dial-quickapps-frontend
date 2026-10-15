@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
 import { click, getButton } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
 
@@ -12,7 +12,6 @@ interface MockModalProps {
   onClose: (fileIds: string[]) => void;
 }
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/AuthContext', () => ({
   useAuthContext: () => ({ user: { bucket: 'abc' } }),
 }));
@@ -55,10 +54,10 @@ describe('KnowledgeBaseRow', () => {
     renderRow();
 
     expect(dom.container.querySelector('h3')?.textContent).toBe(
-      QuickAppEditorI18nKeys.KnowledgeBase,
+      ApplicationEditorI18nKeys.KnowledgeBaseTitle,
     );
-    expect(dom.container.textContent).toContain(QuickAppEditorI18nKeys.KnowledgeBaseDescription);
-    expect(findButton(CommonI18nKeys.Add)).toBeDefined();
+    expect(dom.container.textContent).toContain(ApplicationEditorI18nKeys.KnowledgeBaseDescription);
+    expect(findButton(ButtonsI18nKeys.Add)).toBeDefined();
     expect(dom.container.querySelector('ul')).toBeNull();
   });
 
@@ -67,16 +66,16 @@ describe('KnowledgeBaseRow', () => {
 
     expect(dom.container.querySelectorAll('ul > li')).toHaveLength(2);
     expect(dom.container.textContent).not.toContain(
-      QuickAppEditorI18nKeys.KnowledgeBaseDescription,
+      ApplicationEditorI18nKeys.KnowledgeBaseDescription,
     );
-    expect(findButton(CommonI18nKeys.Add)).toBeDefined();
+    expect(findButton(ButtonsI18nKeys.Add)).toBeDefined();
   });
 
   it('opens the popup with the current files and adds the confirmed selection', () => {
     const { onAddFiles } = renderRow({ files: ['files/abc/a.pdf'] });
 
     expect(getModal()).toBeNull();
-    click(findButton(CommonI18nKeys.Add));
+    click(findButton(ButtonsI18nKeys.Add));
     expect(getModal()?.textContent).toContain('files/abc/a.pdf');
 
     click(findButton('Modal confirm'));
@@ -87,7 +86,7 @@ describe('KnowledgeBaseRow', () => {
   it('changes nothing when the popup is dismissed without a selection', () => {
     const { onAddFiles } = renderRow();
 
-    click(findButton(CommonI18nKeys.Add));
+    click(findButton(ButtonsI18nKeys.Add));
     click(findButton('Modal dismiss'));
 
     expect(onAddFiles).not.toHaveBeenCalled();
@@ -97,7 +96,14 @@ describe('KnowledgeBaseRow', () => {
   it('removes the activated file', () => {
     const { onRemoveFile } = renderRow({ files: ['files/abc/a.pdf', 'files/abc/b.pdf'] });
 
-    click(dom.container.querySelector('button[aria-label="Remove b.pdf from knowledge base"]'));
+    const item = [...dom.container.querySelectorAll('ul > li')].find((li) =>
+      li.textContent?.includes('b.pdf'),
+    );
+    click(
+      item?.querySelector(
+        `button[aria-label="${ApplicationEditorI18nKeys.KnowledgeBaseRemoveItem}"]`,
+      ),
+    );
 
     expect(onRemoveFile).toHaveBeenCalledWith('files/abc/b.pdf');
   });
@@ -105,9 +111,9 @@ describe('KnowledgeBaseRow', () => {
   it('disables Add and hides trash buttons when read-only', () => {
     renderRow({ files: ['files/abc/a.pdf'], isReadonly: true });
 
-    const addButton = findButton(CommonI18nKeys.Add);
+    const addButton = findButton(ButtonsI18nKeys.Add);
     expect(addButton.disabled || addButton.getAttribute('aria-disabled') === 'true').toBe(true);
-    click(findButton(CommonI18nKeys.Add));
+    click(findButton(ButtonsI18nKeys.Add));
     expect(getModal()).toBeNull();
     expect(dom.container.querySelectorAll('ul > li')).toHaveLength(1);
     expect(dom.container.querySelector('ul > li button')).toBeNull();

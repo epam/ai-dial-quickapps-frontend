@@ -1,13 +1,13 @@
 import { useMemo } from 'react';
 
 import { useDataContext } from '@/context/DataContext';
-import { useTranslation } from '@/hooks/use-translation';
-import { Translation } from '@/types/translation';
+import { useTranslation } from 'react-i18next';
 import { type AddOnEntityMap, buildAddOnEntityMap } from '@/utils/get-add-on-kind';
 
 /** Every entity an `addOns` entry can point at, from `DataContext`. */
 export const useAddOnEntityMap = (): AddOnEntityMap => {
-  const { language } = useTranslation(Translation.QuickAppEditor);
+  const { i18n } = useTranslation();
+  const language = i18n.resolvedLanguage ?? i18n.language;
   const { models, toolsets, mcpAgents } = useDataContext();
 
   return useMemo(

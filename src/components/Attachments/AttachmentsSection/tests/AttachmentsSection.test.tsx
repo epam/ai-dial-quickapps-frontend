@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { click } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 
 import AttachmentsSection from '../AttachmentsSection';
 
@@ -29,7 +29,6 @@ interface MockAutocompleteTagInputProps {
   onChange: (mimeTypes: string[]) => void;
 }
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@epam/ai-dial-ui-kit', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@epam/ai-dial-ui-kit')>()),
   Switch: ({ isOn, disabled, onChange, 'aria-label': ariaLabel }: MockSwitchProps) => (
@@ -100,7 +99,9 @@ const TestHost = ({
       isEnabled={isEnabled}
       value={value}
       error={
-        isEnabled && value.length === 0 ? QuickAppEditorI18nKeys.AttachmentTypesRequired : undefined
+        isEnabled && value.length === 0
+          ? ApplicationEditorI18nKeys.AttachmentsTypesRequired
+          : undefined
       }
       isReadonly={isReadonly}
       onEnabledChange={(next) => {
@@ -119,7 +120,8 @@ const TestHost = ({
 const dom = setupTestRoot();
 
 const getSwitch = () => dom.container.querySelector('[role="switch"]') as HTMLButtonElement;
-const getField = () => dom.container.querySelector('[aria-label="Attachment types"]');
+const getField = () =>
+  dom.container.querySelector(`[aria-label="${ApplicationEditorI18nKeys.AttachmentsTypesLabel}"]`);
 const getButton = (text: string) =>
   [...dom.container.querySelectorAll('button')].find(
     (button) => button.textContent === text,
@@ -130,11 +132,9 @@ describe('AttachmentsSection', () => {
   it('shows the title, description, and an off switch without a field when no types are saved', () => {
     dom.render(<TestHost />);
 
-    expect(dom.container.textContent).toContain('Attachments');
-    expect(dom.container.textContent).toContain(
-      'Lets end users upload files during a conversation.',
-    );
-    expect(getSwitch().getAttribute('aria-label')).toBe('Attachments');
+    expect(dom.container.textContent).toContain(ApplicationEditorI18nKeys.AttachmentsTitle);
+    expect(dom.container.textContent).toContain(ApplicationEditorI18nKeys.AttachmentsDescription);
+    expect(getSwitch().getAttribute('aria-label')).toBe(ApplicationEditorI18nKeys.AttachmentsTitle);
     expect(getSwitch().getAttribute('aria-checked')).toBe('false');
     expect(getField()).toBeNull();
   });
@@ -144,10 +144,10 @@ describe('AttachmentsSection', () => {
 
     const field = getField() as HTMLElement;
     expect(field.getAttribute('aria-required')).toBe('true');
-    expect(field.dataset.placeholder).toBe('Enter attachment types');
+    expect(field.dataset.placeholder).toBe(ApplicationEditorI18nKeys.AttachmentsTypesPlaceholder);
     expect(field.dataset.caption).toBeUndefined();
-    expect(field.dataset.tagListLabel).toBe('Attachment types');
-    expect(field.dataset.removeLabel).toBe('Remove image/png');
+    expect(field.dataset.tagListLabel).toBe(ApplicationEditorI18nKeys.AttachmentsTypesLabel);
+    expect(field.dataset.removeLabel).toBe(ApplicationEditorI18nKeys.AttachmentsRemoveType);
     expect(JSON.parse(field.dataset.firstSuggestion ?? '{}')).toEqual({
       value: 'image/gif',
       label: 'GIF',
@@ -190,7 +190,7 @@ describe('AttachmentsSection', () => {
     click(getSwitch());
 
     expect(dom.container.querySelector('[role="alert"]')?.textContent).toBe(
-      'Select at least one attachment type',
+      ApplicationEditorI18nKeys.AttachmentsTypesRequired,
     );
   });
 

@@ -1,6 +1,7 @@
 import { FC, useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
+import type { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { DEFAULT_MAX_INPUT_ATTACHMENTS } from '@/constants/quick-apps';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
@@ -12,8 +13,7 @@ import type { QuickApp2Config } from '@/types/quick-apps';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
 import type { DialAIEntityModel, LocalizedText } from '@/types/dial-entities';
-import { Translation } from '@/types/translation';
-import { useTranslation } from '@/hooks/use-translation';
+import { useTranslation } from 'react-i18next';
 
 import AddOnsSection from '../AddOns/AddOnsSection/AddOnsSection';
 import InstructionsSection from '../InstructionsSection/InstructionsSection';
@@ -49,7 +49,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   onModelReady,
   isReadonly = false,
 }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation();
   const { app, settings } = useAppContext();
   const { models, modelsMap, toolsetsMap, mcpAgentsMap, status } = useDataContext();
 
@@ -136,7 +136,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
       if (!result.isValid) {
         if (!isAutoSave) {
           const messages = Object.values(result.errors).filter((message) => message != null);
-          onValidationError?.(messages.map((message) => t(message)));
+          onValidationError?.(messages.map((message) => t(message as ApplicationEditorI18nKeys)));
         }
         return;
       }

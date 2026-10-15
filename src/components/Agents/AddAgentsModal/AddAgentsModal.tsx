@@ -1,12 +1,11 @@
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { FC, useMemo } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { useScopeLabels } from '@/hooks/use-scope-labels';
-import { useTranslation } from '@/hooks/use-translation';
-import { Translation } from '@/types/translation';
+import { useTranslation } from 'react-i18next';
 import { getEntityIdWithoutVersion, isHiddenDialFolderId } from '@/utils/api';
 import { mapAgentToCatalogItem } from '@/utils/map-agent-to-catalog-item';
 
@@ -31,7 +30,8 @@ export const AddAgentsModal: FC<AddAgentsModalProps> = ({
   onConfirm,
   onClose,
 }) => {
-  const { t, language } = useTranslation(Translation.QuickAppEditor);
+  const { t, i18n } = useTranslation();
+  const language = i18n.resolvedLanguage ?? i18n.language;
   const { app } = useAppContext();
   const { models, mcpAgents, userBucket } = useDataContext();
   const scopeLabels = useScopeLabels();
@@ -50,14 +50,14 @@ export const AddAgentsModal: FC<AddAgentsModalProps> = ({
 
   const labels = useMemo<AddOnCatalogModalLabels>(
     () => ({
-      title: t(QuickAppEditorI18nKeys.AddAgent),
-      catalog: t(QuickAppEditorI18nKeys.AgentsCatalog),
-      search: t(QuickAppEditorI18nKeys.SearchAgents),
-      loading: t(QuickAppEditorI18nKeys.LoadingAgents),
-      failedToLoad: t(QuickAppEditorI18nKeys.FailedToLoadAgents),
-      empty: t(QuickAppEditorI18nKeys.NoAgentsAvailable),
-      selectAll: t(QuickAppEditorI18nKeys.SelectAllAgents),
-      selectRow: (name) => t(QuickAppEditorI18nKeys.SelectAddOn, { name }),
+      title: t(ApplicationEditorI18nKeys.AgentsAdd),
+      catalog: t(ApplicationEditorI18nKeys.AgentsCatalogTitle),
+      search: t(ApplicationEditorI18nKeys.AgentsSearchPlaceholder),
+      loading: t(ApplicationEditorI18nKeys.AgentsLoading),
+      failedToLoad: t(ApplicationEditorI18nKeys.AgentsLoadError),
+      empty: t(ApplicationEditorI18nKeys.AgentsEmpty),
+      selectAll: t(ApplicationEditorI18nKeys.AgentsSelectAll),
+      selectRow: (name) => t(ApplicationEditorI18nKeys.AddOnsSelect, { name }),
     }),
     [t],
   );

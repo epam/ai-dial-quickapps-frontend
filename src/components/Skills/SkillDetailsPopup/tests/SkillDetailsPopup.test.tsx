@@ -6,15 +6,18 @@ import { DialEntityType } from '@/types/dial-entities';
 import type { DialSkill } from '@/types/dial-entities';
 
 import { SkillDetailsPopup } from '../SkillDetailsPopup';
+import {
+  ApplicationEditorI18nKeys,
+  BasicI18nKeys,
+  ButtonsI18nKeys,
+  CatalogI18nKeys,
+} from '@/constants/translation-keys';
 
 const { skillsApi } = vi.hoisted(() => ({
   skillsApi: { downloadSkillFileRaw: vi.fn(), listSkillFiles: vi.fn(), getSkillMetadata: vi.fn() },
 }));
 
 vi.mock('@/utils/chat-api-client', () => ({ skillsApi, deploymentsApi: {} }));
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({ language: 'en-US', t: (key: string) => key }),
-}));
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({ userBucket: 'user-bucket-123', skills: [SKILL] }),
 }));
@@ -120,13 +123,16 @@ describe('SkillDetailsPopup', () => {
     await render();
 
     expect(getDialog()?.getAttribute('aria-label')).toBe('User Research');
-    expect(getDialog()?.textContent).toContain('Skill');
+    expect(getDialog()?.textContent).toContain(CatalogI18nKeys.DetailsSkillSection);
     // The catalog's folder line: a FolderPath nav, one segment per folder.
     const folderPath = getDialog()?.querySelector('nav[aria-label="Folder path"]');
-    expect(folderPath?.textContent).toContain('Organization');
+    expect(folderPath?.textContent).toContain(BasicI18nKeys.Organization);
     expect(folderPath?.textContent).toContain('research');
-    expect(getTabNames()).toEqual(['Details', 'Overview']);
-    expect(getTab('Details')?.getAttribute('aria-selected')).toBe('true');
+    expect(getTabNames()).toEqual([
+      CatalogI18nKeys.DetailsTabContent,
+      CatalogI18nKeys.DetailsTabOverview,
+    ]);
+    expect(getTab(CatalogI18nKeys.DetailsTabContent)?.getAttribute('aria-selected')).toBe('true');
   });
 
   it('shows the manifest description and rendered body without frontmatter', async () => {
@@ -148,22 +154,22 @@ describe('SkillDetailsPopup', () => {
   it('shows the catalog’s Specification and Skill sections on Overview', async () => {
     await render();
 
-    await click(getTab('Overview'));
+    await click(getTab(CatalogI18nKeys.DetailsTabOverview));
 
     const panel = document.querySelector('[role="tabpanel"]');
-    expect(panel?.textContent).toContain('Specification');
-    expect(panel?.textContent).toContain('When to use');
+    expect(panel?.textContent).toContain(CatalogI18nKeys.DetailsOverviewSpecification);
+    expect(panel?.textContent).toContain(CatalogI18nKeys.DetailsSkillWhenToUse);
     expect(panel?.textContent).toContain('When a study needs planning.');
-    expect(panel?.textContent).toContain('Author');
+    expect(panel?.textContent).toContain(CatalogI18nKeys.DetailsSkillAuthor);
     expect(panel?.textContent).toContain('jane.doe');
-    expect(panel?.textContent).toContain('Files');
+    expect(panel?.textContent).toContain(CatalogI18nKeys.DetailsSkillFileCount);
   });
 
   it('falls back to the listing author when the skill’s metadata fails', async () => {
     skillsApi.getSkillMetadata.mockRejectedValueOnce(new Error('403'));
     await render();
 
-    await click(getTab('Overview'));
+    await click(getTab(CatalogI18nKeys.DetailsTabOverview));
 
     expect(document.querySelector('[role="tabpanel"]')?.textContent).toContain('listing.author');
   });
@@ -172,7 +178,7 @@ describe('SkillDetailsPopup', () => {
     skillsApi.listSkillFiles.mockRejectedValueOnce(new Error('boom'));
     await render();
 
-    expect(getTabNames()).toEqual(['Details']);
+    expect(getTabNames()).toEqual([CatalogI18nKeys.DetailsTabContent]);
     expect(getDialog()?.textContent).toContain('Interview Guide');
   });
 
@@ -181,28 +187,30 @@ describe('SkillDetailsPopup', () => {
     skillsApi.listSkillFiles.mockRejectedValueOnce(new Error('boom'));
     await render();
 
-    expect(getDialog()?.textContent).toContain('Failed to load details');
+    expect(getDialog()?.textContent).toContain(CatalogI18nKeys.DetailsLoadError);
     expect(getDialog()?.textContent).toContain('Listing description');
 
-    await click(getButtonByText('Retry'));
+    await click(getButtonByText(ButtonsI18nKeys.Retry));
 
     expect(skillsApi.downloadSkillFileRaw).toHaveBeenCalledTimes(2);
     expect(getDialog()?.textContent).toContain('Interview Guide');
-    expect(getDialog()?.textContent).not.toContain('Failed to load details');
+    expect(getDialog()?.textContent).not.toContain(CatalogI18nKeys.DetailsLoadError);
   });
 
   it('shows the loading state while the details are pending', async () => {
     skillsApi.downloadSkillFileRaw.mockReturnValue(new Promise(() => undefined));
     await render();
 
-    expect(document.querySelector('[aria-label="Loading details"]')).not.toBeNull();
+    expect(
+      document.querySelector(`[aria-label="${CatalogI18nKeys.DetailsLoading}"]`),
+    ).not.toBeNull();
     expect(getDialog()?.textContent).toContain('Listing description');
   });
 
   it('detaches the skill and closes on Delete', async () => {
     await render();
 
-    await click(getButtonByText('Delete'));
+    await click(getButtonByText(ButtonsI18nKeys.Delete));
 
     expect(onRemove).toHaveBeenCalledWith(SKILL.id);
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -211,8 +219,8 @@ describe('SkillDetailsPopup', () => {
   it('offers only Close in a read-only application', async () => {
     await render({ isReadonly: true });
 
-    expect(getButtonByText('Delete')).toBeUndefined();
-    await click(getButtonByText('Close'));
+    expect(getButtonByText(ButtonsI18nKeys.Delete)).toBeUndefined();
+    await click(getButtonByText(ButtonsI18nKeys.Close));
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(onRemove).not.toHaveBeenCalled();
   });
@@ -234,8 +242,8 @@ describe('SkillDetailsPopup', () => {
 
     expect(skillsApi.downloadSkillFileRaw).not.toHaveBeenCalled();
     expect(getDialog()?.getAttribute('aria-label')).toBe('user-research');
-    expect(getDialog()?.textContent).toContain('This skill is no longer available');
-    expect(getButtonByText('Delete')).toBeTruthy();
+    expect(getDialog()?.textContent).toContain(ApplicationEditorI18nKeys.SkillsUnavailable);
+    expect(getButtonByText(ButtonsI18nKeys.Delete)).toBeTruthy();
   });
 
   it('places Delete before Close in a right-to-left document', async () => {
@@ -245,6 +253,8 @@ describe('SkillDetailsPopup', () => {
     const buttons = [...document.querySelectorAll('button')].map((button) =>
       button.textContent?.trim(),
     );
-    expect(buttons.indexOf('Delete')).toBeLessThan(buttons.indexOf('Close'));
+    expect(buttons.indexOf(ButtonsI18nKeys.Delete)).toBeLessThan(
+      buttons.indexOf(ButtonsI18nKeys.Close),
+    );
   });
 });

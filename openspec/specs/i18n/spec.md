@@ -10,102 +10,151 @@ in `.claude/rules/rtl.md` keep the UI ready for an RTL locale.
 
 ### Requirement: Editor UI text ships in English only
 
-QuickApps SHALL initialise a single i18next instance (`src/i18n/index.ts`) once per page, with
-`lng: 'en'`, `fallbackLng: 'en'`, interpolation escaping disabled (React escapes output), and
-resources for one language, `en`, split into two namespaces: `quickAppEditor`
-(`src/i18n/locales/quick-app-editor.json`) and `common` (`src/i18n/locales/common.json`).
-QuickApps SHALL NOT choose the UI language from the host, a URL query parameter, the browser
-language, or a `postMessage` payload: no code path calls `changeLanguage`, so the active
-language is always `en`. No other locale file ships, so no right-to-left locale is available
-to users today. If the active language is ever changed to one without resources, every string
-SHALL resolve through the `en` fallback.
+QuickApps SHALL initialise a single i18next instance once per page in `src/i18n/config.ts`,
+imported for its side effects by `src/main.tsx` before the app renders. The setup SHALL match
+ai-dial-chat's `apps/chat/src/i18n/config.ts`:
 
-The i18next instance is the state owner. It is provided to the React tree by `I18nProvider`
-(`src/components/I18nProvider/I18nProvider.tsx`), mounted in `src/main.tsx` around the router,
-so the root editor route and the `/signin/complete` page both have it. No context of this repo
-holds the language.
+- `i18next-browser-languagedetector` with detection order `['localStorage', 'navigator']`,
+  caching to `localStorage`;
+- `initReactI18next`;
+- `fallbackLng: 'en'`;
+- interpolation escaping disabled, because React escapes output;
+- resources for one language, `en`, in the default `translation` namespace, loaded
+  statically from `src/i18n/locales/en.json`.
+
+QuickApps SHALL NOT take the UI language from the host, a URL query parameter or a
+`postMessage` payload. It SHALL NOT render a language selector, and no code path calls
+`changeLanguage`. Only `en` ships, so whatever language is detected, every string SHALL
+resolve through the `en` fallback, and `i18n.resolvedLanguage` SHALL be `en`. No
+right-to-left locale is available to users today.
+
+`react-i18next` (`initReactI18next`) provides the i18next instance to the React tree. No
+provider component or context of this repo holds the language, so the root editor route and
+the `/signin/complete` page both see the same instance.
 
 #### Scenario: Editor opened by a host
 
 - **WHEN** a host embeds QuickApps with any query parameters
-- **THEN** the active i18next language SHALL be `en`
-- **AND** every user-visible string from the `quickAppEditor` and `common` namespaces SHALL
-  render in English
+- **THEN** `i18n.resolvedLanguage` SHALL be `en`
+- **AND** every user-visible string SHALL render in English
 
-#### Scenario: Language without resources
+#### Scenario: Browser language without resources
 
-- **WHEN** the active language is changed to a language with no resources, such as `ar`
+- **WHEN** the browser language is `uk` and localStorage has no `i18nextLng`
+- **THEN** each translation SHALL resolve to its `en` value
+- **AND** `i18n.resolvedLanguage` SHALL be `en`
+
+#### Scenario: Stored language without resources
+
+- **WHEN** localStorage `i18nextLng` is `ar` at start-up
 - **THEN** each translation SHALL resolve to its `en` value
 
-### Requirement: Translation keys are the English source text
+### Requirement: Translation keys are semantic, grouped and typed
 
-Every key in `quick-app-editor.json` and in the top level of `common.json` SHALL equal its
-English value. Components SHALL refer to keys through the string enums in
-`src/constants/i18n.ts` (`QuickAppEditorI18nKeys`, `CommonI18nKeys`, and
-`DialFileManagerI18nKeys`), never through inline literals. The labels passed to the DIAL
-file manager SHALL live under the nested `dialFileManager` object of the `common` namespace
-and be addressed with dot-separated keys such as `dialFileManager.empty`. The namespace names
-SHALL be the `Translation` string enum in `src/types/translation.ts`.
+`src/i18n/locales/en.json` SHALL be the only locale file. Its top-level properties SHALL be
+feature groups, and each group SHALL hold camelCase keys. Deeper nesting is allowed. A key is
+addressed by its dot-separated path, such as `buttons.cancel` or
+`dialFileManager.transferQueue.close`. Interpolation SHALL use `{{name}}` placeholders.
 
-#### Scenario: Key has no translation
+When the same string exists in ai-dial-chat's `en.json`, QuickApps SHALL use chat's group,
+key path and English value for it. Generic strings such as Cancel, Save or Close SHALL live
+once, in `buttons` or `basic`, and SHALL NOT be duplicated per feature.
 
-- **WHEN** a component asks for a key that i18next cannot resolve
-- **THEN** the key text SHALL be rendered, which for a source-text key is the English copy
+Each group SHALL have a string enum in `src/constants/translation-keys.ts`, named
+`<Group>I18nKeys` (for example `ButtonsI18nKeys`), whose values are the full key paths.
+Components SHALL pass enum members to `t()` and to `<Trans i18nKey>`, never string literals.
+A JSON key and its enum member SHALL be added in the same change.
 
-### Requirement: Translation hook
+`src/i18n/i18next.d.ts` SHALL declare `CustomTypeOptions` with `defaultNS: 'translation'` and
+`resources: { translation: typeof en }`, so that `npm run typecheck` rejects a key that is not
+in `en.json`.
 
-Components SHALL read translations through `useTranslation(namespace)` in
-`src/hooks/use-translation.ts`, which wraps `react-i18next`'s hook for that one namespace and
-returns `{ t, language }`. `t(key, options?)` SHALL pass the interpolation options to i18next
-only when they are given, and SHALL return the key itself when i18next returns nothing.
-`language` SHALL be i18next's active language. The returned object SHALL be memoised
-(`useCallback` for `t`, `useMemo` for the result) and SHALL keep its identity across renders
-until `t` or the language changes, so consumers can safely list it as a dependency.
+#### Scenario: Key referenced through its enum
+
+- **WHEN** a component renders the Cancel button
+- **THEN** it SHALL call `t(ButtonsI18nKeys.Cancel)`, whose value is `buttons.cancel`
+- **AND** the rendered text SHALL be "Cancel"
+
+#### Scenario: Unknown key
+
+- **WHEN** source code passes a key path that is not in `en.json` to `t()`
+- **THEN** `npm run typecheck` SHALL fail
+
+#### Scenario: Key has no translation at runtime
+
+- **WHEN** i18next cannot resolve a key at runtime
+- **THEN** the key path SHALL be rendered
+
+### Requirement: Components translate through react-i18next directly
+
+Components and hooks SHALL read translations with `useTranslation()` from `react-i18next`,
+called without a namespace argument, and SHALL use `<Trans>` to put markup inside a
+translated sentence. QuickApps SHALL NOT wrap `useTranslation` in a hook of its own. Code that
+needs the language SHALL read `i18n.resolvedLanguage` from the hook's `i18n`.
 
 #### Scenario: Interpolated message
 
-- **WHEN** a component calls `t(key, { count: 2 })`
-- **THEN** i18next SHALL receive the key together with those options
+- **WHEN** a component calls `t(ApplicationEditorI18nKeys.StartersRemove, { name: 'Hi' })`
+- **THEN** i18next SHALL receive the key together with those options and render "Remove starter Hi"
 
-#### Scenario: Plain message
+### Requirement: Tests mock translations once
 
-- **WHEN** a component calls `t(key)` without options
-- **THEN** i18next SHALL receive only the key
+`src/test-utils/setup.ts` SHALL mock `react-i18next` for every test file, mirroring
+ai-dial-chat's `test-setup.ts`:
 
-#### Scenario: Re-render with nothing changed
+- `useTranslation()` SHALL return one module-level object whose `t` returns the key it is
+  given, and whose `i18n` has `language: 'en'`, `resolvedLanguage: 'en'` and a mocked
+  `changeLanguage`;
+- `Trans` SHALL render its `i18nKey`.
 
-- **WHEN** a component using the hook re-renders and neither the namespace's `t` nor the
-  language has changed
-- **THEN** the hook SHALL return the same object as on the previous render
+Individual test files SHALL NOT mock `react-i18next` again, and SHALL assert translated text
+by key. Tests of `src/i18n/config.ts` itself SHALL use the real i18next, mocking only
+`initReactI18next`.
+
+#### Scenario: Component under test
+
+- **WHEN** a test renders a component that shows `t(ButtonsI18nKeys.Cancel)`
+- **THEN** the DOM SHALL contain the text `buttons.cancel`
+
+#### Scenario: Stable translation function
+
+- **WHEN** a component under test re-renders
+- **THEN** `useTranslation().t` SHALL be the same function as on the previous render
 
 ### Requirement: Document language and direction follow the active language
 
-`I18nProvider` SHALL set `document.documentElement.lang` to the active i18next language and
-`document.documentElement.dir` to `i18n.dir(language)` when it mounts, and again on every
-i18next `languageChanged` event. It SHALL stop listening for that event when it unmounts.
-Because the active language is always `en` (see "Editor UI text ships in English only"), the
-document SHALL be `lang="en"` and `dir="ltr"` in every shipped build. The static
-`<html lang="en">` in `index.html` applies only until the provider mounts.
+`src/i18n/config.ts` SHALL set `document.documentElement.lang` to `i18n.resolvedLanguage`
+(`en` when it is unset). It SHALL set `document.documentElement.dir` to `rtl` when the base
+code of that language (the part before `-`) is in the set `ar`, `he`, `fa`, `ur`, and to
+`ltr` otherwise. It SHALL do this once at initialisation and again on every i18next
+`languageChanged` event. Because only `en` has resources, every shipped build SHALL be
+`lang="en"` and `dir="ltr"`, even when the detected language is right-to-left. The static
+`<html lang="en">` in `index.html` applies only until the config module runs.
 
-#### Scenario: Editor mounts
+#### Scenario: Start-up
 
-- **WHEN** `I18nProvider` mounts with the active language `en`
+- **WHEN** the config module initialises with no stored language and an English browser
 - **THEN** `<html>` SHALL have `lang="en"` and `dir="ltr"`
 
-#### Scenario: Language changes to a right-to-left language
+#### Scenario: Right-to-left language without resources
 
-- **WHEN** the active language changes to `ar` while the provider is mounted
+- **WHEN** the detected language is `ar` and no `ar` resources exist
+- **THEN** `<html>` SHALL have `lang="en"` and `dir="ltr"`
+
+#### Scenario: Right-to-left language with resources
+
+- **WHEN** `ar` resources are registered and the language changes to `ar`
 - **THEN** `<html>` SHALL have `lang="ar"` and `dir="rtl"`
+
+#### Scenario: Regional right-to-left code
+
+- **WHEN** `ar` resources are registered and the resolved language is `ar-EG`
+- **THEN** `<html dir>` SHALL be `rtl`
 
 #### Scenario: Language changes back to a left-to-right language
 
-- **WHEN** the active language changes from `ar` to `en` while the provider is mounted
+- **WHEN** the language changes from `ar` (with resources) to `en`
 - **THEN** `<html>` SHALL have `lang="en"` and `dir="ltr"`
-
-#### Scenario: Provider unmounted
-
-- **WHEN** the language changes after `I18nProvider` has unmounted
-- **THEN** `<html dir>` SHALL NOT change
 
 ### Requirement: Resolving localized entity text
 
@@ -145,16 +194,25 @@ blank (empty or whitespace-only) string SHALL count as missing at every step.
 
 When QuickApps maps chat-api entities on load (`src/utils/dial-client.ts`), it SHALL flatten
 the `displayName` of models, toolsets and the edited application with `getLocalizedText` in
-`en`, falling back to the entity id, and SHALL flatten model and toolset descriptions the same
-way, leaving them unset when no text is usable. Editor surfaces that display an add-on or
-model name (selected model card, add-on lists, add-on details, catalog pickers, and the `name`
-of agent (DIAL app) toolset entries written by `buildQuickApp2Config`) SHALL pass the name through
-`getLocalizedText` with the hook's active `language` and the entity id as the fallback.
+`en`, falling back to the entity id. It SHALL flatten model and toolset descriptions the same
+way, leaving them unset when no text is usable.
+
+Several editor surfaces display an add-on or model name: the selected model card, add-on
+lists, add-on details, catalog pickers, and the `name` of agent (DIAL app) toolset entries
+written by `buildQuickApp2Config`. These surfaces SHALL pass the name through
+`getLocalizedText` with `i18n.resolvedLanguage` (from `react-i18next`'s `useTranslation()`)
+and the entity id as the fallback. Entity text is therefore shown in the same language as
+the UI, never in a detected language that has no UI resources.
 
 #### Scenario: Model with a translated name
 
 - **WHEN** chat-api returns a model whose `displayName` is `{ en: "GPT", fr: "GPT FR" }`
 - **THEN** the editor SHALL show `"GPT"`
+
+#### Scenario: Browser language matches an entity translation but not the UI
+
+- **WHEN** the browser language is `fr` and a model's `displayName` is `{ en: "GPT", fr: "GPT FR" }`
+- **THEN** the editor SHALL show `"GPT"`, because the resolved UI language is `en`
 
 #### Scenario: Model without a usable name
 
@@ -189,4 +247,3 @@ fields").
 
 - **WHEN** neither `primaryLocale` nor `locales` is present
 - **THEN** the result SHALL be the primary value as given
-

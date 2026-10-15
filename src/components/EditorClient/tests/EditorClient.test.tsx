@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setupTestRoot } from '@/test-utils/test-root';
 
 import { AUTO_SAVE_INTERVAL_MS, DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
-import { CommonI18nKeys } from '@/constants/i18n';
+import { BasicI18nKeys } from '@/constants/translation-keys';
 import type { QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form/QuickApp2Form';
 import type { QuickApp2Form } from '@/form/quickApp2Form';
 import {
@@ -38,7 +38,6 @@ const mocks = vi.hoisted(() => ({
   formProps: null as FormStandInProps | null,
 }));
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 
 vi.mock('@/utils/dial-client', () => ({
   fetchDialApp: mocks.fetchDialApp,
@@ -164,7 +163,7 @@ describe('EditorClient application load outcomes', () => {
 
     await renderEditor();
 
-    expect(dom.container.querySelector(`[aria-label="${CommonI18nKeys.Loading}"]`)).not.toBeNull();
+    expect(dom.container.querySelector(`[aria-label="${BasicI18nKeys.Loading}"]`)).not.toBeNull();
     expect(getForm()).toBeNull();
   });
 

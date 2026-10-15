@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
+import type { TFunction } from 'i18next';
 
-import { CommonI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import {
   ApplicationStatus,
   ToolsetAuthStatus,
@@ -95,7 +96,7 @@ describe('getEntityStatus', () => {
 });
 
 describe('getEntityStatusMessage', () => {
-  const t = vi.fn((key: string) => key);
+  const t = vi.fn((key: string) => key) as unknown as TFunction & ReturnType<typeof vi.fn>;
 
   it('returns undefined when status is absent or has no active state', () => {
     expect(getEntityStatusMessage(undefined, false, t)).toBeUndefined();
@@ -110,37 +111,37 @@ describe('getEntityStatusMessage', () => {
         t,
         'toolset',
       ),
-    ).toBe(CommonI18nKeys.UnavailableEntityRemovalRequired);
-    expect(t).toHaveBeenLastCalledWith(CommonI18nKeys.UnavailableEntityRemovalRequired, {
+    ).toBe(ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired);
+    expect(t).toHaveBeenLastCalledWith(ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired, {
       entityType: 'toolset',
     });
 
     expect(
       getEntityStatusMessage(createStatus({ isNotFoundInCatalog: true }), false, t),
-    ).toBe(CommonI18nKeys.UnavailableEntityRemovalRequired);
-    expect(t).toHaveBeenLastCalledWith(CommonI18nKeys.UnavailableEntityRemovalRequired, {
+    ).toBe(ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired);
+    expect(t).toHaveBeenLastCalledWith(ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired, {
       entityType: '',
     });
   });
 
   it('returns the appropriate logged-out message for read-only state', () => {
     expect(getEntityStatusMessage(createStatus({ isLoggedOut: true }), true, t)).toBe(
-      CommonI18nKeys.LoggedOutToolset,
+      ApplicationEditorI18nKeys.AddOnsLoggedOutToolset,
     );
     expect(getEntityStatusMessage(createStatus({ isLoggedOut: true }), false, t)).toBe(
-      CommonI18nKeys.LoggedOutToolsetClickHint,
+      ApplicationEditorI18nKeys.AddOnsLoggedOutToolsetClickHint,
     );
   });
 
   it.each([
-    ["isDeploying", 'DeployingApp'],
-    ["isUndeploying", 'UndeployingApp'],
-    ["isRedeploying", 'RedeployingApp'],
-    ["isUndeployed", 'UndeployedApp'],
+    ["isDeploying", 'AddOnsDeployingApp'],
+    ["isUndeploying", 'AddOnsUndeployingApp'],
+    ["isRedeploying", 'AddOnsRedeployingApp'],
+    ["isUndeployed", 'AddOnsUndeployedApp'],
   ])('returns the message for %s', (statusKey, messageKey) => {
     expect(
       getEntityStatusMessage(createStatus({ [statusKey]: true }), false, t),
-    ).toBe(CommonI18nKeys[messageKey as keyof typeof CommonI18nKeys]);
+    ).toBe(ApplicationEditorI18nKeys[messageKey as keyof typeof ApplicationEditorI18nKeys]);
   });
 
   it('prioritizes catalog and lifecycle states', () => {
@@ -150,13 +151,13 @@ describe('getEntityStatusMessage', () => {
         false,
         t,
       ),
-    ).toBe(CommonI18nKeys.UnavailableEntityRemovalRequired);
+    ).toBe(ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired);
     expect(
       getEntityStatusMessage(
         createStatus({ isLoggedOut: true, isDeploying: true }),
         false,
         t,
       ),
-    ).toBe(CommonI18nKeys.LoggedOutToolsetClickHint);
+    ).toBe(ApplicationEditorI18nKeys.AddOnsLoggedOutToolsetClickHint);
   });
 });

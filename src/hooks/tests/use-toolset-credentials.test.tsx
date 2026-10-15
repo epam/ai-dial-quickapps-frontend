@@ -17,7 +17,6 @@ const { postToHost, toolsetsApi, dataContext } = vi.hoisted(() => ({
   dataContext: { applyToolsetAuthResult: vi.fn(), refreshToolsets: vi.fn() },
 }));
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/AppContext', () => ({
   useAppContext: () => ({ settings: { allowedOrigins: [HOST] } }),
 }));

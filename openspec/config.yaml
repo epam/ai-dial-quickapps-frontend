@@ -18,7 +18,9 @@ context: |
     TypeScript imports omit `.js`/`.ts`/`.tsx` extensions (resource files like
     .css/.json keep theirs). Do not change to node16/nodenext.
   - Styling: Tailwind CSS 3
-  - i18n: i18next + react-i18next (namespaces: quickAppEditor, common)
+  - i18n: i18next + react-i18next + i18next-browser-languagedetector, same setup as
+    ai-dial-chat (one `translation` namespace, semantic keys, enums in
+    src/constants/translation-keys.ts)
   - Forms: react-hook-form + zod (pending removal — see docs/TECH_DEBT.md)
   - State: React Context (AppContext, DataContext, AuthContext, ThemeContext) + custom hooks
   - Testing: Vitest 4 + jsdom
@@ -134,8 +136,8 @@ rules:
     # naming, enums, import extensions, async/await) are NOT repeated here — they
     # auto-load from .claude/rules/*.md and AGENTS.md when matching files are
     # touched. This block governs design decisions only.
-    - 'All user-visible strings go through react-i18next useTranslation — pick the
-      correct namespace (quickAppEditor, common).'
+    - 'All user-visible strings go through react-i18next useTranslation() with a key
+      from the enums in src/constants/translation-keys.ts — never a raw string key.'
     - Do not call fetch directly in components — route every DIAL entity call
       through the typed chat-api client (src/utils/chat-api-client.ts,
       dial-client.ts, dial-files-api.ts, etc.), never a hardcoded endpoint.
@@ -167,7 +169,7 @@ rules:
       this app never defines its own API routes. Include a concrete example request
       and response payload, not just type names. Flag it as an upstream ask if
       chat-api has no suitable endpoint yet.
-    - Include i18n key names (namespace + key) for all new user-visible strings
+    - Include i18n key names (enum member + key path) for all new user-visible strings
     - State the RTL / direction impact for any new UI — whether it needs logical
       properties and icon mirroring (see .claude/rules/rtl.md); say "none" only
       when the surface is direction-agnostic
@@ -207,8 +209,9 @@ rules:
     - Test names describe observable behaviour — not implementation details
     - Tests must use role, label, and text queries instead of implementation-specific selectors
     - Do not add manual testing tasks
-    - Add i18n keys to the correct locale JSON file(s) as a dedicated task when new
-      strings are introduced, for every supported locale
+    - Add i18n keys to src/i18n/locales/en.json, with their enum members in
+      src/constants/translation-keys.ts, as a dedicated task when new strings are
+      introduced, for every supported locale
     - Add a dedicated RTL task for new UI — logical Tailwind classes (ms/me, ps/pe,
       start/end), directional-icon mirroring, and an RTL check (see .claude/rules/rtl.md)
     - Add a docs-update task when the change alters behaviour documented under docs/

@@ -5,7 +5,7 @@ import { getButton } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
 
 import { DialEntityType } from '@/types/dial-entities';
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
 import { AddOnSchemaKeys } from '@/types/quick-app-form';
 import type { DialModel, DialToolset } from '@/types/dial-entities';
 
@@ -26,7 +26,6 @@ const RESEARCH: DialModel = {
   type: DialEntityType.Application,
 };
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/hooks/use-search-params', () => ({
   useSearchParams: () => ({ get: (key: string) => searchParams.get(key) ?? null }),
 }));
@@ -75,10 +74,10 @@ vi.mock('@/components/Agents/AgentsList/AgentsList', () => ({
   ),
 }));
 vi.mock('@/components/Toolsets/AddToolsetsModal/AddToolsetsModal', () => ({
-  AddToolsetsModal: () => <div role="dialog" aria-label="Add toolset" />,
+  AddToolsetsModal: () => <div role="dialog" aria-label={ApplicationEditorI18nKeys.ToolsetsAdd} />,
 }));
 vi.mock('@/components/Agents/AddAgentsModal/AddAgentsModal', () => ({
-  AddAgentsModal: () => <div role="dialog" aria-label="Add agent" />,
+  AddAgentsModal: () => <div role="dialog" aria-label={ApplicationEditorI18nKeys.AgentsAdd} />,
 }));
 
 const dom = setupTestRoot();
@@ -127,7 +126,9 @@ const getByAriaLabel = (label: string) =>
 const getHeadings = () => [...dom.container.querySelectorAll('h3')].map((h) => h.textContent);
 
 const getAddButtons = () =>
-  [...dom.container.querySelectorAll('button')].filter((button) => button.textContent === 'Add');
+  [...dom.container.querySelectorAll('button')].filter(
+    (button) => button.textContent === ButtonsI18nKeys.Add,
+  );
 
 const clickAndWait = async (element?: Element) => {
   await act(async () => {
@@ -140,8 +141,13 @@ describe('AddOnsSection', () => {
   it('renders Skills, Toolsets, Agents, Knowledge base and Conversation starters in that order', async () => {
     await renderSection();
 
-    expect(dom.container.querySelector('section[aria-label="Add-ons"]')).toBeTruthy();
-    expect(getHeadings()).toEqual([QuickAppEditorI18nKeys.Toolsets, QuickAppEditorI18nKeys.Agents]);
+    expect(
+      dom.container.querySelector(`section[aria-label="${ApplicationEditorI18nKeys.AddOnsTitle}"]`),
+    ).toBeTruthy();
+    expect(getHeadings()).toEqual([
+      ApplicationEditorI18nKeys.ToolsetsTitle,
+      ApplicationEditorI18nKeys.AgentsTitle,
+    ]);
 
     const order = [
       getByAriaLabel('Skills row'),
@@ -160,8 +166,8 @@ describe('AddOnsSection', () => {
   it('shows each empty row its own description', async () => {
     await renderSection();
 
-    expect(dom.container.textContent).toContain(QuickAppEditorI18nKeys.ToolsetsDescription);
-    expect(dom.container.textContent).toContain(QuickAppEditorI18nKeys.AgentsDescription);
+    expect(dom.container.textContent).toContain(ApplicationEditorI18nKeys.ToolsetsDescription);
+    expect(dom.container.textContent).toContain(ApplicationEditorI18nKeys.AgentsDescription);
   });
 
   it('splits the entries between the Toolsets and Agents rows', async () => {
@@ -173,8 +179,8 @@ describe('AddOnsSection', () => {
     expect(getByAriaLabel('Agents list')?.textContent).toBe(`${RESEARCH.id}gpt-x`);
     // A populated row hides its description; the other one keeps it.
     await renderSection({ ids: [FIGMA.id] });
-    expect(dom.container.textContent).not.toContain(QuickAppEditorI18nKeys.ToolsetsDescription);
-    expect(dom.container.textContent).toContain(QuickAppEditorI18nKeys.AgentsDescription);
+    expect(dom.container.textContent).not.toContain(ApplicationEditorI18nKeys.ToolsetsDescription);
+    expect(dom.container.textContent).toContain(ApplicationEditorI18nKeys.AgentsDescription);
   });
 
   it('hands back the full id list when a toolset is removed', async () => {
@@ -191,18 +197,18 @@ describe('AddOnsSection', () => {
     const [toolsetsAdd, agentsAdd] = getAddButtons();
 
     await clickAndWait(toolsetsAdd);
-    expect(getByAriaLabel('Add toolset')).toBeTruthy();
+    expect(getByAriaLabel(ApplicationEditorI18nKeys.ToolsetsAdd)).toBeTruthy();
 
     await clickAndWait(agentsAdd);
-    expect(getByAriaLabel('Add agent')).toBeTruthy();
+    expect(getByAriaLabel(ApplicationEditorI18nKeys.AgentsAdd)).toBeTruthy();
   });
 
   it('opens Add agent on load from the agentsAndToolsetsModal deep link', async () => {
     searchParams.set('agentsAndToolsetsModal', '1');
     await renderSection();
 
-    expect(getByAriaLabel('Add agent')).toBeTruthy();
-    expect(getByAriaLabel('Add toolset')).toBeUndefined();
+    expect(getByAriaLabel(ApplicationEditorI18nKeys.AgentsAdd)).toBeTruthy();
+    expect(getByAriaLabel(ApplicationEditorI18nKeys.ToolsetsAdd)).toBeUndefined();
   });
 
   it('keeps both pickers closed in a read-only application, even with the deep link', async () => {

@@ -1,8 +1,11 @@
 # toolsets_selection Specification
 
 ## Purpose
+
 Defines how the Quick App editor lists, inspects, signs into, removes and picks toolsets in the Toolsets row of the Add-ons card: the attached toolsets list (with the logged-out badge and a hover remove button), the toolset details popup (About, Overview and Tools tabs, Log in / Log out, and a Delete that detaches the toolset from the app only), and the Add toolset popup (catalog list with search, From filter, sort and multi-selection confirmed with Add). The toolsets are the toolset entries of the editor's `addOns` form value (owned by `useQuickApp2Form`), which it shares with `agents_selection`; toolset data comes from `DataContext`, and the popups keep their own UI state locally.
+
 ## Requirements
+
 ### Requirement: Toolset entries of the add-ons value
 
 The Toolsets row SHALL show and edit only the toolset entries of the `addOns` form value (owned by `useQuickApp2Form`). An entry is a toolset entry when any of these holds:
@@ -40,13 +43,13 @@ The Toolsets row of the Add-ons card SHALL list the attached toolsets in `addOns
 - the name: `getLocalizedText(name, language)`, falling back to the id's last segment without version;
 - the version as secondary text, only when one is known.
 
-**Logged-out badge.** When the toolset needs authentication (`authSettings.authenticationType` is not `NONE`) and `authSettings.authStatus` is not `SIGNED_IN`, the avatar SHALL carry the catalog `CredentialsBadge` from `@epam/ai-dial-catalog`. Its label SHALL be `quickAppEditor` key `ToolsetLoggedOutBadge` ("Authorize to use this toolset.").
+**Logged-out badge.** When the toolset needs authentication (`authSettings.authenticationType` is not `NONE`) and `authSettings.authStatus` is not `SIGNED_IN`, the avatar SHALL carry the catalog `CredentialsBadge` from `@epam/ai-dial-catalog`. Its label SHALL be `CatalogI18nKeys.CredentialsBadgeLoggedOut` ("Authorize to use this toolset.").
 
 **Status line.** Below the name, the item SHALL show the status text from `getEntityStatusMessage` (read-only wording) when the toolset is logged out or is not found in the catalog.
 
-**Details button.** Each item SHALL hold a button named by `quickAppEditor` key `AddOnDetails` with `{{name}}` (e.g. "Figma details"). Activating it SHALL open the toolset details popup.
+**Details button.** Each item SHALL hold a button named by `ApplicationEditorI18nKeys.AddOnsDetails` with `{{name}}` (e.g. "Figma details"). Activating it SHALL open the toolset details popup.
 
-**Remove button.** In an editable application, each item SHALL also hold a remove button at its end: a ui-kit ghost icon button with a trash icon, named by `quickAppEditor` key `RemoveAddOn` with `{{name}}`. It SHALL be visible only while the item is hovered or holds keyboard focus (`:focus-visible`), and SHALL stay in the tab order. Focus that returns to the item after a popup is closed with the mouse SHALL NOT reveal it. Activating it SHALL remove that id from `addOns` without opening the popup, and SHALL move focus to the first remaining item in the row. Read-only applications SHALL NOT render it.
+**Remove button.** In an editable application, each item SHALL also hold a remove button at its end: a ui-kit ghost icon button with a trash icon, named by `ApplicationEditorI18nKeys.AddOnsRemove` with `{{name}}`. It SHALL be visible only while the item is hovered or holds keyboard focus (`:focus-visible`), and SHALL stay in the tab order. Focus that returns to the item after a popup is closed with the mouse SHALL NOT reveal it. Activating it SHALL remove that id from `addOns` without opening the popup, and SHALL move focus to the first remaining item in the row. Read-only applications SHALL NOT render it.
 
 **Not rendered.** Items SHALL NOT render a chip box, a tooltip or a configure (gear) button.
 
@@ -61,7 +64,7 @@ The Toolsets row of the Add-ons card SHALL list the attached toolsets in `addOns
 #### Scenario: Toolset missing from the catalog
 
 - **WHEN** an attached id `toolsets/public/old-tool` is not in `toolsetsMap`
-- **THEN** its item SHALL show "old-tool" and the `common` `UnavailableEntityRemovalRequired` status text
+- **THEN** its item SHALL show "old-tool" and the `ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired` status text
 - **AND** activating it SHALL open the details popup in its unavailable state
 
 #### Scenario: Remove button hides after the details popup is closed with the mouse
@@ -86,14 +89,14 @@ The Toolsets row of the Add-ons card SHALL list the attached toolsets in `addOns
 
 Activating a Toolsets row item SHALL open a modal dialog (ui-kit `Popup`, `PopupSize.Lg`) for that toolset.
 
-**Header:** the catalog `DetailsHeader` from `@epam/ai-dial-catalog`, as `catalog-entity-details` specifies: the icon, the type caption from `quickAppEditor` key `ToolsetTypeLabel` ("Toolset"), the name and the version, and the folder path; plus a close (×) control labelled by `common` `CloseDialog`. The popup avatar SHALL NOT carry the logged-out badge; the row item keeps it.
+**Header:** the catalog `DetailsHeader` from `@epam/ai-dial-catalog`, as `catalog-entity-details` specifies: the icon, the type caption from `ApplicationEditorI18nKeys.ToolsetsTypeLabel` ("Toolset"), the name and the version, and the folder path; plus a close (×) control labelled by `BasicI18nKeys.CloseDialog`. The popup avatar SHALL NOT carry the logged-out badge; the row item keeps it.
 
 The dialog's accessible name SHALL be the toolset name.
 
 **Credentials action:** the `DetailsHeader` credentials action, shown only in an editable application when the toolset needs authentication:
 
-- OAuth, signed out: **Log in** (`quickAppEditor` `LoginToolsetAction`); signed in: **Log out** (`LogoutToolsetAction`).
-- API key, no key: **API key** (`ApiKeyLabel`); key on file: **Change API key** (`ToolsetChangeApiKeyAction`). Both open the catalog personal API-key popover to add or delete the key.
+- OAuth, signed out: **Log in** (`ButtonsI18nKeys.LogIn`); signed in: **Log out** (`ButtonsI18nKeys.LogOut`).
+- API key, no key: **API key** (`ToolsetSigninI18nKeys.ApiKeyLabel`); key on file: **Change API key** (`CatalogI18nKeys.CredentialsChangeApiKeyActionLabel`). Both open the catalog personal API-key popover to add or delete the key.
 
 The popup SHALL show no status banner and no sign-in error line: the logged-out state is the header's Log in action, as in the catalog.
 
@@ -107,8 +110,8 @@ The popup SHALL open on About. A tab whose data the details lack SHALL NOT be sh
 
 **Footer:**
 
-- **Delete** (`quickAppEditor` `RemoveAddOnFromApp`, "Delete") at the start edge: a danger, outlined button with a leading trash icon.
-- **Close** (`quickAppEditor` `Close`) at the end edge.
+- **Delete** (`ButtonsI18nKeys.Delete`, "Delete") at the start edge: a danger, outlined button with a leading trash icon.
+- **Close** (`ButtonsI18nKeys.Close`) at the end edge.
 
 `DetailsHeader` SHALL show no other action: no Use in chat, Share, Publish, Edit, Download or Manage menu.
 
@@ -127,7 +130,7 @@ The popup SHALL be loaded with `React.lazy`, because it imports from `@epam/ai-d
 #### Scenario: Toolset unavailable
 
 - **WHEN** the popup opens for an attached toolset that is not in `toolsetsMap`
-- **THEN** the header SHALL show the fallback name, and the content SHALL show `quickAppEditor` `ToolsetUnavailable` ("This toolset is no longer available") in place of the tabs
+- **THEN** the header SHALL show the fallback name, and the content SHALL show `ApplicationEditorI18nKeys.ToolsetsUnavailable` ("This toolset is no longer available") in place of the tabs
 - **AND** no chat-api request SHALL be made, no credentials action SHALL be shown, and Delete SHALL still be offered in an editable application
 
 ### Requirement: Toolset About and Overview tabs
@@ -142,17 +145,17 @@ This app SHALL NOT build Overview rows, tool lists or tool filtering of its own.
 
 The Tools tab's strings come from `useCatalogDetailsLabels`' `tabs.tools`, memoised on the language with the other labels:
 
-- search placeholder and accessible name: `quickAppEditor` → `Search tools...` (`QuickAppEditorI18nKeys.SearchTools`);
-- clear button: `common` → `Clear search` (`CommonI18nKeys.ClearSearch`);
-- count: `quickAppEditor` → `{{count}} tools` (`QuickAppEditorI18nKeys.ToolsCount`);
-- no results: `quickAppEditor` → `No results found` (`QuickAppEditorI18nKeys.NoResultsFound`).
+- search placeholder and accessible name: `Search tools...` (`CatalogI18nKeys.DetailsToolsSearchPlaceholder`);
+- clear button: `Clear search` (`BasicI18nKeys.ClearSearch`);
+- count: `{{count}} tools` (`CatalogI18nKeys.DetailsToolCount`);
+- no results: `No results found` (`BasicI18nKeys.NoResults`).
 
 The catalog announces the count in a `role="status"` polite live region, so screen readers hear the result count while typing. The search field takes its accessible name from the placeholder, and its clear button is keyboard-reachable. RTL impact: none for this app. The layout and the field's icon are the catalog's, which uses logical properties, and no directional icon is added.
 
 #### Scenario: Overview from the details
 
 - **WHEN** the details of `toolsets/public/figma` carry `owner: "Figma"`, `catalogProperties.provider: "Figma"` and OAuth authentication
-- **THEN** Overview SHALL show a Specification section with Authentication, Provider "Figma" and Hosted by "Figma", labelled with the translated `quickAppEditor` keys
+- **THEN** Overview SHALL show a Specification section with Authentication, Provider "Figma" and Hosted by "Figma", labelled with the translated catalog keys
 
 #### Scenario: Tools from the allow-list
 
@@ -218,11 +221,11 @@ After a successful result, the details popup SHALL stay open. Its header action 
 
 The Toolsets row's Add action SHALL open the **Add toolset** popup. It SHALL match the Add skill popup (`skills_catalog` "Add skill popup catalog list", "… search, filter and sort", "… multi-selection", "… loading and error states") with these differences:
 
-- **Rows:** title `quickAppEditor` `AddToolset` ("Add toolset"); heading `ToolsetsCatalog` ("Toolsets catalog"); search placeholder and name `SearchToolsets` ("Search toolsets...").
-- **Content:** the rows are `DataContext.toolsets` without hidden-folder ids and without the application being edited, mapped by `mapToolsetToCatalogItem`. The mapping SHALL carry `credentials`, so `ListView` shows the logged-out badge with the `ToolsetLoggedOutBadge` label.
+- **Rows:** title `ApplicationEditorI18nKeys.ToolsetsAdd` ("Add toolset"); heading `ApplicationEditorI18nKeys.ToolsetsCatalogTitle` ("Toolsets catalog"); search placeholder and name `ApplicationEditorI18nKeys.ToolsetsSearchPlaceholder` ("Search toolsets...").
+- **Content:** the rows are `DataContext.toolsets` without hidden-folder ids and without the application being edited, mapped by `mapToolsetToCatalogItem`. The mapping SHALL carry `credentials`, so `ListView` shows the logged-out badge with the `CatalogI18nKeys.CredentialsBadgeLoggedOut` label.
 - **List:** `ListView` uses `type={CatalogEntityType.Toolset}`, `CatalogSelectionMode.Multiple` and `isReadonly` (no Favorite column).
-- **Checkbox names:** row checkboxes use `SelectAddOn` ("Select {{name}}") and select-all uses `SelectAllToolsets`.
-- **States:** the loading label is `LoadingToolsets`, the error title `FailedToLoadToolsets`, and the empty-catalog title `NoToolsetsAvailable`.
+- **Checkbox names:** row checkboxes use `ApplicationEditorI18nKeys.AddOnsSelect` ("Select {{name}}") and select-all uses `ApplicationEditorI18nKeys.ToolsetsSelectAll`.
+- **States:** the loading label is `ApplicationEditorI18nKeys.ToolsetsLoading`, the error title `ApplicationEditorI18nKeys.ToolsetsLoadError`, and the empty-catalog title `ApplicationEditorI18nKeys.ToolsetsEmpty`.
 - **Pre-check:** only the attached toolset ids start checked.
 - **Add** SHALL apply `applyCatalogSelection(allIds, checkedIds, listedIds)` (`src/utils/apply-catalog-selection.ts`, generalised from `apply-skill-selection.ts`) to the full `addOns` id list:
   - kept entries and every agent entry stay in place, with their tool data;
@@ -268,5 +271,4 @@ The Toolsets row, the Add toolset popup and the toolset details popup SHALL be k
 #### Scenario: Localization
 
 - **WHEN** any of the three surfaces is rendered in a supported locale
-- **THEN** every user-visible string SHALL come from the `quickAppEditor` or `common` keys named in this spec or in `catalog-entity-details`, and none SHALL be hardcoded
-
+- **THEN** every user-visible string SHALL come from the translation keys named in this spec or in `catalog-entity-details`, and none SHALL be hardcoded

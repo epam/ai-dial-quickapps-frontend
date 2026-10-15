@@ -2,10 +2,9 @@ import { IconAlertTriangle } from '@tabler/icons-react';
 import { FC, memo } from 'react';
 
 import AuthStateScreen from '@/components/common/AuthStateScreen/AuthStateScreen';
-import { CommonI18nKeys } from '@/constants/i18n';
-import { useTranslation } from '@/hooks/use-translation';
+import { AuthI18nKeys } from '@/constants/translation-keys';
+import { useTranslation } from 'react-i18next';
 import { AuthErrorReason } from '@/types/auth';
-import { Translation } from '@/types/translation';
 import { DIAL_ICON_SIZE, DIAL_KIT_ICON_STROKE } from '@epam/ai-dial-ui-kit';
 
 interface AuthErrorProps {
@@ -15,16 +14,16 @@ interface AuthErrorProps {
 }
 
 const AuthError: FC<AuthErrorProps> = ({ reason, provider }) => {
-  const { t } = useTranslation(Translation.Common);
+  const { t } = useTranslation();
 
   let description: string;
   switch (reason) {
     case AuthErrorReason.ProviderNotConfigured:
-      description = t(CommonI18nKeys.AuthErrorProviderNotConfigured, { provider });
+      description = t(AuthI18nKeys.ErrorProviderNotConfigured, { provider });
       break;
     case AuthErrorReason.NoProvider:
     default:
-      description = t(CommonI18nKeys.AuthErrorNoProvider);
+      description = t(AuthI18nKeys.ErrorNoProvider);
       break;
   }
 
@@ -32,7 +31,7 @@ const AuthError: FC<AuthErrorProps> = ({ reason, provider }) => {
   return (
     <AuthStateScreen
       icon={<IconAlertTriangle size={DIAL_ICON_SIZE.LG} stroke={DIAL_KIT_ICON_STROKE} />}
-      title={t(CommonI18nKeys.AuthErrorTitle)}
+      title={t(AuthI18nKeys.ErrorTitle)}
       description={description}
     />
   );

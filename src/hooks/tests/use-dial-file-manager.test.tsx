@@ -10,7 +10,7 @@ import {
   type DialFile,
 } from '@epam/ai-dial-react-file-manager';
 
-import { DialFileManagerI18nKeys } from '@/constants/i18n';
+import { DialFileManagerI18nKeys } from '@/constants/translation-keys';
 import { FileUploadStatus } from '@/types/file-manager';
 import {
   useDialFileManager,
@@ -27,7 +27,6 @@ import {
 } from '@/utils/dial-files-api';
 import { FilesApiNodeType, type ListFilesItem } from '@/types/dial-files';
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/utils/dial-files-api', () => ({
   createFolder: vi.fn(),
   deleteFiles: vi.fn(),

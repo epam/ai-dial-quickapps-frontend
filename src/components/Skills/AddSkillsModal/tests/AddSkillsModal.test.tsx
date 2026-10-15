@@ -1,6 +1,11 @@
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { describe, expect, it, vi } from 'vitest';
 
+import {
+  ApplicationEditorI18nKeys,
+  BasicI18nKeys,
+  CatalogI18nKeys,
+} from '@/constants/translation-keys';
 import { setupTestRoot } from '@/test-utils/test-root';
 import { DialEntityType } from '@/types/dial-entities';
 import type { AddOnCatalogModalProps } from '@/components/common/AddOnCatalogModal/AddOnCatalogModal';
@@ -24,7 +29,6 @@ const WEB_SEARCH = makeSkill('skills/public/web-search', 'Web Search');
 const MINE = makeSkill(`skills/${USER_BUCKET}/mine`, 'My notes', { isMy: true });
 const HIDDEN = makeSkill('skills/public/.dial_folder', '.dial_folder');
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({ skills: [WEB_SEARCH, HIDDEN, MINE], userBucket: USER_BUCKET }),
 }));
@@ -46,8 +50,8 @@ describe('AddSkillsModal', () => {
     const props = captured.props as AddOnCatalogModalProps;
     expect(props.type).toBe(CatalogEntityType.Skill);
     expect(props.items.map((item) => [item.name, item.folder.join(' / ')])).toEqual([
-      ['Web Search', 'Organization'],
-      ['My notes', 'Personal'],
+      ['Web Search', BasicI18nKeys.Organization],
+      ['My notes', CatalogI18nKeys.FolderPersonal],
     ]);
     expect(props.attachedIds).toEqual(value);
     expect(props.initialCheckedIds).toEqual(value);
@@ -59,14 +63,14 @@ describe('AddSkillsModal', () => {
 
     const { labels } = captured.props as AddOnCatalogModalProps;
     expect(labels).toMatchObject({
-      title: 'Add skill',
-      catalog: 'Skills catalog',
-      search: 'Search skills...',
-      loading: 'Loading skills…',
-      failedToLoad: 'Failed to load skills',
-      empty: 'No Agent Skills added',
-      selectAll: 'Select all skills',
+      title: ApplicationEditorI18nKeys.SkillsAdd,
+      catalog: ApplicationEditorI18nKeys.SkillsCatalogTitle,
+      search: ApplicationEditorI18nKeys.SkillsSearchPlaceholder,
+      loading: ApplicationEditorI18nKeys.SkillsLoading,
+      failedToLoad: CatalogI18nKeys.SkillsLoadError,
+      empty: ApplicationEditorI18nKeys.SkillsEmpty,
+      selectAll: ApplicationEditorI18nKeys.SkillsSelectAll,
     });
-    expect(labels.selectRow('Web Search')).toBe('Select Web Search');
+    expect(labels.selectRow('Web Search')).toBe(ApplicationEditorI18nKeys.AddOnsSelect);
   });
 });

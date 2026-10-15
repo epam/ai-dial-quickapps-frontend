@@ -142,12 +142,12 @@ sign out from that state.
 The forbidden state SHALL show, centred in the viewport:
 
 - a decorative lock badge
-- a title: `common` namespace, key `CommonI18nKeys.ForbiddenTitle` = "Access denied"
-- a description: `common` namespace, key `CommonI18nKeys.ForbiddenDescription` = "You don't
+- a title: key `AuthI18nKeys.ForbiddenTitle` = "Access denied"
+- a description: key `AuthI18nKeys.ForbiddenDescription` = "You don't
   have permission to access this application."
-- a single sign-out action: `common` namespace, key `CommonI18nKeys.ForbiddenAction` = "Log out"
+- a single sign-out action: key `ButtonsI18nKeys.LogOut` = "Log out"
 
-All of the forbidden state's user-visible text SHALL come from these `common` i18n keys, not
+All of the forbidden state's user-visible text SHALL come from these translation keys, not
 from hardcoded strings. The session state stays in `AuthContext`. The sign-out request in flight
 is local UI state of the forbidden screen.
 
@@ -161,8 +161,8 @@ is local UI state of the forbidden screen.
 #### Scenario: Sign-out is in progress
 
 - **WHEN** the user activates "Log out" and the sign-out request has not finished yet
-- **THEN** the action SHALL be disabled, and its label SHALL change to `common` key
-  `CommonI18nKeys.ForbiddenActionPending` = "Logging out…", so a second request cannot be
+- **THEN** the action SHALL be disabled, and its label SHALL change to key
+  `AuthI18nKeys.LoggingOutPending` = "Logging out…", so a second request cannot be
   started
 
 #### Scenario: Sign-out fails
@@ -179,14 +179,14 @@ as configured (`GET /api/v1/auth/providers`). The prompt is distinct from the lo
 auth-error and forbidden states. It SHALL show, centred in the viewport:
 
 - a decorative lock badge
-- a title: `common` namespace, key `CommonI18nKeys.LoginScreenTitle` = "Log in to configure
+- a title: key `AuthI18nKeys.ConfigureTitle` = "Log in to configure
   your QuickApp"
-- a description: `common` namespace, key `CommonI18nKeys.LoginScreenDescription` = "Set up
+- a description: key `AuthI18nKeys.ConfigureDescription` = "Set up
   instructions, add-ons and settings."
-- a single action button: `common` namespace, key `CommonI18nKeys.LoginScreenAction` = "Log in",
+- a single action button: key `ButtonsI18nKeys.LogIn` = "Log in",
   with a trailing external-link icon that shows the sign-in opens in a separate window
 
-All of the prompt's user-visible text SHALL come from these `common` i18n keys, not from
+All of the prompt's user-visible text SHALL come from these translation keys, not from
 hardcoded strings.
 
 The popup state stays in the `useAuth(provider)` hook (`src/hooks/useAuth.ts`), and the session
@@ -208,8 +208,8 @@ state stays in `AuthContext`. The prompt component SHALL NOT own any auth state 
 #### Scenario: The sign-in popup is already open
 
 - **WHEN** the sign-in popup opened from the prompt is still open
-- **THEN** the action SHALL be disabled, and its label SHALL change to `common` key
-  `CommonI18nKeys.LoginScreenWindowOpen` = "Log-in window is open…", so a second popup cannot be
+- **THEN** the action SHALL be disabled, and its label SHALL change to key
+  `AuthI18nKeys.LoginWindowOpen` = "Log-in window is open…", so a second popup cannot be
   started
 
 #### Scenario: The popup could not be opened
@@ -249,27 +249,27 @@ editor, when the session is unauthenticated and sign-in cannot be offered becaus
 host or deployment is configured. It SHALL show, centred in the viewport:
 
 - a decorative warning badge
-- a title: `common` namespace, key `CommonI18nKeys.AuthErrorTitle` = "Log-in isn't available"
+- a title: key `AuthI18nKeys.ErrorTitle` = "Log-in isn't available"
 - a description that depends on the reason, as in the scenarios below
 
 The state SHALL NOT offer any action, because the user can't fix it from this screen. The reason
 SHALL be passed to the screen as a value of the `AuthErrorReason` string enum
 (`src/types/auth.ts`), never as pre-built display text. All of the state's user-visible text
-SHALL come from `common` i18n keys.
+SHALL come from translation keys.
 
 #### Scenario: No auth provider is requested
 
 - **WHEN** the session is unauthenticated and the host did not pass an `authProvider` query
   parameter
 - **THEN** QuickApps SHALL show the configuration-error state, with the description from
-  `common` key `CommonI18nKeys.AuthErrorNoProvider` = "No auth provider specified for this app"
+  key `AuthI18nKeys.ErrorNoProvider` = "No auth provider specified for this app"
 
 #### Scenario: The requested provider is not configured
 
 - **WHEN** the session is unauthenticated and the requested `authProvider` is not in chat-api's
   providers list (`GET /api/v1/auth/providers`)
 - **THEN** QuickApps SHALL show the configuration-error state, with the description from
-  `common` key `CommonI18nKeys.AuthErrorProviderNotConfigured` = "Auth provider {{provider}} is
+  key `AuthI18nKeys.ErrorProviderNotConfigured` = "Auth provider {{provider}} is
   not configured for this app", where `{{provider}}` is the requested provider identifier
 
 ### Requirement: Forbidden and configuration-error screen accessibility and direction

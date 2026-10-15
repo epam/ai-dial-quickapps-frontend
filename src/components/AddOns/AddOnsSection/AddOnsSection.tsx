@@ -1,13 +1,12 @@
 import { FC, memo, useMemo } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { AddOnSchemaKeys } from '@/types/quick-app-form';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
 import type { QuickApp2FormValues } from '@/types/quick-app-form';
 import { useAddOnEntityMap } from '@/hooks/use-add-on-entity-map';
-import { useTranslation } from '@/hooks/use-translation';
+import { useTranslation } from 'react-i18next';
 import { DialAppTransportType } from '@/types/quick-apps';
-import { Translation } from '@/types/translation';
 import { partitionAddOnIds } from '@/utils/get-add-on-kind';
 
 import AgentSkillsFormSection from '@/components/AgentSkills/AgentSkillsFormSection/AgentSkillsFormSection';
@@ -44,7 +43,7 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
   conversationStarters,
   onConversationStartersSave,
 }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation();
   const entityMap = useAddOnEntityMap();
 
   // Toolsets and Agents both edit `addOns`: each row shows its own
@@ -68,7 +67,7 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
   );
 
   return (
-    <Section title={t(QuickAppEditorI18nKeys.AddOns)}>
+    <Section title={t(ApplicationEditorI18nKeys.AddOnsTitle)}>
       <div className="flex flex-col gap-7">
         <AgentSkillsFormSection
           value={agentSkills}

@@ -7,13 +7,12 @@ import {
   CatalogPickerModal,
   type CatalogPickerModalLabels,
 } from '@/components/common/CatalogPickerModal/CatalogPickerModal';
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys, BasicI18nKeys, DeploymentSelectorI18nKeys } from '@/constants/translation-keys';
 import { useDataContext } from '@/context/DataContext';
 import { useGridRowKeyboardSelect } from '@/hooks/use-grid-row-keyboard-select';
 import { useScopeLabels } from '@/hooks/use-scope-labels';
-import { useTranslation } from '@/hooks/use-translation';
+import { useTranslation } from 'react-i18next';
 import { DialEntityType } from '@/types/dial-entities';
-import { Translation } from '@/types/translation';
 import { isHiddenDialFolderId } from '@/utils/api';
 import { mapModelToCatalogItem } from '@/utils/map-model-to-catalog-item';
 
@@ -35,7 +34,8 @@ const COLUMN_VISIBILITY = { folder: () => true };
  * filter, sort and the selected row then start fresh every time it opens.
  */
 export const ModelCatalogModal: FC<ModelCatalogModalProps> = ({ value, onConfirm, onClose }) => {
-  const { t, language } = useTranslation(Translation.QuickAppEditor);
+  const { t, i18n } = useTranslation();
+  const language = i18n.resolvedLanguage ?? i18n.language;
   const { modelsWithFavorites: models, userBucket } = useDataContext();
   const scopeLabels = useScopeLabels();
 
@@ -56,12 +56,12 @@ export const ModelCatalogModal: FC<ModelCatalogModalProps> = ({ value, onConfirm
 
   const labels = useMemo<CatalogPickerModalLabels>(
     () => ({
-      title: t(QuickAppEditorI18nKeys.ChangeModel),
-      catalog: t(QuickAppEditorI18nKeys.ModelsCatalog),
-      search: t(QuickAppEditorI18nKeys.SearchModels),
-      loading: t(QuickAppEditorI18nKeys.LoadingModels),
-      failedToLoad: t(QuickAppEditorI18nKeys.FailedToLoadModels),
-      empty: t(QuickAppEditorI18nKeys.NotAvailable),
+      title: t(ApplicationEditorI18nKeys.OrchestratorChangeModel),
+      catalog: t(ApplicationEditorI18nKeys.OrchestratorCatalogTitle),
+      search: t(ApplicationEditorI18nKeys.OrchestratorSearchPlaceholder),
+      loading: t(DeploymentSelectorI18nKeys.Loading),
+      failedToLoad: t(DeploymentSelectorI18nKeys.Error),
+      empty: t(BasicI18nKeys.NotAvailable),
     }),
     [t],
   );

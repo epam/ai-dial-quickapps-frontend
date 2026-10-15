@@ -1,13 +1,11 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { setupTestRoot } from '@/test-utils/test-root';
 
-import { CommonI18nKeys } from '@/constants/i18n';
+import { AuthI18nKeys } from '@/constants/translation-keys';
 import { AuthErrorReason } from '@/types/auth';
 
 import AuthError from '../AuthError';
-
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 
 const dom = setupTestRoot();
 
@@ -15,16 +13,16 @@ describe('AuthError', () => {
   it('explains that no auth provider was specified', () => {
     dom.render(<AuthError reason={AuthErrorReason.NoProvider} />);
 
-    expect(dom.container.querySelector('h1')?.textContent).toBe(CommonI18nKeys.AuthErrorTitle);
-    expect(dom.container.querySelector('p')?.textContent).toBe(CommonI18nKeys.AuthErrorNoProvider);
+    expect(dom.container.querySelector('h1')?.textContent).toBe(AuthI18nKeys.ErrorTitle);
+    expect(dom.container.querySelector('p')?.textContent).toBe(AuthI18nKeys.ErrorNoProvider);
   });
 
-  it('names the requested provider when it is not configured', () => {
+  it('explains that the requested provider is not configured', () => {
     dom.render(<AuthError reason={AuthErrorReason.ProviderNotConfigured} provider="keycloak" />);
 
-    expect(dom.container.querySelector('h1')?.textContent).toBe(CommonI18nKeys.AuthErrorTitle);
+    expect(dom.container.querySelector('h1')?.textContent).toBe(AuthI18nKeys.ErrorTitle);
     expect(dom.container.querySelector('p')?.textContent).toBe(
-      'Auth provider keycloak is not configured for this app',
+      AuthI18nKeys.ErrorProviderNotConfigured,
     );
   });
 

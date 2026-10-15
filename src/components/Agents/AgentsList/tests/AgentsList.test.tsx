@@ -1,6 +1,7 @@
 import { act, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { getButton } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
 
@@ -18,7 +19,6 @@ const OFFLINE = makeAgent('applications/public/offline', 'Offline', {
   functionStatus: ApplicationStatus.Undeployed,
 });
 
-vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
 vi.mock('@/hooks/use-add-on-entity-map', () => ({
   useAddOnEntityMap: () => ({ [RESEARCH.id]: RESEARCH, [GPT.id]: GPT, [OFFLINE.id]: OFFLINE }),
 }));
@@ -69,6 +69,19 @@ const Harness = ({ initial, isReadonly = false }: HarnessProps) => {
   );
 };
 
+// `t` returns the key without interpolation, so every row's buttons share a label;
+// a row is found by the entity name it shows, and its buttons are looked up inside it.
+const getRow = (name: string) =>
+  [...dom.container.querySelectorAll('li')].find((li) => li.textContent?.includes(name));
+const getDetailsButton = (name: string) => {
+  const row = getRow(name);
+  return row ? getButton(ApplicationEditorI18nKeys.AddOnsDetails, row) : undefined;
+};
+const getRemoveButton = (name: string) => {
+  const row = getRow(name);
+  return row ? getButton(ApplicationEditorI18nKeys.AddOnsRemove, row) : undefined;
+};
+
 const render = async (initial: string[], isReadonly?: boolean) => {
   await act(async () => {
     dom.root.render(<Harness initial={initial} isReadonly={isReadonly} />);
@@ -83,38 +96,40 @@ describe('AgentsList', () => {
     expect(items[0]).toContain('Research Agent');
     expect(items[0]).toContain('2.1');
     expect(items[1]).toContain('GPT-4o');
-    expect(getButton('GPT-4o details')).toBeTruthy();
+    expect(getDetailsButton('GPT-4o')).toBeTruthy();
   });
 
   it('describes an undeployed agent', async () => {
     await render([OFFLINE.id]);
 
-    expect(dom.container.textContent?.toLowerCase()).toContain('undeployed');
+    expect(dom.container.textContent).toContain(ApplicationEditorI18nKeys.AddOnsUndeployedApp);
   });
 
   it('names an application missing from the catalog after its id and flags it', async () => {
     await render(['applications/public/gone__1.0']);
 
-    expect(getButton('gone details')).toBeTruthy();
-    expect(dom.container.textContent).toContain('needs to be removed');
+    expect(getDetailsButton('gone')).toBeTruthy();
+    expect(dom.container.textContent).toContain(
+      ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired,
+    );
   });
 
   it('removes only that agent and keeps the toolsets', async () => {
     await render([RESEARCH.id, 'toolsets/public/figma', GPT.id]);
 
-    await act(async () => getButton('Remove Research Agent')?.click());
+    await act(async () => getRemoveButton('Research Agent')?.click());
 
     expect(dom.container.querySelector('[data-testid="value"]')?.textContent).toBe(
       `toolsets/public/figma|${GPT.id}`,
     );
-    expect(document.activeElement).toBe(getButton('GPT-4o details'));
+    expect(document.activeElement).toBe(getDetailsButton('GPT-4o'));
   });
 
   it('renders no remove button in a read-only application', async () => {
     await render([RESEARCH.id], true);
 
-    expect(getButton('Research Agent details')).toBeTruthy();
-    expect(getButton('Remove Research Agent')).toBeUndefined();
+    expect(getDetailsButton('Research Agent')).toBeTruthy();
+    expect(getRemoveButton('Research Agent')).toBeUndefined();
   });
 });
 
@@ -129,7 +144,7 @@ describe('AgentsList details popup', () => {
   it('opens the activated agent and closes without changes', async () => {
     await render([RESEARCH.id, GPT.id]);
 
-    await clickAndWait(getButton('GPT-4o details'));
+    await clickAndWait(getDetailsButton('GPT-4o'));
     expect(dom.container.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe(GPT.id);
 
     await clickAndWait(getButton('Close'));
@@ -142,7 +157,7 @@ describe('AgentsList details popup', () => {
   it('detaches the agent on Delete', async () => {
     await render([RESEARCH.id, GPT.id]);
 
-    await clickAndWait(getButton('Research Agent details'));
+    await clickAndWait(getDetailsButton('Research Agent'));
     await clickAndWait(getButton('Delete'));
 
     expect(dom.container.querySelector('[data-testid="value"]')?.textContent).toBe(GPT.id);

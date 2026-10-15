@@ -6,10 +6,7 @@ import { setupTestRoot } from '@/test-utils/test-root';
 import { DialAppTransportType } from '@/types/quick-apps';
 
 import { AgentSettingsTab, type AgentSettingsTabProps } from '../AgentSettingsTab';
-
-vi.mock('@/hooks/use-translation', () => ({
-  useTranslation: () => ({ language: 'en-US', t: (key: string) => key }),
-}));
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 
 const dom = setupTestRoot();
 const onTransportChange = vi.fn();
@@ -42,21 +39,21 @@ describe('AgentSettingsTab', () => {
   it('labels the group "Connect via" and checks MCP when nothing is saved', () => {
     render();
 
-    expect(dom.container.textContent).toContain('Connect via');
-    expect(getRadio('MCP')?.checked).toBe(true);
-    expect(getRadio('Chat Completion')?.checked).toBe(false);
+    expect(dom.container.textContent).toContain(ApplicationEditorI18nKeys.AgentsConnectVia);
+    expect(getRadio(ApplicationEditorI18nKeys.AgentsTransportMcp)?.checked).toBe(true);
+    expect(getRadio(ApplicationEditorI18nKeys.AgentsTransportChatCompletion)?.checked).toBe(false);
   });
 
   it('checks the saved transport', () => {
     render({ transport: DialAppTransportType.ChatCompletion });
 
-    expect(getRadio('Chat Completion')?.checked).toBe(true);
+    expect(getRadio(ApplicationEditorI18nKeys.AgentsTransportChatCompletion)?.checked).toBe(true);
   });
 
   it('reports the chosen transport', () => {
     render();
 
-    act(() => getRadio('Chat Completion')?.click());
+    act(() => getRadio(ApplicationEditorI18nKeys.AgentsTransportChatCompletion)?.click());
 
     expect(onTransportChange).toHaveBeenCalledWith(DialAppTransportType.ChatCompletion);
   });
@@ -64,15 +61,15 @@ describe('AgentSettingsTab', () => {
   it('disables both options when the transport is read-only', () => {
     render({ isTransportDisabled: true });
 
-    expect(getRadio('MCP')?.disabled).toBe(true);
-    expect(getRadio('Chat Completion')?.disabled).toBe(true);
+    expect(getRadio(ApplicationEditorI18nKeys.AgentsTransportMcp)?.disabled).toBe(true);
+    expect(getRadio(ApplicationEditorI18nKeys.AgentsTransportChatCompletion)?.disabled).toBe(true);
   });
 
   it('keeps both options and their names in a right-to-left document', () => {
     document.documentElement.dir = 'rtl';
     render();
 
-    expect(getRadio('MCP')).toBeTruthy();
-    expect(getRadio('Chat Completion')).toBeTruthy();
+    expect(getRadio(ApplicationEditorI18nKeys.AgentsTransportMcp)).toBeTruthy();
+    expect(getRadio(ApplicationEditorI18nKeys.AgentsTransportChatCompletion)).toBeTruthy();
   });
 });

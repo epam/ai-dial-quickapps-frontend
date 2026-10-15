@@ -1,11 +1,10 @@
 import { RadioGroup } from '@epam/ai-dial-ui-kit';
 import { FC, useCallback, useMemo } from 'react';
 
-import { QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { DEFAULT_AGENT_TRANSPORT } from '@/constants/quick-apps';
-import { useTranslation } from '@/hooks/use-translation';
+import { useTranslation } from 'react-i18next';
 import { DialAppTransportType } from '@/types/quick-apps';
-import { Translation } from '@/types/translation';
 
 export interface AgentSettingsTabProps {
   agentId: string;
@@ -25,14 +24,14 @@ export const AgentSettingsTab: FC<AgentSettingsTabProps> = ({
   isTransportDisabled,
   onTransportChange,
 }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
+  const { t } = useTranslation();
 
   const transportItems = useMemo(
     () => [
-      { value: DialAppTransportType.MCP, label: t(QuickAppEditorI18nKeys.MCP) },
+      { value: DialAppTransportType.MCP, label: t(ApplicationEditorI18nKeys.AgentsTransportMcp) },
       {
         value: DialAppTransportType.ChatCompletion,
-        label: t(QuickAppEditorI18nKeys.ChatCompletion),
+        label: t(ApplicationEditorI18nKeys.AgentsTransportChatCompletion),
       },
     ],
     [t],
@@ -46,7 +45,7 @@ export const AgentSettingsTab: FC<AgentSettingsTabProps> = ({
   return (
     <RadioGroup
       name={`transport-${agentId}`}
-      labelProps={{ label: t(QuickAppEditorI18nKeys.ConnectVia) }}
+      labelProps={{ label: t(ApplicationEditorI18nKeys.AgentsConnectVia) }}
       items={transportItems}
       value={transport ?? DEFAULT_AGENT_TRANSPORT}
       onChange={handleTransportChange}

@@ -27,13 +27,12 @@ import { IconTrash } from '@tabler/icons-react';
 import type { SkillFileContent } from '@epam/ai-dial-chat-hooks/skill-editor';
 import { FC, lazy, ReactNode, Suspense, useCallback, useMemo, useState } from 'react';
 
-import { CommonI18nKeys, QuickAppEditorI18nKeys } from '@/constants/i18n';
+import { BasicI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
 import { useAppContext } from '@/context/AppContext';
 import { useCatalogDetailsLabels } from '@/hooks/use-catalog-details-labels';
 import { useContentFileSelection } from '@/hooks/use-content-file-selection';
-import { useTranslation } from '@/hooks/use-translation';
+import { useTranslation } from 'react-i18next';
 import { type AddOnAppTab, type AddOnDetailsTab, DetailsStatus } from '@/types/entity-details';
-import { Translation } from '@/types/translation';
 import { hideHeaderAction } from '@/utils/catalog-details-defaults';
 
 const LOADING_SKELETON_PARAGRAPH = { rows: 1, width: '72px' };
@@ -118,8 +117,7 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
   onDelete,
   onClose,
 }) => {
-  const { t } = useTranslation(Translation.QuickAppEditor);
-  const { t: tCommon } = useTranslation(Translation.Common);
+  const { t } = useTranslation();
   const {
     settings: { dialCoreExternalUrl },
   } = useAppContext();
@@ -221,7 +219,7 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
   const mainButtons = useMemo(
     () => [
       {
-        label: t(QuickAppEditorI18nKeys.Close),
+        label: t(ButtonsI18nKeys.Close),
         variant: ButtonVariant.Primary,
         appearance: ButtonAppearance.Link,
         onClick: onClose,
@@ -356,7 +354,7 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
       headerClassName="items-start p-0 pe-6 pt-4"
       titleClassName="me-0 overflow-visible whitespace-normal"
       size={PopupSize.Lg}
-      closeAriaLabel={tCommon(CommonI18nKeys.CloseDialog)}
+      closeAriaLabel={t(BasicI18nKeys.CloseDialog)}
       bodyClassName="flex h-[70vh] flex-col gap-4 overflow-hidden px-6 pb-5"
       additionalButtons={additionalButtons}
       additionalButtonsOnLeft

@@ -1,6 +1,7 @@
+import type { TFunction } from 'i18next';
 import { isApplicationId, isToolsetId } from '@/utils/api';
 import { ApplicationStatus, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
-import { CommonI18nKeys } from '@/constants/i18n';
+import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { EntityStatusKind } from '@/types/entity-status';
 
 interface EntityStatusFields {
@@ -89,17 +90,17 @@ const getActiveStatusKind = (status: EntityStatus): EntityStatusKind | undefined
 
 // Deploying/undeploying an app isn't an action available from this
 // selector, so these never suggest clicking — they just report the status.
-const STATUS_MESSAGE_KEY_BY_KIND = new Map<EntityStatusKind, CommonI18nKeys>([
-  [EntityStatusKind.Deploying, CommonI18nKeys.DeployingApp],
-  [EntityStatusKind.Undeploying, CommonI18nKeys.UndeployingApp],
-  [EntityStatusKind.Redeploying, CommonI18nKeys.RedeployingApp],
-  [EntityStatusKind.Undeployed, CommonI18nKeys.UndeployedApp],
+const STATUS_MESSAGE_KEY_BY_KIND = new Map<EntityStatusKind, ApplicationEditorI18nKeys>([
+  [EntityStatusKind.Deploying, ApplicationEditorI18nKeys.AddOnsDeployingApp],
+  [EntityStatusKind.Undeploying, ApplicationEditorI18nKeys.AddOnsUndeployingApp],
+  [EntityStatusKind.Redeploying, ApplicationEditorI18nKeys.AddOnsRedeployingApp],
+  [EntityStatusKind.Undeployed, ApplicationEditorI18nKeys.AddOnsUndeployedApp],
 ]);
 
 export const getEntityStatusMessage = (
   status: EntityStatus | undefined,
   isReadonly: boolean | undefined,
-  t: (key: string, options?: Record<string, string>) => string,
+  t: TFunction,
   entityTypeLabel?: string,
 ): string | undefined => {
   if (!status) {
@@ -107,7 +108,7 @@ export const getEntityStatusMessage = (
   }
 
   if (status.isNotFoundInCatalog) {
-    return t(CommonI18nKeys.UnavailableEntityRemovalRequired, {
+    return t(ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired, {
       entityType: entityTypeLabel ?? '',
     });
   }
@@ -116,8 +117,8 @@ export const getEntityStatusMessage = (
     // Clicking the chip opens the sign-in popup directly (no scroll target
     // exists in this simplified selector), so always use the "click on" copy.
     return isReadonly
-      ? t(CommonI18nKeys.LoggedOutToolset)
-      : t(CommonI18nKeys.LoggedOutToolsetClickHint);
+      ? t(ApplicationEditorI18nKeys.AddOnsLoggedOutToolset)
+      : t(ApplicationEditorI18nKeys.AddOnsLoggedOutToolsetClickHint);
   }
 
   const kind = getActiveStatusKind(status);
