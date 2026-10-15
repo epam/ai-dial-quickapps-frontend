@@ -65,6 +65,7 @@ vi.mock('@epam/ai-dial-ui-kit', () => ({
   ButtonAppearance: { Link: 'link' },
   ButtonVariant: { Primary: 'primary', Neutral: 'neutral' },
   PopupSize: { Sm: 'sm' },
+  mergeClasses: (...classes: (string | undefined)[]) => classes.filter(Boolean).join(' '),
   Popup: ({
     open,
     header,
@@ -252,7 +253,7 @@ describe('AdvancedSettingsPopup', () => {
   it('caps the dialog at the design width from the desktop breakpoint', () => {
     renderPopup();
 
-    expect(dom.container.querySelector('[role="dialog"]')?.className).toBe('md:max-w-[586px]');
+    expect(dom.container.querySelector('[role="dialog"]')?.className).toContain('md:max-w-[586px]');
   });
 
   it('shows a placeholder in an empty max attachments input', () => {
