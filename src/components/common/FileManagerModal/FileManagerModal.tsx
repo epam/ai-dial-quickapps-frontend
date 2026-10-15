@@ -25,6 +25,7 @@ import {
   type FileManagerGridRow,
 } from '@epam/ai-dial-react-file-manager';
 
+import { MOBILE_FULLSCREEN_POPUP_CLASS_NAMES } from '@/constants/popup';
 import { ButtonsI18nKeys, DialFileManagerI18nKeys } from '@/constants/translation-keys';
 import { useAuthContext } from '@/context/AuthContext';
 import { useDialFileSources } from '@/hooks/use-dial-file-sources';
@@ -420,7 +421,11 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
         open={isOpen}
         header={t(DialFileManagerI18nKeys.AddTitle)}
         size={PopupSize.Lg}
-        className="flex !h-[min(800px,100dvh)] w-full flex-col"
+        {...MOBILE_FULLSCREEN_POPUP_CLASS_NAMES}
+        className={mergeClasses(
+          MOBILE_FULLSCREEN_POPUP_CLASS_NAMES.className,
+          'flex !h-[min(800px,100dvh)] w-full flex-col',
+        )}
         bodyClassName="flex min-h-0 flex-col"
         closeAriaLabel={t(DialFileManagerI18nKeys.CloseDialog)}
         headerDivider
@@ -474,7 +479,8 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
             aria-busy={isUploading}
           >
             <DialFileManager
-              className="min-h-0 w-full grow"
+              className="min-h-0 w-full grow p-0 md:p-3 md:pt-4"
+              contentClassName="px-4 pb-2 pt-3 md:px-5 md:pb-4 md:pt-0"
               gridClassName="size-full"
               items={items}
               path={path}

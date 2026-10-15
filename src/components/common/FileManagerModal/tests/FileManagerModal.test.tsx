@@ -128,6 +128,18 @@ describe('FileManagerModal shell', () => {
 
     expect(onClose).toHaveBeenCalledWith([]);
   });
+
+  // Issue #252: below `md` the popup is full-screen with reduced insets.
+  it('fills a narrow viewport and keeps the centred dialog from md up', async () => {
+    await renderModal();
+
+    const overlayClasses = dialog().parentElement?.className.split(' ') ?? [];
+    expect(overlayClasses).toEqual(expect.arrayContaining(['p-0', 'md:p-4']));
+    expect(overlayClasses).not.toContain('p-6');
+    expect(dialog().className.split(' ')).toEqual(
+      expect.arrayContaining(['rounded-none', 'md:rounded-xl']),
+    );
+  });
 });
 
 describe('FileManagerModal tabs, search and filters', () => {

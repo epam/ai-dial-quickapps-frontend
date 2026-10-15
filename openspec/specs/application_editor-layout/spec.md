@@ -22,7 +22,13 @@ The editor SHALL present its primary content and Configuration areas as side-by-
 - **WHEN** a Quick App editor is rendered below the desktop layout breakpoint
 - **THEN** the primary content area and Configuration area SHALL stack in a readable order
 - **AND** no editor content SHALL require horizontal scrolling
+- **AND** the Instructions formatting toolbar SHALL wrap within the field rather than extend past its edge
 - **AND** Add-ons SHALL remain directly below Instructions in the primary content flow
+
+#### Scenario: Toggling a switch keeps the scroll position
+- **WHEN** the user has scrolled the editor and toggles a switch, such as Attachments
+- **THEN** the editor SHALL keep its scroll position and SHALL NOT shift the page
+- **AND** the editor document SHALL NOT grow taller than the editor's scroll container
 
 #### Scenario: Right-to-left document
 
@@ -130,6 +136,11 @@ The editor SHALL render an Add-ons section directly below Instructions. The sect
 - **WHEN** a user activates the Add action of the Skills, Toolsets or Agents row in an editable editor
 - **THEN** that row's selection modal SHALL open: Add skill, Add toolset or Add agent
 - **AND** confirming the modal SHALL update the `agentSkills` value, or the corresponding entries of the `addOns` value, and close the modal
+
+#### Scenario: Selection modals on a narrow viewport
+- **WHEN** the Add skill, Add toolset, Add agent, Add knowledge base file or Change model modal opens in a viewport narrower than the `md` breakpoint (768px), as on a phone
+- **THEN** the modal SHALL fill the viewport edge to edge, from the top of the screen to the bottom, with no rounded corners
+- **AND** from the `md` breakpoint up the modal SHALL keep the centred dialog presentation
 
 #### Scenario: No standalone starters section
 

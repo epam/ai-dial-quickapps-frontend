@@ -174,6 +174,15 @@ describe('EditorClient application load outcomes', () => {
     expect(getForm()?.getAttribute('data-app-name')).toBe('Support bot');
   });
 
+  // Issue #260: a positioned scroller keeps the kit's absolute `sr-only` inputs inside it, so
+  // focusing a Switch does not scroll the whole document.
+  it('renders the form in a positioned scroll container', async () => {
+    await renderEditor();
+
+    const scroller = getForm()?.closest('.overflow-y-auto');
+    expect(scroller?.classList.contains('relative')).toBe(true);
+  });
+
   it('opens a missing application as a new one with the entry URL id and an empty name', async () => {
     mocks.fetchDialApp.mockResolvedValue(null);
 
