@@ -223,6 +223,9 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
         label: t(ButtonsI18nKeys.Close),
         variant: ButtonVariant.Primary,
         appearance: ButtonAppearance.Link,
+        // On a mobile screen the kit stretches a footer button across the row; Close keeps its
+        // own width at the end of the footer.
+        className: 'mobile:flex-none mobile:ms-auto',
         onClick: onClose,
       },
     ],

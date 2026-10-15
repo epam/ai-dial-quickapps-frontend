@@ -1,6 +1,7 @@
 import { FC, useCallback, useMemo, useState } from 'react';
 
 import { ListView, type CatalogItem } from '@epam/ai-dial-catalog';
+import { mergeClasses } from '@epam/ai-dial-ui-kit';
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 
 import {
@@ -27,6 +28,18 @@ export interface ModelCatalogModalProps {
 // Models always show where they live, even though the catalog hides the
 // Folder column for models by default.
 const COLUMN_VISIBILITY = { folder: () => true };
+
+// The grid lays its columns out once with fit-to-width and again, differently, as soon as its
+// options change (the first selection or search), so the Name column jumps wider. Pin the
+// proportions the second layout settles on — Type fixed, Name twice Folder or Tags — so a
+// selection only adds the check mark. Cells and headers are matched by their stable `col-id`.
+// No underscores outside calc(): Tailwind turns `_` into a space in arbitrary values.
+const COLUMN_WIDTH_CLASS_NAMES = [
+  '[&_[col-id=name]]:!start-0 [&_[col-id=name]]:!w-[calc((100%-110px)/2)]',
+  '[&_[col-id=type]]:!start-[calc((100%-110px)/2)] [&_[col-id=type]]:!w-[110px]',
+  '[&_[col-id=folder]]:!start-[calc((100%-110px)/2+110px)] [&_[col-id=folder]]:!w-[calc((100%-110px)/4)]',
+  '[&_[col-id=topics]]:!start-[calc((100%-110px)*3/4+110px)] [&_[col-id=topics]]:!w-[calc((100%-110px)/4)]',
+].join(' ');
 
 /**
  * Model picker popup: the models catalog list with search, From filter and
@@ -87,7 +100,10 @@ export const ModelCatalogModal: FC<ModelCatalogModalProps> = ({ value, onConfirm
     // exposes the border width (see docs/TECH_DEBT.md). No underscores in
     // the selector: Tailwind turns `_` into a space in arbitrary variants.
     <div
-      className="min-h-0 flex-1 overflow-y-auto [&_[class*='selectedRow']]:z-[1] [&_[class*='selectedRow']]:!border-0 [&_[class*='selectedRow']]:!outline [&_[class*='selectedRow']]:!outline-1 [&_[class*='selectedRow']]:!-outline-offset-1 [&_[class*='selectedRow']]:!outline-accent"
+      className={mergeClasses(
+        COLUMN_WIDTH_CLASS_NAMES,
+        "min-h-0 flex-1 overflow-y-auto [&_[class*='selectedRow']]:z-[1] [&_[class*='selectedRow']]:!border-0 [&_[class*='selectedRow']]:!outline [&_[class*='selectedRow']]:!outline-1 [&_[class*='selectedRow']]:!-outline-offset-1 [&_[class*='selectedRow']]:!outline-accent",
+      )}
       onKeyDown={handleListKeyDown}
     >
       <ListView
