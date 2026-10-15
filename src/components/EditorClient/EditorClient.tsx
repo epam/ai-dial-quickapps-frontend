@@ -2,7 +2,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import { AppContextProvider, type AppState } from '@/context/AppContext';
 import { useTranslation } from '@/hooks/use-translation';
-import type { MaybeLocalizedText } from '@/types/dial-entities';
+import type { AppSettings, MaybeLocalizedText } from '@/types/dial-entities';
 import { Translation } from '@/types/translation';
 import ForbiddenPage from '@/components/ForbiddenPage/ForbiddenPage';
 import FullScreenSpinner from '@/components/FullScreenSpinner/FullScreenSpinner';
@@ -12,10 +12,13 @@ import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { QuickApp2Config } from '@/types/quick-apps';
 import { isOriginAllowed, postToHost } from '@/utils/allowed-origins';
 import { ForbiddenError } from '@/utils/forbidden-error';
-import { decodeDialPath, fetchAppSettings, fetchDialApp, saveDialApp } from '@/utils/dial-client';
+import { decodeDialPath, fetchDialApp, saveDialApp } from '@/utils/dial-client';
 import { buildLocalizedText } from '@/utils/get-localized-text';
 import { hasQuickAppChanges, type StoredGeneralFields } from '@/utils/has-quick-app-changes';
-import { QuickApp2Form, type QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form/QuickApp2Form';
+import {
+  QuickApp2Form,
+  type QuickApp2AllEntitiesMap,
+} from '@/components/QuickApp2Form/QuickApp2Form';
 import { AUTO_SAVE_INTERVAL_MS } from '@/constants/editor';
 import {
   InboundMessage,
@@ -79,6 +82,11 @@ const EditorInner = ({
 
 interface EditorClientProps {
   /**
+   * Runtime settings, loaded once by the root route for the signed-in user.
+   * Read once at initialization; the editor never requests them itself.
+   */
+  settings: AppSettings;
+  /**
    * Called once a model has been resolved in the form (the saved model's
    * details loaded, or the default assigned) — the point at which a
    * TriggerSave would produce a correct save.
@@ -86,7 +94,7 @@ interface EditorClientProps {
   onReadyToSave?: () => void;
 }
 
-const EditorClient = ({ onReadyToSave }: EditorClientProps) => {
+const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
   const { language } = useTranslation(Translation.Common);
   const [appState, setAppState] = useState<AppState | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -97,8 +105,9 @@ const EditorClient = ({ onReadyToSave }: EditorClientProps) => {
   const isValidRef = useRef(true);
   const isInitializedRef = useRef(false);
   const hasSavedOnceRef = useRef(false);
-  // Empty until settings load — treated as "any origin", so READY reaches the host before then.
-  const allowedOriginsRef = useRef<string[]>([]);
+  // The settings are read once per initialization (app-configuration spec).
+  const settingsRef = useRef(settings);
+  const allowedOriginsRef = useRef<string[]>(settings.allowedOrigins ?? []);
 
   useEffect(() => {
     hasSavedOnceRef.current = hasSavedOnce;
@@ -112,12 +121,11 @@ const EditorClient = ({ onReadyToSave }: EditorClientProps) => {
     const appId = rawAppId ? decodeDialPath(rawAppId) : null;
     const initialize = async (id: string) => {
       try {
-        const [app, settings] = await Promise.all([fetchDialApp(id), fetchAppSettings()]);
+        const app = await fetchDialApp(id);
         if (cancelled) return;
-        allowedOriginsRef.current = settings.allowedOrigins ?? [];
         setAppState({
           app: app ?? { id, name: '' },
-          settings,
+          settings: settingsRef.current,
           isReady: true,
         });
         setHasSavedOnce(!!app);

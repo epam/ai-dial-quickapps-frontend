@@ -1,13 +1,17 @@
 import { act, useState } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { setupTestRoot } from '@/test-utils/test-root';
 
 import InstructionsSection from '../InstructionsSection';
 
 vi.mock('@/hooks/use-translation', () => import('@/test-utils/mock-translation'));
+const themeState = vi.hoisted(() => ({
+  currentTheme: { id: 'light' } as { id: string } | undefined,
+}));
+
 vi.mock('@/context/ThemeContext', () => ({
-  useThemeContext: () => ({ currentTheme: { id: 'light' } }),
+  useThemeContext: () => ({ currentTheme: themeState.currentTheme }),
 }));
 vi.mock('@epam/ai-dial-ui-kit', () => ({
   EditorThemes: { dark: 'dark', light: 'light' },
@@ -18,15 +22,18 @@ vi.mock('@epam/ai-dial-ui-kit', () => ({
       onChange,
       placeholder,
       showDragbar,
+      theme,
     }: {
       value: string;
       onChange: (value: string) => void;
       placeholder?: string;
       showDragbar?: boolean;
+      theme?: string;
     }) => (
       <textarea
         aria-label="Instructions editor"
         data-show-dragbar={String(showDragbar)}
+        data-theme={theme}
         placeholder={placeholder}
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -42,7 +49,14 @@ const TestForm = () => {
 
 const dom = setupTestRoot();
 
+const getEditorTheme = () =>
+  dom.container.querySelector('[aria-label="Instructions editor"]')?.getAttribute('data-theme');
+
 describe('InstructionsSection', () => {
+  afterEach(() => {
+    themeState.currentTheme = { id: 'light' };
+  });
+
   it('renders the instructions editor in a standalone section', async () => {
     await act(async () => dom.root.render(<TestForm />));
 
@@ -98,5 +112,25 @@ describe('InstructionsSection', () => {
     expect(dom.container.querySelector('[role="alert"]')?.textContent).toBe(
       'Instructions are required',
     );
+  });
+
+  it('uses the light editor theme when no theme configuration loaded', async () => {
+    themeState.currentTheme = undefined;
+    await act(async () => dom.root.render(<TestForm />));
+
+    expect(getEditorTheme()).toBe('light');
+  });
+
+  it('uses the dark editor theme for a loaded dark theme', async () => {
+    themeState.currentTheme = { id: 'dark' };
+    await act(async () => dom.root.render(<TestForm />));
+
+    expect(getEditorTheme()).toBe('dark');
+  });
+
+  it('uses the light editor theme for the loaded light theme', async () => {
+    await act(async () => dom.root.render(<TestForm />));
+
+    expect(getEditorTheme()).toBe('light');
   });
 });

@@ -25,7 +25,10 @@ export interface InstructionsSectionProps {
 const InstructionsSection: FC<InstructionsSectionProps> = ({ value, error, onChange }) => {
   const { t } = useTranslation(Translation.QuickAppEditor);
   const { currentTheme } = useThemeContext();
-  const editorTheme = currentTheme?.id === ThemeId.Light ? EditorThemes.light : EditorThemes.dark;
+  // With no loaded theme the page keeps the light stylesheet defaults, so the
+  // editor goes dark only for a loaded non-light theme.
+  const isDarkEditor = currentTheme != null && currentTheme.id !== ThemeId.Light;
+  const editorTheme = isDarkEditor ? EditorThemes.dark : EditorThemes.light;
 
   return (
     <Section title={t(QuickAppEditorI18nKeys.Instructions)} isRequired>

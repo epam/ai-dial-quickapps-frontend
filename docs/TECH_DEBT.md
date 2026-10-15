@@ -153,8 +153,8 @@ OpenSpec change).
       `application_user-attachments` specify a read-only editor.
 - [ ] **SaveError text** — chat-api rejections surface the client's generic "Response returned
       an error code"; the 'Save failed' / 'Initialization failed' fallbacks are hard-coded English.
-- [ ] **Client config fetched twice** — `App.tsx:46` and `EditorClient.tsx:108` each load it;
-      one failing gives the handshake and the editor different settings.
+- [x] **Client config fetched twice** — `App.tsx` now loads it once per session user and passes
+      it to `EditorClient` (change `fix-settings-locale-theme-defects`).
 - [ ] **Application credentials stay "required" after sign-in** — any non-empty external-services
       list counts, including `authenticationType: NONE` and already-authenticated services
       (`dial-client.ts:162`).
@@ -173,8 +173,8 @@ OpenSpec change).
     live region, and `.dial_folder` reports `FolderNameReserved`.
   - The forbidden-symbols tooltip omits the backslash and control characters the kit also forbids.
   - Sanitizing runs in `onValidateUpload` instead of `prepareUploadFileName`.
-- [ ] **Themes** — a failed theme load leaves a light page with a dark Markdown editor
-      (`InstructionsSection.tsx:28`); `setTheme` has no caller. Switching to the typed `ThemesApi`
+- [ ] **Themes** — `setTheme` has no caller. (A failed theme load no longer leaves a dark
+      Markdown editor on the light page — change `fix-settings-locale-theme-defects`.) Switching to the typed `ThemesApi`
       would not change the endpoint (both call `GET /api/themes`), contrary to the Themes item
       above. (A non-OK response now falls back and a late response after unmount is discarded —
       change `fix-file-manager-and-theme-load-defects`.)
@@ -183,8 +183,9 @@ OpenSpec change).
       `ltr` in production, `index.html`'s `lang="en"` as the pre-mount default).
 - [x] **RTL wording in specs** — every RTL scenario is now conditional on the document direction
       being `rtl` and notes that no RTL locale ships yet (see the `i18n` spec).
-- [ ] **`buildLocalizedText` drops the primary value** when `primaryLocale` is missing but
-      `locales` has entries (`get-localized-text.ts:47-55`).
+- [x] **`buildLocalizedText` drops the primary value** — it now mirrors chat-api's
+      `composeLocalizedFields` (`en` default, plain value without `locales`), change
+      `fix-settings-locale-theme-defects`.
 - [x] **Docs out of date** — README's custom-variable table, credentials wording, RESET,
       TRIGGER_SAVE `display_version`, READY and auto-save text; `host-integration`'s outbound
       targets, save-outcome and Reset wording, credentials trigger and the "never broadcast" vs `*`
