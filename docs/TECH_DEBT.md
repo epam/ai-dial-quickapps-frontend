@@ -181,11 +181,11 @@ OpenSpec change).
     live region, and `.dial_folder` reports `FolderNameReserved`.
   - The forbidden-symbols tooltip omits the backslash and control characters the kit also forbids.
   - Sanitizing runs in `onValidateUpload` instead of `prepareUploadFileName`.
-- [ ] **Themes** — `setTheme` has no caller. (A failed theme load no longer leaves a dark
-      Markdown editor on the light page — change `fix-settings-locale-theme-defects`.) (The raw
-      `GET /api/themes` call stays, see the Themes item above.) (A non-OK response now falls back
-      and a late response after unmount is discarded —
-      change `fix-file-manager-and-theme-load-defects`.)
+- [x] **Themes** — `setTheme` and the `localStorage` stored choice are removed: the host always
+      passes `?theme=` and QuickApps has no theme picker (change `remove-theme-setter`). (A failed
+      theme load no longer leaves a dark Markdown editor on the light page —
+      change `fix-settings-locale-theme-defects`; a non-OK response falls back and a late response
+      after unmount is discarded — change `fix-file-manager-and-theme-load-defects`.)
 - [x] **i18n and RTL docs** — `.claude/rules/rtl.md` and AGENTS.md now describe the real layout
       (one `en.json`, `config.ts` from ai-dial-chat, no language selector, English only so `dir` is
       `ltr` in production, `index.html`'s `lang="en"` as the default until the config runs).
