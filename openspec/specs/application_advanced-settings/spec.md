@@ -163,15 +163,20 @@ The Advanced Settings popup SHALL show the orchestrator temperature as the first
 - **THEN** the slider SHALL be labelled above the track with `ChatSettingsI18nKeys.TemperatureLabel` ("Temperature")
 - **AND** it SHALL range from `0` to `1` in steps of `0.1`
 - **AND** tick marks SHALL be derived from that step: exactly 10, one per `0.1` step after `0` (0.1 … 1.0), with no finer grid such as the `0.05` spacing drawn in the mockup frame. Tick count and colour (`Controls/Stroke/Accent-focus`, `--stroke-accent-focus`) come from the ui-kit `Slider`; the app does not restyle them
-- **AND** a bubble above the thumb SHALL show the scale label for the current value: `ChatSettingsI18nKeys.TemperaturePrecise` ("Precise") for `0`–`0.3`, `ChatSettingsI18nKeys.TemperatureNeutral` ("Neutral") for `0.4`–`0.6`, `ChatSettingsI18nKeys.TemperatureCreative` ("Creative") for `0.7`–`1`
+- **AND** a bubble above the thumb SHALL show the scale label for the current value: `ApplicationEditorI18nKeys.AdvancedSettingsTemperatureCold` (`applicationEditor.advancedSettings.temperatureCold`, "Cold") for `0`–`0.3`, `ChatSettingsI18nKeys.TemperatureNeutral` ("Neutral") for `0.4`–`0.6`, `ApplicationEditorI18nKeys.AdvancedSettingsTemperatureHot` (`applicationEditor.advancedSettings.temperatureHot`, "Hot") for `0.7`–`1`. These follow the mockups and intentionally differ from ai-dial-chat's "Precise" / "Creative"
 - **AND** a compact number input named `ApplicationEditorI18nKeys.AdvancedSettingsTemperatureValue` ("Temperature value") SHALL show the value with one decimal (`0.5`) on the logical end side of the track
 - **AND** neither a temperature description nor scale labels below the track SHALL be rendered
 
 #### Scenario: Changing the draft temperature
 
 - **WHEN** the user moves the slider to `0.3`
-- **THEN** the bubble SHALL show "Precise" and the value input `0.3`
+- **THEN** the bubble SHALL show "Cold" and the value input `0.3`
 - **AND** the form `temperature` value SHALL stay unchanged until Save
+
+#### Scenario: Upper band
+
+- **WHEN** the user moves the slider to `0.7`
+- **THEN** the bubble and the slider's `aria-valuetext` SHALL show "Hot"
 
 #### Scenario: Model without temperature support
 

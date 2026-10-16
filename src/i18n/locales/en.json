@@ -46,9 +46,7 @@
   },
   "chatSettings": {
     "temperatureLabel": "Temperature",
-    "temperaturePrecise": "Precise",
-    "temperatureNeutral": "Neutral",
-    "temperatureCreative": "Creative"
+    "temperatureNeutral": "Neutral"
   },
   "deploymentSelector": {
     "loading": "Loading models…",
@@ -260,6 +258,8 @@
       "webFetch": "Web fetch",
       "webFetchDescription": "Enables the orchestrator’s built-in tool for fetching an external web resource for this app. When enabled, the agent can fetch an external URL and get its content back inline, or saved to the app’s workspace for larger content. When disabled, no fetch tool is exposed to the orchestrator.",
       "temperatureValue": "Temperature value",
+      "temperatureCold": "Cold",
+      "temperatureHot": "Hot",
       "title": "Advanced settings",
       "advanced": "Advanced",
       "close": "Close advanced settings",
