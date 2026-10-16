@@ -15,3 +15,14 @@ $font-family: 'Inter Variable', sans-serif;
     --theme-font: #{$font-family};
   }
 }
+
+/* The catalog `Filter` overlay hard-codes `min-w-[360px]`, wider than a phone viewport, which clips
+   its Apply button. The overlay is portalled, so it can't be styled from the component; match the
+   kit's own utility class and let it shrink to the screen below that width. */
+@media (max-width: 400px) {
+  [role='menu'].min-w-\[360px\] {
+    min-width: 0;
+    width: calc(100vw - 32px);
+    max-width: 360px;
+  }
+}

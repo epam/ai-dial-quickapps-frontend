@@ -1,6 +1,11 @@
 import { FC, memo, useCallback, useId, useState } from 'react';
 
-import { ApplicationEditorI18nKeys, ButtonsI18nKeys, ChatSettingsI18nKeys } from '@/constants/translation-keys';
+import { MOBILE_FULLSCREEN_POPUP_CLASS_NAMES } from '@/constants/popup';
+import {
+  ApplicationEditorI18nKeys,
+  ButtonsI18nKeys,
+  ChatSettingsI18nKeys,
+} from '@/constants/translation-keys';
 import { isValidMaxInputAttachments } from '@/form/quickApp2Form';
 import { useTranslation } from 'react-i18next';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
@@ -11,6 +16,7 @@ import { MAX_TEMPERATURE, MIN_TEMPERATURE, TEMPERATURE_STEP } from '@/constants/
 import {
   ButtonAppearance,
   ButtonVariant,
+  mergeClasses,
   NumberInput,
   Popup,
   PopupSize,
@@ -135,14 +141,15 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
     <Popup
       open={isOpen}
       size={PopupSize.Sm}
+      {...MOBILE_FULLSCREEN_POPUP_CLASS_NAMES}
       // The design is ~586px wide: between the kit's Sm (400px) and Md (800px) presets.
-      className="md:max-w-[586px]"
+      className={mergeClasses(MOBILE_FULLSCREEN_POPUP_CLASS_NAMES.className, 'md:max-w-[586px]')}
       header={t(ApplicationEditorI18nKeys.AdvancedSettingsTitle)}
       closeAriaLabel={t(ApplicationEditorI18nKeys.AdvancedSettingsClose)}
       headerDivider
       footerDivider
       onClose={onClose}
-      bodyClassName="min-h-[min(30rem,60vh)] max-w-full px-6 py-4"
+      bodyClassName="min-h-[min(30rem,60vh)] max-w-full px-4 py-4 md:px-6"
       additionalButtons={[
         {
           label: t(ButtonsI18nKeys.Close),
