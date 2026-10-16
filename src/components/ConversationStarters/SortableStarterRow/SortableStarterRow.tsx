@@ -51,7 +51,7 @@ export const SortableStarterRow: FC<SortableStarterRowProps> = ({
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
       className={mergeClasses(
-        'flex items-center gap-2 rounded-xl bg-layer-base p-2',
+        'flex items-center gap-1 rounded-xl bg-layer-base p-2 md:gap-2',
         isDragging && 'relative z-10 shadow-md',
       )}
     >
