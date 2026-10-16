@@ -30,7 +30,7 @@ interface QuickApp2FormProps {
     allEntitiesMap: QuickApp2AllEntitiesMap,
     isAutoSave?: boolean,
     general?: TriggerSaveGeneralPayload,
-  ) => void;
+  ) => Promise<boolean>;
   onDirtyChange?: (isDirty: boolean) => void;
   /** Called with whether the form values currently pass validation (deferred errors included). */
   onValidityChange?: (isValid: boolean) => void;
@@ -74,6 +74,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     setValues,
     syncExternalState,
     submit,
+    markSaved,
     setAgentIds,
     configureAgent,
     addDocuments,
@@ -142,9 +143,16 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
       }
       // A saved max is the baseline now and must survive a later turn-off.
       isMaxAttachmentsSeededRef.current = false;
-      onSave(result.data, allEntitiesMap, isAutoSave, general);
+      // The values as submitted, not the later ones: edits made while the save
+      // is in flight must stay dirty.
+      const submittedValues = values;
+      const save = async () => {
+        const isSaved = await onSave(result.data, allEntitiesMap, isAutoSave, general);
+        if (isSaved) markSaved(submittedValues);
+      };
+      void save();
     },
-    [allEntitiesMap, onSave, onValidationError, submit, t],
+    [allEntitiesMap, markSaved, onSave, onValidationError, submit, t, values],
   );
 
   useEffect(() => {

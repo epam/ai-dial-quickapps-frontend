@@ -337,7 +337,7 @@ describe('FileManagerModal All tab', () => {
     await renderModal();
     await openAll();
 
-    const addMenu = findButton('Add');
+    const addMenu = findButton(ButtonsI18nKeys.Add);
     expect(addMenu?.disabled).toBe(false);
   });
 

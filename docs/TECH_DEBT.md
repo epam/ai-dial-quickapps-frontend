@@ -139,24 +139,27 @@ OpenSpec change).
       `quickApp2Form.ts:325-326,422-429`). Decided: intended — a feature the deployment does not
       offer is not kept on the application (`app-configuration`, "Feature flags gate the Advanced
       Settings switches").
-- [ ] **Load-time baseline is never refreshed after a save** — `appState` is set once
-      (`EditorClient.tsx:111`), so after a successful save the form stays dirty and auto-save
-      keeps re-saving, a second no-edit save still reports `SaveSuccess.hasChanges: true`, and
-      `RESET` reverts to load-time values. Overlaps "Save, auto-save, and reset semantics" and
-      "Stale General fields on auto-save" below.
+- [x] **Load-time baseline is never refreshed after a save** — a successful save now makes the
+      submitted values the dirty baseline and replaces the held application with the saved state,
+      so `hasChanges`, auto-save and `RESET` start from it (change `refresh-baseline-after-save`).
+- [x] **A save without `general` drops translations** — such a save now sends the held
+      translations back as `locales` with `primaryLocale: "en"`, rebuilt with ai-dial-chat's
+      `decomposeLocalizedFields` / `composeLocalePayload` (change
+      `keep-translations-on-save-without-general`).
 - [ ] **Ignored saves post no outcome** — a not-yet-saved auto-save, a clean auto-save, a
       validation failure and a read-only form all end silently, while `host-integration` says a
       save always ends in exactly one outcome message.
 - [ ] **`application_properties` keys outside the editor's six are dropped on save**
       (`quickApp2Form.ts:289-328`; chat-api replaces the stored object).
-- [ ] **General summary lookup misses encoded ids** — `fetchApplicationSummary` compares the
-      decoded id with the encoded listing id (`dial-client.ts:325`), so description, icon,
-      topics and version load empty for such apps.
+- [x] **General summary lookup misses encoded ids** — `fetchApplicationSummary` now matches the
+      listing entry by its decoded id (change `match-summary-by-decoded-id`).
 - [ ] **Read-only mode is unreachable** — `isReadonly` is never passed to `QuickApp2Form` (shared apps are
       deliberately NOT read-only, #208), yet `application_editor-layout` and
       `application_user-attachments` specify a read-only editor.
-- [ ] **SaveError text** — chat-api rejections surface the client's generic "Response returned
-      an error code"; the 'Save failed' / 'Initialization failed' fallbacks are hard-coded English.
+- [x] **SaveError text** — SaveError now carries chat-api's own message or the translated
+      `appsEditor.error.saveFailed`; the load error screen, the two `model` validation messages and
+      the picker's load-error description no longer show raw English (change
+      `translate-editor-error-messages`).
 - [x] **Client config fetched twice** — `App.tsx` now loads it once per session user and passes
       it to `EditorClient` (change `fix-settings-locale-theme-defects`).
 - [ ] **Application credentials stay "required" after sign-in** — any non-empty external-services
@@ -177,11 +180,11 @@ OpenSpec change).
     live region, and `.dial_folder` reports `FolderNameReserved`.
   - The forbidden-symbols tooltip omits the backslash and control characters the kit also forbids.
   - Sanitizing runs in `onValidateUpload` instead of `prepareUploadFileName`.
-- [ ] **Themes** — `setTheme` has no caller. (A failed theme load no longer leaves a dark
-      Markdown editor on the light page — change `fix-settings-locale-theme-defects`.) (The raw
-      `GET /api/themes` call stays, see the Themes item above.) (A non-OK response now falls back
-      and a late response after unmount is discarded —
-      change `fix-file-manager-and-theme-load-defects`.)
+- [x] **Themes** — `setTheme` and the `localStorage` stored choice are removed: the host always
+      passes `?theme=` and QuickApps has no theme picker (change `remove-theme-setter`). (A failed
+      theme load no longer leaves a dark Markdown editor on the light page —
+      change `fix-settings-locale-theme-defects`; a non-OK response falls back and a late response
+      after unmount is discarded — change `fix-file-manager-and-theme-load-defects`.)
 - [x] **i18n and RTL docs** — `.claude/rules/rtl.md` and AGENTS.md now describe the real layout
       (one `en.json`, `config.ts` from ai-dial-chat, no language selector, English only so `dir` is
       `ltr` in production, `index.html`'s `lang="en"` as the default until the config runs).
@@ -193,10 +196,11 @@ OpenSpec change).
       init `postMessage`) needs a `host-integration` change.
 - [ ] **Shared i18n config with ai-dial-chat** — `src/i18n/config.ts` is a copy of chat's; switch to
       a shared package if chat extracts one.
-- [ ] **Untranslated library defaults** — `FileManagerModal` passes no `newButtonLabel` in
-      `toolbarOptions`, so the file manager's English "Add" shows on the toolbar's new-item button;
-      the skill details folder path `nav` is named by a library's English "Folder path" default.
-      Both predate `align-i18n-with-dial-chat`.
+- [ ] **Untranslated library defaults** — done: the file manager toolbar's new-item menu and
+      compact "More actions" trigger are translated (change `translate-file-manager-toolbar-labels`).
+      Open, ai-dial-chat ask: the add-on details folder path `nav` is named by the ui-kit
+      `FolderPath` default "Folder path", because `@epam/ai-dial-catalog` renders `FolderPath` in
+      both details headers without an `ariaLabel` and has no prop to pass one through.
 - [x] **RTL wording in specs** — every RTL scenario is now conditional on the document direction
       being `rtl` and notes that no RTL locale ships yet (see the `i18n` spec).
 - [x] **`buildLocalizedText` drops the primary value** — it now mirrors chat-api's
@@ -259,11 +263,10 @@ documentation correction.
 - [ ] **Save, auto-save, and reset semantics** — document the conditions under which saves are
       ignored, the actual meaning of `SaveSuccess.hasChanges`, and that `RESET` remounts the current
       state rather than refetching from the API.
-- [ ] **Stale General fields on auto-save** — a save without a `general` payload (auto-save)
-      rebuilds `name`/`description`/`iconUrl`/`topics` from the load-time `_rawForSave` snapshot
-      (`src/utils/dial-client.ts` `fetchDialApp`), which is never refreshed after a save. A dirty
-      auto-save after a host Metadata edit can therefore revert those fields. `display_version` is
-      already excluded (see change `fix-quickapp-display-version-save`).
+- [x] **Stale General fields on auto-save** — a save without a `general` payload now takes
+      `name`/`description`/`iconUrl`/`topics` from the last successful save, not the load-time
+      `_rawForSave` snapshot (change `refresh-baseline-after-save`). A host Metadata edit that was
+      never saved through the editor is still unknown to it.
 - [ ] **Origin validation defaults** — decide and document behavior while runtime settings are
       unresolved and when `allowedOrigin` is empty, including the current `*` fallback and its
       security implications.

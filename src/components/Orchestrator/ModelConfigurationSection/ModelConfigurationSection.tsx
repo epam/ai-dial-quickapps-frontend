@@ -63,7 +63,7 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
           value={model}
           onChange={onModelChange}
           isDisabled={isReadonly}
-          error={errors.model}
+          error={errors.model ? t(errors.model as ApplicationEditorI18nKeys) : undefined}
         />
 
         <SettingsSection

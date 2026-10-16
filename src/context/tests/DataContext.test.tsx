@@ -1,3 +1,4 @@
+import { ResponseError } from '@epam/ai-dial-chat-api-client';
 import { act, type FC } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -170,6 +171,26 @@ describe('DataContext — initial load', () => {
     expect(latest.models).toEqual([GPT]);
     expect(latest.favoriteIds.size).toBe(0);
     expect(latest.favoritesError).toBe('user-config 500');
+  });
+
+  it("holds chat-api's message as the load error", async () => {
+    fetchers.fetchDialModels.mockRejectedValue(
+      new ResponseError(new Response('{"message":"Core is unavailable"}', { status: 503 })),
+    );
+
+    await render();
+
+    expect(latest.status).toBe(LoadStatus.Error);
+    expect(latest.error).toBe('Core is unavailable');
+  });
+
+  it('holds no load error text when the failure carries no chat-api message', async () => {
+    fetchers.fetchDialModels.mockRejectedValue(new TypeError('Failed to fetch'));
+
+    await render();
+
+    expect(latest.status).toBe(LoadStatus.Error);
+    expect(latest.error).toBeUndefined();
   });
 });
 

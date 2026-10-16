@@ -107,34 +107,6 @@ other case, including `currentTheme: undefined`, it SHALL use `EditorThemes.ligh
 - **WHEN** `currentTheme` is the loaded `dark` theme
 - **THEN** the Instructions Markdown editor SHALL use `EditorThemes.dark`
 
-### Requirement: Active theme id is chosen from the URL, then the stored choice, then light
-
-`ThemeProvider` SHALL pick the active theme id in this order:
-
-1. the `theme` query parameter of the current URL (the entry-URL parameter defined by the
-   `host-integration` capability), when present;
-2. otherwise the value stored in `localStorage` under the key `dial-theme`, when present;
-3. otherwise `light`.
-
-The context SHALL expose this unresolved id as `selectedThemeId` (so it can be `system`).
-
-#### Scenario: Host passes a theme in the URL
-
-- **WHEN** the app is loaded with `?theme=dark` and `localStorage["dial-theme"]` is `light`
-- **THEN** the active theme id SHALL be `dark`
-
-#### Scenario: No theme in the URL, a stored choice exists
-
-- **WHEN** the app is loaded without a `theme` query parameter and
-  `localStorage["dial-theme"]` is `dark`
-- **THEN** the active theme id SHALL be `dark`
-
-#### Scenario: No theme in the URL and nothing stored
-
-- **WHEN** the app is loaded without a `theme` query parameter and `dial-theme` is absent from
-  `localStorage`
-- **THEN** the active theme id SHALL be `light`
-
 ### Requirement: The `system` theme follows the OS colour-scheme preference
 
 When the active theme id is `system`, `ThemeProvider` SHALL resolve it to `dark` if
@@ -169,8 +141,7 @@ the listener on unmount. It SHALL NOT react to URL changes that do not fire `pop
 #### Scenario: History navigation removes the theme parameter
 
 - **WHEN** a `popstate` fires and the current URL no longer has a `theme` parameter
-- **THEN** the active theme id SHALL fall back to the stored choice, or `light` when none is
-  stored
+- **THEN** the active theme id SHALL fall back to `light`
 
 ### Requirement: The resolved theme's colours are applied as CSS custom properties
 
@@ -192,29 +163,6 @@ of `themes` when none matches. Whenever `currentTheme` changes, it SHALL write e
 - **WHEN** the resolved theme id is `high-contrast` and the configuration contains only
   `light` and `dark`, in that order
 - **THEN** `currentTheme` SHALL be the `light` theme and its colours SHALL be applied
-
-### Requirement: ThemeContext exposes a memoised value and an explicit theme setter
-
-`ThemeContext` SHALL be consumed only through `useThemeContext()`, which SHALL throw
-`useThemeContext must be used inside ThemeProvider` when called outside a `ThemeProvider`. The
-provider value `{ themes, selectedThemeId, currentTheme, isLoading, setTheme }` SHALL be wrapped
-in `useMemo`, `currentTheme` SHALL be derived with `useMemo`, `setTheme` SHALL be a stable
-`useCallback`, and the provider component SHALL be wrapped in `React.memo`. Calling
-`setTheme(id)` SHALL store `id` in `localStorage` under `dial-theme`, make it the active theme
-id, and drop the current URL-supplied override until the next `popstate`. Theming renders no UI
-of its own: it adds no user-visible strings or i18n keys, and its effect on layout is
-direction-agnostic (no RTL impact).
-
-#### Scenario: Hook used outside the provider
-
-- **WHEN** a component calls `useThemeContext()` with no `ThemeProvider` above it
-- **THEN** the call SHALL throw `useThemeContext must be used inside ThemeProvider`
-
-#### Scenario: Explicit choice overrides the URL theme
-
-- **WHEN** the app was loaded with `?theme=light` and `setTheme('dark')` is called
-- **THEN** `localStorage["dial-theme"]` SHALL be `dark`
-- **AND** the active theme id SHALL be `dark` even though the URL still carries `theme=light`
 
 ### Requirement: Entity icon references are resolved to chat-api URLs
 
@@ -245,3 +193,40 @@ otherwise.
 
 - **WHEN** `resolveIconUrl('dial-icon')` is called
 - **THEN** it SHALL return `/api/themes/icon?iconName=dial-icon`
+
+### Requirement: Active theme id is chosen from the URL, then light
+
+`ThemeProvider` SHALL pick the active theme id in this order:
+
+1. the `theme` query parameter of the current URL (the entry-URL parameter defined by the
+   `host-integration` capability), when present;
+2. otherwise `light`.
+
+The editor has no theme picker of its own: the host passes its current theme in the entry URL.
+`ThemeProvider` SHALL NOT read or write a stored theme choice (`localStorage`). The context
+SHALL expose this unresolved id as `selectedThemeId` (so it can be `system`).
+
+#### Scenario: Host passes a theme in the URL
+
+- **WHEN** the app is loaded with `?theme=dark`
+- **THEN** the active theme id SHALL be `dark`
+
+#### Scenario: No theme in the URL
+
+- **WHEN** the app is loaded without a `theme` query parameter, whatever `localStorage` holds
+- **THEN** the active theme id SHALL be `light`
+
+### Requirement: ThemeContext exposes a memoised value
+
+`ThemeContext` SHALL be consumed only through `useThemeContext()`, which SHALL throw
+`useThemeContext must be used inside ThemeProvider` when called outside a `ThemeProvider`. The
+provider value `{ themes, selectedThemeId, currentTheme, isLoading }` SHALL be wrapped in
+`useMemo`, `currentTheme` SHALL be derived with `useMemo`, and the provider component SHALL be
+wrapped in `React.memo`. The context SHALL NOT offer a way to set the theme: only the URL picks
+it. Theming renders no UI of its own: it adds no user-visible strings or i18n keys, and its
+effect on layout is direction-agnostic (no RTL impact).
+
+#### Scenario: Hook used outside the provider
+
+- **WHEN** a component calls `useThemeContext()` with no `ThemeProvider` above it
+- **THEN** the call SHALL throw `useThemeContext must be used inside ThemeProvider`

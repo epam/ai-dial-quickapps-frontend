@@ -33,6 +33,7 @@ type FormAction =
   | { type: 'SET_ERRORS'; errors: QuickApp2FormErrors }
   | { type: 'CLEAR_ERROR'; path: string }
   | { type: 'RESET' }
+  | { type: 'MARK_SAVED'; values: QuickApp2FormValues }
   | { type: 'SET_AGENT_IDS'; ids: string[] }
   | { type: 'CONFIGURE_AGENT'; id: string; transport: DialAppTransportType }
   | { type: 'ADD_DOCUMENTS'; documents: string[] }
@@ -66,6 +67,8 @@ export interface UseQuickApp2FormResult {
   submit: () => QuickApp2FormValidationResult;
   clearError: (path: string) => void;
   reset: () => void;
+  /** Makes `values` (the ones submitted for a save that succeeded) the dirty baseline. */
+  markSaved: (values: QuickApp2FormValues) => void;
   setAgentIds: (ids: string[]) => void;
   configureAgent: (id: string, transport: DialAppTransportType) => void;
   addDocuments: (documents: string[]) => void;
@@ -206,6 +209,9 @@ const reduceFormState = (state: FormState, action: FormAction): FormState => {
         values: state.initialValues,
         errors: {},
       };
+    case 'MARK_SAVED':
+      // Edits made while the save was in flight are not in `values`, so they stay dirty.
+      return { ...state, initialValues: action.values };
     case 'SET_AGENT_IDS': {
       const currentValues = new Map(
         state.values.addOns.map((item) => [item[AddOnSchemaKeys.id], item]),
@@ -302,6 +308,10 @@ export const useQuickApp2Form = ({
   const submit = useCallback(() => validate(), [validate]);
   const clearError = useCallback((path: string) => dispatch({ type: 'CLEAR_ERROR', path }), []);
   const reset = useCallback(() => dispatch({ type: 'RESET' }), []);
+  const markSaved = useCallback(
+    (values: QuickApp2FormValues) => dispatch({ type: 'MARK_SAVED', values }),
+    [],
+  );
   const setAgentIds = useCallback((ids: string[]) => dispatch({ type: 'SET_AGENT_IDS', ids }), []);
   const configureAgent = useCallback(
     (id: string, transport: DialAppTransportType) =>
@@ -333,6 +343,7 @@ export const useQuickApp2Form = ({
       submit,
       clearError,
       reset,
+      markSaved,
       setAgentIds,
       configureAgent,
       addDocuments,
@@ -348,6 +359,7 @@ export const useQuickApp2Form = ({
       submit,
       clearError,
       reset,
+      markSaved,
       setAgentIds,
       configureAgent,
       addDocuments,

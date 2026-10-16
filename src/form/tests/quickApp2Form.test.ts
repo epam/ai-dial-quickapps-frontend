@@ -72,7 +72,7 @@ describe('QuickApp2Schema', () => {
         expect.arrayContaining([
           expect.objectContaining({
             path: ['model'],
-            message: 'Not available agent selected. Please, change the agent to proceed',
+            message: ApplicationEditorI18nKeys.OrchestratorModelUnavailable,
           }),
         ]),
       );
@@ -90,7 +90,7 @@ describe('QuickApp2Schema', () => {
         expect.arrayContaining([
           expect.objectContaining({
             path: ['model'],
-            message: 'Selected model does not support tools',
+            message: ApplicationEditorI18nKeys.OrchestratorModelToolsUnsupported,
           }),
         ]),
       );

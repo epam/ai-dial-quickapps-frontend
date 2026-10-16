@@ -4,16 +4,17 @@ import { buildQuickApp2Config, getQuickApp2FormData } from '@/form/quickApp2Form
 import { AddOnSchemaKeys } from '@/types/quick-app-form';
 import { ToolsetTypes } from '@/types/quick-apps';
 
-import { fetchDialModels, fetchDialToolsets } from '@/utils/dial-client';
+import { fetchDialApp, fetchDialModels, fetchDialToolsets } from '@/utils/dial-client';
 
-const { listToolsets, listDeployments } = vi.hoisted(() => ({
+const { listToolsets, listDeployments, getDeploymentDetails } = vi.hoisted(() => ({
   listToolsets: vi.fn(),
   listDeployments: vi.fn(),
+  getDeploymentDetails: vi.fn(),
 }));
 
 vi.mock('@/utils/chat-api-client', () => ({
   toolsetsApi: { listToolsets },
-  deploymentsApi: { listDeployments },
+  deploymentsApi: { listDeployments, getDeploymentDetails },
 }));
 
 // chat-api returns ids with special characters already percent-encoded.
@@ -65,5 +66,33 @@ describe('entity id encoding', () => {
     expect(tool_sets).toContainEqual(
       expect.objectContaining({ type: ToolsetTypes.DialApp, deployment_id: ENCODED_APP_ID }),
     );
+  });
+
+  it('reads the General fields from the listing entry of an app whose id needs encoding', async () => {
+    getDeploymentDetails.mockResolvedValue({
+      applicationDetails: { displayName: 'My agent', applicationProperties: {} },
+    });
+    listDeployments.mockResolvedValue({
+      deployments: [
+        {
+          id: ENCODED_APP_ID,
+          type: 'application',
+          displayName: 'My agent',
+          description: 'Answers questions',
+          iconUrl: 'https://example.com/icon.png',
+          topics: ['support'],
+          displayVersion: '1.0.0',
+        },
+      ],
+    });
+
+    const app = await fetchDialApp(DECODED_APP_ID);
+
+    expect(app?._rawForSave).toMatchObject({
+      description: 'Answers questions',
+      iconUrl: 'https://example.com/icon.png',
+      topics: ['support'],
+      displayVersion: '1.0.0',
+    });
   });
 });

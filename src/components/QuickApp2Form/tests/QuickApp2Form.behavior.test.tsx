@@ -16,7 +16,7 @@ type FormSaveHandler = (
   allEntitiesMap: QuickApp2AllEntitiesMap,
   isAutoSave?: boolean,
   general?: TriggerSaveGeneralPayload,
-) => void;
+) => Promise<boolean>;
 
 const testContext = vi.hoisted(() => {
   const model = {
@@ -57,7 +57,6 @@ const testContext = vi.hoisted(() => {
     model,
   };
 });
-
 
 vi.mock('@/context/AppContext', () => ({
   useAppContext: () => testContext.appContext,
@@ -273,7 +272,7 @@ const renderForm = (
     key?: string;
   } = {},
 ) => {
-  const onSave = props.onSave ?? vi.fn<FormSaveHandler>();
+  const onSave = props.onSave ?? vi.fn<FormSaveHandler>().mockResolvedValue(true);
   const onDirtyChange = vi.fn();
   const onModelReady = vi.fn();
 
@@ -411,7 +410,9 @@ describe('QuickApp2Form observable behavior', () => {
 
     await triggerSave({ isAutoSave: false });
     expect(onSave).not.toHaveBeenCalled();
-    expect(onValidationError).toHaveBeenCalledWith([ApplicationEditorI18nKeys.InstructionsRequired]);
+    expect(onValidationError).toHaveBeenCalledWith([
+      ApplicationEditorI18nKeys.InstructionsRequired,
+    ]);
   });
 
   it('applies saved Advanced Settings to the form and marks it dirty', async () => {
@@ -449,6 +450,58 @@ describe('QuickApp2Form observable behavior', () => {
 
     click(getButton('Save unchanged advanced settings'));
     expect(onDirtyChange).not.toHaveBeenCalledWith(true);
+  });
+
+  it('treats the saved values as the new baseline after a successful save', async () => {
+    const { onSave, onDirtyChange } = renderForm();
+    const instructions = () =>
+      dom.container.querySelector('[aria-label="Instructions"]') as HTMLInputElement;
+
+    await dispatchInput(instructions(), 'Changed');
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+
+    await triggerSave({ isAutoSave: true });
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+
+    await triggerSave({ isAutoSave: true });
+    expect(onSave).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the form dirty when the save fails', async () => {
+    const onSave = vi.fn<FormSaveHandler>().mockResolvedValue(false);
+    const { onDirtyChange } = renderForm({ onSave });
+
+    await dispatchInput(
+      dom.container.querySelector('[aria-label="Instructions"]') as HTMLInputElement,
+      'Changed',
+    );
+    await triggerSave({ isAutoSave: true });
+
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+  });
+
+  it('keeps edits made while a save is in flight dirty', async () => {
+    let finishSave: (isSaved: boolean) => void = () => {};
+    const onSave = vi.fn<FormSaveHandler>(
+      () =>
+        new Promise<boolean>((resolve) => {
+          finishSave = resolve;
+        }),
+    );
+    const { onDirtyChange } = renderForm({ onSave });
+    const instructions = () =>
+      dom.container.querySelector('[aria-label="Instructions"]') as HTMLInputElement;
+
+    await dispatchInput(instructions(), 'First');
+    await triggerSave({ isAutoSave: true });
+    await dispatchInput(instructions(), 'Second');
+    onDirtyChange.mockClear();
+    await act(async () => finishSave(true));
+
+    expect(onDirtyChange).not.toHaveBeenCalledWith(false);
+    expect(instructions().value).toBe('Second');
   });
 
   it('skips clean autosave, saves dirty autosave, and honors ignoreDirty', async () => {

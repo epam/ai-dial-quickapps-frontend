@@ -3,7 +3,6 @@ import {
   FC,
   memo,
   ReactNode,
-  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -16,7 +15,6 @@ import { applyThemeColors, getOsPreferredTheme } from '@/utils/apply-theme-color
 import { chatApiFetch } from '@/utils/chat-api-fetch';
 
 const THEMES_URL = '/api/themes';
-const STORAGE_KEY = 'dial-theme';
 
 const getQueryTheme = (): string | null => new URLSearchParams(window.location.search).get('theme');
 
@@ -25,7 +23,6 @@ interface ThemeContextValue {
   selectedThemeId: string;
   currentTheme: Theme | undefined;
   isLoading: boolean;
-  setTheme: (id: string) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -37,12 +34,7 @@ interface ThemeProviderProps {
 const ThemeProvider: FC<ThemeProviderProps> = ({ children }) => {
   const [config, setConfig] = useState<ThemeConfiguration | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  // User-chosen theme persisted to localStorage (fallback when no query param)
-  const [selectedThemeId, setSelectedThemeId] = useState<string>(() => {
-    if (typeof window === 'undefined') return ThemeId.Light;
-    return localStorage.getItem(STORAGE_KEY) ?? ThemeId.Light;
-  });
-  // Theme from ?theme= query param — takes precedence over selectedThemeId
+  // The host passes its current theme as ?theme=; QuickApps has no theme picker of its own.
   const [queryThemeId, setQueryThemeId] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null;
     return getQueryTheme();
@@ -94,8 +86,8 @@ const ThemeProvider: FC<ThemeProviderProps> = ({ children }) => {
     };
   }, []);
 
-  // Priority: query param > user choice; system resolves to OS preference
-  const activeThemeId = queryThemeId ?? selectedThemeId;
+  // The URL theme, else light; system resolves to the OS preference.
+  const activeThemeId = queryThemeId ?? ThemeId.Light;
   const resolvedThemeId = activeThemeId === ThemeId.System ? osPreference : activeThemeId;
 
   const currentTheme = useMemo(() => {
@@ -111,21 +103,14 @@ const ThemeProvider: FC<ThemeProviderProps> = ({ children }) => {
     }
   }, [currentTheme]);
 
-  const setTheme = useCallback((id: string) => {
-    setSelectedThemeId(id);
-    setQueryThemeId(null); // explicit choice overrides URL param
-    localStorage.setItem(STORAGE_KEY, id);
-  }, []);
-
   const value = useMemo<ThemeContextValue>(
     () => ({
       themes: config?.themes ?? [],
       selectedThemeId: activeThemeId,
       currentTheme,
       isLoading,
-      setTheme,
     }),
-    [config, activeThemeId, currentTheme, isLoading, setTheme],
+    [config, activeThemeId, currentTheme, isLoading],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

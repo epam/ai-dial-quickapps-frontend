@@ -2,7 +2,11 @@ import { NotificationVariant } from '@epam/ai-dial-ui-kit';
 import { act } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { DialFileManagerI18nKeys } from '@/constants/translation-keys';
+import {
+  ButtonsI18nKeys,
+  ConversationPanelI18nKeys,
+  DialFileManagerI18nKeys,
+} from '@/constants/translation-keys';
 import { click } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
 import type { UseDialFileManagerResult } from '@/hooks/use-dial-file-manager';
@@ -15,10 +19,15 @@ vi.mock('@/context/AuthContext', () => ({
   useAuthContext: () => ({ user: { bucket: 'mine' } }),
 }));
 vi.mock('@/hooks/use-dial-file-sources', () => ({ useDialFileSources: vi.fn() }));
+const fileManager = vi.hoisted(() => ({ props: undefined as Record<string, unknown> | undefined }));
+
 // The browser itself is not under test here; a stub keeps the popup fast to mount.
 vi.mock('@epam/ai-dial-react-file-manager', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@epam/ai-dial-react-file-manager')>()),
-  DialFileManager: () => <div data-testid="file-manager" />,
+  DialFileManager: (props: Record<string, unknown>) => {
+    fileManager.props = props;
+    return <div data-testid="file-manager" />;
+  },
 }));
 
 const cancelUpload = vi.fn();
@@ -178,5 +187,16 @@ describe('FileManagerModal notifications', () => {
 
     expect(liveRegion()?.textContent).toBe('Uploaded');
     expect(liveRegion()?.querySelector('[role="alert"]')).toBeNull();
+  });
+});
+
+describe('FileManagerModal toolbar', () => {
+  it('passes translated labels for the new-item menu and the compact menu trigger', () => {
+    renderWith(null);
+
+    expect(fileManager.props?.toolbarOptions).toMatchObject({
+      newButtonLabel: ButtonsI18nKeys.Add,
+      moreActionsLabel: ConversationPanelI18nKeys.ActionsLabel,
+    });
   });
 });

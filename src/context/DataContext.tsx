@@ -28,6 +28,7 @@ import {
   fetchDialToolsets,
 } from '@/utils/dial-client';
 import { isOriginAllowed } from '@/utils/allowed-origins';
+import { getChatApiErrorMessage } from '@/utils/chat-api-error';
 import { fetchFavoriteIds } from '@/utils/user-config';
 
 import { useAppContext } from './AppContext';
@@ -75,7 +76,7 @@ type DataAction =
   | { type: 'BUCKET_LOADED'; payload?: string }
   | { type: 'FAVORITES_LOADED'; payload: { ids: Set<string>; error?: string } }
   | { type: 'READY' }
-  | { type: 'ERROR'; payload: string };
+  | { type: 'ERROR'; payload?: string };
 
 const initialState: DataState = {
   models: [],
@@ -235,10 +236,9 @@ export const DataContextProvider = ({ children }: DataContextProviderProps) => {
       dispatch({ type: 'BUCKET_LOADED', payload: bucket });
       dispatch({ type: 'READY' });
     } catch (err: unknown) {
-      dispatch({
-        type: 'ERROR',
-        payload: err instanceof Error ? err.message : 'Failed to load data',
-      });
+      // Only chat-api's own reason is worth showing under the picker's translated
+      // title; the client's generic text and browser messages are not.
+      dispatch({ type: 'ERROR', payload: (await getChatApiErrorMessage(err)) ?? undefined });
     }
   }, [bucket]);
 
