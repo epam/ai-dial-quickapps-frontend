@@ -184,12 +184,13 @@ const ConversationStartersModal: FC<ConversationStartersModalProps> = ({
       open
       size={PopupSize.Md}
       className="md:max-w-[1000px]"
+      overlayClassName="p-2 md:p-4"
       header={t(ApplicationEditorI18nKeys.StartersSetUp)}
       closeAriaLabel={t(ApplicationEditorI18nKeys.StartersClose)}
       headerDivider
       footerDivider
       onClose={handleDismiss}
-      bodyClassName="max-w-full px-6 py-4"
+      bodyClassName="max-w-full px-3 py-4 md:px-6"
       additionalButtons={[
         {
           label: t(ButtonsI18nKeys.Cancel),
