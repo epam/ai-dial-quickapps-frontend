@@ -434,7 +434,7 @@ describe('AdvancedSettingsPopup', () => {
       pressKey(getSlider(), 'ArrowLeft');
 
       expect(dom.container.querySelector('[data-testid="slider-tooltip"]')?.textContent).toBe(
-        ChatSettingsI18nKeys.TemperaturePrecise,
+        ApplicationEditorI18nKeys.AdvancedSettingsTemperatureCold,
       );
       expect(
         (
@@ -443,7 +443,25 @@ describe('AdvancedSettingsPopup', () => {
           ) as HTMLInputElement
         ).value,
       ).toBe('0.3');
+      expect(getSlider().getAttribute('aria-valuetext')).toBe(
+        ApplicationEditorI18nKeys.AdvancedSettingsTemperatureCold,
+      );
       expect(onSave).not.toHaveBeenCalled();
+    });
+
+    it('labels the upper band as Hot', () => {
+      renderFull();
+
+      pressKey(getSlider(), 'ArrowRight');
+      pressKey(getSlider(), 'ArrowRight');
+
+      expect(dom.container.querySelector('[data-testid="slider-tooltip"]')?.textContent).toBe(
+        ApplicationEditorI18nKeys.AdvancedSettingsTemperatureHot,
+      );
+      expect(getSlider().getAttribute('aria-valuenow')).toBe('0.7');
+      expect(getSlider().getAttribute('aria-valuetext')).toBe(
+        ApplicationEditorI18nKeys.AdvancedSettingsTemperatureHot,
+      );
     });
 
     it('saves the edited temperature and process files', () => {

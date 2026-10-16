@@ -53,9 +53,7 @@ export enum ChatI18nKeys {
 
 export enum ChatSettingsI18nKeys {
   TemperatureLabel = 'chatSettings.temperatureLabel',
-  TemperaturePrecise = 'chatSettings.temperaturePrecise',
   TemperatureNeutral = 'chatSettings.temperatureNeutral',
-  TemperatureCreative = 'chatSettings.temperatureCreative',
 }
 
 export enum DeploymentSelectorI18nKeys {
@@ -216,6 +214,8 @@ export enum ApplicationEditorI18nKeys {
   InstructionsPlaceholder = 'applicationEditor.instructions.placeholder',
   InstructionsRequired = 'applicationEditor.instructions.required',
   AdvancedSettingsTemperatureValue = 'applicationEditor.advancedSettings.temperatureValue',
+  AdvancedSettingsTemperatureCold = 'applicationEditor.advancedSettings.temperatureCold',
+  AdvancedSettingsTemperatureHot = 'applicationEditor.advancedSettings.temperatureHot',
   CodeInterpreterTitle = 'applicationEditor.codeInterpreter.title',
   CodeInterpreterDescription = 'applicationEditor.codeInterpreter.description',
   SkillsDescription = 'applicationEditor.skills.description',
