@@ -73,4 +73,35 @@ describe('saveDialApp', () => {
     expect(body.version).toBeUndefined();
     expect(body).toMatchObject({ description: 'Edited in the editor' });
   });
+
+  it('sends the held translations back on a save without general fields', async () => {
+    await saveDialApp(
+      {
+        ...app,
+        _rawForSave: {
+          displayName: { en: 'Support bot', fr: "Bot d'assistance" },
+          description: { en: 'Answers questions', de: 'Beantwortet Fragen' },
+        },
+      },
+      {},
+    );
+
+    expect(getSentBody()).toMatchObject({
+      name: 'Support bot',
+      description: 'Answers questions',
+      primaryLocale: 'en',
+      locales: [
+        { language: 'fr', name: "Bot d'assistance", description: undefined },
+        { language: 'de', name: undefined, description: 'Beantwortet Fragen' },
+      ],
+    });
+  });
+
+  it('sends no locales for an untranslated app on a save without general fields', async () => {
+    await saveDialApp(app, {});
+
+    expect(getSentBody().name).toBe('qa-quickapp-version-check');
+    expect(getSentBody().locales).toBeUndefined();
+    expect(getSentBody().primaryLocale).toBeUndefined();
+  });
 });

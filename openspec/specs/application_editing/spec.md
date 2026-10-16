@@ -148,7 +148,9 @@ with empty settings (`app-configuration`, "Client config failure fallback").
 After the details call succeeds, QuickApps SHALL call
 `GET /api/v1/deployments?interface_type=chat` (`deploymentsApi.listDeployments`, response
 `DeploymentsResponseDto`) to read the application's General-step display fields
-(`description`, `iconUrl`, `topics`, `displayVersion`) from its listing entry. A failure of
+(`description`, `iconUrl`, `topics`, `displayVersion`) from its listing entry. The listing entry
+SHALL be the one whose `id`, decoded per path segment (`decodeDialPath`), equals the editor's
+decoded id: chat-api returns listing ids percent-encoded, while the editor holds the id decoded. A failure of
 this call SHALL NOT fail the load. When `applicationDetails.displayName` is present it SHALL
 be used as the application's name in preference to the listing entry's.
 
@@ -201,6 +203,13 @@ The loading spinner is direction-agnostic; RTL impact: none.
 - **THEN** it SHALL NOT call `fetchAppSettings`, and `AppContext.settings` SHALL be the
   `settings` prop it received
 
+#### Scenario: Id with special characters
+
+- **WHEN** the editor opens `applications/<bucket>/My agent__1.0.0` and the listing has an
+  entry with `id` `applications/<bucket>/My%20agent__1.0.0` and `iconUrl`
+  `"https://example.com/icon.png"`
+- **THEN** the loaded application's icon URL SHALL be `"https://example.com/icon.png"`
+
 #### Scenario: Deployments listing fails
 
 - **WHEN** the details call succeeds but `GET /api/v1/deployments?interface_type=chat`
@@ -231,9 +240,11 @@ QuickApps SHALL handle the outcome of the details call
 - `403` — QuickApps SHALL render the forbidden state defined by `auth`
   ("Denied-access presentation") instead of the editor, and SHALL NOT render the form.
 - any other failure — QuickApps SHALL render an error state in place of the editor showing
-  the failure's message, and SHALL NOT render the form.
+  `AppsEditorI18nKeys.SchemaFormLoadFailed` (`appsEditor.schemaForm.loadFailed`, "Failed to
+  load the application settings. Please try again.", the same key path as ai-dial-chat), and
+  SHALL NOT render the form. The raw error message SHALL NOT be shown.
 
-The state is owned by `EditorClient` (`isForbidden`, `error`). The forbidden state's strings
+The state is owned by `EditorClient` (`isForbidden`, `hasLoadError`). The forbidden state's strings
 and accessibility are specified by `auth`; the error state is a centred text block,
 direction-agnostic (RTL impact: none).
 
@@ -253,8 +264,9 @@ direction-agnostic (RTL impact: none).
 
 - **WHEN** the details call fails with a status other than `403` or `404`, or the request
   itself fails
-- **THEN** QuickApps SHALL render the error state with the failure's message and SHALL NOT
-  render the editor form
+- **THEN** QuickApps SHALL render the error state with the `SchemaFormLoadFailed` text and
+  SHALL NOT render the editor form
+- **AND** the generated client's "Response returned an error code" SHALL NOT be shown
 
 ### Requirement: Editor form state and dirty tracking
 
@@ -265,6 +277,12 @@ baseline SHALL be built by `getQuickApp2FormData` (`src/form/quickApp2Form.ts`) 
 loaded application when the form mounts. The hook's result SHALL be memoised (`useMemo`)
 and its actions SHALL be stable (`useCallback`), so that consumers' effects keyed on them
 do not re-run on unrelated renders.
+
+After every successful save, the form values that were submitted for that save SHALL become
+the baseline. The hook exposes this as a stable `markSaved(values)` action, which
+`QuickApp2Form` calls once its `onSave` resolves to `true`. A failed save SHALL leave the
+baseline unchanged. Values changed while a save is in flight are not part of the submitted
+values, so they SHALL keep the form dirty after that save.
 
 The form SHALL be dirty exactly when its current values are not deeply equal to its
 baseline. Values the editor resolves for itself rather than the user — the resolved model
@@ -291,6 +309,22 @@ clean state.
 - **WHEN** an application without a stored model opens and the editor assigns the default
   model once the models load
 - **THEN** the form SHALL stay clean and QuickApps SHALL NOT post DIRTY_STATE
+
+#### Scenario: Successful save cleans the form
+
+- **WHEN** the user changes the instructions and a save of those values succeeds
+- **THEN** QuickApps SHALL post DIRTY_STATE with `isDirty: false`
+- **AND** a later TriggerAutoSave without `ignoreDirty` SHALL NOT send an update request
+
+#### Scenario: Edit during an in-flight save
+
+- **WHEN** a save is in flight and the user changes the instructions again before it succeeds
+- **THEN** the form SHALL still be dirty after the save succeeds
+
+#### Scenario: Failed save keeps the form dirty
+
+- **WHEN** the user changes the instructions and chat-api rejects the save
+- **THEN** the form SHALL stay dirty
 
 ### Requirement: Save trigger gating
 
@@ -400,6 +434,24 @@ The save is performed by `EditorClient`'s `handleSave`, which calls `saveDialApp
 (`src/utils/dial-client.ts`). The request does not depend on whether the save is manual or
 an auto-save, apart from the `general` payload an auto-save never has.
 
+Without a `general` payload, `name`, `description`, `iconUrl` and `topics` SHALL come from the
+saved application `EditorClient` holds: the values loaded when the editor opened, replaced after
+each successful save. `handleSave` SHALL resolve to `true` once the update request succeeds,
+and to `false` when it fails. After a success it SHALL replace `appState.app` with the saved
+state, built from what it sent, not from chat-api's response:
+
+- `applicationProperties`: the built configuration;
+- `inputAttachmentTypes` and `maxInputAttachments`: the validated form values;
+- the General-step fields: `name` and `description`, recombined as in `i18n` ("Recombining host
+  locale entries"), plus `iconUrl` and `topics`. These are the values sent with this save, or
+  the held ones for a save without `general`;
+- the display version: `general.display_version` when it was a non-blank string, otherwise the
+  held one.
+
+This state is owned by `EditorClient` as `appState` and passed to the form through
+`AppContextProvider`, as described in "Application load on open". No other context or hook
+owns it.
+
 Example request (manual save with `general`):
 
 ```
@@ -447,6 +499,13 @@ chat-api responds `200` with the updated application (`id`, `name`, `description
 - **THEN** the request body SHALL carry `inputAttachmentTypes: ["application/pdf"]` and
   `maxInputAttachments: 3` beside `applicationProperties`, not inside it
 
+#### Scenario: Auto-save after a General-step save
+
+- **WHEN** a TriggerSave with `general.iconUrl` `"https://example.com/new.png"` succeeds, the
+  user then changes the instructions, and a TriggerAutoSave runs
+- **THEN** the auto-save's update request SHALL carry `iconUrl: "https://example.com/new.png"`,
+  not the icon URL loaded when the editor opened
+
 ### Requirement: Save outcome messages
 
 For a save that passes the gating, QuickApps SHALL post exactly one outcome message to the
@@ -460,8 +519,15 @@ host (envelope and targeting per `host-integration`):
 - auto-save accepted by chat-api — AutoSaveComplete `{ type: "AUTO_SAVE_COMPLETE" }`, with no
   payload and no `hasChanges`.
 - any failure while building the configuration or of the update request, for a manual save
-  or an auto-save — SaveError `{ type: "SAVE_ERROR", payload: { error } }`, where `error`
-  is the thrown error's message.
+  or an auto-save — SaveError `{ type: "SAVE_ERROR", payload: { error } }`. `error` SHALL
+  be the message chat-api put in the error response body (`message`, a `message` array joined
+  with line breaks, or `error`), read with `getApiErrorMessage` from
+  `@epam/ai-dial-chat-hooks`. When the failure carries no such message — a network error, a
+  response without a message body, or an error while building the configuration — `error` SHALL
+  be the translation of `AppsEditorI18nKeys.ErrorSaveFailed` (`appsEditor.error.saveFailed`,
+  "Failed to save application settings. Please try again.", the same key the host uses for its
+  own save failures). The generated client's generic "Response returned an error code" SHALL NOT
+  be sent. The resolution lives in `getChatApiErrorMessage` (`src/utils/chat-api-error.ts`).
 
 A successful save of either kind SHALL mark the application as saved (`hasSavedOnce`), which
 enables TriggerAutoSave and the auto-save interval for an application that did not exist on
@@ -484,6 +550,17 @@ load.
 - **WHEN** an auto-save passes the gating and the update request fails
 - **THEN** QuickApps SHALL post SaveError and SHALL NOT post AutoSaveComplete
 
+#### Scenario: chat-api explains the failure
+
+- **WHEN** the update request fails with `400` and the body
+  `{ "message": ["version must be a valid semantic version"] }`
+- **THEN** SaveError SHALL carry `error` "version must be a valid semantic version"
+
+#### Scenario: Failure without a chat-api message
+
+- **WHEN** the update request fails with `500` and an empty body, or the network request fails
+- **THEN** SaveError SHALL carry the translation of `AppsEditorI18nKeys.ErrorSaveFailed`
+
 ### Requirement: Meaning of SaveSuccess hasChanges
 
 `SaveSuccess.hasChanges` SHALL be computed by `hasQuickAppChanges`
@@ -491,16 +568,16 @@ load.
 `true` when either:
 
 - some top-level key of the `application_properties` built for this save is not deeply equal
-  to the same key of the `application_properties` loaded when the editor opened (after the
-  load normalisation in "Application load on open"); or
+  to the same key of the held saved application's `application_properties`; or
 - the TriggerSave carried a `general` payload and at least one of `name`, `description`
   (each recombined with `general.locales` into a localized-text dictionary), `iconUrl`,
-  `topics` or `display_version` differs from the value loaded when the editor opened.
+  `topics` or `display_version` differs from the held saved value.
 
 Otherwise it SHALL be `false`. `locales` and `primaryLocale` SHALL NOT be compared on their
-own. The comparison baseline SHALL be the load-time application, not the values of an earlier
-save in the same session. `hasChanges` does not say whether unsaved changes remain after the
-save.
+own. The comparison baseline SHALL be the saved application `EditorClient` holds ("Save
+request"). That is the application loaded when the editor opened (after the load
+normalisation in "Application load on open"), replaced after each successful save in the
+session. `hasChanges` does not say whether unsaved changes remain after the save.
 
 #### Scenario: Settings change
 
@@ -519,12 +596,19 @@ save.
   TriggerSave carries no `general` payload
 - **THEN** SaveSuccess SHALL carry `hasChanges: false`
 
+#### Scenario: Second save without new edits
+
+- **WHEN** the user changes the instructions, a TriggerSave succeeds, and the host sends another
+  TriggerSave without further edits and without a `general` payload
+- **THEN** the second SaveSuccess SHALL carry `hasChanges: false`
+
 ### Requirement: Reset remounts the editor form
 
 On a Reset message (see `host-integration`, "Inbound message contract"), QuickApps SHALL
 discard in-progress edits by remounting `QuickApp2Form` (a new React `key` held in
-`EditorClient` as `resetKey`), which rebuilds its values and dirty baseline from the
-application data held since the editor opened. Reset SHALL NOT make a chat-api request and
+`EditorClient` as `resetKey`), which rebuilds its values and dirty baseline from the saved
+application `EditorClient` holds ("Save request"). That is the application loaded when the
+editor opened, or the state of the last successful save. Reset SHALL NOT make a chat-api request and
 SHALL NOT refetch the application. It SHALL NOT post a save-outcome message and SHALL NOT
 change whether the application counts as saved.
 
@@ -534,6 +618,12 @@ change whether the application counts as saved.
 - **THEN** the instructions SHALL show the loaded text again
 - **AND** QuickApps SHALL post DIRTY_STATE with `isDirty: false`
 - **AND** it SHALL NOT call chat-api
+
+#### Scenario: Reset after a save
+
+- **WHEN** the user changes the instructions to `"Be brief"`, a save succeeds, the user changes
+  them again, and QuickApps receives a Reset
+- **THEN** the instructions SHALL show `"Be brief"`
 
 ### Requirement: Application properties written on save
 

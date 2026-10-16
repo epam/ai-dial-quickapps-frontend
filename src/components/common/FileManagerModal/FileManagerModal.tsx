@@ -26,7 +26,11 @@ import {
 } from '@epam/ai-dial-react-file-manager';
 
 import { MOBILE_FULLSCREEN_POPUP_CLASS_NAMES } from '@/constants/popup';
-import { ButtonsI18nKeys, DialFileManagerI18nKeys } from '@/constants/translation-keys';
+import {
+  ButtonsI18nKeys,
+  ConversationPanelI18nKeys,
+  DialFileManagerI18nKeys,
+} from '@/constants/translation-keys';
 import { useAuthContext } from '@/context/AuthContext';
 import { useDialFileSources } from '@/hooks/use-dial-file-sources';
 import { useTranslation } from 'react-i18next';
@@ -309,6 +313,9 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
       showHiddenFilesToggle: true,
       showHiddenFilesLabel: t(DialFileManagerI18nKeys.ShowHiddenFiles),
       hideHiddenFilesLabel: t(DialFileManagerI18nKeys.HideHiddenFiles),
+      // Unset, the library shows its English "Add" / "More actions" defaults.
+      newButtonLabel: t(ButtonsI18nKeys.Add),
+      moreActionsLabel: t(ConversationPanelI18nKeys.ActionsLabel),
       isNewButtonDisabled,
       disabledNewButtonTooltip,
       newActions: {

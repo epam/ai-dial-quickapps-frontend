@@ -44,11 +44,14 @@
     "scrollableTable": "Scrollable table",
     "scrollableFormula": "Scrollable formula"
   },
+  "conversationPanel": {
+    "actions": {
+      "actionsLabel": "More actions"
+    }
+  },
   "chatSettings": {
     "temperatureLabel": "Temperature",
-    "temperaturePrecise": "Precise",
-    "temperatureNeutral": "Neutral",
-    "temperatureCreative": "Creative"
+    "temperatureNeutral": "Neutral"
   },
   "deploymentSelector": {
     "loading": "Loading models…",
@@ -185,6 +188,14 @@
   "toolsetSignin": {
     "apiKeyLabel": "API key"
   },
+  "appsEditor": {
+    "error": {
+      "saveFailed": "Failed to save application settings. Please try again."
+    },
+    "schemaForm": {
+      "loadFailed": "Failed to load the application settings. Please try again."
+    }
+  },
   "applicationEditor": {
     "addOns": {
       "unavailableRemovalRequired": "The {{entityType}} is not available and needs to be removed.",
@@ -260,6 +271,8 @@
       "webFetch": "Web fetch",
       "webFetchDescription": "Enables the orchestrator’s built-in tool for fetching an external web resource for this app. When enabled, the agent can fetch an external URL and get its content back inline, or saved to the app’s workspace for larger content. When disabled, no fetch tool is exposed to the orchestrator.",
       "temperatureValue": "Temperature value",
+      "temperatureCold": "Cold",
+      "temperatureHot": "Hot",
       "title": "Advanced settings",
       "advanced": "Advanced",
       "close": "Close advanced settings",
@@ -279,7 +292,9 @@
       "selectModel": "Select model",
       "changeModel": "Change model",
       "catalogTitle": "Models catalog",
-      "searchPlaceholder": "Search models…"
+      "searchPlaceholder": "Search models…",
+      "modelUnavailable": "Not available agent selected. Please, change the agent to proceed",
+      "modelToolsUnsupported": "Selected model does not support tools"
     },
     "instructions": {
       "label": "Instructions",

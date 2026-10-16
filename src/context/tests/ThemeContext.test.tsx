@@ -217,8 +217,7 @@ describe('ThemeProvider', () => {
   });
 
   describe('choosing the active theme id', () => {
-    it('prefers the theme query parameter over the stored choice', async () => {
-      localStorage.setItem('dial-theme', 'light');
+    it('uses the theme query parameter', async () => {
       window.history.replaceState(null, '', '/?theme=dark');
 
       await renderProvider();
@@ -227,16 +226,9 @@ describe('ThemeProvider', () => {
       expect(ctx().currentTheme).toEqual(DARK);
     });
 
-    it('uses the stored choice when the URL has no theme parameter', async () => {
+    it('defaults to light without a theme parameter and ignores a stored theme', async () => {
       localStorage.setItem('dial-theme', 'dark');
 
-      await renderProvider();
-
-      expect(ctx().selectedThemeId).toBe('dark');
-      expect(ctx().currentTheme).toEqual(DARK);
-    });
-
-    it('defaults to light when neither the URL nor storage has a theme', async () => {
       await renderProvider();
 
       expect(ctx().selectedThemeId).toBe('light');
@@ -247,7 +239,7 @@ describe('ThemeProvider', () => {
   describe('system theme', () => {
     it('resolves system to dark when the OS prefers a dark colour scheme', async () => {
       osPrefersDark = true;
-      localStorage.setItem('dial-theme', 'system');
+      window.history.replaceState(null, '', '/?theme=system');
 
       await renderProvider();
 
@@ -258,7 +250,7 @@ describe('ThemeProvider', () => {
 
     it('switches to light without a reload when the OS preference changes', async () => {
       osPrefersDark = true;
-      localStorage.setItem('dial-theme', 'system');
+      window.history.replaceState(null, '', '/?theme=system');
       await renderProvider();
 
       changeOsPreference(false);
@@ -293,21 +285,7 @@ describe('ThemeProvider', () => {
       expect(cssVar('bg-layer-base')).toBe('#0E1117');
     });
 
-    it('falls back to the stored choice when popstate removes the theme parameter', async () => {
-      localStorage.setItem('dial-theme', 'dark');
-      window.history.replaceState(null, '', '/?theme=light');
-      await renderProvider();
-      expect(ctx().selectedThemeId).toBe('light');
-
-      act(() => {
-        window.history.replaceState(null, '', '/');
-        window.dispatchEvent(new PopStateEvent('popstate'));
-      });
-
-      expect(ctx().selectedThemeId).toBe('dark');
-    });
-
-    it('falls back to light when popstate removes the theme parameter and nothing is stored', async () => {
+    it('falls back to light when popstate removes the theme parameter', async () => {
       window.history.replaceState(null, '', '/?theme=dark');
       await renderProvider();
       expect(ctx().selectedThemeId).toBe('dark');
@@ -368,26 +346,10 @@ describe('ThemeProvider', () => {
       consoleError.mockRestore();
     });
 
-    it('setTheme persists the choice and overrides the URL theme', async () => {
-      window.history.replaceState(null, '', '/?theme=light');
+    it('offers no way to set the theme', async () => {
       await renderProvider();
 
-      act(() => ctx().setTheme('dark'));
-
-      expect(localStorage.getItem('dial-theme')).toBe('dark');
-      expect(window.location.search).toBe('?theme=light');
-      expect(ctx().selectedThemeId).toBe('dark');
-      expect(ctx().currentTheme).toEqual(DARK);
-      expect(cssVar('bg-layer-base')).toBe('#0E1117');
-    });
-
-    it('keeps setTheme stable across re-renders', async () => {
-      await renderProvider();
-      const { setTheme } = ctx();
-
-      act(() => ctx().setTheme('dark'));
-
-      expect(ctx().setTheme).toBe(setTheme);
+      expect(ctx()).not.toHaveProperty('setTheme');
     });
   });
 });

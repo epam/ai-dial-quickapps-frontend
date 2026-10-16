@@ -427,7 +427,7 @@ The Add skill popup SHALL keep explicit loading, error and empty states while pr
 #### Scenario: Load error
 
 - **WHEN** the `DataContext` status is `error`
-- **THEN** the list area SHALL show `CatalogI18nKeys.SkillsLoadError` with the error text and a **Retry** button that calls `refreshAll`
+- **THEN** the list area SHALL show `CatalogI18nKeys.SkillsLoadError` and a **Retry** button that calls `refreshAll`, with `DataContext.error` below the title only when the failure carried a chat-api error message (as defined in `orchestrator_model-selection`, "Model picker loading and error states")
 - **AND** **Add** SHALL be disabled
 
 #### Scenario: Empty catalog

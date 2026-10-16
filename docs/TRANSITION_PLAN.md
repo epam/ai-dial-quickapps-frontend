@@ -1,6 +1,12 @@
 # QuickApps frontend: transition plan
 
-Status: Phase 2 (platform migration) code-complete · Owner: QuickApps frontend team · Last updated: 2026-09-28
+> **Frozen as of 2026-09-28 — historical context only, not maintained.** File names, versions,
+> the Dockerfile and the phase plan below describe the repo at that date and have since changed.
+> Current behaviour lives in [`openspec/specs/`](../openspec/specs/); setup and operations in
+> [`README.md`](../README.md); the migration's open items in [`TECH_DEBT.md`](./TECH_DEBT.md)
+> ("Rollout and live verification").
+
+Status (at freeze): Phase 2 (platform migration) code-complete · Owner: QuickApps frontend team · Last updated: 2026-09-28
 
 **Progress:** Phase 1 started — `openspec/` is initialised in the repo (`openspec/config.yaml`, `openspec/specs/`, `openspec/changes/`) with the OpenSpec skills installed under `.claude/skills/`. Specs written so far: `host-integration`, `auth`. **Phase 2 (§2.1–2.8) is done in code** — see each subsection below for status; the two chat-api gaps found during live testing (Appendix C) are both resolved. Remaining before Phase 2 can be called fully closed: the live/manual QA passes §2.6 and §2.8 still call for (embedded in a real admin/chat host, `CSP_MODE=enforce`), and Phase 0 items 6–7 below.
 

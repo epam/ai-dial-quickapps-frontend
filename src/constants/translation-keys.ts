@@ -51,11 +51,13 @@ export enum ChatI18nKeys {
   ScrollableFormula = 'chat.scrollableFormula',
 }
 
+export enum ConversationPanelI18nKeys {
+  ActionsLabel = 'conversationPanel.actions.actionsLabel',
+}
+
 export enum ChatSettingsI18nKeys {
   TemperatureLabel = 'chatSettings.temperatureLabel',
-  TemperaturePrecise = 'chatSettings.temperaturePrecise',
   TemperatureNeutral = 'chatSettings.temperatureNeutral',
-  TemperatureCreative = 'chatSettings.temperatureCreative',
 }
 
 export enum DeploymentSelectorI18nKeys {
@@ -176,6 +178,11 @@ export enum ToolsetSigninI18nKeys {
   ApiKeyLabel = 'toolsetSignin.apiKeyLabel',
 }
 
+export enum AppsEditorI18nKeys {
+  ErrorSaveFailed = 'appsEditor.error.saveFailed',
+  SchemaFormLoadFailed = 'appsEditor.schemaForm.loadFailed',
+}
+
 export enum ApplicationEditorI18nKeys {
   AddOnsUnavailableRemovalRequired = 'applicationEditor.addOns.unavailableRemovalRequired',
   AddOnsLoggedOutToolset = 'applicationEditor.addOns.loggedOutToolset',
@@ -216,6 +223,8 @@ export enum ApplicationEditorI18nKeys {
   InstructionsPlaceholder = 'applicationEditor.instructions.placeholder',
   InstructionsRequired = 'applicationEditor.instructions.required',
   AdvancedSettingsTemperatureValue = 'applicationEditor.advancedSettings.temperatureValue',
+  AdvancedSettingsTemperatureCold = 'applicationEditor.advancedSettings.temperatureCold',
+  AdvancedSettingsTemperatureHot = 'applicationEditor.advancedSettings.temperatureHot',
   CodeInterpreterTitle = 'applicationEditor.codeInterpreter.title',
   CodeInterpreterDescription = 'applicationEditor.codeInterpreter.description',
   SkillsDescription = 'applicationEditor.skills.description',
@@ -290,6 +299,8 @@ export enum ApplicationEditorI18nKeys {
   OrchestratorChangeModel = 'applicationEditor.orchestrator.changeModel',
   OrchestratorCatalogTitle = 'applicationEditor.orchestrator.catalogTitle',
   OrchestratorSearchPlaceholder = 'applicationEditor.orchestrator.searchPlaceholder',
+  OrchestratorModelUnavailable = 'applicationEditor.orchestrator.modelUnavailable',
+  OrchestratorModelToolsUnsupported = 'applicationEditor.orchestrator.modelToolsUnsupported',
 }
 
 export enum DialFileManagerI18nKeys {

@@ -12,6 +12,7 @@ import { QuickApp2Config } from '@/types/quick-apps';
 import { isOriginAllowed, postToHost } from '@/utils/allowed-origins';
 import { ForbiddenError } from '@/utils/forbidden-error';
 import { decodeDialPath, fetchDialApp, saveDialApp } from '@/utils/dial-client';
+import { getChatApiErrorMessage } from '@/utils/chat-api-error';
 import { buildLocalizedText } from '@/utils/get-localized-text';
 import { hasQuickAppChanges, type StoredGeneralFields } from '@/utils/has-quick-app-changes';
 import {
@@ -19,6 +20,7 @@ import {
   type QuickApp2AllEntitiesMap,
 } from '@/components/QuickApp2Form/QuickApp2Form';
 import { AUTO_SAVE_INTERVAL_MS } from '@/constants/editor';
+import { AppsEditorI18nKeys } from '@/constants/translation-keys';
 import {
   InboundMessage,
   InboundMessageType,
@@ -34,7 +36,7 @@ interface EditorInnerProps {
     allEntitiesMap: QuickApp2AllEntitiesMap,
     isAutoSave?: boolean,
     general?: TriggerSaveGeneralPayload,
-  ) => Promise<void>;
+  ) => Promise<boolean>;
   onDirtyChange: (isDirty: boolean) => void;
   onValidationError: (messages: string[]) => void;
   onValidityChange: (isValid: boolean) => void;
@@ -58,7 +60,7 @@ const EditorInner = ({
       isAutoSave = false,
       general?: TriggerSaveGeneralPayload,
     ) => {
-      await onSave(data, allEntitiesMap, isAutoSave, general);
+      return onSave(data, allEntitiesMap, isAutoSave, general);
     },
     [onSave],
   );
@@ -94,10 +96,10 @@ interface EditorClientProps {
 }
 
 const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const language = i18n.resolvedLanguage ?? i18n.language;
   const [appState, setAppState] = useState<AppState | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [hasLoadError, setHasLoadError] = useState(false);
   const [isForbidden, setIsForbidden] = useState(false);
   const [resetKey, setResetKey] = useState(0);
   const [hasSavedOnce, setHasSavedOnce] = useState(false);
@@ -136,7 +138,7 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
           setIsForbidden(true);
           return;
         }
-        setError(err instanceof Error ? err.message : 'Initialization failed');
+        setHasLoadError(true);
       }
     };
 
@@ -212,7 +214,7 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
       isAutoSave = false,
       general?: TriggerSaveGeneralPayload,
     ) => {
-      if (!appState) return;
+      if (!appState) return false;
       const existingConfig = appState.app.applicationProperties as QuickApp2Config | undefined;
       try {
         const newConfig = buildQuickApp2Config({
@@ -277,6 +279,21 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
           storedGeneral,
         );
         const updatedApp = await saveDialApp(appWithFormValues, newConfig, effectiveGeneral);
+        // What was just stored is the baseline for the next save, hasChanges and Reset.
+        // Built from the request: it is already in the editor's shape (decoded URLs,
+        // `_rawForSave`), and the General fields are recombined as chat-api stores them.
+        const savedApp = {
+          ...appWithFormValues,
+          applicationProperties: newConfig,
+          _rawForSave: {
+            displayName: effectiveGeneral.name,
+            description: effectiveGeneral.description,
+            iconUrl: effectiveGeneral.iconUrl,
+            topics: effectiveGeneral.topics,
+            displayVersion: general?.display_version?.trim() || rawForSave.displayVersion,
+          },
+        };
+        setAppState((current) => (current ? { ...current, app: savedApp } : current));
         setHasSavedOnce(true);
         if (isAutoSave) {
           postToHost({ type: OutboundMessageType.AutoSaveComplete }, allowedOriginsRef.current);
@@ -290,8 +307,10 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
             allowedOriginsRef.current,
           );
         }
+        return true;
       } catch (err) {
-        const error = err instanceof Error ? err.message : 'Save failed';
+        // chat-api's own reason when it gave one, else the host's translated save failure.
+        const error = (await getChatApiErrorMessage(err)) ?? t(AppsEditorI18nKeys.ErrorSaveFailed);
         postToHost(
           {
             type: OutboundMessageType.SaveError,
@@ -299,9 +318,10 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
           },
           allowedOriginsRef.current,
         );
+        return false;
       }
     },
-    [appState, language],
+    [appState, language, t],
   );
 
   const handleDirtyChange = useCallback((isDirty: boolean) => {
@@ -345,8 +365,12 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
     return <ForbiddenPage />;
   }
 
-  if (error) {
-    return <div className="flex h-screen items-center justify-center text-error">{error}</div>;
+  if (hasLoadError) {
+    return (
+      <div className="flex h-screen items-center justify-center text-error">
+        {t(AppsEditorI18nKeys.SchemaFormLoadFailed)}
+      </div>
+    );
   }
 
   if (!appState) {
