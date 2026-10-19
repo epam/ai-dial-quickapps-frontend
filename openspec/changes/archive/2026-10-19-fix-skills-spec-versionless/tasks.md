@@ -12,5 +12,5 @@
 ## 3. Follow-ups outside the repo
 
 - [x] 3.1 Edit the #210 description: remove the version text, move Folder from Overview to the header, state Delete has no confirmation; verify the text matches the archived spec
-- [ ] 3.2 Update the Figma designs (Skills row, details header, Add skill Name cell) to drop the version; verify no version text remains in the frames
+- [x] 3.2 Update the Figma designs (Skills row, details header, Add skill Name cell) to drop the version; verify no version text remains in the frames
 - [ ] 3.3 Update the QA test cases TC-2, TC-6, TC-7 and rewrite TC-17 to TC-20 for the whole-card read-only model; verify the next QA run passes them

@@ -153,9 +153,6 @@ OpenSpec change).
       (`quickApp2Form.ts:289-328`; chat-api replaces the stored object).
 - [x] **General summary lookup misses encoded ids** — `fetchApplicationSummary` now matches the
       listing entry by its decoded id (change `match-summary-by-decoded-id`).
-- [ ] **Read-only mode is unreachable** — `isReadonly` is never passed to `QuickApp2Form` (shared apps are
-      deliberately NOT read-only, #208), yet `application_editor-layout` and
-      `application_user-attachments` specify a read-only editor.
 - [x] **SaveError text** — SaveError now carries chat-api's own message or the translated
       `appsEditor.error.saveFailed`; the load error screen, the two `model` validation messages and
       the picker's load-error description no longer show raw English (change

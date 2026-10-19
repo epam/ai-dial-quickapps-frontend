@@ -471,16 +471,11 @@ The Skills row, Add skill popup and details popup SHALL be keyboard operable, SH
 - **WHEN** any of the three surfaces is rendered in a supported locale
 - **THEN** every user-visible string SHALL come from the translation keys named in this spec, and none SHALL be hardcoded
 
-### Requirement: Read-only applications lock the Skills row
+### Requirement: The Skills row is always editable
 
-Whether the editor is read-only SHALL be decided by the host and apply to the whole Add-ons card, Skills row included; the Skills row SHALL NOT have its own permission rule. A shared application SHALL be editable like the user's own application (#208). In a read-only editor the Add action SHALL be disabled, no remove button SHALL be rendered, and the details popup SHALL offer only Close; skills SHALL still be listed and open the details popup.
+The editor SHALL have no read-only mode: the Skills row's Add action, the remove buttons and Delete in the details popup SHALL always be available, for the user's own applications and for shared ones alike (#208). The `isReadonly` props of the Skills components exist only as a component-level contract and SHALL NOT be set by the editor. The "Read-only application" scenarios of this spec describe that component-level contract only.
 
-#### Scenario: Read-only editor
+#### Scenario: Shared application
 
-- **WHEN** the host opens the editor as read-only
-- **THEN** the Skills row's Add action SHALL be disabled, its items SHALL show no remove button, and the details popup footer SHALL hold only Close
-
-#### Scenario: Shared application with edit access
-
-- **WHEN** the host opens a shared application in an editable editor
+- **WHEN** a shared application is opened in the editor
 - **THEN** the Skills row's Add action, remove buttons and Delete SHALL behave as in the user's own application
