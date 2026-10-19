@@ -43,14 +43,7 @@ const dom = setupTestRoot();
 
 const renderRow = (props: Partial<React.ComponentProps<typeof ConversationStartersRow>> = {}) => {
   const onSave = vi.fn();
-  dom.render(
-    <ConversationStartersRow
-      values={createValues()}
-      isReadonly={false}
-      onSave={onSave}
-      {...props}
-    />,
-  );
+  dom.render(<ConversationStartersRow values={createValues()} onSave={onSave} {...props} />);
   return { onSave };
 };
 
@@ -119,20 +112,6 @@ describe('ConversationStartersRow', () => {
     expect(onSave).toHaveBeenCalledWith(values);
   });
 
-  it('disables the action and keeps the list visible when read-only', () => {
-    renderRow({
-      isReadonly: true,
-      values: createValues([{ id: 'a', title: 'A', text: 'a' }, blankStarter]),
-    });
-
-    const button = getActionButton();
-    expect(button.disabled || button.getAttribute('aria-disabled') === 'true').toBe(true);
-    act(() => button.click());
-
-    expect(getModal()).toBeNull();
-    expect(dom.container.querySelectorAll('li')).toHaveLength(1);
-  });
-
   describe('removing a starter from the row', () => {
     const starters = [
       { id: 'a', title: 'A', text: 'prompt a' },
@@ -146,7 +125,6 @@ describe('ConversationStartersRow', () => {
       return (
         <ConversationStartersRow
           values={values}
-          isReadonly={false}
           onSave={(next) => {
             onSave(next);
             setValues(next);
@@ -210,12 +188,6 @@ describe('ConversationStartersRow', () => {
 
       expect(dom.container.querySelector('ul')).toBeNull();
       expect(getActionButton().textContent).toBe(ButtonsI18nKeys.Add);
-    });
-
-    it('renders no remove buttons when read-only', () => {
-      renderRow({ isReadonly: true, values: createValues(starters) });
-
-      expect(dom.container.querySelector(removeSelector)).toBeNull();
     });
   });
 });

@@ -20,7 +20,6 @@ export interface AgentsFormSectionProps {
   allIds: string[];
   /** The agent entries among them. */
   agentIds: string[];
-  isReadonly: boolean;
   onChange: (allIds: string[]) => void;
   /** The transport saved per agent entry, if any. */
   transports: Record<string, DialAppTransportType | undefined>;
@@ -31,7 +30,6 @@ export interface AgentsFormSectionProps {
 const AgentsFormSection: FC<AgentsFormSectionProps> = ({
   allIds,
   agentIds,
-  isReadonly,
   onChange,
   transports,
   onConfigure,
@@ -58,20 +56,18 @@ const AgentsFormSection: FC<AgentsFormSectionProps> = ({
       label={t(ApplicationEditorI18nKeys.AgentsTitle)}
       emptyDescription={t(ApplicationEditorI18nKeys.AgentsDescription)}
       isEmpty={agentIds.length === 0}
-      isAddDisabled={isReadonly}
       addTooltip={t(ApplicationEditorI18nKeys.AgentsAddMany)}
       onAdd={() => setIsAddModalOpen(true)}
     >
       <AgentsList
         ids={agentIds}
         allIds={allIds}
-        isReadonly={isReadonly}
         onChange={onChange}
         transports={transports}
         onConfigure={onConfigure}
       />
 
-      {isAddModalOpen && !isReadonly && (
+      {isAddModalOpen && (
         <Suspense fallback={null}>
           <AddAgentsModal
             allIds={allIds}

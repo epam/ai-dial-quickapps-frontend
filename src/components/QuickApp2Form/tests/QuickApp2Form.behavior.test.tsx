@@ -190,17 +190,14 @@ vi.mock('@/components/AgentSkills/AgentSkillsFormSection/AgentSkillsFormSection'
 vi.mock('@/components/KnowledgeBase/KnowledgeBaseRow/KnowledgeBaseRow', () => {
   const KnowledgeBaseTestRow = ({
     files,
-    isReadonly,
     onAddFiles,
     onRemoveFile,
   }: {
     files: string[];
-    isReadonly: boolean;
     onAddFiles: (files: string[]) => void;
     onRemoveFile: (file: string) => void;
   }) => (
     <div>
-      <output data-testid="knowledge-readonly">{String(isReadonly)}</output>
       <output data-testid="knowledge-files">{files.join('|')}</output>
       <button
         type="button"
@@ -219,15 +216,12 @@ vi.mock('@/components/KnowledgeBase/KnowledgeBaseRow/KnowledgeBaseRow', () => {
 vi.mock('@/components/ConversationStarters/ConversationStartersRow/ConversationStartersRow', () => {
   const ConversationStartersTestRow = ({
     values,
-    isReadonly,
     onSave,
   }: {
     values: ConversationStartersValues;
-    isReadonly: boolean;
     onSave: (values: ConversationStartersValues) => void;
   }) => (
     <div>
-      <output data-testid="starters-readonly">{String(isReadonly)}</output>
       <output data-testid="starters-titles">
         {values.starters.map((starter) => starter.title).join('|')}
       </output>
@@ -268,7 +262,6 @@ const renderForm = (
     onSave?: Mock<FormSaveHandler>;
     onValidationError?: Mock<(messages: string[]) => void>;
     onValidityChange?: Mock<(isValid: boolean) => void>;
-    isReadonly?: boolean;
     key?: string;
   } = {},
 ) => {
@@ -284,7 +277,6 @@ const renderForm = (
       onValidationError={props.onValidationError}
       onValidityChange={props.onValidityChange}
       onModelReady={onModelReady}
-      isReadonly={props.isReadonly}
     />,
   );
 
@@ -563,14 +555,6 @@ describe('QuickApp2Form observable behavior', () => {
     expect(onSave.mock.calls[0][0].agentSkills).toEqual(['skills/public/a', 'skills/public/c']);
   });
 
-  it('ignores host-triggered saves while read-only', async () => {
-    const { onSave } = renderForm({ isReadonly: true });
-
-    await triggerSave({ isAutoSave: false });
-
-    expect(onSave).not.toHaveBeenCalled();
-  });
-
   it('restores the form baseline when the form is remounted for reset', async () => {
     const { onDirtyChange } = renderForm({ key: 'before-reset' });
     const instructions = dom.container.querySelector(
@@ -828,21 +812,6 @@ describe('QuickApp2Form observable behavior', () => {
     expect(onDirtyChange).not.toHaveBeenCalledWith(true);
   });
 
-  it('keeps the conversation starters row editable for a shared app', () => {
-    testContext.appContext.app = {
-      id: 'app',
-      applicationProperties: { orchestrator: SAVED_ORCHESTRATOR },
-      isShared: true,
-      sharedWithMe: true,
-    };
-
-    renderForm();
-
-    expect(dom.container.querySelector('[data-testid="starters-readonly"]')?.textContent).toBe(
-      'false',
-    );
-  });
-
   it('passes saved context files to the Knowledge base row', () => {
     testContext.appContext.app = {
       id: 'app',
@@ -904,17 +873,4 @@ describe('QuickApp2Form observable behavior', () => {
     await submitForm();
     expect(onSave.mock.calls[0][0].documentRelativeUrl).toEqual(['files/abc/b.pdf']);
   });
-
-  it.each([{ isShared: true }, { sharedWithMe: true }])(
-    'keeps the knowledge base row editable for a shared app (%o)',
-    (sharedFlags) => {
-      testContext.appContext.app = { id: 'app', applicationProperties: {}, ...sharedFlags };
-
-      renderForm();
-
-      expect(dom.container.querySelector('[data-testid="knowledge-readonly"]')?.textContent).toBe(
-        'false',
-      );
-    },
-  );
 });

@@ -64,7 +64,6 @@ const render = (props: Partial<AddOnDetailsPopupProps> = {}) => {
       item={listing}
       detailsStatus={DetailsStatus.Ready}
       onRetry={vi.fn()}
-      isReadonly={false}
       deleteLabel="Delete"
       onDelete={vi.fn()}
       onClose={vi.fn()}

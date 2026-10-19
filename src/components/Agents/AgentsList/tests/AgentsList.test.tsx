@@ -25,19 +25,16 @@ vi.mock('@/hooks/use-add-on-entity-map', () => ({
 
 interface PopupStubProps {
   agentId: string;
-  isReadonly: boolean;
   onRemove: (id: string) => void;
   onClose: () => void;
 }
 
 vi.mock('@/components/Agents/AgentDetailsPopup/AgentDetailsPopup', () => ({
-  AgentDetailsPopup: ({ agentId, isReadonly, onRemove, onClose }: PopupStubProps) => (
+  AgentDetailsPopup: ({ agentId, onRemove, onClose }: PopupStubProps) => (
     <div role="dialog" aria-label={agentId}>
-      {!isReadonly && (
-        <button type="button" onClick={() => (onRemove(agentId), onClose())}>
-          Delete
-        </button>
-      )}
+      <button type="button" onClick={() => (onRemove(agentId), onClose())}>
+        Delete
+      </button>
       <button type="button" onClick={onClose}>
         Close
       </button>
@@ -49,10 +46,9 @@ const dom = setupTestRoot();
 
 interface HarnessProps {
   initial: string[];
-  isReadonly?: boolean;
 }
 
-const Harness = ({ initial, isReadonly = false }: HarnessProps) => {
+const Harness = ({ initial }: HarnessProps) => {
   const [allIds, setAllIds] = useState(initial);
   return (
     <>
@@ -60,7 +56,6 @@ const Harness = ({ initial, isReadonly = false }: HarnessProps) => {
       <AgentsList
         ids={allIds.filter((id) => !id.startsWith('toolsets/'))}
         allIds={allIds}
-        isReadonly={isReadonly}
         onChange={setAllIds}
         transports={{}}
         onConfigure={vi.fn()}
@@ -82,9 +77,9 @@ const getRemoveButton = (name: string) => {
   return row ? getButton(ApplicationEditorI18nKeys.AddOnsRemove, row) : undefined;
 };
 
-const render = async (initial: string[], isReadonly?: boolean) => {
+const render = async (initial: string[]) => {
   await act(async () => {
-    dom.root.render(<Harness initial={initial} isReadonly={isReadonly} />);
+    dom.root.render(<Harness initial={initial} />);
   });
 };
 
@@ -123,13 +118,6 @@ describe('AgentsList', () => {
       `toolsets/public/figma|${GPT.id}`,
     );
     expect(document.activeElement).toBe(getDetailsButton('GPT-4o'));
-  });
-
-  it('renders no remove button in a read-only application', async () => {
-    await render([RESEARCH.id], true);
-
-    expect(getDetailsButton('Research Agent')).toBeTruthy();
-    expect(getRemoveButton('Research Agent')).toBeUndefined();
   });
 });
 

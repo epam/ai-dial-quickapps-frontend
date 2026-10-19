@@ -22,7 +22,6 @@ export interface AgentsListProps {
   ids: string[];
   /** Every `addOns` id; edits keep the toolset ids in place. */
   allIds: string[];
-  isReadonly: boolean;
   onChange: (allIds: string[]) => void;
   /** The transport saved per agent entry, if any. */
   transports: Record<string, DialAppTransportType | undefined>;
@@ -30,14 +29,7 @@ export interface AgentsListProps {
 }
 
 /** The attached agents (applications, MCP agents, models) of the Agents row. */
-const AgentsList: FC<AgentsListProps> = ({
-  ids,
-  allIds,
-  isReadonly,
-  onChange,
-  transports,
-  onConfigure,
-}) => {
+const AgentsList: FC<AgentsListProps> = ({ ids, allIds, onChange, transports, onConfigure }) => {
   const { t, i18n } = useTranslation();
   const language = i18n.resolvedLanguage ?? i18n.language;
   const entityMap = useAddOnEntityMap();
@@ -79,7 +71,7 @@ const AgentsList: FC<AgentsListProps> = ({
                 detailsLabel={t(ApplicationEditorI18nKeys.AddOnsDetails, { name })}
                 removeLabel={t(ApplicationEditorI18nKeys.AddOnsRemove, { name })}
                 onClick={setOpenAgentId}
-                onRemove={isReadonly ? undefined : handleRemove}
+                onRemove={handleRemove}
               />
             </li>
           );
@@ -92,7 +84,6 @@ const AgentsList: FC<AgentsListProps> = ({
             agentId={openAgentId}
             agent={entityMap[openAgentId] as DialModel | undefined}
             transport={transports[openAgentId]}
-            isReadonly={isReadonly}
             onRemove={handleRemove}
             onConfigure={onConfigure}
             onClose={handleClose}
