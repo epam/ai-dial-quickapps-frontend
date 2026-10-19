@@ -12,7 +12,7 @@ The Skills row of the Add-ons card SHALL list the application's attached skills 
 
 - the skill's avatar: `DeploymentIcon` from `@epam/ai-dial-chat-shared` with the skill name's initials, since skills have no icon,
 - the skill name,
-- the version as secondary text, only when the catalog listing supplies one.
+- no version: DIAL skills are unversioned, so none is shown unless a skill listing entry ever supplies one, in which case it appears as secondary text after the name.
 
 Each item SHALL hold a button whose accessible name comes from `ApplicationEditorI18nKeys.AddOnsDetails` with the skill name interpolated (e.g. "Web Search details"); activating it SHALL open the skill details popup for that skill. Items SHALL NOT render a bordered chip box or a tooltip.
 
@@ -26,9 +26,9 @@ In an editable application, each item SHALL also hold a remove button at its end
 
 #### Scenario: Version is shown when available
 
-- **WHEN** an attached skill's listing entry has version `1.4.6`
-- **THEN** its item SHALL show "1.4.6" as secondary text after the name
-- **AND** an attached skill without a version SHALL show the name only
+- **WHEN** an attached skill's listing entry has no version (the case for every skill chat-api returns today)
+- **THEN** its item SHALL show the avatar and the name only
+- **AND** if a listing entry ever supplies a version, it SHALL be shown as secondary text after the name
 
 #### Scenario: Attached skill missing from the catalog
 
@@ -236,7 +236,7 @@ The Overview data SHALL come from three requests, made in parallel when the popu
 - `skillsApi.getSkillMetadata({ bucket, path })` → `GET /api/v1/skills/metadata?bucket={bucket}&path={path}`. This is the authoritative author and timestamps; the listing entry is the fallback when it fails.
 - `skillsApi.listSkillFiles({ bucket, path, filePath: '', recursive: true })` → `GET /api/v1/skills/files?bucket={bucket}&path={path}&filePath=&recursive=true`.
 
-The Overview tab SHALL be shown only when the file listing succeeds. The folder is shown in the popup header, as for toolsets and agents. The version is no longer an Overview row; it shows next to the name in the header when known.
+The Overview tab SHALL be shown only when the file listing succeeds. The folder is shown in the popup header, as for toolsets and agents. Skills are unversioned, so no version is shown in the header or as an Overview row.
 
 Example, for skill `skills/public/research/user-research` whose frontmatter has `when_to_use: Planning interviews` and whose package has `SKILL.md` and `guide.md`:
 
@@ -284,7 +284,7 @@ Rendered result:
 
 ### Requirement: Remove a skill from the application
 
-**Delete** in the details popup SHALL remove that skill id from the `agentSkills` form value and close the popup. It SHALL NOT call any chat-api skill mutation: the skill resource in DIAL SHALL remain untouched. In a read-only application, Delete SHALL NOT be rendered.
+**Delete** in the details popup SHALL remove that skill id from the `agentSkills` form value and close the popup. It SHALL NOT call any chat-api skill mutation: the skill resource in DIAL SHALL remain untouched. Delete SHALL act immediately: it SHALL NOT ask for confirmation, because it only detaches the skill from this application and the skill can be attached again with Add. In a read-only application, Delete SHALL NOT be rendered.
 
 #### Scenario: Delete detaches the skill
 
@@ -292,6 +292,11 @@ Rendered result:
 - **THEN** `agentSkills` SHALL become `["a", "c"]`, the form SHALL become dirty, and the popup SHALL close
 - **AND** saving SHALL persist the same app config `skills` entries as for `["a", "c"]`
 - **AND** no request to `/api/v1/skills` other than the manifest download SHALL have been made
+
+#### Scenario: Delete needs no confirmation
+
+- **WHEN** the user activates Delete in the details popup of an attached skill in an editable application
+- **THEN** the skill SHALL be removed and the popup closed at once, with no confirmation dialog shown
 
 #### Scenario: Deleting the last skill
 
@@ -331,7 +336,7 @@ The popup state (search, filter, sort, checked ids) SHALL be local `useState` in
 #### Scenario: Row content
 
 - **WHEN** a skill `skills/public/web-search` named "Web Search" is listed
-- **THEN** its Name cell SHALL show the initials avatar "WS" and the name, plus the version as secondary text when one is supplied
+- **THEN** its Name cell SHALL show the initials avatar "WS" and the name, with no version (shown as secondary text only if a listing entry ever supplies one)
 - **AND** its Type cell SHALL show the catalog's skill type label
 - **AND** its Folder cell SHALL show a folder icon and "Organization", with the full path in a tooltip and in screen-reader text
 - **AND** its Tags cell SHALL show the skill's tags when supplied, and be empty otherwise
@@ -456,7 +461,7 @@ The Skills row, Add skill popup and details popup SHALL be keyboard operable, SH
 #### Scenario: Right-to-left document
 
 - **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
-- **THEN** Skills row items SHALL run avatar → name → version from right to left, with the trash button at the end (left)
+- **THEN** Skills row items SHALL run avatar → name from right to left, with the trash button at the end (left)
 - **AND** in the Add skill popup the heading SHALL be at the start (right) and the sort menu at the end (left), and the list columns SHALL run selection → Tags from right to left
 - **AND** in the details popup Delete SHALL be at the start (right) and Close at the end (left)
 - **AND** no icon SHALL be mirrored (avatar, folder, funnel, chevron-down, search, trash and × are not directional)
@@ -465,3 +470,17 @@ The Skills row, Add skill popup and details popup SHALL be keyboard operable, SH
 
 - **WHEN** any of the three surfaces is rendered in a supported locale
 - **THEN** every user-visible string SHALL come from the translation keys named in this spec, and none SHALL be hardcoded
+
+### Requirement: Read-only applications lock the Skills row
+
+Whether the editor is read-only SHALL be decided by the host and apply to the whole Add-ons card, Skills row included; the Skills row SHALL NOT have its own permission rule. A shared application SHALL be editable like the user's own application (#208). In a read-only editor the Add action SHALL be disabled, no remove button SHALL be rendered, and the details popup SHALL offer only Close; skills SHALL still be listed and open the details popup.
+
+#### Scenario: Read-only editor
+
+- **WHEN** the host opens the editor as read-only
+- **THEN** the Skills row's Add action SHALL be disabled, its items SHALL show no remove button, and the details popup footer SHALL hold only Close
+
+#### Scenario: Shared application with edit access
+
+- **WHEN** the host opens a shared application in an editable editor
+- **THEN** the Skills row's Add action, remove buttons and Delete SHALL behave as in the user's own application
