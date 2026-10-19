@@ -85,6 +85,12 @@ The Toolsets row of the Add-ons card SHALL list the attached toolsets in `addOns
 - **THEN** toolsets SHALL still be listed and SHALL still open the details popup
 - **AND** no remove button SHALL be rendered
 
+#### Scenario: Shared application
+
+- **WHEN** the application is shared with the user
+- **THEN** the Toolsets row, its Add action, the details popup and Delete SHALL behave exactly as in the user's own application, as the Skills row does
+- **AND** only the editor's read-only state, as decided by the host, SHALL disable Add and hide the remove button and Delete
+
 ### Requirement: Toolset details popup
 
 Activating a Toolsets row item SHALL open a modal dialog (ui-kit `Popup`, `PopupSize.Lg`) for that toolset.

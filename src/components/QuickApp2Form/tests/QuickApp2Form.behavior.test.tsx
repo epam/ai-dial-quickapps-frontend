@@ -2,7 +2,7 @@ import { act } from 'react';
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
-import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
+import { ApplicationEditorI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
 import type { QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form/QuickApp2Form';
 import type { QuickApp2Form } from '@/form/quickApp2Form';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
@@ -169,12 +169,15 @@ vi.mock('@/components/AgentSkills/AgentSkillsFormSection/AgentSkillsFormSection'
   // Stands in for the skill details popup's Delete, which detaches one skill.
   const SkillsTestSection = ({
     value,
+    isReadonly,
     onChange,
   }: {
     value: string[];
+    isReadonly: boolean;
     onChange: (value: string[]) => void;
   }) => (
     <div>
+      <output data-testid="skills-readonly">{String(isReadonly)}</output>
       <output data-testid="skills-value">{value.join('|')}</output>
       <button
         type="button"
@@ -915,6 +918,25 @@ describe('QuickApp2Form observable behavior', () => {
       expect(dom.container.querySelector('[data-testid="knowledge-readonly"]')?.textContent).toBe(
         'false',
       );
+    },
+  );
+
+  it.each([{ isShared: true }, { sharedWithMe: true }])(
+    'keeps the skills, toolsets and agents rows editable for a shared app (%o)',
+    (sharedFlags) => {
+      testContext.appContext.app = { id: 'app', applicationProperties: {}, ...sharedFlags };
+
+      renderForm();
+
+      expect(dom.container.querySelector('[data-testid="skills-readonly"]')?.textContent).toBe(
+        'false',
+      );
+      // The Toolsets and Agents rows each have an Add button.
+      const addButtons = [...dom.container.querySelectorAll<HTMLButtonElement>('button')].filter(
+        (button) => button.textContent === ButtonsI18nKeys.Add,
+      );
+      expect(addButtons).toHaveLength(2);
+      expect(addButtons.every((button) => !button.disabled)).toBe(true);
     },
   );
 });
