@@ -147,7 +147,7 @@ OpenSpec change).
       `decomposeLocalizedFields` / `composeLocalePayload` (change
       `keep-translations-on-save-without-general`).
 - [ ] **Ignored saves post no outcome** — a not-yet-saved auto-save, a clean auto-save, a
-      validation failure and a read-only form all end silently, while `host-integration` says a
+      validation failure all end silently, while `host-integration` says a
       save always ends in exactly one outcome message.
 - [ ] **`application_properties` keys outside the editor's six are dropped on save**
       (`quickApp2Form.ts:289-328`; chat-api replaces the stored object).

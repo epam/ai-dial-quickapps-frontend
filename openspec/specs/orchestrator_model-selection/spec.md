@@ -6,7 +6,7 @@ Defines how the Quick App editor presents and changes the orchestrator model in 
 
 ## Requirements
 
-### Requirement: Default model block
+### Requirement: Default model block (editable)
 
 The Configuration area SHALL present the orchestrator model selection as a **Default model** block. The block SHALL have a caption heading and an end-aligned **Change** action in the same header row, with the selected-model card below the header. State SHALL remain owned by the editor's form state (`useQuickApp2Form` in `src/hooks/use-quick-app2-form.ts`) through the existing `model` field. Model data SHALL come from the existing `DataContext` (`useDataContext`). No new context, hook state owner, or chat-api request SHALL be introduced.
 
@@ -24,11 +24,6 @@ This change introduces no chat-api endpoint. Models continue to come from the ex
 - **WHEN** the user activates the **Change** button by pointer or keyboard (Enter/Space)
 - **THEN** the model picker popup defined by "Model picker catalog list" SHALL open
 - **AND** the `model` form value SHALL change only when the user confirms a highlighted row with **Add**, as defined by "Model picker single selection"
-
-#### Scenario: Read-only application
-
-- **WHEN** the editor is read-only
-- **THEN** the **Change** button SHALL be disabled and SHALL NOT open the picker
 
 ### Requirement: Picker offers only models
 
