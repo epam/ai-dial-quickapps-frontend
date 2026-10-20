@@ -8,7 +8,7 @@ Defines the content of the Quick App editor's Advanced Settings popup (opened fr
 
 ### Requirement: Popup lists the Advanced Settings controls
 
-The Advanced Settings popup body SHALL render, in this order: the Temperature slider (when available, see "Temperature in the popup"), a max attachments number input, a Time awareness switch, a Built-in file tools switch, the Allow orchestrator to process files switch (when available, see "Allow orchestrator to process files in the popup"), and then the Code Interpreter, Add attachment and Web fetch switches (when enabled, see "Feature toggles in the popup"). Each control SHALL show its translated label, and each control except the Temperature slider SHALL show its translated helper text.
+The Advanced Settings popup body SHALL render, in this order: the Temperature slider (when available, see "Temperature in the popup"), a max attachments number input, a Time awareness switch, a Built-in file tools switch, the Allow orchestrator to process files switch (when available, see "Allow orchestrator to process files in the popup"), and then the Code Interpreter, Add attachment and Web fetch switches (when enabled, see "Feature toggles in the popup (editable)"). Each control SHALL show its translated label, and each control except the Temperature slider SHALL show its translated helper text.
 
 #### Scenario: Controls and copy
 
@@ -226,7 +226,7 @@ The Advanced Settings popup SHALL show the orchestrator attachment strategy as i
 - **WHEN** the switch is rendered
 - **THEN** no "Process files" title and no separate process-files description SHALL be rendered
 
-### Requirement: Feature toggles in the popup
+### Requirement: Feature toggles in the popup (editable)
 
 The popup SHALL show, after the existing switches, a Code Interpreter switch when the host setting `isCodeInterpreterEnabled` is on, an Add attachment switch when `isAddAttachmentEnabled` is on, and a Web fetch switch when `isWebFetchEnabled` is on. Each SHALL be a kit `Switch` presented like the Time awareness switch, labelled with the control's title and captioned with its description. A control whose setting is off SHALL NOT render.
 
@@ -243,11 +243,6 @@ The popup SHALL show, after the existing switches, a Code Interpreter switch whe
 - **WHEN** a host setting is off
 - **THEN** the matching switch SHALL NOT render
 - **AND** its saved form value SHALL be `false`, as before
-
-#### Scenario: Read-only application
-
-- **WHEN** the editor is read-only
-- **THEN** the Advanced button SHALL be disabled and the popup SHALL NOT open, so the switches cannot be changed
 
 ### Requirement: Feature toggles are drafted and saved with the popup
 

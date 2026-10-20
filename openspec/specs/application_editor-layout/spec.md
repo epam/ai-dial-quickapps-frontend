@@ -91,9 +91,9 @@ The editor SHALL render the existing Instructions editor in a standalone, always
 - **THEN** the existing instructions form value SHALL be updated
 - **AND** the value SHALL continue to participate in the existing validation, dirty-state, and save serialization behavior
 
-### Requirement: Presentation change preserves form contract
+### Requirement: Presentation change preserves form contract (editable)
 
-The layout change SHALL preserve existing form state ownership, field names, conditional behavior, read-only behavior, and persistence without introducing new chat-api requests. Skills SHALL continue to use the existing `agentSkills` form value. The Toolsets and Agents rows SHALL both continue to use the existing `addOns` form value: each row shows and edits only its own entries, as classified by `toolsets_selection` ("Toolset entries of the add-ons value") and `agents_selection` ("Agent entries of the add-ons value").
+The layout change SHALL preserve existing form state ownership, field names, conditional behavior, and persistence without introducing new chat-api requests. Skills SHALL continue to use the existing `agentSkills` form value. The Toolsets and Agents rows SHALL both continue to use the existing `addOns` form value: each row shows and edits only its own entries, as classified by `toolsets_selection` ("Toolset entries of the add-ons value") and `agents_selection` ("Agent entries of the add-ons value").
 
 #### Scenario: Save after layout reorganization
 
@@ -101,24 +101,18 @@ The layout change SHALL preserve existing form state ownership, field names, con
 - **THEN** the saved application SHALL contain the same corresponding configuration values as before the reorganization
 - **AND** the editor SHALL make no additional chat-api request because of the layout change
 
-#### Scenario: Read-only editor
-
-- **WHEN** the editor is read-only
-- **THEN** moved controls SHALL retain their existing disabled/read-only behavior
-- **AND** Add actions SHALL not allow a selection modal to be opened
-
 #### Scenario: Shared application
 
 - **WHEN** the application is shared with the user, however the host or chat-api flags it
 - **THEN** the editor SHALL behave exactly as for the user's own application: every control SHALL be editable and no control SHALL be disabled or carry a shared-application hint because of that
-- **AND** whether the user may change the application SHALL be decided by the host (through the editor's read-only state) and by chat-api when saving, never by the editor inspecting the application's sharing flags
+- **AND** whether the user may change the application SHALL be decided by the host by chat-api when saving, never by the editor inspecting the application's sharing flags
 
 #### Scenario: Existing selections remain visible
 
 - **WHEN** an application loads with one or more skills, toolsets or agents already selected
 - **THEN** the corresponding Add-ons content window SHALL be visible
-- **AND** the selected skills SHALL be listed as defined by `skills_catalog` ("Attached skills list")
-- **AND** the selected toolsets SHALL be listed as defined by `toolsets_selection` ("Attached toolsets list"), and the selected agents as defined by `agents_selection` ("Attached agents list"), with removal, sign-in and configuration available from the rows' trash buttons and details popups
+- **AND** the selected skills SHALL be listed as defined by `skills_catalog` ("Attached skills list (editable)")
+- **AND** the selected toolsets SHALL be listed as defined by `toolsets_selection` ("Attached toolsets list (editable)"), and the selected agents as defined by `agents_selection` ("Attached agents list (editable)"), with removal, sign-in and configuration available from the rows' trash buttons and details popups
 
 ### Requirement: Add-ons section groups add-on controls
 
@@ -170,7 +164,7 @@ The Skills row SHALL render the Skills content window (the attached skills list 
 #### Scenario: No skills selected
 
 - **WHEN** the `agentSkills` selection is empty
-- **THEN** the Skills Add action SHALL be visible and enabled unless the editor is read-only
+- **THEN** the Skills Add action SHALL be visible and enabled
 - **AND** the Skills content window SHALL not be rendered
 
 #### Scenario: Skill selected
@@ -192,13 +186,13 @@ The Toolsets row SHALL render its content window (the attached toolsets list) on
 #### Scenario: No toolsets selected
 
 - **WHEN** `addOns` holds no toolset entry, but may hold agent entries
-- **THEN** the Toolsets Add action SHALL be visible and enabled unless the editor is read-only
+- **THEN** the Toolsets Add action SHALL be visible and enabled
 - **AND** the Toolsets row SHALL show its description and no content window
 
 #### Scenario: No agents selected
 
 - **WHEN** `addOns` holds no agent entry, but may hold toolset entries
-- **THEN** the Agents Add action SHALL be visible and enabled unless the editor is read-only
+- **THEN** the Agents Add action SHALL be visible and enabled
 - **AND** the Agents row SHALL show its description and no content window
 
 #### Scenario: Toolset or agent selected
@@ -274,7 +268,7 @@ The Toolsets and Agents rows SHALL NOT offer a JSON view. The editor SHALL NOT r
 
 #### Scenario: No JSON affordance in any state
 
-- **WHEN** the Add-ons section is rendered, in editable or read-only mode, with or without selected agents or toolsets
+- **WHEN** the Add-ons section is rendered, with or without selected agents or toolsets
 - **THEN** no JSON toggle, JSON editor, Save JSON action, or Discard action SHALL be rendered for the Toolsets or Agents rows
 
 #### Scenario: Existing inline toolset is preserved on save
@@ -289,7 +283,7 @@ The Toolsets and Agents rows SHALL NOT offer a JSON view. The editor SHALL NOT r
 - **THEN** the saved `tool_sets` SHALL include or omit the code interpreter toolset accordingly
 - **AND** the remaining `tool_sets` entries SHALL be built from the `addOns` form value
 
-### Requirement: Configuration exposes a Settings entry point
+### Requirement: Configuration exposes a Settings entry point (editable)
 
 The Configuration area SHALL retain its existing model controls and render a translated Settings row with a trailing Advanced action.
 
@@ -299,12 +293,6 @@ The Configuration area SHALL retain its existing model controls and render a tra
 - **THEN** the existing model controls remain available
 - **AND** a Settings row is rendered with the translated `BasicI18nKeys.Settings` label
 - **AND** the row exposes a translated Advanced action using `ApplicationEditorI18nKeys.AdvancedSettingsAdvanced`
-
-#### Scenario: Read-only Configuration
-
-- **WHEN** the editor is read-only
-- **THEN** the Advanced action SHALL be disabled
-- **AND** activating it SHALL not open the popup or change form state
 
 ### Requirement: Advanced opens the Advanced Settings popup
 

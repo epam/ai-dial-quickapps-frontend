@@ -218,9 +218,7 @@ When an application is loaded with at least one `inputAttachmentTypes` entry and
 - **THEN** the update request body SHALL contain `"inputAttachmentTypes": ["application/pdf", "image/png"]`, for example `PUT /api/v1/applications/{id}` with `{ "inputAttachmentTypes": ["application/pdf", "image/png"], "maxInputAttachments": 5, ... }`
 - **AND** a successful response SHALL return the application with the same `inputAttachmentTypes`
 
-### Requirement: Attachments controls are read-only aware, accessible and direction-aware
-
-When the editor is read-only, the switch and the attachment types input SHALL be disabled, and tags SHALL NOT be removable.
+### Requirement: Attachments controls are accessible and direction-aware
 
 The switch SHALL use `ApplicationEditorI18nKeys.AttachmentsTitle` as its accessible name.
 
@@ -238,11 +236,6 @@ Keyboard focus SHALL reach the switch and then the text input. Suggestions SHALL
 The row SHALL use logical layout so the switch sits at the trailing edge in RTL. The suggestion name and MIME type SHALL sit at the leading and trailing edges of the active direction. The switch and the tag-remove × SHALL NOT be mirrored.
 
 The section component SHALL be wrapped in `React.memo`, and its derived suggestion list and handlers SHALL be memoised (`useMemo` / `useCallback`) so unrelated form updates do not re-render it.
-
-#### Scenario: Read-only editor
-
-- **WHEN** the editor is read-only
-- **THEN** the switch and the input SHALL be disabled, tags SHALL have no remove control, and form state SHALL NOT change
 
 #### Scenario: Right-to-left document
 

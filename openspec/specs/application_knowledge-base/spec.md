@@ -6,7 +6,7 @@ Defines the Quick App editor's Knowledge base add-on: the Add-ons row that lists
 
 ## Requirements
 
-### Requirement: Knowledge base add-on row
+### Requirement: Knowledge base add-on row (editable)
 
 The Add-ons section SHALL contain a **Knowledge base** row titled with the `ApplicationEditorI18nKeys.KnowledgeBaseTitle`, rendered with the same row header, typography and Add button as the other Add-ons rows. The row SHALL be driven by the editor form value `documentRelativeUrl` (owned by `useQuickApp2Form`) and hold no state of its own beyond the popup's open flag. It SHALL introduce no context and call no chat-api endpoint of its own.
 
@@ -23,13 +23,6 @@ The Add-ons section SHALL contain a **Knowledge base** row titled with the `Appl
 - **THEN** the row SHALL NOT show its description
 - **AND** the header SHALL keep the same **Add** action
 - **AND** the row SHALL list every context file in saved order, one item per line
-
-#### Scenario: Read-only application
-
-- **WHEN** the editor is read-only
-- **THEN** Add SHALL be disabled
-- **AND** activating it SHALL NOT open the popup
-- **AND** the items list, when present, SHALL remain visible without trash buttons
 
 ### Requirement: Add opens the file-manager popup
 

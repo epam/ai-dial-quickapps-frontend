@@ -37,7 +37,7 @@ This is an internal form-engine replacement, not a UI redesign. The migration mu
 Important behavior in this file (line numbers refer to the pre-migration version):
 
 - `:98-152` updates model lists, resolves asynchronous defaults, clears feature-disabled values, reports model readiness, and forwards dirty state.
-- `:163-178` handles `DIAL_EDITOR_TRIGGER_SAVE_EVENT`, read-only state, autosave dirty gating, and invalid-submit suppression.
+- `:163-178` handles `DIAL_EDITOR_TRIGGER_SAVE_EVENT`, autosave dirty gating, and invalid-submit suppression.
 - `:180-243` derives conditional UI state and updates agents/toolsets while preserving existing metadata.
 - `:249-266` validates MIME tags and remounts the tag input after an invalid optimistic edit.
 - `:279-282` handles ordinary form submission.
@@ -104,7 +104,6 @@ These functions cover domain validation, defaults, toolset conversion, starters,
 - Clean autosave is skipped unless `ignoreDirty` is set.
 - Dirty autosave invokes save.
 - Native submit and `DIAL_EDITOR_TRIGGER_SAVE_EVENT` both validate before saving.
-- Read-only forms do not save.
 - Host reset restores values, errors, generated starter baseline, and dirty state.
 - Dirty notifications sent through `EditorClient` remain unchanged.
 
@@ -119,7 +118,7 @@ These functions cover domain validation, defaults, toolset conversion, starters,
 
 ### Controlled inputs
 
-Verify two-way value propagation and read-only behavior for:
+Verify two-way value propagation for:
 
 - Markdown instructions editor.
 - Model selector.
