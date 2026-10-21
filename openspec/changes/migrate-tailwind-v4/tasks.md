@@ -23,4 +23,4 @@
 - [ ] 4.3 Verify RTL (`dir=rtl`), CSP-nonce build and Docker image build
 
 ## 5. Docs
-- [ ] 5.1 Update "Styling: Tailwind CSS 3" in `openspec/config.yaml`, README/docs mentions, and `docs/TECH_DEBT.md` if relevant
+- [x] 5.1 Update "Styling: Tailwind CSS 3" in `openspec/config.yaml`, README/docs mentions, and `docs/TECH_DEBT.md` if relevant
