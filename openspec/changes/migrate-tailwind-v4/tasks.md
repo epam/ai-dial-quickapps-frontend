@@ -1,9 +1,9 @@
 # Tasks
 
 ## 1. Preparation
-- [ ] 1.1 Confirm host browser support allows Chrome 111+/Safari 16.4+/Firefox 128+; check ui-kit peer deps for a Tailwind range
+- [ ] 1.1 Confirm host browser support allows Chrome 111+/Safari 16.4+/Firefox 128+; check ui-kit peer deps for a Tailwind range (ui-kit part done, see `baseline.md`; host targets still to confirm)
 - [ ] 1.2 Capture baseline screenshots (light, dark, mobile ≤1279px, `dir=rtl`) of editor, catalog filter, popups, login
-- [ ] 1.3 Record `npm run build` CSS size
+- [x] 1.3 Record `npm run build` CSS size (see `baseline.md`)
 
 ## 2. Tooling
 - [ ] 2.1 Install `tailwindcss@4` and `@tailwindcss/vite`; remove `autoprefixer`
