@@ -15,14 +15,6 @@ const backgroundsColors = {
   backdrop: 'color-mix(in srgb, var(--bg-layer-base, #F5F7FA) 80%, transparent)', // grey-100 alpha-80
 };
 
-const shadowColors = {
-  'xs-1': 'var(--shadow-xs-1, #2764D933)', // blue-500 alpha-20
-  'xs-2': 'var(--shadow-xs-2, #161B2D08)', // grey-1000 alpha-3
-  sm: 'var(--shadow-sm, #2764D914)', // blue-500 alpha-8
-  md: 'var(--shadow-md, #2764D90F)', // blue-500 alpha-6
-  lg: 'var(--shadow-lg, #2764D914)', // blue-500 alpha-8
-};
-
 const controlsBgColors = {
   'gradient-1': 'var(--bg-gradient-1, #1D4ED8)', // blue-500
   'gradient-1-hover': 'var(--bg-gradient-1-hover, #6785FB)', // blue-200
@@ -154,16 +146,7 @@ module.exports = {
     },
 
     extend: {
-      screens: {
-        mobile: { max: '1279px' },
-        desktop: { min: '1280px' },
-      },
-      /*
-       * `outline` emits a 1px solid ring and `outline-focus` paints it with the
-       * focus token — see the focus-visible states in buttons.scss. Kept in
-       * `extend` so the numeric widths (`outline-1`, still used in libs/*) stay.
-       */
-      outlineWidth: { DEFAULT: '1px' },
+      /* `outline` is 1px solid by default in v4 (index.css); `outline-focus` paints it with the focus token. */
       outlineColor: borderColors,
       /*
        * SVG fills paint surfaces (a tooltip arrow, a chart area), so the fill
@@ -174,30 +157,6 @@ module.exports = {
         ...backgroundsColors,
         ...controlsBgColors,
         ...visualBgColors,
-      },
-      boxShadow: {
-        xs: `0 1px 4px 0 ${shadowColors['xs-1']}, 0 1px 2px 0 ${shadowColors['xs-2']}`,
-        'chat-button': `0 2px 12px 0 ${shadowColors['xs-1']}, 0 2px 6px 0 ${shadowColors['xs-2']}`,
-        sm: `0 8px 10px 0 ${shadowColors.sm}`,
-        md: `0 8px 24px 0 ${shadowColors.md}`,
-        lg: `0 8px 44px 0 ${shadowColors.lg}`,
-      },
-      borderRadius: {
-        DEFAULT: '4px',
-      },
-      keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
-      },
-      animation: {
-        fadeIn: 'fadeIn 100ms ease-in',
-        /*
-         * ui-kit's Spinner uses `animate-spin-steps`, which lives only in the
-         * ui-kit's own Tailwind config and is absent from its dist CSS.
-         */
-        'spin-steps': 'spin 0.75s steps(8, end) infinite',
       },
     },
   },

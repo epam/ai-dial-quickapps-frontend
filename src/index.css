@@ -6,6 +6,55 @@
 @source '../index.html';
 @source '../node_modules/@epam/ai-dial-ui-kit/dist';
 
+/* `mobile`/`desktop` are the app's own breakpoints (the host switches layout at 1280px). */
+@custom-variant mobile (@media (width <= 1279px));
+@custom-variant desktop (@media (width >= 1280px));
+
+/* `inline` keeps these out of `:root`. `--shadow-*: initial` drops v4's default scale, whose `--shadow-*`
+   names would otherwise land on `:root` and override the chat-api theme variables of the same name. */
+@theme inline {
+  --shadow-*: initial;
+  --shadow-xs: 0 1px 4px 0 var(--shadow-xs-1, #2764d933), 0 1px 2px 0 var(--shadow-xs-2, #161b2d08);
+  --shadow-chat-button:
+    0 2px 12px 0 var(--shadow-xs-1, #2764d933), 0 2px 6px 0 var(--shadow-xs-2, #161b2d08);
+  --animate-fadeIn: fadeIn 100ms ease-in;
+  /* ui-kit's Spinner uses `animate-spin-steps`, which its own dist CSS lacks. */
+  --animate-spin-steps: spin 0.75s steps(8, end) infinite;
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+}
+
+/* chat-api themes set `--shadow-sm|md|lg` themselves, so these three can't be `@theme` tokens: a theme
+   variable named like its own utility would be emitted on `:root` and reference itself. They are
+   utilities instead, with the theme value as the fallback inside the shadow. */
+@utility shadow-sm {
+  --tw-shadow: 0 8px 10px 0 var(--tw-shadow-color, var(--shadow-sm, #2764d914));
+  box-shadow:
+    var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow),
+    var(--tw-ring-shadow), var(--tw-shadow);
+}
+
+@utility shadow-md {
+  --tw-shadow: 0 8px 24px 0 var(--tw-shadow-color, var(--shadow-md, #2764d90f));
+  box-shadow:
+    var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow),
+    var(--tw-ring-shadow), var(--tw-shadow);
+}
+
+@utility shadow-lg {
+  --tw-shadow: 0 8px 44px 0 var(--tw-shadow-color, var(--shadow-lg, #2764d914));
+  box-shadow:
+    var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow),
+    var(--tw-ring-shadow), var(--tw-shadow);
+}
+
 /* @fontsource-variable/inter (imported in main.tsx) registers the family as 'Inter Variable'.
    `--theme-font` is the hook the ui-kit's `.font` class reads. */
 @layer base {

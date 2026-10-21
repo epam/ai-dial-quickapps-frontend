@@ -10,7 +10,7 @@
 - [x] 2.2 Register plugin in `vite.config.ts`; delete `postcss.config.mjs`
 - [x] 2.3 Create plain-CSS entry (`@import 'tailwindcss'`, `@source` for index.html, src, ui-kit dist), import in `main.tsx`; fold `index.scss` into it (replace `$font-family`), drop `sass` if unused
 - [x] 2.4 Stage 1: load `tailwind.config.js` via `@config`; get build green with unchanged class names
-- [ ] 2.5 Port `mobile`/`desktop` screens to `@custom-variant`; port `fadeIn`/`spin-steps`, shadows, 4px radius, 1px outline defaults
+- [x] 2.5 Port `mobile`/`desktop` screens to `@custom-variant`; port `fadeIn`/`spin-steps`, shadows, 4px radius, 1px outline defaults
 
 ## 3. Class migration
 - [ ] 3.1 Run `npx @tailwindcss/upgrade`; review utility renames by hand (shadow/rounded/outline/ring/`!`/opacity, default border colour)
