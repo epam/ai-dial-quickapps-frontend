@@ -19,7 +19,6 @@ import { Section } from '@/components/common/Section/Section';
 export interface AddOnsSectionProps {
   agentSkills: QuickApp2FormValues['agentSkills'];
   onAgentSkillsChange: (value: QuickApp2FormValues['agentSkills']) => void;
-  isReadonly: boolean;
   addOns: QuickApp2FormValues['addOns'];
   onAgentsChange: (ids: string[]) => void;
   onConfigureAgent: (id: string, transport: DialAppTransportType) => void;
@@ -33,7 +32,6 @@ export interface AddOnsSectionProps {
 export const AddOnsSection: FC<AddOnsSectionProps> = ({
   agentSkills,
   onAgentSkillsChange,
-  isReadonly,
   addOns,
   onAgentsChange,
   onConfigureAgent,
@@ -69,23 +67,13 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
   return (
     <Section title={t(ApplicationEditorI18nKeys.AddOnsTitle)}>
       <div className="flex flex-col gap-7">
-        <AgentSkillsFormSection
-          value={agentSkills}
-          onChange={onAgentSkillsChange}
-          isReadonly={isReadonly}
-        />
+        <AgentSkillsFormSection value={agentSkills} onChange={onAgentSkillsChange} />
 
-        <ToolsetsFormSection
-          allIds={allIds}
-          toolsetIds={toolsetIds}
-          isReadonly={isReadonly}
-          onChange={onAgentsChange}
-        />
+        <ToolsetsFormSection allIds={allIds} toolsetIds={toolsetIds} onChange={onAgentsChange} />
 
         <AgentsFormSection
           allIds={allIds}
           agentIds={agentIds}
-          isReadonly={isReadonly}
           onChange={onAgentsChange}
           transports={transports}
           onConfigure={onConfigureAgent}
@@ -93,14 +81,12 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
 
         <KnowledgeBaseRow
           files={documentRelativeUrl}
-          isReadonly={isReadonly}
           onAddFiles={onAddDocuments}
           onRemoveFile={onRemoveDocument}
         />
 
         <ConversationStartersRow
           values={conversationStarters}
-          isReadonly={isReadonly}
           onSave={onConversationStartersSave}
         />
       </div>
