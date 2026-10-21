@@ -237,7 +237,7 @@ describe('CatalogPickerModal', () => {
       render();
 
       const dialog = dom.container.querySelector('[role="dialog"]');
-      expect(dialog?.getAttribute('data-overlay-class')).toBe('p-0 md:p-4 !overflow-hidden');
+      expect(dialog?.getAttribute('data-overlay-class')).toBe('p-0 md:p-4 overflow-hidden!');
       expect(dialog?.className.split(' ')).toEqual(
         expect.arrayContaining(['h-full', 'rounded-none', 'md:h-auto', 'md:rounded-xl']),
       );

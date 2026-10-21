@@ -13,7 +13,7 @@
 - [x] 2.5 Port `mobile`/`desktop` screens to `@custom-variant`; port `fadeIn`/`spin-steps`, shadows, 4px radius, 1px outline defaults
 
 ## 3. Class migration
-- [ ] 3.1 Run `npx @tailwindcss/upgrade`; review utility renames by hand (shadow/rounded/outline/ring/`!`/opacity, default border colour)
+- [x] 3.1 Run `npx @tailwindcss/upgrade`; review utility renames by hand (shadow/rounded/outline/ring/`!`/opacity, default border colour)
 - [ ] 3.2 Stage 2: replace `@config` with `@theme`/`@utility` tokens (design decision 3), delete `tailwind.config.js`, update `eslint.config.mjs` comment
 - [ ] 3.3 Re-check the 400px Filter overlay override and the `blocklist` case
 

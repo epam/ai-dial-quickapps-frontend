@@ -59,7 +59,7 @@ export const AddOnListItem: FC<AddOnListItemProps> = ({
         type="button"
         aria-label={detailsLabel}
         aria-describedby={statusText ? statusId : undefined}
-        className="flex min-w-0 flex-1 items-center gap-2.5 rounded-[10px] py-1 text-start outline-none focus-visible:outline focus-visible:outline-accent-focus"
+        className="flex min-w-0 flex-1 items-center gap-2.5 rounded-[10px] py-1 text-start outline-hidden focus-visible:outline focus-visible:outline-accent-focus"
         onClick={() => onClick(id)}
       >
         {/* Hidden as a whole: the button's own label names the item, and a
@@ -94,7 +94,7 @@ export const AddOnListItem: FC<AddOnListItemProps> = ({
           size={ElementSize.Small}
           icon={<IconTrash size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} />}
           aria-label={removeLabel}
-          className="shrink-0 opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 group-has-[:focus-visible]:opacity-100"
+          className="shrink-0 opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 group-has-focus-visible:opacity-100"
           onClick={() => onRemove(id)}
         />
       )}

@@ -65,11 +65,17 @@ export const SortableStarterRow: FC<SortableStarterRowProps> = ({
         aria-label={t(ApplicationEditorI18nKeys.StartersReorder, { name: handleName })}
         disabled={isTrailing}
         className={mergeClasses(
-          'flex shrink-0 items-center justify-center rounded text-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-focus',
-          isTrailing ? 'cursor-not-allowed opacity-50' : 'cursor-grab touch-none hover:text-primary',
+          'flex shrink-0 items-center justify-center rounded-sm text-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-focus',
+          isTrailing
+            ? 'cursor-not-allowed opacity-50'
+            : 'cursor-grab touch-none hover:text-primary',
         )}
       >
-        <IconGripVertical size={DIAL_ICON_SIZE.MD} stroke={DIAL_KIT_ICON_STROKE} aria-hidden="true" />
+        <IconGripVertical
+          size={DIAL_ICON_SIZE.MD}
+          stroke={DIAL_KIT_ICON_STROKE}
+          aria-hidden="true"
+        />
       </button>
       <Input
         aria-label={t(ApplicationEditorI18nKeys.StartersButtonLabel)}
