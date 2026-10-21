@@ -10,7 +10,6 @@ export interface AgentSettingsTabProps {
   agentId: string;
   /** The transport saved for this entry; none reads as `DEFAULT_AGENT_TRANSPORT`, which is what save writes. */
   transport?: DialAppTransportType;
-  isTransportDisabled: boolean;
   onTransportChange: (transport: DialAppTransportType) => void;
 }
 
@@ -21,7 +20,6 @@ export interface AgentSettingsTabProps {
 export const AgentSettingsTab: FC<AgentSettingsTabProps> = ({
   agentId,
   transport,
-  isTransportDisabled,
   onTransportChange,
 }) => {
   const { t } = useTranslation();
@@ -49,7 +47,6 @@ export const AgentSettingsTab: FC<AgentSettingsTabProps> = ({
       items={transportItems}
       value={transport ?? DEFAULT_AGENT_TRANSPORT}
       onChange={handleTransportChange}
-      disabled={isTransportDisabled}
     />
   );
 };

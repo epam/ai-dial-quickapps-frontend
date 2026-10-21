@@ -15,7 +15,6 @@ const render = (props: Partial<AgentSettingsTabProps> = {}) => {
   dom.render(
     <AgentSettingsTab
       agentId="applications/public/research"
-      isTransportDisabled={false}
       onTransportChange={onTransportChange}
       {...props}
     />,
@@ -56,13 +55,6 @@ describe('AgentSettingsTab', () => {
     act(() => getRadio(ApplicationEditorI18nKeys.AgentsTransportChatCompletion)?.click());
 
     expect(onTransportChange).toHaveBeenCalledWith(DialAppTransportType.ChatCompletion);
-  });
-
-  it('disables both options when the transport is read-only', () => {
-    render({ isTransportDisabled: true });
-
-    expect(getRadio(ApplicationEditorI18nKeys.AgentsTransportMcp)?.disabled).toBe(true);
-    expect(getRadio(ApplicationEditorI18nKeys.AgentsTransportChatCompletion)?.disabled).toBe(true);
   });
 
   it('keeps both options and their names in a right-to-left document', () => {

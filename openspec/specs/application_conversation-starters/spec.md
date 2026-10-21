@@ -6,7 +6,7 @@ Defines the Quick App editor's Conversation starters add-on: the Add-ons row tha
 
 ## Requirements
 
-### Requirement: Conversation starters add-on row
+### Requirement: Conversation starters add-on row (editable)
 
 The Add-ons section SHALL contain a **Conversation starters** row, titled with the `ApplicationEditorI18nKeys.StartersTitle`, rendered after the other Add-ons rows. The row's content SHALL be driven by the editor form state field `starters` owned by `useQuickApp2Form`; the row SHALL hold only the modal's open/closed flag in local component state. It SHALL introduce no context and call no chat-api endpoint. The row component SHALL be wrapped in `memo`, and the callbacks it receives from `QuickApp2Form` SHALL be stable (`useCallback`) so that typing in unrelated fields does not re-render the starters list.
 
@@ -31,13 +31,6 @@ A starter is **saved-visible** when its title or its prompt is non-blank (the sa
 
 - **WHEN** the user activates Add or Manage in an editable editor
 - **THEN** the Set up conversation starters modal SHALL open
-
-#### Scenario: Read-only application
-
-- **WHEN** the editor is read-only
-- **THEN** Add and Manage SHALL be disabled
-- **AND** activating them SHALL NOT open the modal
-- **AND** the starters list, when present, SHALL remain visible
 
 ### Requirement: Set up conversation starters modal
 
@@ -250,7 +243,7 @@ The row and the modal SHALL follow the document direction.
 - **AND** the grip, message, pencil and trash icons SHALL NOT be mirrored
 - **AND** keyboard reordering SHALL use ArrowUp/ArrowDown regardless of direction
 
-### Requirement: Remove a starter from the add-on row
+### Requirement: Remove a starter from the add-on row (editable)
 
 In an editable application, each starter listed in the Conversation starters Add-ons row SHALL have a remove button at the end of its item:
 
@@ -259,7 +252,7 @@ In an editable application, each starter listed in the Conversation starters Add
 - visible only while the item is hovered or holds keyboard focus;
 - kept in the tab order while invisible.
 
-Activating it SHALL remove that starter from the `starters` form value owned by `useQuickApp2Form`, through the row's existing save callback. It SHALL NOT open the Set up conversation starters modal and SHALL leave `introText`, `autoSubmit` and `chatMessageInputDisabled` unchanged. Focus SHALL then move to the first remaining starter's remove button. Read-only applications SHALL NOT render the remove button. The row SHALL make no chat-api request for this, and its remove handler SHALL be a stable `useCallback` so the memoised row does not re-render on unrelated edits.
+Activating it SHALL remove that starter from the `starters` form value owned by `useQuickApp2Form`, through the row's existing save callback. It SHALL NOT open the Set up conversation starters modal and SHALL leave `introText`, `autoSubmit` and `chatMessageInputDisabled` unchanged. Focus SHALL then move to the first remaining starter's remove button. The row SHALL make no chat-api request for this, and its remove handler SHALL be a stable `useCallback` so the memoised row does not re-render on unrelated edits.
 
 #### Scenario: Remove one starter
 
@@ -278,11 +271,6 @@ Activating it SHALL remove that starter from the `starters` form value owned by 
 
 - **WHEN** a listed starter has a blank title and the prompt "Summarize this page"
 - **THEN** its remove button SHALL be named "Remove starter Summarize this page"
-
-#### Scenario: Read-only application
-
-- **WHEN** the editor is read-only
-- **THEN** no remove button SHALL be rendered and the list SHALL stay visible
 
 #### Scenario: Right-to-left document
 

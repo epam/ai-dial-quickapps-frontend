@@ -16,7 +16,6 @@ export interface ModelConfigurationSectionProps {
   model: string;
   onModelChange: (value: string) => void;
   errors: QuickApp2FormErrors;
-  isReadonly: boolean;
   isProcessLargeFilesAvailable: boolean;
   isCodeInterpreterEnabled: boolean;
   isAddAttachmentEnabled: boolean;
@@ -33,7 +32,6 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
   model,
   onModelChange,
   errors,
-  isReadonly,
   isProcessLargeFilesAvailable,
   isCodeInterpreterEnabled,
   isAddAttachmentEnabled,
@@ -62,12 +60,10 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
         <DefaultModelBlock
           value={model}
           onChange={onModelChange}
-          isDisabled={isReadonly}
           error={errors.model ? t(errors.model as ApplicationEditorI18nKeys) : undefined}
         />
 
         <SettingsSection
-          isReadonly={isReadonly}
           advancedSettings={advancedSettings}
           isTemperatureAvailable={isTemperatureAvailable}
           isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
@@ -83,7 +79,6 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
           isEnabled={isAttachmentsEnabled}
           value={inputAttachmentTypes}
           error={errors.inputAttachmentTypes}
-          isReadonly={isReadonly}
           onEnabledChange={onAttachmentsEnabledChange}
           onChange={onInputAttachmentTypesChange}
         />

@@ -6,17 +6,17 @@ Defines how the Quick App editor lists, inspects, removes and picks skills in th
 
 ## Requirements
 
-### Requirement: Attached skills list
+### Requirement: Attached skills list (editable)
 
 The Skills row of the Add-ons card SHALL list the application's attached skills (the `agentSkills` form value, owned by `useQuickApp2Form`) in saved order. Each item SHALL show:
 
 - the skill's avatar: `DeploymentIcon` from `@epam/ai-dial-chat-shared` with the skill name's initials, since skills have no icon,
 - the skill name,
-- the version as secondary text, only when the catalog listing supplies one.
+- no version: DIAL skills are unversioned, so none is shown unless a skill listing entry ever supplies one, in which case it appears as secondary text after the name.
 
 Each item SHALL hold a button whose accessible name comes from `ApplicationEditorI18nKeys.AddOnsDetails` with the skill name interpolated (e.g. "Web Search details"); activating it SHALL open the skill details popup for that skill. Items SHALL NOT render a bordered chip box or a tooltip.
 
-In an editable application, each item SHALL also hold a remove button at its end: a ui-kit 2.0 ghost icon button with a trash icon, named by `ApplicationEditorI18nKeys.AddOnsRemove` with the skill name interpolated (e.g. "Remove Web Search"). It SHALL be visible only while the item is hovered or holds keyboard focus (`:focus-visible`), and SHALL stay in the tab order. Focus that returns to the item after a popup is closed with the mouse SHALL NOT reveal it. Activating it SHALL remove that skill id from `agentSkills` without opening the details popup, and SHALL move focus to the first remaining item. Read-only applications SHALL NOT render it. The list SHALL be read from `DataContext.skillsMap` and SHALL make no chat-api request of its own.
+Each item SHALL also hold a remove button at its end: a ui-kit 2.0 ghost icon button with a trash icon, named by `ApplicationEditorI18nKeys.AddOnsRemove` with the skill name interpolated (e.g. "Remove Web Search"). It SHALL be visible only while the item is hovered or holds keyboard focus (`:focus-visible`), and SHALL stay in the tab order. Focus that returns to the item after a popup is closed with the mouse SHALL NOT reveal it. Activating it SHALL remove that skill id from `agentSkills` without opening the details popup, and SHALL move focus to the first remaining item. The list SHALL be read from `DataContext.skillsMap` and SHALL make no chat-api request of its own.
 
 #### Scenario: Attached skills are listed
 
@@ -26,9 +26,9 @@ In an editable application, each item SHALL also hold a remove button at its end
 
 #### Scenario: Version is shown when available
 
-- **WHEN** an attached skill's listing entry has version `1.4.6`
-- **THEN** its item SHALL show "1.4.6" as secondary text after the name
-- **AND** an attached skill without a version SHALL show the name only
+- **WHEN** an attached skill's listing entry has no version (the case for every skill chat-api returns today)
+- **THEN** its item SHALL show the avatar and the name only
+- **AND** if a listing entry ever supplies a version, it SHALL be shown as secondary text after the name
 
 #### Scenario: Attached skill missing from the catalog
 
@@ -48,12 +48,6 @@ In an editable application, each item SHALL also hold a remove button at its end
 - **THEN** `agentSkills` SHALL become `["a", "c"]` and the form SHALL become dirty
 - **AND** the details popup SHALL NOT open
 - **AND** focus SHALL move to the first remaining item
-
-#### Scenario: Read-only application
-
-- **WHEN** the editor is read-only
-- **THEN** the attached skills SHALL still be listed and SHALL still open the details popup
-- **AND** no remove button SHALL be rendered
 
 ### Requirement: Skill details popup
 
@@ -236,7 +230,7 @@ The Overview data SHALL come from three requests, made in parallel when the popu
 - `skillsApi.getSkillMetadata({ bucket, path })` → `GET /api/v1/skills/metadata?bucket={bucket}&path={path}`. This is the authoritative author and timestamps; the listing entry is the fallback when it fails.
 - `skillsApi.listSkillFiles({ bucket, path, filePath: '', recursive: true })` → `GET /api/v1/skills/files?bucket={bucket}&path={path}&filePath=&recursive=true`.
 
-The Overview tab SHALL be shown only when the file listing succeeds. The folder is shown in the popup header, as for toolsets and agents. The version is no longer an Overview row; it shows next to the name in the header when known.
+The Overview tab SHALL be shown only when the file listing succeeds. The folder is shown in the popup header, as for toolsets and agents. Skills are unversioned, so no version is shown in the header or as an Overview row.
 
 Example, for skill `skills/public/research/user-research` whose frontmatter has `when_to_use: Planning interviews` and whose package has `SKILL.md` and `guide.md`:
 
@@ -282,9 +276,9 @@ Rendered result:
 - **WHEN** the metadata request fails
 - **THEN** the Skill section SHALL use the author and updated date from the catalog listing
 
-### Requirement: Remove a skill from the application
+### Requirement: Remove a skill from the application (editable)
 
-**Delete** in the details popup SHALL remove that skill id from the `agentSkills` form value and close the popup. It SHALL NOT call any chat-api skill mutation: the skill resource in DIAL SHALL remain untouched. In a read-only application, Delete SHALL NOT be rendered.
+**Delete** in the details popup SHALL remove that skill id from the `agentSkills` form value and close the popup. It SHALL NOT call any chat-api skill mutation: the skill resource in DIAL SHALL remain untouched. Delete SHALL act immediately: it SHALL NOT ask for confirmation, because it only detaches the skill from this application and the skill can be attached again with Add.
 
 #### Scenario: Delete detaches the skill
 
@@ -293,15 +287,15 @@ Rendered result:
 - **AND** saving SHALL persist the same app config `skills` entries as for `["a", "c"]`
 - **AND** no request to `/api/v1/skills` other than the manifest download SHALL have been made
 
+#### Scenario: Delete needs no confirmation
+
+- **WHEN** the user activates Delete in the details popup of an attached skill in an editable application
+- **THEN** the skill SHALL be removed and the popup closed at once, with no confirmation dialog shown
+
 #### Scenario: Deleting the last skill
 
 - **WHEN** the user deletes the only attached skill
 - **THEN** `agentSkills` SHALL become empty and the Skills row SHALL show its empty-state description again
-
-#### Scenario: Read-only application
-
-- **WHEN** the details popup opens in a read-only application
-- **THEN** only **Close** SHALL be rendered in the footer
 
 ### Requirement: Add skill popup catalog list
 
@@ -331,7 +325,7 @@ The popup state (search, filter, sort, checked ids) SHALL be local `useState` in
 #### Scenario: Row content
 
 - **WHEN** a skill `skills/public/web-search` named "Web Search" is listed
-- **THEN** its Name cell SHALL show the initials avatar "WS" and the name, plus the version as secondary text when one is supplied
+- **THEN** its Name cell SHALL show the initials avatar "WS" and the name, with no version (shown as secondary text only if a listing entry ever supplies one)
 - **AND** its Type cell SHALL show the catalog's skill type label
 - **AND** its Folder cell SHALL show a folder icon and "Organization", with the full path in a tooltip and in screen-reader text
 - **AND** its Tags cell SHALL show the skill's tags when supplied, and be empty otherwise
@@ -369,7 +363,7 @@ The Add skill popup SHALL let the user narrow and reorder the rows with the same
 - **THEN** the list area SHALL show the `BasicI18nKeys.NoResults` empty state and the count SHALL show 0
 - **AND** **Add** SHALL stay enabled so that the checked set can still be applied
 
-### Requirement: Add skill popup multi-selection
+### Requirement: Add skill popup multi-selection (editable)
 
 The Add skill popup SHALL support checking any number of skills and SHALL commit the checked set only on **Add**.
 
@@ -408,11 +402,6 @@ The Add skill popup SHALL support checking any number of skills and SHALL commit
 
 - **WHEN** an attached skill id is not in the listing
 - **THEN** it SHALL have no row, SHALL stay in `agentSkills` after **Add**, and SHALL keep its position
-
-#### Scenario: Read-only application
-
-- **WHEN** the editor is read-only
-- **THEN** the Add action SHALL be disabled, and the popup SHALL NOT open
 
 ### Requirement: Add skill popup loading and error states
 
@@ -456,7 +445,7 @@ The Skills row, Add skill popup and details popup SHALL be keyboard operable, SH
 #### Scenario: Right-to-left document
 
 - **WHEN** the document direction is `rtl` (as when an RTL locale is active — none ships yet, see `i18n`)
-- **THEN** Skills row items SHALL run avatar → name → version from right to left, with the trash button at the end (left)
+- **THEN** Skills row items SHALL run avatar → name from right to left, with the trash button at the end (left)
 - **AND** in the Add skill popup the heading SHALL be at the start (right) and the sort menu at the end (left), and the list columns SHALL run selection → Tags from right to left
 - **AND** in the details popup Delete SHALL be at the start (right) and Close at the end (left)
 - **AND** no icon SHALL be mirrored (avatar, folder, funnel, chevron-down, search, trash and × are not directional)
@@ -465,3 +454,12 @@ The Skills row, Add skill popup and details popup SHALL be keyboard operable, SH
 
 - **WHEN** any of the three surfaces is rendered in a supported locale
 - **THEN** every user-visible string SHALL come from the translation keys named in this spec, and none SHALL be hardcoded
+
+### Requirement: The Skills row is always editable
+
+The editor SHALL have no read-only mode: the Skills row's Add action, the remove buttons and Delete in the details popup SHALL always be available, for the user's own applications and for shared ones alike (#208).
+
+#### Scenario: Shared application
+
+- **WHEN** a shared application is opened in the editor
+- **THEN** the Skills row's Add action, remove buttons and Delete SHALL behave as in the user's own application
