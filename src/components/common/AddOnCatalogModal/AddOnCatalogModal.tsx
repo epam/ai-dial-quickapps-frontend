@@ -1,6 +1,11 @@
 import { FC, useCallback, useMemo, useState } from 'react';
 
-import { CatalogSelectionMode, ListView, type CatalogItem } from '@epam/ai-dial-catalog';
+import {
+  CatalogSelectionMode,
+  ListView,
+  type CatalogItem,
+  type ListViewColumnVisibility,
+} from '@epam/ai-dial-catalog';
 import { type CatalogEntityType } from '@epam/ai-dial-chat-shared';
 
 import {
@@ -16,6 +21,9 @@ export interface AddOnCatalogModalLabels extends CatalogPickerModalLabels {
   /** Label of the logged-out badge on toolset avatars. */
   credentialsBadge?: string;
 }
+
+// The editor has no favorites, so the list drops the Favorite column.
+const COLUMN_VISIBILITY: ListViewColumnVisibility = { favorite: () => false };
 
 export interface AddOnCatalogModalProps {
   type: CatalogEntityType;
@@ -74,8 +82,7 @@ export const AddOnCatalogModal: FC<AddOnCatalogModalProps> = ({
         selectAllAriaLabel={labels.selectAll}
         credentialsBadgeLoggedOutLabel={labels.credentialsBadge}
         stickyHeaderTop={0}
-        // Read-only drops the Favorite column: the editor has no favorites.
-        isReadonly
+        columnVisibility={COLUMN_VISIBILITY}
       />
     </div>
   );
