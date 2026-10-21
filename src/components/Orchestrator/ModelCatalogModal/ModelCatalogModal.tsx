@@ -26,8 +26,9 @@ export interface ModelCatalogModalProps {
 }
 
 // Models always show where they live, even though the catalog hides the
-// Folder column for models by default.
-const COLUMN_VISIBILITY = { folder: () => true };
+// Folder column for models by default. The editor has no favorites, so the Favorite column is
+// dropped.
+const COLUMN_VISIBILITY = { folder: () => true, favorite: () => false };
 
 // The grid lays its columns out once with fit-to-width and again, differently, as soon as its
 // options change (the first selection or search), so the Name column jumps wider. Pin the
@@ -115,7 +116,6 @@ export const ModelCatalogModal: FC<ModelCatalogModalProps> = ({ value, onConfirm
         onItemClick={handleItemClick}
         columnVisibility={COLUMN_VISIBILITY}
         stickyHeaderTop={0}
-        isReadonly
       />
     </div>
   );
