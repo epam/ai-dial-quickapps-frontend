@@ -307,7 +307,7 @@
     },
     "toolsets": {
       "title": "Toolsets",
-      "description": "External tools and services the agent can call, such as MCP servers.",
+      "description": "Capabilities available to the agent.",
       "addMany": "Add toolsets",
       "add": "Add toolset",
       "catalogTitle": "Toolsets catalog",

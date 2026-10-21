@@ -145,7 +145,7 @@ The editor SHALL render an Add-ons section directly below Instructions. The sect
 
 - **WHEN** the Add-ons section is rendered in any supported locale
 - **THEN** the section and row labels SHALL be translated through the `ApplicationEditorI18nKeys.AddOnsTitle`, `ApplicationEditorI18nKeys.SkillsTitle`, `ApplicationEditorI18nKeys.ToolsetsTitle` ("Toolsets"), `ApplicationEditorI18nKeys.AgentsTitle` ("Agents"), `ApplicationEditorI18nKeys.KnowledgeBaseTitle` and `ApplicationEditorI18nKeys.StartersTitle`
-- **AND** the empty-row descriptions SHALL use `ApplicationEditorI18nKeys.SkillsDescription`, `ApplicationEditorI18nKeys.ToolsetsDescription` ("External tools and services the agent can call, such as MCP servers.") and `ApplicationEditorI18nKeys.AgentsDescription` ("Sub-agents this agent can delegate tasks to.")
+- **AND** the empty-row descriptions SHALL use `ApplicationEditorI18nKeys.SkillsDescription`, `ApplicationEditorI18nKeys.ToolsetsDescription` ("Capabilities available to the agent.") and `ApplicationEditorI18nKeys.AgentsDescription` ("Sub-agents this agent can delegate tasks to.")
 - **AND** the Add tooltips SHALL use `ApplicationEditorI18nKeys.SkillsAddMany`, `ApplicationEditorI18nKeys.ToolsetsAddMany` ("Add toolsets") and `ApplicationEditorI18nKeys.AgentsAddMany` ("Add agents")
 - **AND** the Conversation starters Manage action SHALL use `ButtonsI18nKeys.Manage`
 - **AND** no user-visible label SHALL be hardcoded in the component
