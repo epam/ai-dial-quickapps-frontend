@@ -37,3 +37,14 @@ Compare `index-*.css` after the migration; the v4 build also scans ui-kit dist v
 
 Not captured by this commit. Per the commit plan they stay out of git and are attached to the PR:
 light, dark, mobile (≤1279px) and `dir=rtl` for the editor, catalog filter, popups and login.
+
+## Verification after the migration
+
+- `npm run build`, `typecheck`, `eslint src` and `vitest` (873 tests) pass; `npm ci --dry-run` accepts the lockfile.
+- RTL: in a page using the built CSS, `rtl:scale-x-[-1]` applies with `dir=rtl` (any `lang`), and with `lang=ar` under `dir=ltr`; it is off for `ltr`/`en`. Same as the stage-1 build.
+- CSP nonce: `dist/index.html` still has `nonce="__DIAL_CSP_NONCE__"` on the script, stylesheet link and `csp-nonce` meta, and no inline `<style>`.
+- `blocklist` (`[-:=]`) is not needed: no such selector is emitted.
+- The kit's and file manager's utilities are `@layer ui`, so the app's unlayered preflight zeroed their spacing until
+  their components were added as `@source` (as ai-dial-chat does).
+- Default-palette selectors such as `bg-red-500` exist in the build only because kit/file-manager components use them; `src` uses none.
+- Not run: Docker image build (no daemon locally).

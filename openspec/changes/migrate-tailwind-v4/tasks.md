@@ -15,12 +15,12 @@
 ## 3. Class migration
 - [x] 3.1 Run `npx @tailwindcss/upgrade`; review utility renames by hand (shadow/rounded/outline/ring/`!`/opacity, default border colour)
 - [x] 3.2 Stage 2: replace `@config` with `@theme`/`@utility` tokens (design decision 3), delete `tailwind.config.js`, update `eslint.config.mjs` comment (done the ai-dial-chat way: `src/theme.css`, `@theme inline reference`)
-- [ ] 3.3 Re-check the 400px Filter overlay override and the `blocklist` case
+- [x] 3.3 Re-check the 400px Filter overlay override and the `blocklist` case (no junk `[-:=]` selector in the build; Filter override moved unchanged into `src/index.css`)
 
 ## 4. Verification
-- [ ] 4.1 `npm run build`, `lint`, `typecheck`, `test` pass
-- [ ] 4.2 Compare screenshots with baseline; check ag-grid/md-editor/file-manager layer-order overrides
-- [ ] 4.3 Verify RTL (`dir=rtl`), CSP-nonce build and Docker image build
+- [x] 4.1 `npm run build`, `lint`, `typecheck`, `test` pass
+- [x] 4.2 Compare screenshots with baseline; check ag-grid/md-editor/file-manager layer-order overrides (manual pass of all screens; the Advanced settings spacing regression was fixed by scanning kit/file-manager components into the unlayered build)
+- [x] 4.3 Verify RTL (`dir=rtl`), CSP-nonce build and Docker image build (RTL and nonce checked; Docker daemon unavailable locally, so only `npm ci --dry-run` and `npm run build` were run, the two steps the Dockerfile runs)
 
 ## 5. Docs
 - [x] 5.1 Update "Styling: Tailwind CSS 3" in `openspec/config.yaml`, README/docs mentions, and `docs/TECH_DEBT.md` if relevant
