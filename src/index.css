@@ -1,18 +1,20 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+/* Stage 1 of the v4 migration: tokens still come from the JS config. Tailwind 4 ignores its `content`
+   array, so the sources are listed below (v4 skips node_modules unless told otherwise). */
+@config '../tailwind.config.js';
+@source '../index.html';
+@source '../node_modules/@epam/ai-dial-ui-kit/dist';
 
 /* @fontsource-variable/inter (imported in main.tsx) registers the family as 'Inter Variable'.
    `--theme-font` is the hook the ui-kit's `.font` class reads. */
-$font-family: 'Inter Variable', sans-serif;
-
 @layer base {
   html,
   body,
   #root {
     @apply size-full overflow-hidden bg-layer-base text-primary;
-    font-family: $font-family;
-    --theme-font: #{$font-family};
+    font-family: 'Inter Variable', sans-serif;
+    --theme-font: 'Inter Variable', sans-serif;
   }
 }
 
