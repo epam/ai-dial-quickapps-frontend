@@ -56,7 +56,6 @@ const AgentsList: FC<AgentsListProps> = ({ ids, allIds, onChange, transports, on
           const { name, version, iconUrl } = getAddOnDisplay(id, agent, language);
           const statusText = getEntityStatusMessage(
             getEntityStatus(agent, id),
-            true,
             t,
             t(ApplicationEditorI18nKeys.AddOnsEntityTypeAgent),
           );

@@ -186,7 +186,6 @@ export enum AppsEditorI18nKeys {
 export enum ApplicationEditorI18nKeys {
   AddOnsUnavailableRemovalRequired = 'applicationEditor.addOns.unavailableRemovalRequired',
   AddOnsLoggedOutToolset = 'applicationEditor.addOns.loggedOutToolset',
-  AddOnsLoggedOutToolsetClickHint = 'applicationEditor.addOns.loggedOutToolsetClickHint',
   AddOnsUndeployedApp = 'applicationEditor.addOns.undeployedApp',
   AddOnsDeployingApp = 'applicationEditor.addOns.deployingApp',
   AddOnsUndeployingApp = 'applicationEditor.addOns.undeployingApp',

@@ -58,7 +58,6 @@ const ToolsetsList: FC<ToolsetsListProps> = ({ ids, allIds, onChange }) => {
           const { name, version, iconUrl } = getAddOnDisplay(id, toolset, language);
           const statusText = getEntityStatusMessage(
             getEntityStatus(toolset, id),
-            true,
             t,
             t(ApplicationEditorI18nKeys.AddOnsEntityTypeToolset),
           );
