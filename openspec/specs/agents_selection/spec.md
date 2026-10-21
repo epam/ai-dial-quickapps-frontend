@@ -270,6 +270,15 @@ The popup state SHALL be local `useState`, reset on each open, and the popup SHA
 - **WHEN** an editable application is opened with `agentsAndToolsetsModal=1`
 - **THEN** the Add agent popup SHALL be open after load
 
+### Requirement: The Agents row is always editable
+
+The editor SHALL have no read-only mode: the Agents row's Add action, the remove buttons and Delete in the details popup SHALL always be available, for the user's own applications and for shared ones alike (#208).
+
+#### Scenario: Shared application
+
+- **WHEN** a shared application is opened in the editor
+- **THEN** the Agents row's Add action, remove buttons and Delete SHALL behave as in the user's own application
+
 ### Requirement: Agents accessibility and direction
 
 The Agents row, the Add agent popup and the agent details popup SHALL be keyboard operable, SHALL expose translated names, and SHALL follow the document direction.
