@@ -145,7 +145,7 @@ The toolset's **About**, **Overview** and **Tools** content SHALL be the catalog
 
 - **About:** `AboutTab` with the listing `description` and `topics`, shown from the moment the popup opens.
 - **Overview:** `OverviewTab` with the sections `mapEntityDetailsToCatalogDetails` builds from `toolsetDetails`. These are Capabilities (from `features`) and Specification: authentication, provider, vendor, license, knowledge cutoff, parameters, hosted by (`owner`) and creation date, each only when present.
-- **Tools:** `ToolsTab` with the tool definitions the catalog mapper builds from `allowedTools`, or from `allToolNames` when the allow-list is empty. Above the list, the catalog renders a search field and the number of tools shown. The search filters by tool name or description, ignoring case. When nothing matches, the tab shows a no-results text.
+- **Tools:** `ToolsTab` with the tool definitions the catalog mapper builds from `allowedTools`, or from `allToolNames` when the allow-list is empty. Above the list, the catalog renders a search field and the number of tools shown. The search filters by tool name or description, ignoring case, and highlights the matching text in the results (rendered by the catalog). When nothing matches, the tab shows a no-results text.
 
 This app SHALL NOT build Overview rows, tool lists or tool filtering of its own. The search query is local state inside the catalog's `ToolsTab`, and no context or hook here owns it. No chat-api request is involved: the tab filters the tools already in the loaded details.
 
