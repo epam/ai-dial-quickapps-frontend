@@ -28,7 +28,7 @@ Each edit made from the Agents row SHALL change only agent entries. Toolset entr
 - **WHEN** `addOns` is `[A1, T1, A2]` and the user removes `A1` from the Agents row
 - **THEN** `addOns` SHALL become `[T1, A2]` and `T1` SHALL keep its tool data
 
-### Requirement: Attached agents list
+### Requirement: Attached agents list (editable)
 
 The Agents row SHALL list the attached agents in `addOns` order. It SHALL use the same shared row item as the Skills and Toolsets rows. Each item SHALL show:
 
@@ -57,13 +57,7 @@ The Agents row SHALL list the attached agents in `addOns` order. It SHALL use th
 - **WHEN** an attached application has `functionStatus` `UNDEPLOYED`
 - **THEN** its item SHALL show the `ApplicationEditorI18nKeys.AddOnsUndeployedApp` text under the name
 
-#### Scenario: Read-only application
-
-- **WHEN** the editor is read-only
-- **THEN** agents SHALL still be listed and SHALL still open the details popup
-- **AND** no remove button SHALL be rendered
-
-### Requirement: Agent details popup
+### Requirement: Agent details popup (editable)
 
 Activating an Agents row item SHALL open a modal dialog (ui-kit `Popup`, `PopupSize.Lg`).
 
@@ -98,7 +92,7 @@ editable applications only):
     editor.
 
 No other button SHALL be rendered in that row. The transport lives in the Settings
-tab ("Agent Settings tab"), and no secondary dialog SHALL be opened from the popup.
+tab ("Agent Settings tab (editable)"), and no secondary dialog SHALL be opened from the popup.
 
 The popup SHALL show no status banner; the deployment status stays on the row item.
 
@@ -147,12 +141,7 @@ The popup SHALL be loaded with `React.lazy`.
 - **THEN** the content SHALL show `ApplicationEditorI18nKeys.AgentsUnavailable` ("This agent is no longer available") in place of the tabs, and no chat-api request SHALL be made
 - **AND** neither Credentials nor a Settings tab SHALL be shown, and Delete SHALL still be offered in an editable application
 
-#### Scenario: Read-only application
-
-- **WHEN** the popup opens in a read-only application
-- **THEN** only Close SHALL be rendered in the footer, and no Credentials action SHALL be rendered
-
-### Requirement: Agent Settings tab
+### Requirement: Agent Settings tab (editable)
 
 The agent details popup SHALL offer this app's own **Settings** tab, labelled by
 `BasicI18nKeys.Settings` ("Settings"). It holds the transport the orchestrator
@@ -164,8 +153,7 @@ Connect, Settings. The popup SHALL still open on About.
 **Shown when:** the agent is an application that supports MCP
 (`doesAgentSupportMcp`) **and** serves chat completion (its id is in
 `DataContext.modelsMap`). The check is `canChooseAgentTransport` in
-`src/utils/map-agent-to-catalog-item.ts`. The tab is shown in editable and read-only
-applications. It SHALL NOT be rendered for models, MCP-only agents or agents missing
+`src/utils/map-agent-to-catalog-item.ts`. It SHALL NOT be rendered for models, MCP-only agents or agents missing
 from the catalog.
 
 **Connect via.** The tab panel (`AgentSettingsTab`,
@@ -179,8 +167,6 @@ from the catalog.
 - **Change:** selecting an option SHALL call `configureAgent(id, transport)` from
   `useQuickApp2Form` at once. The form becomes dirty, the popup stays open on
   Settings, and there is no Apply step.
-- **Read-only:** in a read-only application the group SHALL be disabled
-  and SHALL show the saved value.
 
 **State and data.**
 
@@ -212,11 +198,6 @@ from the catalog.
 - **WHEN** the user opens the details of a model, or of an MCP-only agent (in `mcpAgentsMap`, not in `modelsMap`)
 - **THEN** no Settings tab SHALL be rendered
 
-#### Scenario: Read-only transport
-
-- **WHEN** a read-only application opens the details of an MCP and chat-completion application whose saved transport is `chat-completion`
-- **THEN** Settings SHALL show "Connect via" disabled with "Chat Completion" checked
-
 ### Requirement: Agent About and Overview tabs
 
 The agent's tab content SHALL be the catalog's, as defined by `catalog-entity-details`:
@@ -231,7 +212,7 @@ The agent's tab content SHALL be the catalog's, as defined by `catalog-entity-de
 
 This app SHALL NOT build Overview rows of its own. The saved transport of an
 MCP-capable application is not an Overview row. It is visible and editable in the
-Settings tab ("Agent Settings tab").
+Settings tab ("Agent Settings tab (editable)").
 
 #### Scenario: Model Overview, Pricing and Limits
 
@@ -245,14 +226,14 @@ Settings tab ("Agent Settings tab").
 
 ### Requirement: Remove an agent from the application
 
-**Delete** in the agent details popup SHALL remove that id from `addOns` and close the popup. It SHALL NOT call any chat-api mutation. Read-only applications SHALL NOT render it.
+**Delete** in the agent details popup SHALL remove that id from `addOns` and close the popup. It SHALL NOT call any chat-api mutation.
 
 #### Scenario: Delete detaches the agent
 
 - **WHEN** an editable application has `[A1, T1]` and the user activates Delete in `A1`'s popup
 - **THEN** `addOns` SHALL become `[T1]`, the form SHALL become dirty, and the popup SHALL close
 
-### Requirement: Add agent popup
+### Requirement: Add agent popup (editable)
 
 The Agents row's Add action SHALL open the **Add agent** popup. It SHALL match the Add skill popup (`skills_catalog`) with these differences:
 
@@ -289,10 +270,14 @@ The popup state SHALL be local `useState`, reset on each open, and the popup SHA
 - **WHEN** an editable application is opened with `agentsAndToolsetsModal=1`
 - **THEN** the Add agent popup SHALL be open after load
 
-#### Scenario: Read-only application
+### Requirement: The Agents row is always editable
 
-- **WHEN** the editor is read-only
-- **THEN** the Add action SHALL be disabled, and the popup SHALL NOT open, including through the deep link
+The editor SHALL have no read-only mode: the Agents row's Add action, the remove buttons and Delete in the details popup SHALL always be available, for the user's own applications and for shared ones alike (#208).
+
+#### Scenario: Shared application
+
+- **WHEN** a shared application is opened in the editor
+- **THEN** the Agents row's Add action, remove buttons and Delete SHALL behave as in the user's own application
 
 ### Requirement: Agents accessibility and direction
 

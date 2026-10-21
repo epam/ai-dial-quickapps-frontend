@@ -35,7 +35,7 @@ Each edit made from the Toolsets row SHALL change only toolset entries. Agent en
 - **WHEN** `addOns` is `[A1, T1, A2, T2]` (agents `A*`, toolsets `T*`) and the user removes `T1` from the Toolsets row
 - **THEN** `addOns` SHALL become `[A1, A2, T2]`, and `A1` and `A2` SHALL keep their tool data (for example a configured `transport`)
 
-### Requirement: Attached toolsets list
+### Requirement: Attached toolsets list (editable)
 
 The Toolsets row of the Add-ons card SHALL list the attached toolsets in `addOns` order. Each item SHALL show:
 
@@ -49,7 +49,7 @@ The Toolsets row of the Add-ons card SHALL list the attached toolsets in `addOns
 
 **Details button.** Each item SHALL hold a button named by `ApplicationEditorI18nKeys.AddOnsDetails` with `{{name}}` (e.g. "Figma details"). Activating it SHALL open the toolset details popup.
 
-**Remove button.** In an editable application, each item SHALL also hold a remove button at its end: a ui-kit ghost icon button with a trash icon, named by `ApplicationEditorI18nKeys.AddOnsRemove` with `{{name}}`. It SHALL be visible only while the item is hovered or holds keyboard focus (`:focus-visible`), and SHALL stay in the tab order. Focus that returns to the item after a popup is closed with the mouse SHALL NOT reveal it. Activating it SHALL remove that id from `addOns` without opening the popup, and SHALL move focus to the first remaining item in the row. Read-only applications SHALL NOT render it.
+**Remove button.** Each item SHALL also hold a remove button at its end: a ui-kit ghost icon button with a trash icon, named by `ApplicationEditorI18nKeys.AddOnsRemove` with `{{name}}`. It SHALL be visible only while the item is hovered or holds keyboard focus (`:focus-visible`), and SHALL stay in the tab order. Focus that returns to the item after a popup is closed with the mouse SHALL NOT reveal it. Activating it SHALL remove that id from `addOns` without opening the popup, and SHALL move focus to the first remaining item in the row.
 
 **Not rendered.** Items SHALL NOT render a chip box, a tooltip or a configure (gear) button.
 
@@ -78,12 +78,6 @@ The Toolsets row of the Add-ons card SHALL list the attached toolsets in `addOns
 - **WHEN** an editable application has toolsets `[T1, T2]` and the user activates the trash button of `T1`
 - **THEN** `T1` SHALL be removed from `addOns`, the form SHALL become dirty, and focus SHALL move to `T2`'s details button
 - **AND** the details popup SHALL NOT open
-
-#### Scenario: Read-only application
-
-- **WHEN** the editor is read-only
-- **THEN** toolsets SHALL still be listed and SHALL still open the details popup
-- **AND** no remove button SHALL be rendered
 
 ### Requirement: Toolset details popup
 
@@ -139,7 +133,7 @@ The toolset's **About**, **Overview** and **Tools** content SHALL be the catalog
 
 - **About:** `AboutTab` with the listing `description` and `topics`, shown from the moment the popup opens.
 - **Overview:** `OverviewTab` with the sections `mapEntityDetailsToCatalogDetails` builds from `toolsetDetails`. These are Capabilities (from `features`) and Specification: authentication, provider, vendor, license, knowledge cutoff, parameters, hosted by (`owner`) and creation date, each only when present.
-- **Tools:** `ToolsTab` with the tool definitions the catalog mapper builds from `allowedTools`, or from `allToolNames` when the allow-list is empty. Above the list, the catalog renders a search field and the number of tools shown. The search filters by tool name or description, ignoring case. When nothing matches, the tab shows a no-results text.
+- **Tools:** `ToolsTab` with the tool definitions the catalog mapper builds from `allowedTools`, or from `allToolNames` when the allow-list is empty. Above the list, the catalog renders a search field and the number of tools shown. The search filters by tool name or description, ignoring case, and highlights the matching text in the results (rendered by the catalog). When nothing matches, the tab shows a no-results text.
 
 This app SHALL NOT build Overview rows, tool lists or tool filtering of its own. The search query is local state inside the catalog's `ToolsTab`, and no context or hook here owns it. No chat-api request is involved: the tab filters the tools already in the loaded details.
 
@@ -184,7 +178,7 @@ The `DetailsHeader` credentials action SHALL start the existing sign-in flows, t
 - **OAuth Log out:** the same with `REQUEST_TOOLSET_LOGOUT` / `TOOLSET_LOGOUT_RESULT`, started directly from the action (`onRequestLogout`), with no confirmation step.
 - **API key add / delete:** the catalog personal API-key popover calls `toolsetsApi.loginToolset` (with the key) / `logoutToolset`, at the credentials level `USER` for a public toolset and `GLOBAL` otherwise, then `refreshToolsets`. A failed request SHALL leave the status unchanged.
 
-After a successful result, the details popup SHALL stay open. Its header action and the row item's badge SHALL reflect the new status from `DataContext`. Messages from origins outside `allowedOrigins`, and results for other toolset ids, SHALL be ignored. Read-only applications SHALL NOT render the credentials action.
+After a successful result, the details popup SHALL stay open. Its header action and the row item's badge SHALL reflect the new status from `DataContext`. Messages from origins outside `allowedOrigins`, and results for other toolset ids, SHALL be ignored.
 
 #### Scenario: OAuth login succeeds
 
@@ -204,7 +198,7 @@ After a successful result, the details popup SHALL stay open. Its header action 
 
 ### Requirement: Remove a toolset from the application
 
-**Delete** in the toolset details popup SHALL remove that id from `addOns` and close the popup. It SHALL NOT call any chat-api toolset mutation. In a read-only application, Delete SHALL NOT be rendered.
+**Delete** in the toolset details popup SHALL remove that id from `addOns` and close the popup. It SHALL NOT call any chat-api toolset mutation.
 
 #### Scenario: Delete detaches the toolset
 
@@ -217,7 +211,7 @@ After a successful result, the details popup SHALL stay open. Its header action 
 - **WHEN** the user deletes the only attached toolset
 - **THEN** the Toolsets row SHALL show its empty-state description again, and the Agents row SHALL be unchanged
 
-### Requirement: Add toolset popup
+### Requirement: Add toolset popup (editable)
 
 The Toolsets row's Add action SHALL open the **Add toolset** popup. It SHALL match the Add skill popup (`skills_catalog` "Add skill popup catalog list", "… search, filter and sort", "… multi-selection", "… loading and error states") with these differences:
 
@@ -243,11 +237,6 @@ The popup state SHALL be local `useState`, reset on each open. The popup SHALL b
 
 - **WHEN** `addOns` is `[A1, T1, T2]`, the user unchecks `T1`, checks `T3`, and activates Add
 - **THEN** `addOns` SHALL become `[A1, T2, T3]` and `A1` SHALL keep its tool data
-
-#### Scenario: Read-only application
-
-- **WHEN** the editor is read-only
-- **THEN** the Add action SHALL be disabled, and the popup SHALL NOT open
 
 ### Requirement: Toolsets accessibility and direction
 
