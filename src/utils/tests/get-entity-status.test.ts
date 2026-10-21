@@ -99,15 +99,14 @@ describe('getEntityStatusMessage', () => {
   const t = vi.fn((key: string) => key) as unknown as TFunction & ReturnType<typeof vi.fn>;
 
   it('returns undefined when status is absent or has no active state', () => {
-    expect(getEntityStatusMessage(undefined, false, t)).toBeUndefined();
-    expect(getEntityStatusMessage(createStatus(), false, t)).toBeUndefined();
+    expect(getEntityStatusMessage(undefined, t)).toBeUndefined();
+    expect(getEntityStatusMessage(createStatus(), t)).toBeUndefined();
   });
 
   it('returns a removal message for a missing catalog entity', () => {
     expect(
       getEntityStatusMessage(
         createStatus({ isNotFoundInCatalog: true }),
-        false,
         t,
         'toolset',
       ),
@@ -117,19 +116,16 @@ describe('getEntityStatusMessage', () => {
     });
 
     expect(
-      getEntityStatusMessage(createStatus({ isNotFoundInCatalog: true }), false, t),
+      getEntityStatusMessage(createStatus({ isNotFoundInCatalog: true }), t),
     ).toBe(ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired);
     expect(t).toHaveBeenLastCalledWith(ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired, {
       entityType: '',
     });
   });
 
-  it('returns the appropriate logged-out message for read-only state', () => {
-    expect(getEntityStatusMessage(createStatus({ isLoggedOut: true }), true, t)).toBe(
+  it('returns the appropriate logged-out message', () => {
+    expect(getEntityStatusMessage(createStatus({ isLoggedOut: true }), t)).toBe(
       ApplicationEditorI18nKeys.AddOnsLoggedOutToolset,
-    );
-    expect(getEntityStatusMessage(createStatus({ isLoggedOut: true }), false, t)).toBe(
-      ApplicationEditorI18nKeys.AddOnsLoggedOutToolsetClickHint,
     );
   });
 
@@ -140,7 +136,7 @@ describe('getEntityStatusMessage', () => {
     ["isUndeployed", 'AddOnsUndeployedApp'],
   ])('returns the message for %s', (statusKey, messageKey) => {
     expect(
-      getEntityStatusMessage(createStatus({ [statusKey]: true }), false, t),
+      getEntityStatusMessage(createStatus({ [statusKey]: true }), t),
     ).toBe(ApplicationEditorI18nKeys[messageKey as keyof typeof ApplicationEditorI18nKeys]);
   });
 
@@ -148,16 +144,14 @@ describe('getEntityStatusMessage', () => {
     expect(
       getEntityStatusMessage(
         createStatus({ isNotFoundInCatalog: true, isDeploying: true }),
-        false,
         t,
       ),
     ).toBe(ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired);
     expect(
       getEntityStatusMessage(
         createStatus({ isLoggedOut: true, isDeploying: true }),
-        false,
         t,
       ),
-    ).toBe(ApplicationEditorI18nKeys.AddOnsLoggedOutToolsetClickHint);
+    ).toBe(ApplicationEditorI18nKeys.AddOnsLoggedOutToolset);
   });
 });

@@ -200,7 +200,6 @@
     "addOns": {
       "unavailableRemovalRequired": "The {{entityType}} is not available and needs to be removed.",
       "loggedOutToolset": "Logged out toolset.",
-      "loggedOutToolsetClickHint": "Logged out toolset. Click on the toolset to log in.",
       "undeployedApp": "Undeployed app.",
       "deployingApp": "Deploying app.",
       "undeployingApp": "Undeploying app.",

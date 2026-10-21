@@ -99,7 +99,6 @@ const STATUS_MESSAGE_KEY_BY_KIND = new Map<EntityStatusKind, ApplicationEditorI1
 
 export const getEntityStatusMessage = (
   status: EntityStatus | undefined,
-  isReadonly: boolean | undefined,
   t: TFunction,
   entityTypeLabel?: string,
 ): string | undefined => {
@@ -114,11 +113,7 @@ export const getEntityStatusMessage = (
   }
 
   if (status.isLoggedOut) {
-    // Clicking the chip opens the sign-in popup directly (no scroll target
-    // exists in this simplified selector), so always use the "click on" copy.
-    return isReadonly
-      ? t(ApplicationEditorI18nKeys.AddOnsLoggedOutToolset)
-      : t(ApplicationEditorI18nKeys.AddOnsLoggedOutToolsetClickHint);
+    return t(ApplicationEditorI18nKeys.AddOnsLoggedOutToolset);
   }
 
   const kind = getActiveStatusKind(status);
