@@ -22,7 +22,7 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    // CommonJS config files (tailwind.config.js) run under Node, not the browser.
+    // CommonJS config files run under Node, not the browser.
     files: ['*.config.js', '*.config.cjs'],
     languageOptions: {
       sourceType: 'commonjs',

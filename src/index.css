@@ -1,70 +1,49 @@
-@import 'tailwindcss';
+/*
+ * The application's Tailwind build, assembled like ai-dial-chat's `apps/chat/src/tailwind.css`.
+ *
+ * Nothing here is in a cascade layer, as under Tailwind v3: the app's utilities load after
+ * `@epam/ai-dial-ui-kit/styles.css`, which keeps its own Tailwind in `@layer ui`, so a utility passed to a
+ * kit component still beats the kit's unlayered `dial-*` class on source order.
+ *
+ * `reference inline` writes Tailwind's default theme values into the utilities instead of declaring them
+ * on `:root`. Several of those names are chat-api theme variables too (`--shadow-sm`, `--shadow-md`,
+ * `--shadow-lg` are shadow colours there), and a `:root` declaration would feed a whole shadow into a
+ * `var(--shadow-sm, #fallback)` colour slot.
+ */
+@import 'tailwindcss/theme.css' theme(reference inline);
+@import './theme.css';
+@import 'tailwindcss/preflight.css';
 
-/* Stage 1 of the v4 migration: tokens still come from the JS config. Tailwind 4 ignores its `content`
-   array, so the sources are listed below (v4 skips node_modules unless told otherwise). */
-@config '../tailwind.config.js';
+/*
+ * Two Tailwind v3 preflight rules that v4's preflight overrides. The kit's stylesheet keeps both in
+ * `@layer ui.base`, but an application's preflight is unlayered, so its `::placeholder` colour and universal
+ * `margin: 0` would win over the kit's copies.
+ */
+input::placeholder,
+textarea::placeholder {
+  opacity: 1;
+  color: #9ca3af;
+}
+
+dialog {
+  margin: auto;
+}
+
+@import 'tailwindcss/utilities.css' source(none);
+
 @source '../index.html';
-@source '../node_modules/@epam/ai-dial-ui-kit/dist';
-
-/* `mobile`/`desktop` are the app's own breakpoints (the host switches layout at 1280px). */
-@custom-variant mobile (@media (width <= 1279px));
-@custom-variant desktop (@media (width >= 1280px));
-
-/* `inline` keeps these out of `:root`. `--shadow-*: initial` drops v4's default scale, whose `--shadow-*`
-   names would otherwise land on `:root` and override the chat-api theme variables of the same name. */
-@theme inline {
-  --shadow-*: initial;
-  --shadow-xs: 0 1px 4px 0 var(--shadow-xs-1, #2764d933), 0 1px 2px 0 var(--shadow-xs-2, #161b2d08);
-  --shadow-chat-button:
-    0 2px 12px 0 var(--shadow-xs-1, #2764d933), 0 2px 6px 0 var(--shadow-xs-2, #161b2d08);
-  --animate-fadeIn: fadeIn 100ms ease-in;
-  /* ui-kit's Spinner uses `animate-spin-steps`, which its own dist CSS lacks. */
-  --animate-spin-steps: spin 0.75s steps(8, end) infinite;
-
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-}
-
-/* chat-api themes set `--shadow-sm|md|lg` themselves, so these three can't be `@theme` tokens: a theme
-   variable named like its own utility would be emitted on `:root` and reference itself. They are
-   utilities instead, with the theme value as the fallback inside the shadow. */
-@utility shadow-sm {
-  --tw-shadow: 0 8px 10px 0 var(--tw-shadow-color, var(--shadow-sm, #2764d914));
-  box-shadow:
-    var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow),
-    var(--tw-ring-shadow), var(--tw-shadow);
-}
-
-@utility shadow-md {
-  --tw-shadow: 0 8px 24px 0 var(--tw-shadow-color, var(--shadow-md, #2764d90f));
-  box-shadow:
-    var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow),
-    var(--tw-ring-shadow), var(--tw-shadow);
-}
-
-@utility shadow-lg {
-  --tw-shadow: 0 8px 44px 0 var(--tw-shadow-color, var(--shadow-lg, #2764d914));
-  box-shadow:
-    var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow),
-    var(--tw-ring-shadow), var(--tw-shadow);
-}
+@source './**/*.{ts,tsx,html}';
+@source not './**/*.{spec,test}.{ts,tsx}';
+@source not './**/tests/**';
 
 /* @fontsource-variable/inter (imported in main.tsx) registers the family as 'Inter Variable'.
    `--theme-font` is the hook the ui-kit's `.font` class reads. */
-@layer base {
-  html,
-  body,
-  #root {
-    @apply size-full overflow-hidden bg-layer-base text-primary;
-    font-family: 'Inter Variable', sans-serif;
-    --theme-font: 'Inter Variable', sans-serif;
-  }
+html,
+body,
+#root {
+  @apply size-full overflow-hidden bg-layer-base text-primary;
+  font-family: 'Inter Variable', sans-serif;
+  --theme-font: 'Inter Variable', sans-serif;
 }
 
 /* The catalog `Filter` overlay hard-codes `min-w-[360px]`, wider than a phone viewport, which clips

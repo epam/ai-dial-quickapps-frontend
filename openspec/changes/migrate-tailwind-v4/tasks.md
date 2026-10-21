@@ -14,7 +14,7 @@
 
 ## 3. Class migration
 - [x] 3.1 Run `npx @tailwindcss/upgrade`; review utility renames by hand (shadow/rounded/outline/ring/`!`/opacity, default border colour)
-- [ ] 3.2 Stage 2: replace `@config` with `@theme`/`@utility` tokens (design decision 3), delete `tailwind.config.js`, update `eslint.config.mjs` comment
+- [x] 3.2 Stage 2: replace `@config` with `@theme`/`@utility` tokens (design decision 3), delete `tailwind.config.js`, update `eslint.config.mjs` comment (done the ai-dial-chat way: `src/theme.css`, `@theme inline reference`)
 - [ ] 3.3 Re-check the 400px Filter overlay override and the `blocklist` case
 
 ## 4. Verification

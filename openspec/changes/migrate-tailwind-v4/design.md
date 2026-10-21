@@ -16,9 +16,16 @@ are `extend`ed. Colours are `var(--token, fallback)` strings fed by chat-api the
 3. **Theme tokens.** v3 *replaced* colour scales per utility (bg/text/border share names like `primary`, `error`).
    v4's single `--color-*` namespace would collide. Options:
    (A) one prefixed `--color-*` namespace — renames classes everywhere (rejected, huge diff);
-   (B) per-property `@utility` definitions keeping class names (**target**);
-   (C) load the existing JS config via `@config` — fastest, legacy-but-supported (**stage 1 / fallback**).
-   Plan: land v4 with (C), then convert to (B) in the same or a follow-up PR.
+   (B) per-property `@utility` definitions keeping class names;
+   (C) load the existing JS config via `@config` — fastest, legacy-but-supported (**stage 1**);
+   (D) **target, as ai-dial-chat did it**: per-utility theme namespaces (`--background-color-*`, `--text-color-*`,
+   `--border-color-*`, …) in one `@theme inline reference` block (`src/theme.css`), plus `@utility fill-*`,
+   `stroke-*`, `outline-*`. Class names and `var(--token, #fallback)` values are unchanged and nothing is
+   declared on `:root`. The app entry stays unlayered like v3, imports `tailwindcss/theme.css theme(reference inline)`,
+   preflight (+ the two v3 preflight rules) and `utilities.css source(none)`, and does not scan the ui-kit dist
+   (the kit and file manager ship their own v4 `styles.css`). v3 scale steps v4 moved (`--radius`, `--radius-sm`,
+   `drop-shadow-*`, `blur-sm`, text line heights, `font-sans`) are pinned to their v3 values.
+   Reference: `ai-dial-chat/tools/tailwind/theme.css`, `apps/chat/src/tailwind.css`, spec `tailwind-css-first-config`.
 4. **Screens.** `mobile`/`desktop` → `@custom-variant mobile (@media (width <= 1279px))` and
    `desktop (@media (width >= 1280px))`.
 5. **Opacity workaround.** The `backdrop` token's baked-in `color-mix` may become `bg-layer-base/80`
