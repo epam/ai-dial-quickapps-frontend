@@ -217,7 +217,7 @@ The Toolsets row's Add action SHALL open the **Add toolset** popup. It SHALL mat
 
 - **Rows:** title `ApplicationEditorI18nKeys.ToolsetsAdd` ("Add toolset"); heading `ApplicationEditorI18nKeys.ToolsetsCatalogTitle` ("Toolsets catalog"); search placeholder and name `ApplicationEditorI18nKeys.ToolsetsSearchPlaceholder` ("Search toolsets...").
 - **Content:** the rows are `DataContext.toolsets` without hidden-folder ids and without the application being edited, mapped by `mapToolsetToCatalogItem`. The mapping SHALL carry `credentials`, so `ListView` shows the logged-out badge with the `CatalogI18nKeys.CredentialsBadgeLoggedOut` label.
-- **List:** `ListView` uses `type={CatalogEntityType.Toolset}`, `CatalogSelectionMode.Multiple` and `isReadonly` (no Favorite column).
+- **List:** `ListView` uses `type={CatalogEntityType.Toolset}`, `CatalogSelectionMode.Multiple` and `columnVisibility={{ favorite: () => false }}` (no Favorite column).
 - **Checkbox names:** row checkboxes use `ApplicationEditorI18nKeys.AddOnsSelect` ("Select {{name}}") and select-all uses `ApplicationEditorI18nKeys.ToolsetsSelectAll`.
 - **States:** the loading label is `ApplicationEditorI18nKeys.ToolsetsLoading`, the error title `ApplicationEditorI18nKeys.ToolsetsLoadError`, and the empty-catalog title `ApplicationEditorI18nKeys.ToolsetsEmpty`.
 - **Pre-check:** only the attached toolset ids start checked.

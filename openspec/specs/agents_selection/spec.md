@@ -242,7 +242,7 @@ The Agents row's Add action SHALL open the **Add agent** popup. It SHALL match t
   - without hidden-folder ids;
   - without the application being edited (`getEntityIdWithoutVersion(app.id)`), so it can't call itself;
   - mapped by `mapAgentToCatalogItem`, with item type `Model` for models and `Agent` otherwise.
-- **List:** `ListView` uses `type={CatalogEntityType.Agent}`, multi-select and `isReadonly`.
+- **List:** `ListView` uses `type={CatalogEntityType.Agent}`, multi-select and the Favorite column hidden through `columnVisibility`.
 - **Checkbox names:** row checkboxes use `ApplicationEditorI18nKeys.AddOnsSelect`; select-all uses `ApplicationEditorI18nKeys.AgentsSelectAll`.
 - **States:** the loading label is `ApplicationEditorI18nKeys.AgentsLoading`, the error title `ApplicationEditorI18nKeys.AgentsLoadError`, and the empty-catalog title `ApplicationEditorI18nKeys.AgentsEmpty`.
 - **Pre-check:** only attached agent ids start checked.
