@@ -33,6 +33,14 @@ dialog {
 
 @source '../index.html';
 @source './**/*.{ts,tsx,html}';
+/*
+ * The kit's and file manager's own utilities sit in `@layer ui`, so this app's unlayered preflight
+ * (`* { margin: 0; padding: 0 }`) beats them: an `input` loses its `px-3`, a switch its `gap-2`. Scanning
+ * their components puts the same classes into this unlayered build, where they win again, and Tailwind
+ * sorts a side-specific utility after its shorthand as under v3. Same as ai-dial-chat's entry.
+ */
+@source '../node_modules/@epam/ai-dial-ui-kit/dist/components/**/*.js';
+@source '../node_modules/@epam/ai-dial-react-file-manager/dist/**/*.js';
 @source not './**/*.{spec,test}.{ts,tsx}';
 @source not './**/tests/**';
 
