@@ -431,7 +431,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
         {...MOBILE_FULLSCREEN_POPUP_CLASS_NAMES}
         className={mergeClasses(
           MOBILE_FULLSCREEN_POPUP_CLASS_NAMES.className,
-          'flex h-[min(800px,100dvh)]! w-full flex-col',
+          'flex !h-[min(800px,100dvh)] w-full flex-col',
         )}
         bodyClassName="flex min-h-0 flex-col"
         closeAriaLabel={t(DialFileManagerI18nKeys.CloseDialog)}
@@ -521,7 +521,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
             {isDownloading && (
               <div
                 aria-live="polite"
-                className="absolute inset-0 z-52 flex items-center justify-center bg-backdrop md:p-4"
+                className="absolute inset-0 z-[52] flex items-center justify-center bg-backdrop md:p-4"
               >
                 <Spinner
                   size={32}
@@ -533,7 +533,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
             {isDeleting && (
               <div
                 aria-live="polite"
-                className="absolute inset-0 z-52 flex items-center justify-center bg-backdrop md:p-4"
+                className="absolute inset-0 z-[52] flex items-center justify-center bg-backdrop md:p-4"
               >
                 <Spinner
                   size={32}
@@ -545,7 +545,7 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
             {isRenaming && (
               <div
                 aria-live="polite"
-                className="absolute inset-0 z-52 flex items-center justify-center bg-backdrop md:p-4"
+                className="absolute inset-0 z-[52] flex items-center justify-center bg-backdrop md:p-4"
               >
                 <Spinner
                   size={32}

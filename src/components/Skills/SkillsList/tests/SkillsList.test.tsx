@@ -144,7 +144,7 @@ describe('SkillsList', () => {
     const remove = getRemoveButton('Web Search') as HTMLButtonElement;
     expect(remove.className).toContain('opacity-0');
     expect(remove.className).toContain('group-hover:opacity-100');
-    expect(remove.className).toContain('group-has-focus-visible:opacity-100');
+    expect(remove.className).toContain('group-has-[:focus-visible]:opacity-100');
     expect(remove.className).not.toContain('group-focus-within');
     expect(remove.tabIndex).not.toBe(-1);
   });

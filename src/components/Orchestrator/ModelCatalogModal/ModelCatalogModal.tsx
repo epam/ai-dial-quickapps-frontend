@@ -8,11 +8,7 @@ import {
   CatalogPickerModal,
   type CatalogPickerModalLabels,
 } from '@/components/common/CatalogPickerModal/CatalogPickerModal';
-import {
-  ApplicationEditorI18nKeys,
-  BasicI18nKeys,
-  DeploymentSelectorI18nKeys,
-} from '@/constants/translation-keys';
+import { ApplicationEditorI18nKeys, BasicI18nKeys, DeploymentSelectorI18nKeys } from '@/constants/translation-keys';
 import { useDataContext } from '@/context/DataContext';
 import { useGridRowKeyboardSelect } from '@/hooks/use-grid-row-keyboard-select';
 import { useScopeLabels } from '@/hooks/use-scope-labels';
@@ -39,10 +35,10 @@ const COLUMN_VISIBILITY = { folder: () => true };
 // selection only adds the check mark. Cells and headers are matched by their stable `col-id`.
 // No underscores outside calc(): Tailwind turns `_` into a space in arbitrary values.
 const COLUMN_WIDTH_CLASS_NAMES = [
-  '**:[[col-id=name]]:start-0! **:[[col-id=name]]:w-[calc((100%-110px)/2)]!',
-  '**:[[col-id=type]]:start-[calc((100%-110px)/2)]! **:[[col-id=type]]:w-[110px]!',
-  '**:[[col-id=folder]]:start-[calc((100%-110px)/2+110px)]! **:[[col-id=folder]]:w-[calc((100%-110px)/4)]!',
-  '**:[[col-id=topics]]:start-[calc((100%-110px)*3/4+110px)]! **:[[col-id=topics]]:w-[calc((100%-110px)/4)]!',
+  '[&_[col-id=name]]:!start-0 [&_[col-id=name]]:!w-[calc((100%-110px)/2)]',
+  '[&_[col-id=type]]:!start-[calc((100%-110px)/2)] [&_[col-id=type]]:!w-[110px]',
+  '[&_[col-id=folder]]:!start-[calc((100%-110px)/2+110px)] [&_[col-id=folder]]:!w-[calc((100%-110px)/4)]',
+  '[&_[col-id=topics]]:!start-[calc((100%-110px)*3/4+110px)] [&_[col-id=topics]]:!w-[calc((100%-110px)/4)]',
 ].join(' ');
 
 /**
@@ -106,7 +102,7 @@ export const ModelCatalogModal: FC<ModelCatalogModalProps> = ({ value, onConfirm
     <div
       className={mergeClasses(
         COLUMN_WIDTH_CLASS_NAMES,
-        "min-h-0 flex-1 overflow-y-auto **:[[class*='selectedRow']]:z-1 **:[[class*='selectedRow']]:border-0! **:[[class*='selectedRow']]:outline! **:[[class*='selectedRow']]:outline-1! **:[[class*='selectedRow']]:-outline-offset-1! **:[[class*='selectedRow']]:outline-accent!",
+        "min-h-0 flex-1 overflow-y-auto [&_[class*='selectedRow']]:z-[1] [&_[class*='selectedRow']]:!border-0 [&_[class*='selectedRow']]:!outline [&_[class*='selectedRow']]:!outline-1 [&_[class*='selectedRow']]:!-outline-offset-1 [&_[class*='selectedRow']]:!outline-accent",
       )}
       onKeyDown={handleListKeyDown}
     >
