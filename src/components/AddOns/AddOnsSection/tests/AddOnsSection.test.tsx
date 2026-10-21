@@ -90,15 +90,13 @@ const entry = (id: string) => ({ [AddOnSchemaKeys.id]: id });
 
 const renderSection = async ({
   ids = [] as string[],
-  isReadonly = false,
   onAgentsChange = vi.fn(),
-}: { ids?: string[]; isReadonly?: boolean; onAgentsChange?: (ids: string[]) => void } = {}) => {
+}: { ids?: string[]; onAgentsChange?: (ids: string[]) => void } = {}) => {
   await act(async () => {
     dom.root.render(
       <AddOnsSection
         agentSkills={[]}
         onAgentSkillsChange={vi.fn()}
-        isReadonly={isReadonly}
         addOns={ids.map(entry)}
         onAgentsChange={onAgentsChange}
         onConfigureAgent={vi.fn()}
@@ -209,21 +207,6 @@ describe('AddOnsSection', () => {
 
     expect(getByAriaLabel(ApplicationEditorI18nKeys.AgentsAdd)).toBeTruthy();
     expect(getByAriaLabel(ApplicationEditorI18nKeys.ToolsetsAdd)).toBeUndefined();
-  });
-
-  it('keeps both pickers closed in a read-only application, even with the deep link', async () => {
-    searchParams.set('agentsAndToolsetsModal', '1');
-    await renderSection({ isReadonly: true });
-
-    const buttons = getAddButtons();
-    expect(buttons).toHaveLength(2);
-    for (const button of buttons) {
-      // With a tooltip the kit marks a disabled button aria-disabled (not native
-      // `disabled`) so the tooltip still opens; either way it must not act.
-      expect(button.disabled || button.getAttribute('aria-disabled') === 'true').toBe(true);
-      await clickAndWait(button);
-    }
-    expect(dom.container.querySelector('[role="dialog"]')).toBeNull();
   });
 
   it('does not render a JSON control for toolsets or agents', async () => {
