@@ -20,7 +20,6 @@ import {
 } from '@epam/ai-dial-ui-kit';
 
 export interface SettingsSectionProps {
-  isReadonly: boolean;
   advancedSettings: AdvancedSettingsValues;
   isTemperatureAvailable: boolean;
   isProcessLargeFilesAvailable: boolean;
@@ -32,11 +31,7 @@ export interface SettingsSectionProps {
   onAdvancedSettingsSave: (values: AdvancedSettingsValues) => void;
 }
 
-const SettingsSection: FC<SettingsSectionProps> = ({
-  isReadonly,
-  onAdvancedSettingsSave,
-  ...popupProps
-}) => {
+const SettingsSection: FC<SettingsSectionProps> = ({ onAdvancedSettingsSave, ...popupProps }) => {
   const { t } = useTranslation();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
@@ -61,7 +56,6 @@ const SettingsSection: FC<SettingsSectionProps> = ({
             variant={ButtonVariant.Primary}
             appearance={ButtonAppearance.Link}
             size={ElementSize.Small}
-            disabled={isReadonly}
             onClick={handleOpen}
           />
         }

@@ -35,13 +35,7 @@ const renderRow = (props: Partial<React.ComponentProps<typeof KnowledgeBaseRow>>
   const onAddFiles = vi.fn();
   const onRemoveFile = vi.fn();
   dom.render(
-    <KnowledgeBaseRow
-      files={[]}
-      isReadonly={false}
-      onAddFiles={onAddFiles}
-      onRemoveFile={onRemoveFile}
-      {...props}
-    />,
+    <KnowledgeBaseRow files={[]} onAddFiles={onAddFiles} onRemoveFile={onRemoveFile} {...props} />,
   );
   return { onAddFiles, onRemoveFile };
 };
@@ -106,16 +100,5 @@ describe('KnowledgeBaseRow', () => {
     );
 
     expect(onRemoveFile).toHaveBeenCalledWith('files/abc/b.pdf');
-  });
-
-  it('disables Add and hides trash buttons when read-only', () => {
-    renderRow({ files: ['files/abc/a.pdf'], isReadonly: true });
-
-    const addButton = findButton(ButtonsI18nKeys.Add);
-    expect(addButton.disabled || addButton.getAttribute('aria-disabled') === 'true').toBe(true);
-    click(findButton(ButtonsI18nKeys.Add));
-    expect(getModal()).toBeNull();
-    expect(dom.container.querySelectorAll('ul > li')).toHaveLength(1);
-    expect(dom.container.querySelector('ul > li button')).toBeNull();
   });
 });

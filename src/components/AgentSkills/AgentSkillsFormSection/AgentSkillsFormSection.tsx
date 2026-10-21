@@ -16,14 +16,9 @@ const AddSkillsModal = lazy(async () => ({
 export interface AgentSkillsFormSectionProps {
   value: QuickApp2FormValues['agentSkills'];
   onChange: (value: QuickApp2FormValues['agentSkills']) => void;
-  isReadonly: boolean;
 }
 
-const AgentSkillsFormSection: FC<AgentSkillsFormSectionProps> = ({
-  value,
-  onChange,
-  isReadonly,
-}) => {
+const AgentSkillsFormSection: FC<AgentSkillsFormSectionProps> = ({ value, onChange }) => {
   const { t } = useTranslation();
   const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
 
@@ -47,13 +42,12 @@ const AgentSkillsFormSection: FC<AgentSkillsFormSectionProps> = ({
       label={t(ApplicationEditorI18nKeys.SkillsTitle)}
       emptyDescription={t(ApplicationEditorI18nKeys.SkillsDescription)}
       isEmpty={!value?.length}
-      isAddDisabled={isReadonly}
       addTooltip={t(ApplicationEditorI18nKeys.SkillsAddMany)}
       onAdd={() => setIsSkillsModalOpen(true)}
     >
-      <SkillsList value={value} isReadonly={isReadonly} onRemove={handleRemove} />
+      <SkillsList value={value} onRemove={handleRemove} />
 
-      {isSkillsModalOpen && !isReadonly && (
+      {isSkillsModalOpen && (
         <Suspense fallback={null}>
           <AddSkillsModal value={value} onClose={handleCloseModal} onConfirm={handleConfirm} />
         </Suspense>

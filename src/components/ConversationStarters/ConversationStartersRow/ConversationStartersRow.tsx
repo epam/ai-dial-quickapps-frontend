@@ -13,15 +13,10 @@ import ConversationStartersModal from '../ConversationStartersModal/Conversation
 
 export interface ConversationStartersRowProps {
   values: ConversationStartersValues;
-  isReadonly: boolean;
   onSave: (values: ConversationStartersValues) => void;
 }
 
-const ConversationStartersRow: FC<ConversationStartersRowProps> = ({
-  values,
-  isReadonly,
-  onSave,
-}) => {
+const ConversationStartersRow: FC<ConversationStartersRowProps> = ({ values, onSave }) => {
   const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -46,7 +41,6 @@ const ConversationStartersRow: FC<ConversationStartersRowProps> = ({
         label={t(ApplicationEditorI18nKeys.StartersTitle)}
         emptyDescription={t(ApplicationEditorI18nKeys.StartersDescription)}
         isEmpty={isEmpty}
-        isAddDisabled={isReadonly}
         actionLabel={isEmpty ? undefined : t(ButtonsI18nKeys.Manage)}
         actionIcon={
           isEmpty ? undefined : (
@@ -56,13 +50,10 @@ const ConversationStartersRow: FC<ConversationStartersRowProps> = ({
         onAdd={handleOpen}
       >
         {isEmpty ? null : (
-          <ConversationStartersList
-            starters={visibleStarters}
-            onRemove={isReadonly ? undefined : handleRemove}
-          />
+          <ConversationStartersList starters={visibleStarters} onRemove={handleRemove} />
         )}
       </AddOnRow>
-      {isModalOpen && !isReadonly && (
+      {isModalOpen && (
         <ConversationStartersModal values={values} onSave={onSave} onClose={handleClose} />
       )}
     </>

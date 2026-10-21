@@ -79,19 +79,13 @@ vi.mock('@epam/ai-dial-ui-kit', async (importOriginal) => ({
 
 interface TestHostProps {
   initialValue?: string[];
-  isReadonly?: boolean;
   onChange?: (mimeTypes: string[]) => void;
   onEnabledChange?: (isEnabled: boolean) => void;
 }
 
 // Mirrors the Quick App form: `attachmentsEnabled` is seeded from the saved types,
 // turning it off clears them, and enabled-but-empty is a required error.
-const TestHost = ({
-  initialValue = [],
-  isReadonly = false,
-  onChange,
-  onEnabledChange,
-}: TestHostProps) => {
+const TestHost = ({ initialValue = [], onChange, onEnabledChange }: TestHostProps) => {
   const [isEnabled, setIsEnabled] = useState(initialValue.length > 0);
   const [value, setValue] = useState(initialValue);
   return (
@@ -103,7 +97,6 @@ const TestHost = ({
           ? ApplicationEditorI18nKeys.AttachmentsTypesRequired
           : undefined
       }
-      isReadonly={isReadonly}
       onEnabledChange={(next) => {
         onEnabledChange?.(next);
         setIsEnabled(next);
@@ -210,12 +203,5 @@ describe('AttachmentsSection', () => {
 
     expect(getSwitch().getAttribute('aria-checked')).toBe('true');
     expect(getField()).not.toBeNull();
-  });
-
-  it('disables the switch and the field when read-only', () => {
-    dom.render(<TestHost initialValue={['application/pdf']} isReadonly />);
-
-    expect(getSwitch().disabled).toBe(true);
-    expect(getButton('Add PNG').disabled).toBe(true);
   });
 });

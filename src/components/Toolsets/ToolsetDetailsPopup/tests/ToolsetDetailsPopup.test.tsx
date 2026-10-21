@@ -104,11 +104,10 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 interface HarnessProps {
   initial?: DialToolset;
   toolsetId: string;
-  isReadonly: boolean;
 }
 
 /** Plays `DataContext`: an applied auth result updates the toolset it hands down. */
-const Harness = ({ initial, toolsetId, isReadonly }: HarnessProps) => {
+const Harness = ({ initial, toolsetId }: HarnessProps) => {
   const [toolset, setToolset] = useState(initial);
   dataContext.applyToolsetAuthResult.mockImplementation(
     (_payload: unknown, status: ToolsetAuthStatus) =>
@@ -120,23 +119,19 @@ const Harness = ({ initial, toolsetId, isReadonly }: HarnessProps) => {
     <ToolsetDetailsPopup
       toolsetId={toolsetId}
       toolset={toolset}
-      isReadonly={isReadonly}
       onRemove={onRemove}
       onClose={onClose}
     />
   );
 };
 
-const render = async (
-  props: { toolset?: DialToolset; toolsetId?: string; isReadonly?: boolean } = {},
-) => {
+const render = async (props: { toolset?: DialToolset; toolsetId?: string } = {}) => {
   const toolset = 'toolset' in props ? props.toolset : FIGMA;
   await act(async () => {
     dom.root.render(
       <Harness
         initial={toolset}
         toolsetId={props.toolsetId ?? toolset?.id ?? 'toolsets/public/gone'}
-        isReadonly={props.isReadonly ?? false}
       />,
     );
     await flush();
@@ -322,14 +317,6 @@ describe('ToolsetDetailsPopup', () => {
 
     expect(onRemove).toHaveBeenCalledWith(FIGMA.id);
     expect(onClose).toHaveBeenCalled();
-  });
-
-  it('offers only Close in a read-only application', async () => {
-    await render({ isReadonly: true });
-
-    expect(getButtonByText(ButtonsI18nKeys.Delete)).toBeUndefined();
-    expect(getButtonByText(ButtonsI18nKeys.LogIn)).toBeUndefined();
-    expect(getButtonByText(ButtonsI18nKeys.Close)).toBeTruthy();
   });
 
   it('puts Delete before Close in a right-to-left document', async () => {

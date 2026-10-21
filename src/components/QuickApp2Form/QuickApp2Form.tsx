@@ -38,7 +38,6 @@ interface QuickApp2FormProps {
   onValidationError?: (messages: string[]) => void;
   /** Called once a model is resolved for the form — either the app's saved model or the default. */
   onModelReady?: () => void;
-  isReadonly?: boolean;
 }
 
 export const QuickApp2Form: FC<QuickApp2FormProps> = ({
@@ -47,7 +46,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   onValidationError,
   onValidityChange,
   onModelReady,
-  isReadonly = false,
 }) => {
   const { t } = useTranslation();
   const { app, settings } = useAppContext();
@@ -159,14 +157,13 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     const handleTriggerSave = (event: Event) => {
       const { isAutoSave, shouldIgnoreDirty, general } =
         (event as CustomEvent<TriggerSaveEventDetail>).detail ?? {};
-      if (isReadonly) return;
       if (isAutoSave && !shouldIgnoreDirty && !isDirty) return;
       handleSubmitForm(!!isAutoSave, general);
     };
 
     window.addEventListener(DIAL_EDITOR_TRIGGER_SAVE_EVENT, handleTriggerSave);
     return () => window.removeEventListener(DIAL_EDITOR_TRIGGER_SAVE_EVENT, handleTriggerSave);
-  }, [handleSubmitForm, isDirty, isReadonly]);
+  }, [handleSubmitForm, isDirty]);
 
   const advancedSettings = useMemo<AdvancedSettingsValues>(
     () => ({
@@ -262,7 +259,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         <AddOnsSection
           agentSkills={values.agentSkills}
           onAgentSkillsChange={(value) => setField('agentSkills', value)}
-          isReadonly={isReadonly}
           addOns={values.addOns}
           onAgentsChange={setAgentIds}
           onConfigureAgent={configureAgent}
@@ -278,7 +274,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         model={values.model}
         onModelChange={(value) => setField('model', value)}
         errors={errors}
-        isReadonly={isReadonly}
         isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
         isCodeInterpreterEnabled={!!settings.isCodeInterpreterEnabled}
         isAddAttachmentEnabled={!!settings.isAddAttachmentEnabled}

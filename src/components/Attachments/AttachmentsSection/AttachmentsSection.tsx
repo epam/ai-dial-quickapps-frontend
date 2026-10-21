@@ -13,7 +13,6 @@ export interface AttachmentsSectionProps {
   isEnabled: boolean;
   value: string[];
   error?: string;
-  isReadonly: boolean;
   onEnabledChange: (isEnabled: boolean) => void;
   onChange: (mimeTypes: string[]) => void;
 }
@@ -22,7 +21,6 @@ const AttachmentsSection: FC<AttachmentsSectionProps> = ({
   isEnabled,
   value,
   error,
-  isReadonly,
   onEnabledChange,
   onChange,
 }) => {
@@ -42,7 +40,6 @@ const AttachmentsSection: FC<AttachmentsSectionProps> = ({
       action={
         <Switch
           isOn={isEnabled}
-          disabled={isReadonly}
           onChange={onEnabledChange}
           aria-label={t(ApplicationEditorI18nKeys.AttachmentsTitle)}
         />
@@ -58,7 +55,6 @@ const AttachmentsSection: FC<AttachmentsSectionProps> = ({
           placeholder={t(ApplicationEditorI18nKeys.AttachmentsTypesPlaceholder)}
           error={error ? t(error as ApplicationEditorI18nKeys) : undefined}
           invalid={!!error}
-          disabled={isReadonly}
           tagListLabel={t(ApplicationEditorI18nKeys.AttachmentsTypesLabel)}
           getRemoveTagLabel={getRemoveTagLabel}
         />

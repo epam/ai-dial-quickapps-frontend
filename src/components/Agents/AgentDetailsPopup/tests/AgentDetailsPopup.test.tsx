@@ -93,7 +93,6 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 interface RenderProps {
   agent?: DialModel;
   agentId?: string;
-  isReadonly?: boolean;
   transport?: DialAppTransportType;
 }
 
@@ -105,7 +104,6 @@ const render = async (props: RenderProps = {}) => {
         agentId={props.agentId ?? agent?.id ?? 'applications/public/gone'}
         agent={agent}
         transport={props.transport}
-        isReadonly={props.isReadonly ?? false}
         onRemove={onRemove}
         onConfigure={onConfigure}
         onClose={onClose}
@@ -263,15 +261,6 @@ describe('AgentDetailsPopup', () => {
     expect(getTab(BasicI18nKeys.Settings)?.getAttribute('aria-selected')).toBe('true');
   });
 
-  it('shows the transport disabled in a read-only application', async () => {
-    await render({ isReadonly: true, transport: DialAppTransportType.ChatCompletion });
-    await click(getTab(BasicI18nKeys.Settings));
-
-    expect(getRadio(ApplicationEditorI18nKeys.AgentsTransportChatCompletion)?.checked).toBe(true);
-    expect(getRadio(ApplicationEditorI18nKeys.AgentsTransportMcp)?.disabled).toBe(true);
-    expect(getRadio(ApplicationEditorI18nKeys.AgentsTransportChatCompletion)?.disabled).toBe(true);
-  });
-
   it('shows no Settings tab for an MCP-only agent without credentials', async () => {
     dataContext.modelsMap = {};
     await render();
@@ -338,14 +327,6 @@ describe('AgentDetailsPopup', () => {
     expect(getButtonByText(ApplicationCredentialsI18nKeys.Title)).toBeTruthy();
   });
 
-  it('shows no Credentials in a read-only application', async () => {
-    authState.isRequired = true;
-    searchParams.set('applicationCredentials', 'true');
-    await render({ isReadonly: true });
-
-    expect(getButtonByText(ApplicationCredentialsI18nKeys.Title)).toBeUndefined();
-  });
-
   it('shows an unavailable agent without Settings, but still offers Delete', async () => {
     await render({ agent: undefined, agentId: 'applications/public/gone' });
 
@@ -363,14 +344,6 @@ describe('AgentDetailsPopup', () => {
 
     expect(onRemove).toHaveBeenCalledWith(MCP_APP.id);
     expect(onClose).toHaveBeenCalled();
-  });
-
-  it('offers only Close in a read-only application', async () => {
-    await render({ isReadonly: true });
-
-    expect(getButtonByText(ButtonsI18nKeys.Delete)).toBeUndefined();
-    expect(getButtonByText(ApplicationCredentialsI18nKeys.Title)).toBeUndefined();
-    expect(getButtonByText(ButtonsI18nKeys.Close)).toBeTruthy();
   });
 
   it('puts Delete before Close in a right-to-left document', async () => {

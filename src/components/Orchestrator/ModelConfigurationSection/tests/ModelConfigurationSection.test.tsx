@@ -23,43 +23,34 @@ vi.mock('@/components/Orchestrator/DefaultModelBlock/DefaultModelBlock', () => (
 }));
 vi.mock('@/components/Settings/SettingsSection/SettingsSection', () => ({
   default: ({
-    isReadonly,
     isTemperatureAvailable,
     isProcessLargeFilesAvailable,
   }: {
-    isReadonly: boolean;
     isTemperatureAvailable: boolean;
     isProcessLargeFilesAvailable: boolean;
   }) => (
     <div
       data-testid="settings-section"
-      data-readonly={String(isReadonly)}
       data-temperature={String(isTemperatureAvailable)}
       data-process-files={String(isProcessLargeFilesAvailable)}
     />
   ),
 }));
 vi.mock('@/components/Attachments/AttachmentsSection/AttachmentsSection', () => ({
-  default: ({ value, isReadonly }: { value: string[]; isReadonly: boolean }) => (
-    <div
-      data-testid="attachments-section"
-      data-value={value.join(',')}
-      data-readonly={String(isReadonly)}
-    />
+  default: ({ value }: { value: string[] }) => (
+    <div data-testid="attachments-section" data-value={value.join(',')} />
   ),
 }));
 
 interface TestFormProps {
-  isReadonly?: boolean;
   isProcessLargeFilesAvailable?: boolean;
 }
 
-const TestForm = ({ isReadonly = false, isProcessLargeFilesAvailable = true }: TestFormProps) => (
+const TestForm = ({ isProcessLargeFilesAvailable = true }: TestFormProps) => (
   <ModelConfigurationSection
     model="model-id"
     onModelChange={vi.fn()}
     errors={{}}
-    isReadonly={isReadonly}
     isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
     isCodeInterpreterEnabled={false}
     isAddAttachmentEnabled={false}
@@ -142,17 +133,5 @@ describe('ModelConfigurationSection', () => {
     dom.render(<TestForm isProcessLargeFilesAvailable={isAvailable} />);
 
     expect(getSettings().getAttribute('data-process-files')).toBe(String(isAvailable));
-  });
-
-  it('passes read-only through to the model picker, Settings and Attachments', () => {
-    dom.render(<TestForm isReadonly />);
-
-    expect(dom.container.querySelector('button')?.disabled).toBe(true);
-    expect(getSettings().getAttribute('data-readonly')).toBe('true');
-    expect(
-      dom.container
-        .querySelector('[data-testid="attachments-section"]')
-        ?.getAttribute('data-readonly'),
-    ).toBe('true');
   });
 });

@@ -69,10 +69,9 @@ const dom = setupTestRoot();
 
 interface HarnessProps {
   initial: string[];
-  isReadonly?: boolean;
 }
 
-const Harness = ({ initial, isReadonly = false }: HarnessProps) => {
+const Harness = ({ initial }: HarnessProps) => {
   const [allIds, setAllIds] = useState(initial);
   return (
     <>
@@ -80,16 +79,15 @@ const Harness = ({ initial, isReadonly = false }: HarnessProps) => {
       <ToolsetsList
         ids={allIds.filter((id) => id.startsWith('toolsets/'))}
         allIds={allIds}
-        isReadonly={isReadonly}
         onChange={setAllIds}
       />
     </>
   );
 };
 
-const render = async (initial: string[], isReadonly?: boolean) => {
+const render = async (initial: string[]) => {
   await act(async () => {
-    dom.root.render(<Harness initial={initial} isReadonly={isReadonly} />);
+    dom.root.render(<Harness initial={initial} />);
   });
   // Let the lazily loaded badge module resolve and render.
   await act(async () => {
@@ -156,13 +154,6 @@ describe('ToolsetsList', () => {
 
     expect(getValue()).toBe(`applications/public/agent|${JIRA.id}`);
     expect(document.activeElement).toBe(getDetailsButton('Jira'));
-  });
-
-  it('renders no remove button in a read-only application', async () => {
-    await render([FIGMA.id], true);
-
-    expect(getDetailsButton('Figma')).toBeTruthy();
-    expect(getRemoveButton('Figma')).toBeUndefined();
   });
 
   it('keeps avatar, name and trash in reading order in a right-to-left document', async () => {

@@ -17,12 +17,11 @@ const SkillDetailsPopup = lazy(async () => ({
 
 export interface SkillsListProps {
   value: string[];
-  isReadonly: boolean;
   onRemove: (id: string) => void;
 }
 
 /** The attached skills of the Skills row; each item opens that skill's details. */
-const SkillsList: FC<SkillsListProps> = ({ value, isReadonly, onRemove }) => {
+const SkillsList: FC<SkillsListProps> = ({ value, onRemove }) => {
   const { t } = useTranslation();
   const { skillsMap } = useDataContext();
   const [openSkillId, setOpenSkillId] = useState<string | null>(null);
@@ -59,7 +58,7 @@ const SkillsList: FC<SkillsListProps> = ({ value, isReadonly, onRemove }) => {
                 detailsLabel={t(ApplicationEditorI18nKeys.AddOnsDetails, { name })}
                 removeLabel={t(ApplicationEditorI18nKeys.AddOnsRemove, { name })}
                 onClick={setOpenSkillId}
-                onRemove={isReadonly ? undefined : handleRemove}
+                onRemove={handleRemove}
               />
             </li>
           );
@@ -72,7 +71,6 @@ const SkillsList: FC<SkillsListProps> = ({ value, isReadonly, onRemove }) => {
             skillId={openSkillId}
             skill={openSkill}
             fallbackName={getEntityNameFromId(openSkillId)}
-            isReadonly={isReadonly}
             onRemove={handleRemove}
             onClose={handleClose}
           />

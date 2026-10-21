@@ -85,7 +85,6 @@ export interface AddOnDetailsPopupProps {
   /** Replaces the tabs, for an entity that is no longer listed. */
   unavailableText?: string;
   /** Hides Delete; only Close is offered. */
-  isReadonly: boolean;
   deleteLabel: string;
   onDelete: () => void;
   onClose: () => void;
@@ -113,7 +112,6 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
   onRetry,
   onLoadSkillDetailsFile,
   unavailableText,
-  isReadonly,
   deleteLabel,
   onDelete,
   onClose,
@@ -201,20 +199,17 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
   );
 
   const additionalButtons = useMemo(
-    () =>
-      isReadonly
-        ? undefined
-        : [
-            {
-              label: deleteLabel,
-              // Design: red (Danger) / Outlined with a leading trash icon.
-              variant: ButtonVariant.Danger,
-              appearance: ButtonAppearance.Outlined,
-              iconBefore: <IconTrash size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} />,
-              onClick: onDelete,
-            },
-          ],
-    [isReadonly, deleteLabel, onDelete],
+    () => [
+      {
+        label: deleteLabel,
+        // Design: red (Danger) / Outlined with a leading trash icon.
+        variant: ButtonVariant.Danger,
+        appearance: ButtonAppearance.Outlined,
+        iconBefore: <IconTrash size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} />,
+        onClick: onDelete,
+      },
+    ],
+    [deleteLabel, onDelete],
   );
 
   const mainButtons = useMemo(

@@ -32,27 +32,17 @@ interface PopupStubProps {
   skillId: string;
   skill?: DialSkill;
   fallbackName: string;
-  isReadonly: boolean;
   onRemove: (id: string) => void;
   onClose: () => void;
 }
 
 vi.mock('@/components/Skills/SkillDetailsPopup/SkillDetailsPopup', () => ({
-  SkillDetailsPopup: ({
-    skillId,
-    skill,
-    fallbackName,
-    isReadonly,
-    onRemove,
-    onClose,
-  }: PopupStubProps) => (
+  SkillDetailsPopup: ({ skillId, skill, fallbackName, onRemove, onClose }: PopupStubProps) => (
     <div role="dialog" aria-label={skill?.name ?? fallbackName}>
       <span data-testid="popup-skill-id">{skillId}</span>
-      {!isReadonly && (
-        <button type="button" onClick={() => (onRemove(skillId), onClose())}>
-          Delete
-        </button>
-      )}
+      <button type="button" onClick={() => (onRemove(skillId), onClose())}>
+        Delete
+      </button>
       <button type="button" onClick={onClose}>
         Close
       </button>
@@ -62,23 +52,22 @@ vi.mock('@/components/Skills/SkillDetailsPopup/SkillDetailsPopup', () => ({
 
 const dom = setupTestRoot();
 
-const Harness = ({ initial, isReadonly = false }: { initial: string[]; isReadonly?: boolean }) => {
+const Harness = ({ initial }: { initial: string[] }) => {
   const [value, setValue] = useState(initial);
   return (
     <>
       <output data-testid="value">{value.join('|')}</output>
       <SkillsList
         value={value}
-        isReadonly={isReadonly}
         onRemove={(id) => setValue((prev) => prev.filter((x) => x !== id))}
       />
     </>
   );
 };
 
-const render = async (initial: string[], isReadonly?: boolean) => {
+const render = async (initial: string[]) => {
   await act(async () => {
-    dom.root.render(<Harness initial={initial} isReadonly={isReadonly} />);
+    dom.root.render(<Harness initial={initial} />);
   });
 };
 
@@ -172,13 +161,6 @@ describe('SkillsList', () => {
     expect(document.activeElement).toBe(getDetailsButton('Web Search'));
   });
 
-  it('renders no remove button in a read-only application', async () => {
-    await render(['skills/public/web-search'], true);
-
-    expect(getDetailsButton('Web Search')).toBeTruthy();
-    expect(getRemoveButton('Web Search')).toBeUndefined();
-  });
-
   it('renders nothing without attached skills', async () => {
     await render([]);
 
@@ -221,14 +203,6 @@ describe('SkillsList', () => {
     expect(dom.container.querySelector('[data-testid="value"]')?.textContent).toBe(
       'skills/public/web-search',
     );
-  });
-
-  it('still opens details in a read-only application, without Delete', async () => {
-    await render(['skills/public/web-search'], true);
-    await click(getDetailsButton('Web Search'));
-
-    expect(dom.container.querySelector('[role="dialog"]')).not.toBeNull();
-    expect(getButton('Delete')).toBeUndefined();
   });
 
   it('keeps avatar before name in a right-to-left document', async () => {

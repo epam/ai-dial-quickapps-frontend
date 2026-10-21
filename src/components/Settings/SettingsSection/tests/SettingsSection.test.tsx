@@ -84,13 +84,11 @@ const advancedSettings: AdvancedSettingsValues = {
 };
 
 const renderSection = (
-  isReadonly: boolean,
   onAdvancedSettingsSave = vi.fn(),
   { isTemperatureAvailable = true, isProcessLargeFilesAvailable = false } = {},
 ) =>
   dom.render(
     <SettingsSection
-      isReadonly={isReadonly}
       advancedSettings={advancedSettings}
       isTemperatureAvailable={isTemperatureAvailable}
       isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
@@ -113,7 +111,7 @@ afterEach(() => {
 
 describe('SettingsSection', () => {
   it('renders the Settings row with an Advanced action', () => {
-    renderSection(false);
+    renderSection();
 
     expect(dom.container.querySelector('h3')?.textContent).toBe(BasicI18nKeys.Settings);
     expect(getAdvancedButton().disabled).toBe(false);
@@ -121,7 +119,7 @@ describe('SettingsSection', () => {
   });
 
   it('opens and closes the popup', () => {
-    renderSection(false);
+    renderSection();
 
     click(getAdvancedButton());
     expect(dom.container.querySelector('[role="dialog"]')).not.toBeNull();
@@ -131,7 +129,7 @@ describe('SettingsSection', () => {
   });
 
   it('reopens with the form values instead of a discarded draft', () => {
-    renderSection(false);
+    renderSection();
 
     click(getAdvancedButton());
     const fileToolsSwitch = () =>
@@ -146,7 +144,7 @@ describe('SettingsSection', () => {
 
   it('passes saved popup values to the form', () => {
     const onAdvancedSettingsSave = vi.fn();
-    renderSection(false, onAdvancedSettingsSave);
+    renderSection(onAdvancedSettingsSave);
 
     click(getAdvancedButton());
     click(dom.container.querySelector('[role="switch"]'));
@@ -156,7 +154,7 @@ describe('SettingsSection', () => {
   });
 
   it('forwards temperature and process-files availability to the popup', () => {
-    renderSection(false, vi.fn(), {
+    renderSection(vi.fn(), {
       isTemperatureAvailable: false,
       isProcessLargeFilesAvailable: true,
     });
@@ -167,18 +165,9 @@ describe('SettingsSection', () => {
     expect(dialog.getAttribute('data-process-files')).toBe('true');
   });
 
-  it('disables Advanced when read-only and does not open the popup', () => {
-    renderSection(true);
-
-    const button = getAdvancedButton();
-    expect(button.disabled).toBe(true);
-    click(button);
-    expect(dom.container.querySelector('[role="dialog"]')).toBeNull();
-  });
-
   it('uses logical layout classes under RTL and stays within narrow layouts', () => {
     document.documentElement.setAttribute('dir', 'rtl');
-    renderSection(false);
+    renderSection();
 
     const header = dom.container.querySelector('h3')?.parentElement as HTMLElement;
     expect(header.className).toContain('justify-between');

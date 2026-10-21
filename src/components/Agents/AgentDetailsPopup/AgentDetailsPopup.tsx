@@ -3,7 +3,12 @@ import { DIAL_ICON_SIZE, DIAL_KIT_ICON_STROKE, GhostButton } from '@epam/ai-dial
 import { IconKey } from '@tabler/icons-react';
 import { FC, useCallback, useMemo } from 'react';
 
-import { ApplicationCredentialsI18nKeys, ApplicationEditorI18nKeys, BasicI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
+import {
+  ApplicationCredentialsI18nKeys,
+  ApplicationEditorI18nKeys,
+  BasicI18nKeys,
+  ButtonsI18nKeys,
+} from '@/constants/translation-keys';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { useApplicationAuthentication } from '@/hooks/use-application-authentication';
@@ -30,7 +35,6 @@ export interface AgentDetailsPopupProps {
   agent?: DialModel;
   /** The transport saved for this entry, if any. */
   transport?: DialAppTransportType;
-  isReadonly: boolean;
   onRemove: (id: string) => void;
   onConfigure: (id: string, transport: DialAppTransportType) => void;
   onClose: () => void;
@@ -47,7 +51,6 @@ export const AgentDetailsPopup: FC<AgentDetailsPopupProps> = ({
   agentId,
   agent,
   transport,
-  isReadonly,
   onRemove,
   onConfigure,
   onClose,
@@ -61,7 +64,7 @@ export const AgentDetailsPopup: FC<AgentDetailsPopupProps> = ({
 
   const { name, version, iconUrl } = getAddOnDisplay(agentId, agent, language);
   const isModel = agent?.type === DialEntityType.Model;
-  const isEditable = !isReadonly && agent != null;
+  const isEditable = agent != null;
   const isTransportVisible = canChooseAgentTransport(agent, modelsMap);
   // Same gate as before the redesign: the host advertises credential forms
   // with `applicationCredentials=true`, and only apps behind auth need them.
@@ -117,13 +120,12 @@ export const AgentDetailsPopup: FC<AgentDetailsPopupProps> = ({
           <AgentSettingsTab
             agentId={agentId}
             transport={transport}
-            isTransportDisabled={isReadonly}
             onTransportChange={handleTransportChange}
           />
         ),
       },
     ];
-  }, [t, agentId, transport, isTransportVisible, isReadonly, handleTransportChange]);
+  }, [t, agentId, transport, isTransportVisible, handleTransportChange]);
 
   const actions = isAuthenticationRequired && (
     <GhostButton
@@ -146,7 +148,6 @@ export const AgentDetailsPopup: FC<AgentDetailsPopupProps> = ({
       detailsStatus={status}
       onRetry={retry}
       unavailableText={agent == null ? t(ApplicationEditorI18nKeys.AgentsUnavailable) : undefined}
-      isReadonly={isReadonly}
       deleteLabel={t(ButtonsI18nKeys.Delete)}
       onDelete={handleDelete}
       onClose={onClose}

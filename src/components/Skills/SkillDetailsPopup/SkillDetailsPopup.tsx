@@ -18,7 +18,6 @@ export interface SkillDetailsPopupProps {
   skill?: DialSkill;
   /** Shown while the skill is missing from the catalog. */
   fallbackName: string;
-  isReadonly: boolean;
   onRemove: (id: string) => void;
   onClose: () => void;
 }
@@ -32,7 +31,6 @@ export const SkillDetailsPopup: FC<SkillDetailsPopupProps> = ({
   skillId,
   skill,
   fallbackName,
-  isReadonly,
   onRemove,
   onClose,
 }) => {
@@ -71,7 +69,6 @@ export const SkillDetailsPopup: FC<SkillDetailsPopupProps> = ({
       onRetry={retry}
       onLoadSkillDetailsFile={onLoadSkillDetailsFile}
       unavailableText={skill == null ? t(ApplicationEditorI18nKeys.SkillsUnavailable) : undefined}
-      isReadonly={isReadonly}
       deleteLabel={t(ButtonsI18nKeys.Delete)}
       onDelete={handleDelete}
       onClose={onClose}

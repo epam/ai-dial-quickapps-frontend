@@ -62,7 +62,7 @@ const onClose = vi.fn();
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
-const render = async (props: { skill?: DialSkill; isReadonly?: boolean } = {}) => {
+const render = async (props: { skill?: DialSkill } = {}) => {
   const skill = 'skill' in props ? props.skill : SKILL;
   await act(async () => {
     dom.root.render(
@@ -70,7 +70,6 @@ const render = async (props: { skill?: DialSkill; isReadonly?: boolean } = {}) =
         skillId={SKILL.id}
         skill={skill}
         fallbackName="user-research"
-        isReadonly={props.isReadonly ?? false}
         onRemove={onRemove}
         onClose={onClose}
       />,
@@ -214,15 +213,6 @@ describe('SkillDetailsPopup', () => {
 
     expect(onRemove).toHaveBeenCalledWith(SKILL.id);
     expect(onClose).toHaveBeenCalledTimes(1);
-  });
-
-  it('offers only Close in a read-only application', async () => {
-    await render({ isReadonly: true });
-
-    expect(getButtonByText(ButtonsI18nKeys.Delete)).toBeUndefined();
-    await click(getButtonByText(ButtonsI18nKeys.Close));
-    expect(onClose).toHaveBeenCalledTimes(1);
-    expect(onRemove).not.toHaveBeenCalled();
   });
 
   it('closes without detaching on Escape', async () => {

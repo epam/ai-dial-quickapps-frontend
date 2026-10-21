@@ -27,12 +27,11 @@ export interface ToolsetsListProps {
   ids: string[];
   /** Every `addOns` id; edits keep the agent ids in place. */
   allIds: string[];
-  isReadonly: boolean;
   onChange: (allIds: string[]) => void;
 }
 
 /** The attached toolsets of the Toolsets row; each item opens that toolset's details. */
-const ToolsetsList: FC<ToolsetsListProps> = ({ ids, allIds, isReadonly, onChange }) => {
+const ToolsetsList: FC<ToolsetsListProps> = ({ ids, allIds, onChange }) => {
   const { t, i18n } = useTranslation();
   const language = i18n.resolvedLanguage ?? i18n.language;
   const entityMap = useAddOnEntityMap();
@@ -84,7 +83,7 @@ const ToolsetsList: FC<ToolsetsListProps> = ({ ids, allIds, isReadonly, onChange
                 detailsLabel={t(ApplicationEditorI18nKeys.AddOnsDetails, { name })}
                 removeLabel={t(ApplicationEditorI18nKeys.AddOnsRemove, { name })}
                 onClick={setOpenToolsetId}
-                onRemove={isReadonly ? undefined : handleRemove}
+                onRemove={handleRemove}
               />
             </li>
           );
@@ -96,7 +95,6 @@ const ToolsetsList: FC<ToolsetsListProps> = ({ ids, allIds, isReadonly, onChange
           <ToolsetDetailsPopup
             toolsetId={openToolsetId}
             toolset={entityMap[openToolsetId] as DialToolset | undefined}
-            isReadonly={isReadonly}
             onRemove={handleRemove}
             onClose={handleClose}
           />
