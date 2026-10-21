@@ -18,17 +18,11 @@ export interface ToolsetsFormSectionProps {
   allIds: string[];
   /** The toolset entries among them. */
   toolsetIds: string[];
-  isReadonly: boolean;
   onChange: (allIds: string[]) => void;
 }
 
 /** The Toolsets row of the Add-ons card: the attached toolsets and the Add toolset picker. */
-const ToolsetsFormSection: FC<ToolsetsFormSectionProps> = ({
-  allIds,
-  toolsetIds,
-  isReadonly,
-  onChange,
-}) => {
+const ToolsetsFormSection: FC<ToolsetsFormSectionProps> = ({ allIds, toolsetIds, onChange }) => {
   const { t } = useTranslation();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
@@ -47,13 +41,12 @@ const ToolsetsFormSection: FC<ToolsetsFormSectionProps> = ({
       label={t(ApplicationEditorI18nKeys.ToolsetsTitle)}
       emptyDescription={t(ApplicationEditorI18nKeys.ToolsetsDescription)}
       isEmpty={toolsetIds.length === 0}
-      isAddDisabled={isReadonly}
       addTooltip={t(ApplicationEditorI18nKeys.ToolsetsAddMany)}
       onAdd={() => setIsAddModalOpen(true)}
     >
-      <ToolsetsList ids={toolsetIds} allIds={allIds} isReadonly={isReadonly} onChange={onChange} />
+      <ToolsetsList ids={toolsetIds} allIds={allIds} onChange={onChange} />
 
-      {isAddModalOpen && !isReadonly && (
+      {isAddModalOpen && (
         <Suspense fallback={null}>
           <AddToolsetsModal
             allIds={allIds}

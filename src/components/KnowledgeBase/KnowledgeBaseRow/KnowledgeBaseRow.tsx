@@ -9,17 +9,11 @@ import { KnowledgeBaseList } from '../KnowledgeBaseList/KnowledgeBaseList';
 
 export interface KnowledgeBaseRowProps {
   files: string[];
-  isReadonly: boolean;
   onAddFiles: (files: string[]) => void;
   onRemoveFile: (file: string) => void;
 }
 
-const KnowledgeBaseRow: FC<KnowledgeBaseRowProps> = ({
-  files,
-  isReadonly,
-  onAddFiles,
-  onRemoveFile,
-}) => {
+const KnowledgeBaseRow: FC<KnowledgeBaseRowProps> = ({ files, onAddFiles, onRemoveFile }) => {
   const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const isEmpty = files.length === 0;
@@ -39,16 +33,11 @@ const KnowledgeBaseRow: FC<KnowledgeBaseRowProps> = ({
         label={t(ApplicationEditorI18nKeys.KnowledgeBaseTitle)}
         emptyDescription={t(ApplicationEditorI18nKeys.KnowledgeBaseDescription)}
         isEmpty={isEmpty}
-        isAddDisabled={isReadonly}
         onAdd={handleOpen}
       >
-        {isEmpty ? null : (
-          <KnowledgeBaseList files={files} onRemove={isReadonly ? undefined : onRemoveFile} />
-        )}
+        {isEmpty ? null : <KnowledgeBaseList files={files} onRemove={onRemoveFile} />}
       </AddOnRow>
-      {isModalOpen && !isReadonly && (
-        <FileManagerModal isOpen initialFileIds={files} onClose={handleModalClose} />
-      )}
+      {isModalOpen && <FileManagerModal isOpen initialFileIds={files} onClose={handleModalClose} />}
     </>
   );
 };

@@ -21,7 +21,6 @@ export interface ToolsetDetailsPopupProps {
    * so a login result shows at once. Undefined when it is no longer listed.
    */
   toolset?: DialToolset;
-  isReadonly: boolean;
   onRemove: (id: string) => void;
   onClose: () => void;
 }
@@ -34,7 +33,6 @@ export interface ToolsetDetailsPopupProps {
 export const ToolsetDetailsPopup: FC<ToolsetDetailsPopupProps> = ({
   toolsetId,
   toolset,
-  isReadonly,
   onRemove,
   onClose,
 }) => {
@@ -80,12 +78,13 @@ export const ToolsetDetailsPopup: FC<ToolsetDetailsPopupProps> = ({
       version={version}
       iconUrl={iconUrl}
       folder={folder}
-      credentials={toolset && isAuthenticationRequired && !isReadonly ? credentials : undefined}
+      credentials={toolset && isAuthenticationRequired ? credentials : undefined}
       item={item}
       detailsStatus={status}
       onRetry={retry}
-      unavailableText={toolset == null ? t(ApplicationEditorI18nKeys.ToolsetsUnavailable) : undefined}
-      isReadonly={isReadonly}
+      unavailableText={
+        toolset == null ? t(ApplicationEditorI18nKeys.ToolsetsUnavailable) : undefined
+      }
       deleteLabel={t(ButtonsI18nKeys.Delete)}
       onDelete={handleDelete}
       onClose={onClose}
