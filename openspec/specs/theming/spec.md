@@ -60,7 +60,7 @@ afterwards, whether it succeeded or failed.
 error, a non-2xx response, or a body that is not JSON) or the parsed body has no non-empty
 `themes` array: it SHALL NOT set any CSS custom property, SHALL NOT surface an error to the user,
 and SHALL leave the page rendering with the fallback values built into its stylesheets (the
-`var(--<name>, <default>)` fallbacks in `tailwind.config.js`). The context SHALL then expose
+`var(--<name>, <default>)` fallbacks in `src/theme.css`). The context SHALL then expose
 `themes: []` and `currentTheme: undefined`. A non-2xx response's body SHALL NOT be read as a theme
 configuration. A response that settles after the provider has unmounted SHALL be discarded
 without updating state.

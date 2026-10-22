@@ -59,7 +59,7 @@ export const AddOnListItem: FC<AddOnListItemProps> = ({
         type="button"
         aria-label={detailsLabel}
         aria-describedby={statusText ? statusId : undefined}
-        className="flex min-w-0 flex-1 items-center gap-2.5 rounded-[10px] py-1 text-start outline-none focus-visible:outline focus-visible:outline-accent-focus"
+        className="flex min-w-0 flex-1 items-center gap-2.5 rounded-[10px] py-1 text-start outline-hidden focus-visible:outline focus-visible:outline-accent-focus"
         onClick={() => onClick(id)}
       >
         {/* Hidden as a whole: the button's own label names the item, and a

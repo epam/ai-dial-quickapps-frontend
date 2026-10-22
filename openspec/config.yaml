@@ -17,7 +17,7 @@ context: |
   - Language: TypeScript 5, strict mode. `moduleResolution: "bundler"` — relative
     TypeScript imports omit `.js`/`.ts`/`.tsx` extensions (resource files like
     .css/.json keep theirs). Do not change to node16/nodenext.
-  - Styling: Tailwind CSS 3
+  - Styling: Tailwind CSS 4 (CSS-first: tokens in `src/theme.css`, entry `src/index.css`)
   - i18n: i18next + react-i18next + i18next-browser-languagedetector, same setup as
     ai-dial-chat (one `translation` namespace, semantic keys, enums in
     src/constants/translation-keys.ts)

@@ -1,3 +1,4 @@
+import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import ts from 'typescript';
@@ -117,6 +118,7 @@ const mockLoggedOutAuth = (): Plugin => ({
 export default defineConfig({
   plugins: [
     react(),
+    tailwindcss(),
     cspNoncePlaceholder(),
     trustedStyleNonce(),
     ...(process.env.MOCK_AUTH ? [mockLoggedOutAuth()] : []),

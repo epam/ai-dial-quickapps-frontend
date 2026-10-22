@@ -75,7 +75,7 @@ const ThemeProvider: FC<ThemeProviderProps> = ({ children }) => {
         const data = (await res.json()) as ThemeConfiguration;
         if (!isCancelled) setConfig(data);
       } catch {
-        // Silently fall back to the `var(--x, default)` values in tailwind.config.js.
+        // Silently fall back to the `var(--x, default)` values in src/theme.css.
       } finally {
         if (!isCancelled) setIsLoading(false);
       }
