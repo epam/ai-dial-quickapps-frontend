@@ -26,6 +26,8 @@ type FormSaveHandler = (
 interface FormStandInProps {
   onSave: FormSaveHandler;
   onDirtyChange: (isDirty: boolean) => void;
+  onValidityChange: (isValid: boolean) => void;
+  onValidationError: (messages: string[]) => void;
   onModelReady?: () => void;
 }
 
@@ -111,9 +113,13 @@ const renderEditor = async (search = `?id=${encodeURIComponent(APP_ID)}`) => {
   await flush();
 };
 
-const sendHostMessage = async (data: unknown, origin = HOST) => {
+const sendHostMessage = async (
+  data: unknown,
+  origin = HOST,
+  source: MessageEventSource | null = window.parent,
+) => {
   await act(async () => {
-    window.dispatchEvent(new MessageEvent('message', { data, origin }));
+    window.dispatchEvent(new MessageEvent('message', { data, origin, source }));
   });
 };
 
@@ -287,6 +293,88 @@ describe('EditorClient save trigger gating', () => {
     await sendHostMessage({ type: InboundMessageType.TriggerSave }, OTHER_ORIGIN);
 
     expect(triggerSaveDetails).toEqual([]);
+  });
+
+  it('ignores save and reset messages from another window at an allowed origin', async () => {
+    await renderEditor();
+    const foreignFrame = document.createElement('iframe');
+    dom.container.append(foreignFrame);
+
+    for (const type of [
+      InboundMessageType.TriggerSave,
+      InboundMessageType.TriggerAutoSave,
+      InboundMessageType.Reset,
+    ]) {
+      await sendHostMessage({ type }, HOST, foreignFrame.contentWindow);
+    }
+
+    expect(triggerSaveDetails).toEqual([]);
+    expect(mocks.formMounts).toBe(1);
+
+    await sendHostMessage({ type: InboundMessageType.TriggerSave });
+    expect(triggerSaveDetails).toEqual([
+      { isAutoSave: false, shouldIgnoreDirty: undefined, general: undefined },
+    ]);
+  });
+
+  it.each([
+    { type: InboundMessageType.TriggerSave, general: { name: 42 } },
+    { type: InboundMessageType.TriggerSave, general: { name: 'Bot', topics: 'topic' } },
+    {
+      type: InboundMessageType.TriggerSave,
+      general: { name: 'Bot', locales: [{ language: 'ar', description: false }] },
+    },
+    { type: InboundMessageType.TriggerAutoSave, payload: { ignoreDirty: 'true' } },
+  ])('ignores a malformed save without blocking a later valid trigger: %j', async (message) => {
+    await renderEditor();
+
+    await sendHostMessage(message);
+
+    expect(triggerSaveDetails).toEqual([]);
+    expect(mocks.saveDialApp).not.toHaveBeenCalled();
+
+    await sendHostMessage({ type: InboundMessageType.TriggerSave });
+    expect(triggerSaveDetails).toHaveLength(1);
+  });
+});
+
+describe('EditorClient form state messages', () => {
+  it('preserves nested dirty and validity payloads and only posts state changes', async () => {
+    await renderEditor();
+    postMessage.mockClear();
+
+    await act(async () => {
+      mocks.formProps?.onDirtyChange(true);
+      mocks.formProps?.onDirtyChange(true);
+      mocks.formProps?.onValidityChange(false);
+      mocks.formProps?.onValidityChange(false);
+      mocks.formProps?.onDirtyChange(false);
+      mocks.formProps?.onValidityChange(true);
+    });
+
+    expect(postMessage.mock.calls).toEqual([
+      [{ type: OutboundMessageType.DirtyState, payload: { isDirty: true } }, HOST],
+      [{ type: OutboundMessageType.ValidityState, payload: { isValid: false } }, HOST],
+      [{ type: OutboundMessageType.DirtyState, payload: { isDirty: false } }, HOST],
+      [{ type: OutboundMessageType.ValidityState, payload: { isValid: true } }, HOST],
+    ]);
+  });
+
+  it('posts a nested SaveError when form validation rejects a save', async () => {
+    await renderEditor();
+
+    await act(async () => {
+      mocks.formProps?.onValidationError(['Instructions are required', 'Select a model']);
+    });
+
+    expect(postMessage).toHaveBeenLastCalledWith(
+      {
+        type: OutboundMessageType.SaveError,
+        payload: { error: 'Instructions are required; Select a model' },
+      },
+      HOST,
+    );
+    expect(mocks.saveDialApp).not.toHaveBeenCalled();
   });
 });
 

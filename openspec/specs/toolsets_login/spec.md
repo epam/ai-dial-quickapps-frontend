@@ -29,7 +29,7 @@ This capability renders no UI and introduces no user-visible string or i18n key 
 
 ### Requirement: OAuth request to the host
 
-For an OAuth toolset, `onLogin` SHALL post `REQUEST_TOOLSET_LOGIN` (`OutboundMessageType.RequestToolsetLogin`) and `onLogout` SHALL post `REQUEST_TOOLSET_LOGOUT` (`OutboundMessageType.RequestToolsetLogout`), each with the toolset's id (as held in `DataContext`, path segments decoded) and no other field, through `postToHost` with `AppContext` `settings.allowedOrigins`, so the targeting rules of `host-integration` ("Origin validation") apply. Logout SHALL be posted at once, with no confirmation step of this app's own. No chat-api request SHALL be made by this app for an OAuth sign-in or sign-out: the host runs the flow and answers with a result message.
+For an OAuth toolset, `onLogin` SHALL post `REQUEST_TOOLSET_LOGIN` (using the shared editor message enum) and `onLogout` SHALL post `REQUEST_TOOLSET_LOGOUT` (using the shared editor message enum), each with the toolset's id (as held in `DataContext`, path segments decoded) and no other field, through the typed `postEditorMessage` adapter with `AppContext` `settings.allowedOrigins`, so the targeting rules of `host-integration` ("Origin validation") apply. Logout SHALL be posted at once, with no confirmation step of this app's own. No chat-api request SHALL be made by this app for an OAuth sign-in or sign-out: the host runs the flow and answers with a result message.
 
 Example outbound message:
 
@@ -54,7 +54,7 @@ Before posting, the hook SHALL record the result type it waits for (`TOOLSET_LOG
 
 While its toolset is OAuth, `useToolsetCredentials` SHALL listen to `window` `message` events and SHALL act on a message only when all of the following hold:
 
-- its origin passes `isOriginAllowed` against `settings.allowedOrigins` (`host-integration`, "Origin validation");
+- `readHostEditorMessage` accepts it as a valid result from `window.parent`, with an origin allowed by `settings.allowedOrigins` and valid protocol/domain fields (`host-integration`, "Inbound message contract" and "Origin validation");
 - a host request is waiting;
 - its `type` is the result type that request waits for — a `TOOLSET_LOGOUT_RESULT` SHALL NOT answer a pending login, nor the reverse;
 - its `toolsetId` equals this hook's toolset id.
@@ -104,9 +104,16 @@ Payload (`ToolsetAuthResultPayload`, `src/types/editor-messages.ts`): `toolsetId
 - **WHEN** a logout is waiting and the host posts the matching `TOOLSET_LOGOUT_RESULT` with `success: true`
 - **THEN** `applyToolsetAuthResult` SHALL be called with that payload and `SIGNED_OUT`
 
+#### Scenario: Foreign or malformed result cannot complete a request
+
+- **WHEN** a matching result comes from a different window at an allowed origin, or
+  the parent sends a result with a non-boolean `success`, empty `toolsetId`, invalid
+  credentials level, or malformed known credential fields
+- **THEN** the waiting promise SHALL remain pending and the toolset SHALL be unchanged
+
 ### Requirement: Unsolicited host login results
 
-`DataProvider` (`src/context/DataContext.tsx`) SHALL listen to `window` `message` events for its whole lifetime and SHALL apply every `TOOLSET_LOGIN_RESULT` that comes from an allowed origin (`isOriginAllowed` against `settings.allowedOrigins`), has `success: true` and carries a non-empty `toolsetId`, with `fallbackStatus` `SIGNED_IN` — whether or not this editor requested it (for example, a sign-in the user completed in the host's own chat-level dialog). It SHALL apply it through the same reducer action as `applyToolsetAuthResult`. A result whose `toolsetId` is not in `toolsetsMap` SHALL be ignored and SHALL leave the state unchanged. A result with `success: false` SHALL be ignored. `TOOLSET_LOGOUT_RESULT` SHALL NOT be applied by this listener; it is applied only as the answer to a request from `useToolsetCredentials`.
+`DataProvider` (`src/context/DataContext.tsx`) SHALL listen to `window` `message` events for its whole lifetime and SHALL apply every `TOOLSET_LOGIN_RESULT` that is accepted by `readHostEditorMessage` from `window.parent` at an allowed origin with valid protocol/domain fields, has `success: true` and carries a non-empty `toolsetId`, with `fallbackStatus` `SIGNED_IN` — whether or not this editor requested it (for example, a sign-in the user completed in the host's own chat-level dialog). It SHALL apply it through the same reducer action as `applyToolsetAuthResult`. A result whose `toolsetId` is not in `toolsetsMap` SHALL be ignored and SHALL leave the state unchanged. A result with `success: false` SHALL be ignored. `TOOLSET_LOGOUT_RESULT` SHALL NOT be applied by this listener; it is applied only as the answer to a request from `useToolsetCredentials`.
 
 When a login result also answers a waiting request from `useToolsetCredentials`, both listeners apply it; applying the same payload twice SHALL yield the same toolset as applying it once.
 
@@ -125,6 +132,12 @@ When a login result also answers a waiting request from `useToolsetCredentials`,
 
 - **WHEN** no logout is waiting and the host posts a successful `TOOLSET_LOGOUT_RESULT` for a known toolset
 - **THEN** that toolset's status SHALL be unchanged
+
+#### Scenario: Foreign or malformed unsolicited login is ignored
+
+- **WHEN** a successful login result comes from another window at an allowed origin,
+  or the parent sends a login result with malformed known fields
+- **THEN** `DataContext` SHALL leave both `toolsets` and `toolsetsMap` unchanged
 
 ### Requirement: Applying a host auth result
 

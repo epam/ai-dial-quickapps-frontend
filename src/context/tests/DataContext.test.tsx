@@ -99,9 +99,13 @@ const render = async () => {
   );
 };
 
-const postFromHost = async (data: unknown, origin = HOST) => {
+const postFromHost = async (
+  data: unknown,
+  origin = HOST,
+  source: MessageEventSource | null = window.parent,
+) => {
   await act(async () => {
-    window.dispatchEvent(new MessageEvent('message', { data, origin }));
+    window.dispatchEvent(new MessageEvent('message', { data, origin, source }));
   });
 };
 
@@ -230,6 +234,39 @@ describe('DataContext — unsolicited host login results', () => {
     await postFromHost(loginResult(), 'https://evil');
 
     expect(latest.toolsetsMap[FIGMA.id]).toEqual(FIGMA);
+  });
+
+  it('ignores a login result from another window at an allowed origin', async () => {
+    await render();
+    const { toolsets, toolsetsMap } = latest;
+    const foreignFrame = document.createElement('iframe');
+    dom.container.append(foreignFrame);
+
+    await postFromHost(loginResult(), HOST, foreignFrame.contentWindow);
+
+    expect(latest.toolsets).toBe(toolsets);
+    expect(latest.toolsetsMap).toBe(toolsetsMap);
+    expect(fetchers.fetchDialToolsets).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    { success: 'true' },
+    { success: undefined },
+    { credentialsLevel: 'ADMIN' },
+    { credentials: { authenticationType: ToolsetAuthType.OAuth, userStatus: 'invalid' } },
+    { credentials: { authenticationType: ToolsetAuthType.OAuth, isPublic: 'true' } },
+  ])('ignores malformed login fields without changing shared state: %j', async (fields) => {
+    await render();
+    const { toolsets, toolsetsMap } = latest;
+
+    await postFromHost(loginResult(fields));
+
+    expect(latest.toolsets).toBe(toolsets);
+    expect(latest.toolsetsMap).toBe(toolsetsMap);
+
+    await postFromHost(loginResult());
+    expect(latest.toolsetsMap[FIGMA.id]).toEqual(SIGNED_IN_FIGMA);
+    expect(fetchers.fetchDialToolsets).toHaveBeenCalledTimes(1);
   });
 
   it('ignores a failed login result', async () => {

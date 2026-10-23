@@ -9,7 +9,9 @@ what it accepts from the host, and how it validates the host's origin before tru
 targeting it. The contract is host-agnostic — it describes only QuickApps' own observable
 behavior, not any particular host's implementation, so that any compliant host (not only
 ai-dial-chat) can embed QuickApps successfully.
+
 ## Requirements
+
 ### Requirement: Entry URL query parameters
 
 QuickApps SHALL read the following query parameters from its entry URL:
@@ -84,8 +86,10 @@ initializing.
 
 - **WHEN** QuickApps determines a target host origin (see "Host origin resolution") and
   the entry URL supplies an application name
-- **THEN** QuickApps SHALL send a "ready" signal and a "ready to interact" signal to
-  that host, each exactly once for that load
+- **THEN** QuickApps SHALL send `{applicationName}/READY` and
+  `{applicationName}/READY_TO_INTERACT` through the legacy connector, and
+  `{applicationName}/readyToInteract` through `AppsEditorClient`, to that host, each
+  exactly once for the resolved connection
 
 #### Scenario: Host connection details are not yet available
 
@@ -93,6 +97,11 @@ initializing.
   supplies no application name
 - **THEN** QuickApps SHALL NOT send the ready handshake, and SHALL send it as soon as
   the required information becomes available
+
+#### Scenario: Settings revalidation keeps the connection unchanged
+
+- **WHEN** settings are revalidated without changing the resolved host or application name
+- **THEN** QuickApps SHALL NOT repeat the three handshake messages
 
 ### Requirement: Host origin resolution
 
@@ -123,11 +132,15 @@ own identity via a query parameter.
 
 ### Requirement: Outbound message contract
 
-QuickApps SHALL emit the following outbound message types. The typed messages SHALL be posted
-as `{ type, payload? }` (types from `OutboundMessageType`, `src/types/editor-messages.ts`) to the
-allowed origins, per "Origin validation", and SHALL NOT carry the application name; only the host
-handshake and the plain `{applicationName}/…` messages SHALL use the application name supplied by
-the entry URL, and they SHALL be addressed to the resolved host (see "Host origin resolution").
+QuickApps SHALL use shared editor message enums/types from the published connector and
+app-specific types for Admin extensions. Unprefixed messages SHALL be posted through a
+typed `postEditorMessage` adapter delegating to `postToHost`, to the allowed origins,
+per "Origin validation", without the application name. The host handshake and typed
+`{applicationName}/…` lifecycle messages SHALL use
+the name from the entry URL and the resolved host (see "Host origin resolution").
+The adapter SHALL preserve existing wire envelopes, including
+`{ type: "SAVE_SUCCESS", payload: { updatedApp }, hasChanges }` and
+`{ type: "SAVE_ERROR", payload: { error } }`.
 
 - **Ready** — sent once when the editor mounts, before the application has loaded.
 - **HeightChange** — sent whenever QuickApps' rendered content height changes, carrying
@@ -148,9 +161,11 @@ the entry URL, and they SHALL be addressed to the resolved host (see "Host origi
   given application id (see "Application credentials request").
 - **RequestToolsetLogin** / **RequestToolsetLogout** — sent to ask the host to run a
   toolset's login/logout flow on QuickApps' behalf (see `toolsets_login`).
-- **`{applicationName}/readyToSave`** — a plain (non-typed) message sent once the
-  editor session is ready to accept a save trigger from the host.
-- **`{applicationName}/loggedOut`** — a plain (non-typed) message sent when QuickApps
+- **`{applicationName}/readyToInteract`** — a typed lifecycle message sent as part of
+  the host handshake.
+- **`{applicationName}/readyToSave`** — a typed lifecycle message sent once the active
+  authenticated editor generation is ready to accept a save trigger from the host.
+- **`{applicationName}/loggedOut`** — a typed lifecycle message sent when QuickApps
   detects the current session has logged out.
 
 #### Scenario: Rendered content height changes
@@ -175,7 +190,7 @@ the entry URL, and they SHALL be addressed to the resolved host (see "Host origi
 - **THEN** QuickApps SHALL post no save-outcome message for it, except SaveError for a manual
   save that fails validation
 
-#### Scenario: Plain messages use the name from the entry URL
+#### Scenario: Lifecycle messages use the name from the entry URL
 
 - **WHEN** the entry URL carries `applicationName=X` and the editor becomes ready to
   save or the session logs out
@@ -184,9 +199,15 @@ the entry URL, and they SHALL be addressed to the resolved host (see "Host origi
 
 ### Requirement: Inbound message contract
 
-QuickApps SHALL accept the following inbound message types from the host and SHALL
-ignore any message whose origin fails the allowed-origin check (see "Origin
-validation") regardless of its type:
+QuickApps SHALL accept the following inbound message types only after the common
+`readHostEditorMessage` utility verifies the parent window source, the allowed origin,
+and the message shape. It SHALL use the shared protocol parser for save and toolset
+messages, with app-domain validation of `general` and credentials; app-only autosave
+and reset extensions SHALL be validated by the same utility. It SHALL ignore malformed
+known fields and unknown message types without a save, reset, request completion, or
+state update. Optional `general` may be absent; if present it SHALL match the app's
+`TriggerSaveGeneralPayload`. Toolset result credentials and credentials level, if
+present, SHALL match the app's existing domain types.
 
 - **TriggerSave** / **TriggerAutoSave** — instructs QuickApps to save the current
   editor state; QuickApps SHALL treat this as equivalent to a locally-triggered save
@@ -200,23 +221,36 @@ validation") regardless of its type:
 
 #### Scenario: Host requests a save while QuickApps has unsaved changes
 
-- **WHEN** QuickApps receives a TriggerSave or TriggerAutoSave message from an allowed
-  origin, and `application_editing` does not skip the trigger
+- **WHEN** QuickApps receives a TriggerSave or TriggerAutoSave message from its parent at an allowed
+  origin with a valid payload, and `application_editing` does not skip the trigger
 - **THEN** QuickApps SHALL perform a save of the current editor state and report the
   outcome via the outbound save-outcome messages
 
 #### Scenario: Host requests a reset
 
-- **WHEN** QuickApps receives a Reset message from an allowed origin
+- **WHEN** QuickApps receives a valid Reset message from its parent at an allowed origin
 - **THEN** QuickApps SHALL discard in-progress edits and remount the editor form with the
   values loaded when the editor opened, without a chat-api request
 
+#### Scenario: Save trigger omits general metadata
+
+- **WHEN** the parent sends `{ "type": "TRIGGER_SAVE" }` from an allowed origin
+- **THEN** QuickApps SHALL accept the trigger without inventing general metadata
+
+#### Scenario: Known message fields are malformed
+
+- **WHEN** the parent sends a save with malformed general fields, an autosave with a
+  non-boolean `payload.ignoreDirty`, or a toolset result with malformed known fields
+- **THEN** QuickApps SHALL ignore the entire message without side effects
+
 ### Requirement: Origin validation
 
-QuickApps SHALL validate the origin of every inbound message against the configured list of
-allowed origins (`allowedOrigin`, see `app-configuration`) before acting on it. Typed outbound
+QuickApps SHALL require `event.source === window.parent` and validate the origin of every
+inbound message against the configured list of allowed origins (`allowedOrigin`, see
+`app-configuration`) before acting on it. The source requirement SHALL apply even when
+the allowed-origin configuration permits any origin. Typed outbound
 messages SHALL be addressed to each configured allowed origin individually, or to the wildcard
-when the list allows any origin; the host handshake and the plain `{applicationName}/…` messages
+when the list allows any origin; the host handshake and the typed `{applicationName}/…` lifecycle messages
 are addressed to the resolved host instead (see "Host origin resolution").
 
 #### Scenario: Allowed origins are configured as specific origins
@@ -228,15 +262,21 @@ are addressed to the resolved host instead (see "Host origin resolution").
 #### Scenario: Several allowed origins are configured
 
 - **WHEN** more than one specific allowed origin is configured
-- **THEN** QuickApps SHALL accept inbound messages from any of them, and SHALL address
+- **THEN** QuickApps SHALL accept valid inbound parent messages from any of them, and SHALL address
   each outbound message to every configured origin individually, so that only the
   embedding host whose origin matches receives it
 
 #### Scenario: Allowed origin is configured as the wildcard or not configured
 
 - **WHEN** the allowed origins include the wildcard (`*`), or none are configured
-- **THEN** QuickApps SHALL accept inbound messages regardless of origin, and SHALL
+- **THEN** QuickApps SHALL accept valid inbound parent messages regardless of origin, and SHALL
   target outbound messages using the wildcard as well
+
+#### Scenario: Another window uses an allowed origin
+
+- **WHEN** a window other than the embedding parent sends a valid message from an
+  allowed origin, including with wildcard or empty allowed-origin configuration
+- **THEN** QuickApps SHALL discard the message without acting on it
 
 ### Requirement: Application credentials request
 
@@ -251,3 +291,35 @@ the request and the hand-over itself are defined in `application_credentials`.
 - **THEN** QuickApps SHALL post a RequestApplicationCredentials message carrying that
   application id to the allowed origins, per "Origin validation"
 
+### Requirement: Editor readiness belongs to the active authenticated editor
+
+`App` SHALL own readiness for the currently mounted authenticated editor generation.
+Readiness SHALL NOT carry across logout, replacement user, or an editor unmount and
+remount. A readiness callback from a retired generation SHALL have no effect. The
+active generation SHALL send `readyToSave` only after its own model-ready callback,
+at most once per generation and resolved host connection. This introduces no new
+chat-api endpoint or request shape. No new UI, strings/i18n keys, accessibility, or
+RTL behavior is introduced; the bridge is direction-agnostic. Callback/effect
+identities SHALL remain stable while their owning session and connection are unchanged.
+
+#### Scenario: The same user logs out and signs in again
+
+- **WHEN** a ready editor logs out and a new editor mounts after the same user signs in
+- **THEN** QuickApps SHALL report logout and SHALL NOT report the replacement editor
+  ready until that editor reports its own model readiness
+
+#### Scenario: A retired editor reports readiness late
+
+- **WHEN** an editor's saved readiness callback runs after its generation was retired
+- **THEN** QuickApps SHALL NOT mark the active generation ready or emit `readyToSave`
+
+#### Scenario: A different user replaces the current editor
+
+- **WHEN** authentication changes to another user and a replacement editor mounts
+- **THEN** readiness from the previous user SHALL NOT make the new editor ready
+
+#### Scenario: Host details arrive after the current editor becomes ready
+
+- **WHEN** the active editor reports readiness before host details resolve
+- **THEN** QuickApps SHALL send its `readyToSave` once the target is available, provided
+  that editor generation is still active

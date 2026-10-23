@@ -9,7 +9,8 @@ import { DataContextProvider } from '@/context/DataContext';
 import { buildQuickApp2Config } from '@/form/quickApp2Form';
 import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import { QuickApp2Config } from '@/types/quick-apps';
-import { isOriginAllowed, postToHost } from '@/utils/allowed-origins';
+import { postEditorMessage } from '@/utils/post-editor-message';
+import { readHostEditorMessage } from '@/utils/read-host-editor-message';
 import { ForbiddenError } from '@/utils/forbidden-error';
 import { decodeDialPath, fetchDialApp, saveDialApp } from '@/utils/dial-client';
 import { getChatApiErrorMessage } from '@/utils/chat-api-error';
@@ -22,7 +23,6 @@ import {
 import { AUTO_SAVE_INTERVAL_MS } from '@/constants/editor';
 import { AppsEditorI18nKeys } from '@/constants/translation-keys';
 import {
-  InboundMessage,
   InboundMessageType,
   OutboundMessageType,
   TriggerSaveGeneralPayload,
@@ -116,7 +116,7 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
   }, [hasSavedOnce]);
 
   useEffect(() => {
-    postToHost({ type: OutboundMessageType.Ready }, allowedOriginsRef.current);
+    postEditorMessage({ type: OutboundMessageType.Ready }, allowedOriginsRef.current);
 
     let cancelled = false;
     const rawAppId = new URLSearchParams(window.location.search).get('id');
@@ -148,9 +148,8 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
     }
 
     const handleMessage = (event: MessageEvent) => {
-      if (!isOriginAllowed(event.origin, allowedOriginsRef.current)) return;
-      const msg = event.data as InboundMessage;
-      if (!msg?.type) return;
+      const msg = readHostEditorMessage(event, allowedOriginsRef.current);
+      if (!msg) return;
 
       switch (msg.type) {
         case InboundMessageType.TriggerSave:
@@ -195,7 +194,7 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
     const el = formRef.current;
     if (!el) return;
     const ro = new ResizeObserver(() => {
-      postToHost(
+      postEditorMessage(
         {
           type: OutboundMessageType.HeightChange,
           payload: { height: el.scrollHeight },
@@ -296,9 +295,12 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
         setAppState((current) => (current ? { ...current, app: savedApp } : current));
         setHasSavedOnce(true);
         if (isAutoSave) {
-          postToHost({ type: OutboundMessageType.AutoSaveComplete }, allowedOriginsRef.current);
+          postEditorMessage(
+            { type: OutboundMessageType.AutoSaveComplete },
+            allowedOriginsRef.current,
+          );
         } else {
-          postToHost(
+          postEditorMessage(
             {
               type: OutboundMessageType.SaveSuccess,
               payload: { updatedApp },
@@ -311,7 +313,7 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
       } catch (err) {
         // chat-api's own reason when it gave one, else the host's translated save failure.
         const error = (await getChatApiErrorMessage(err)) ?? t(AppsEditorI18nKeys.ErrorSaveFailed);
-        postToHost(
+        postEditorMessage(
           {
             type: OutboundMessageType.SaveError,
             payload: { error },
@@ -327,7 +329,7 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
   const handleDirtyChange = useCallback((isDirty: boolean) => {
     if (isDirtyRef.current !== isDirty) {
       isDirtyRef.current = isDirty;
-      postToHost(
+      postEditorMessage(
         {
           type: OutboundMessageType.DirtyState,
           payload: { isDirty },
@@ -340,7 +342,7 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
   const handleValidityChange = useCallback((isValid: boolean) => {
     if (isValidRef.current !== isValid) {
       isValidRef.current = isValid;
-      postToHost(
+      postEditorMessage(
         {
           type: OutboundMessageType.ValidityState,
           payload: { isValid },
@@ -352,7 +354,7 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
 
   // Tells the host a manual save was rejected before any request, so its Save doesn't wait for a timeout.
   const handleValidationError = useCallback((messages: string[]) => {
-    postToHost(
+    postEditorMessage(
       {
         type: OutboundMessageType.SaveError,
         payload: { error: messages.join('; ') },

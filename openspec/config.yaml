@@ -33,8 +33,9 @@ context: |
     client config) — see src/utils/chat-api-client.ts
   - @epam/ai-dial-ui-kit: Design system base components — use the MCP tools
     (searchEntity/getEntityDetails), never grep/glob, to discover components
-  - @epam/ai-dial-chat-visualizer-connector: postMessage handshake with the
-    admin/chat host (ChatVisualizerConnector)
+  - @epam/ai-dial-visualizer-connector: pinned 1.3.0-dev.163; typed editor lifecycle
+    (AppsEditorClient), shared protocol parsing/types, and legacy Admin handshake
+    (ChatVisualizerConnector). App adapters preserve Admin envelopes and allowed-origin fan-out.
   - @epam/ai-dial-react-file-manager: context-files UI
   - @tabler/icons-react: Icon set
   - react-i18next / i18next: Internationalisation

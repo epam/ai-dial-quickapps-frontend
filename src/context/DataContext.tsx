@@ -27,7 +27,7 @@ import {
   fetchDialSkills,
   fetchDialToolsets,
 } from '@/utils/dial-client';
-import { isOriginAllowed } from '@/utils/allowed-origins';
+import { readHostEditorMessage } from '@/utils/read-host-editor-message';
 import { getChatApiErrorMessage } from '@/utils/chat-api-error';
 import { fetchFavoriteIds } from '@/utils/user-config';
 
@@ -255,15 +255,13 @@ export const DataContextProvider = ({ children }: DataContextProviderProps) => {
   // elsewhere in the host and is ignored by the reducer.
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (!isOriginAllowed(event.origin, settings.allowedOrigins)) return;
-
-      const msg = event.data as { type?: string } & Partial<ToolsetAuthResultPayload>;
+      const msg = readHostEditorMessage(event, settings.allowedOrigins);
       if (msg?.type !== InboundMessageType.ToolsetLoginResult) return;
-      if (!msg.success || !msg.toolsetId) return;
+      if (!msg.success) return;
 
       dispatch({
         type: 'TOOLSET_AUTH_RESULT_APPLIED',
-        payload: msg as ToolsetAuthResultPayload,
+        payload: msg,
         fallbackStatus: ToolsetAuthStatus.SignedIn,
       });
     };

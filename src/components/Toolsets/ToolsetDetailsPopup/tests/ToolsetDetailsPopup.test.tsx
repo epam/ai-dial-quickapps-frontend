@@ -160,7 +160,7 @@ const click = async (element?: HTMLElement) => {
 
 const postFromHost = async (data: unknown, origin = HOST) => {
   await act(async () => {
-    window.dispatchEvent(new MessageEvent('message', { data, origin }));
+    window.dispatchEvent(new MessageEvent('message', { data, origin, source: window.parent }));
     await flush();
   });
 };
