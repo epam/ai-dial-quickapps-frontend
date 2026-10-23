@@ -21,17 +21,19 @@ interface LoadedSettings {
 
 interface AuthenticatedEditorProps {
   settings: AppSettings;
-  client: AppsEditorClient | null;
+  // A callback, not the client: React dev tools diff props deeply, and the client holds the
+  // cross-origin host `Window`, which throws a SecurityError and aborts the commit's effects.
+  onSendReadyToSave: () => void;
 }
 
 // Readiness belongs to this mounted editor, not to a user id that can log in again.
-const AuthenticatedEditor: FC<AuthenticatedEditorProps> = ({ settings, client }) => {
+const AuthenticatedEditor: FC<AuthenticatedEditorProps> = ({ settings, onSendReadyToSave }) => {
   const [isModelReady, setIsModelReady] = useState(false);
   const handleReadyToSave = useCallback(() => setIsModelReady(true), []);
 
   useEffect(() => {
-    if (isModelReady) client?.sendReadyToSave();
-  }, [isModelReady, client]);
+    if (isModelReady) onSendReadyToSave();
+  }, [isModelReady, onSendReadyToSave]);
 
   return <EditorClient settings={settings} onReadyToSave={handleReadyToSave} />;
 };
@@ -114,6 +116,9 @@ const HomePageContent: FC = () => {
     if (status === AuthStatus.Unauthenticated) editorClient?.sendLoggedOut();
   }, [status, editorClient]);
 
+  // Changes identity when the client appears, so a model that got ready first still reports.
+  const sendReadyToSave = useCallback(() => editorClient?.sendReadyToSave(), [editorClient]);
+
   const hasProviderMismatch = Boolean(user?.providerId && provider && user.providerId !== provider);
 
   if (status === AuthStatus.Loading || hasProviderMismatch) {
@@ -124,7 +129,11 @@ const HomePageContent: FC = () => {
     // Settings loaded while signed out (or for another user) are not this user's.
     if (loadedSettings?.userSub !== userSub) return <FullScreenSpinner />;
     return (
-      <AuthenticatedEditor key={userSub} settings={loadedSettings.settings} client={editorClient} />
+      <AuthenticatedEditor
+        key={userSub}
+        settings={loadedSettings.settings}
+        onSendReadyToSave={sendReadyToSave}
+      />
     );
   }
 
