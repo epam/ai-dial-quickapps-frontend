@@ -8,12 +8,9 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { type DialToolset, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
-import {
-  InboundMessageType,
-  OutboundMessageType,
-  type ToolsetAuthResultPayload,
-} from '@/types/editor-messages';
-import { isOriginAllowed, postToHost } from '@/utils/allowed-origins';
+import { InboundMessageType, OutboundMessageType } from '@/types/editor-messages';
+import { postEditorMessage } from '@/utils/post-editor-message';
+import { readHostEditorMessage } from '@/utils/read-host-editor-message';
 import { isPublicToolsetId } from '@/utils/api';
 import { toolsetsApi } from '@/utils/chat-api-client';
 import { encodeDialPath } from '@/utils/dial-client';
@@ -26,7 +23,8 @@ const credentialsLevelFor = (toolsetId: string): ToolsetLoginBodyDtoCredentialsL
 
 /** A host round trip waiting for its result message. */
 interface PendingHostRequest {
-  type: InboundMessageType.ToolsetLoginResult | InboundMessageType.ToolsetLogoutResult;
+  type:
+    typeof InboundMessageType.ToolsetLoginResult | typeof InboundMessageType.ToolsetLogoutResult;
   resolve: () => void;
 }
 
@@ -61,9 +59,7 @@ export const useToolsetCredentials = (toolset?: DialToolset): UseToolsetCredenti
     if (!isOAuth) return undefined;
 
     const handleMessage = (event: MessageEvent) => {
-      if (!isOriginAllowed(event.origin, settings.allowedOrigins)) return;
-
-      const msg = event.data as { type?: string } & Partial<ToolsetAuthResultPayload>;
+      const msg = readHostEditorMessage(event, settings.allowedOrigins);
       const pending = pendingRef.current;
       if (pending == null || msg?.type !== pending.type || msg.toolsetId !== toolsetId) return;
       pendingRef.current = null;
@@ -72,7 +68,7 @@ export const useToolsetCredentials = (toolset?: DialToolset): UseToolsetCredenti
         // Trust the host's own report of the fresh auth status instead of
         // re-fetching the toolsets, which can lag right after a login.
         applyToolsetAuthResult(
-          msg as ToolsetAuthResultPayload,
+          msg,
           pending.type === InboundMessageType.ToolsetLoginResult
             ? ToolsetAuthStatus.SignedIn
             : ToolsetAuthStatus.SignedOut,
@@ -87,12 +83,14 @@ export const useToolsetCredentials = (toolset?: DialToolset): UseToolsetCredenti
 
   const requestFromHost = useCallback(
     (
-      outbound: OutboundMessageType.RequestToolsetLogin | OutboundMessageType.RequestToolsetLogout,
+      outbound:
+        | typeof OutboundMessageType.RequestToolsetLogin
+        | typeof OutboundMessageType.RequestToolsetLogout,
       inbound: PendingHostRequest['type'],
     ) =>
       new Promise<void>((resolve) => {
         pendingRef.current = { type: inbound, resolve };
-        postToHost({ type: outbound, toolsetId }, settings.allowedOrigins);
+        postEditorMessage({ type: outbound, toolsetId }, settings.allowedOrigins);
       }),
     [settings.allowedOrigins, toolsetId],
   );

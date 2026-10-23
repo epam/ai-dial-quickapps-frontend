@@ -1,5 +1,5 @@
 import { act, type FC } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   useToolsetCredentials,
@@ -11,8 +11,7 @@ import { type DialToolset, ToolsetAuthStatus, ToolsetAuthType } from '@/types/di
 
 const HOST = 'https://host';
 
-const { postToHost, toolsetsApi, dataContext } = vi.hoisted(() => ({
-  postToHost: vi.fn(),
+const { toolsetsApi, dataContext } = vi.hoisted(() => ({
   toolsetsApi: { loginToolset: vi.fn(), logoutToolset: vi.fn() },
   dataContext: { applyToolsetAuthResult: vi.fn(), refreshToolsets: vi.fn() },
 }));
@@ -21,10 +20,6 @@ vi.mock('@/context/AppContext', () => ({
   useAppContext: () => ({ settings: { allowedOrigins: [HOST] } }),
 }));
 vi.mock('@/context/DataContext', () => ({ useDataContext: () => dataContext }));
-vi.mock('@/utils/allowed-origins', () => ({
-  postToHost,
-  isOriginAllowed: (origin: string, allowed: string[] = []) => allowed.includes(origin),
-}));
 vi.mock('@/utils/chat-api-client', () => ({ toolsetsApi }));
 vi.mock('@/utils/dial-client', () => ({ encodeDialPath: (id: string) => id }));
 
@@ -50,6 +45,7 @@ const PRIVATE_API_KEY: DialToolset = {
 };
 
 let latest: UseToolsetCredentialsResult;
+let postMessage: ReturnType<typeof vi.spyOn>;
 const dom = setupTestRoot();
 
 const Probe: FC<{ toolset?: DialToolset }> = ({ toolset }) => {
@@ -61,9 +57,13 @@ const render = async (toolset?: DialToolset) => {
   await act(async () => dom.root.render(<Probe toolset={toolset} />));
 };
 
-const postFromHost = async (data: unknown, origin = HOST) => {
+const postFromHost = async (
+  data: unknown,
+  origin = HOST,
+  source: MessageEventSource | null = window.parent,
+) => {
   await act(async () => {
-    window.dispatchEvent(new MessageEvent('message', { data, origin }));
+    window.dispatchEvent(new MessageEvent('message', { data, origin, source }));
   });
 };
 
@@ -76,6 +76,11 @@ const track = (promise: Promise<void>) => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  postMessage = vi.spyOn(window.parent, 'postMessage').mockImplementation(() => {});
+});
+
+afterEach(() => {
+  postMessage.mockRestore();
 });
 
 describe('useToolsetCredentials — OAuth through the host', () => {
@@ -87,9 +92,9 @@ describe('useToolsetCredentials — OAuth through the host', () => {
       login = track(latest.onLogin({}));
     });
 
-    expect(postToHost).toHaveBeenCalledWith(
+    expect(postMessage).toHaveBeenCalledWith(
       { type: 'REQUEST_TOOLSET_LOGIN', toolsetId: OAUTH.id },
-      [HOST],
+      HOST,
     );
     expect(login.isSettled).toBe(false);
 
@@ -133,6 +138,81 @@ describe('useToolsetCredentials — OAuth through the host', () => {
     expect(dataContext.applyToolsetAuthResult).not.toHaveBeenCalled();
   });
 
+  it('keeps a login pending when another window sends a matching result', async () => {
+    await render(OAUTH);
+    const foreignFrame = document.createElement('iframe');
+    dom.container.append(foreignFrame);
+    let login = { isSettled: false };
+    await act(async () => {
+      login = track(latest.onLogin({}));
+    });
+    const result = { type: 'TOOLSET_LOGIN_RESULT', toolsetId: OAUTH.id, success: true };
+
+    await postFromHost(result, HOST, foreignFrame.contentWindow);
+
+    expect(login.isSettled).toBe(false);
+    expect(dataContext.applyToolsetAuthResult).not.toHaveBeenCalled();
+
+    await postFromHost(result);
+    expect(login.isSettled).toBe(true);
+    expect(dataContext.applyToolsetAuthResult).toHaveBeenCalledTimes(1);
+    expect(dataContext.refreshToolsets).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { success: undefined },
+    { success: 'true' },
+    { reason: { message: 'access denied' } },
+    { credentialsLevel: 'ADMIN' },
+    { credentials: { authenticationType: ToolsetAuthType.OAuth, userStatus: 1 } },
+    { credentials: { authenticationType: 'unknown' } },
+  ])('does not consume a pending login for malformed result fields: %j', async (fields) => {
+    await render(OAUTH);
+    let login = { isSettled: false };
+    await act(async () => {
+      login = track(latest.onLogin({}));
+    });
+    const result = { type: 'TOOLSET_LOGIN_RESULT', toolsetId: OAUTH.id, success: true };
+
+    await postFromHost({ ...result, ...fields });
+
+    expect(login.isSettled).toBe(false);
+    expect(dataContext.applyToolsetAuthResult).not.toHaveBeenCalled();
+
+    await postFromHost(result);
+    expect(login.isSettled).toBe(true);
+    expect(dataContext.applyToolsetAuthResult).toHaveBeenCalledTimes(1);
+    expect(dataContext.refreshToolsets).not.toHaveBeenCalled();
+  });
+
+  it('applies validated host credentials unchanged before resolving the request', async () => {
+    await render(OAUTH);
+    let login = { isSettled: false };
+    await act(async () => {
+      login = track(latest.onLogin({}));
+    });
+    const result = {
+      type: 'TOOLSET_LOGIN_RESULT',
+      toolsetId: OAUTH.id,
+      success: true,
+      credentialsLevel: 'USER',
+      credentials: {
+        authenticationType: ToolsetAuthType.OAuth,
+        userStatus: ToolsetAuthStatus.SignedIn,
+        isPublic: true,
+      },
+    };
+
+    await postFromHost(result);
+
+    expect(dataContext.applyToolsetAuthResult).toHaveBeenCalledWith(
+      result,
+      ToolsetAuthStatus.SignedIn,
+    );
+    expect(login.isSettled).toBe(true);
+    expect(dataContext.refreshToolsets).not.toHaveBeenCalled();
+  });
+
   it('logs out through the host', async () => {
     await render(OAUTH);
 
@@ -141,9 +221,9 @@ describe('useToolsetCredentials — OAuth through the host', () => {
     });
     await postFromHost({ type: 'TOOLSET_LOGOUT_RESULT', toolsetId: OAUTH.id, success: true });
 
-    expect(postToHost).toHaveBeenCalledWith(
+    expect(postMessage).toHaveBeenCalledWith(
       { type: 'REQUEST_TOOLSET_LOGOUT', toolsetId: OAUTH.id },
-      [HOST],
+      HOST,
     );
     expect(dataContext.applyToolsetAuthResult).toHaveBeenCalledWith(
       expect.anything(),
@@ -159,7 +239,7 @@ describe('useToolsetCredentials — API key through chat-api', () => {
 
     await act(async () => latest.onLogin({ apiKey: 'secret' }));
 
-    expect(postToHost).not.toHaveBeenCalled();
+    expect(postMessage).not.toHaveBeenCalled();
     expect(toolsetsApi.loginToolset).toHaveBeenCalledWith({
       toolsetName: PRIVATE_API_KEY.id,
       toolsetLoginBodyDto: {
