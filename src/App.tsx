@@ -1,5 +1,5 @@
-import { ChatVisualizerConnector } from '@epam/ai-dial-chat-visualizer-connector';
-import { FC, memo, Suspense, useEffect, useRef, useState } from 'react';
+import { AppsEditorClient, ChatVisualizerConnector } from '@epam/ai-dial-visualizer-connector';
+import { FC, memo, Suspense, useCallback, useEffect, useState } from 'react';
 
 import AuthError from '@/components/AuthError/AuthError';
 import EditorClient from '@/components/EditorClient/EditorClient';
@@ -11,12 +11,30 @@ import { AuthErrorReason, AuthProviderInfo, AuthStatus } from '@/types/auth';
 import { AppSettings } from '@/types/dial-entities';
 import { getAuthProviders } from '@/utils/auth-api';
 import { fetchAppSettings } from '@/utils/dial-client';
+import { getEditorHostOrigin } from '@/utils/get-editor-host-origin';
 
 // The settings and the user they were loaded for (`null` = signed out).
 interface LoadedSettings {
   userSub: string | null;
   settings: AppSettings;
 }
+
+interface AuthenticatedEditorProps {
+  settings: AppSettings;
+  client: AppsEditorClient | null;
+}
+
+// Readiness belongs to this mounted editor, not to a user id that can log in again.
+const AuthenticatedEditor: FC<AuthenticatedEditorProps> = ({ settings, client }) => {
+  const [isModelReady, setIsModelReady] = useState(false);
+  const handleReadyToSave = useCallback(() => setIsModelReady(true), []);
+
+  useEffect(() => {
+    if (isModelReady) client?.sendReadyToSave();
+  }, [isModelReady, client]);
+
+  return <EditorClient settings={settings} onReadyToSave={handleReadyToSave} />;
+};
 
 const HomePageContent: FC = () => {
   const searchParams = useSearchParams();
@@ -25,9 +43,7 @@ const HomePageContent: FC = () => {
   const { status, user, logout } = useAuthContext();
   const [providers, setProviders] = useState<AuthProviderInfo[] | null>(null);
   const [loadedSettings, setLoadedSettings] = useState<LoadedSettings | null>(null);
-  const [isModelReady, setIsModelReady] = useState(false);
-  const chatVisualizerConnector = useRef<ChatVisualizerConnector | null>(null);
-  const connectorTargetRef = useRef<{ host: string; applicationName: string } | null>(null);
+  const [editorClient, setEditorClient] = useState<AppsEditorClient | null>(null);
 
   useEffect(() => {
     const loadProviders = async () => {
@@ -69,70 +85,34 @@ const HomePageContent: FC = () => {
   // Keyed on the host keys, not the settings object, so reloading the settings
   // after sign-in does not repeat the handshake.
   const { dialAdminHost, dialChatHost } = loadedSettings?.settings ?? {};
+  const hostOrigin = getEditorHostOrigin(
+    { dialAdminHost, dialChatHost },
+    document.location.ancestorOrigins?.[0],
+  );
   useEffect(() => {
-    if (chatVisualizerConnector.current) return;
-    if (!(dialAdminHost || dialChatHost) || !applicationName) {
+    if (!hostOrigin || !applicationName) {
+      setEditorClient(null);
       return;
     }
 
-    // `??` would treat an explicitly-empty `dialAdminHost` (e.g. unset in
-    // CUSTOM_CLIENT_VARIABLES) as "present", leaving `host` as '' and
-    // breaking postMessage's target-origin validation — `||` correctly
-    // falls through to `dialChatHost` for that case too.
-    let host = dialAdminHost || dialChatHost;
-    if (dialChatHost && dialChatHost === document.location.ancestorOrigins?.[0]) {
-      host = dialChatHost;
-    }
-    chatVisualizerConnector.current = new ChatVisualizerConnector(
-      host as string,
-      applicationName,
-      () => {},
-    );
-    connectorTargetRef.current = { host: host as string, applicationName };
-    chatVisualizerConnector.current.sendReady();
-    chatVisualizerConnector.current.sendReadyToInteract();
+    const client = new AppsEditorClient({ hostOrigin, applicationName });
+    const visualizer = new ChatVisualizerConnector(hostOrigin, applicationName, () => {});
+    visualizer.sendReady();
+    visualizer.sendReadyToInteract();
+    client.sendReadyToInteract();
+    setEditorClient(client);
 
     return () => {
-      chatVisualizerConnector.current?.destroy();
-      chatVisualizerConnector.current = null;
-      connectorTargetRef.current = null;
+      client.destroy();
+      visualizer.destroy();
     };
-  }, [dialAdminHost, dialChatHost, applicationName]);
-
-  // Sent once the editor's own model state has finished loading and is safe
-  // to save. Mirrors the same host/appName targeting as sendReadyToInteract,
-  // but posts directly since `readyToSave` isn't part of the connector's
-  // typed event set.
-  //
-  // The model can finish loading before the connector (which waits on the
-  // host keys) exists, so this can't fire-and-forget on model-ready alone —
-  // it re-checks whenever either the model becomes ready or the connector
-  // target becomes available, whichever happens second.
-  useEffect(() => {
-    if (!isModelReady) return;
-    const target = connectorTargetRef.current;
-    if (!target) {
-      return;
-    }
-    window.parent.postMessage({ type: `${target.applicationName}/readyToSave` }, target.host);
-  }, [isModelReady, dialAdminHost, dialChatHost]);
+  }, [hostOrigin, applicationName]);
 
   // Sent when the user is signed out (session ended or errored) so the host
   // knows to show its own logged-out handling instead of an idle iframe.
-  // Uses the same manual-postMessage approach as readyToSave above, for the
-  // same reason: it isn't part of the connector's typed event set.
   useEffect(() => {
-    if (status !== AuthStatus.Unauthenticated) return;
-    const target = connectorTargetRef.current;
-    if (!target) {
-      return;
-    }
-    window.parent.postMessage({ type: `${target.applicationName}/loggedOut` }, target.host);
-  }, [status, dialAdminHost, dialChatHost]);
-
-  const handleReadyToSave = () => {
-    setIsModelReady(true);
-  };
+    if (status === AuthStatus.Unauthenticated) editorClient?.sendLoggedOut();
+  }, [status, editorClient]);
 
   const hasProviderMismatch = Boolean(user?.providerId && provider && user.providerId !== provider);
 
@@ -143,7 +123,9 @@ const HomePageContent: FC = () => {
   if (status === AuthStatus.Authenticated) {
     // Settings loaded while signed out (or for another user) are not this user's.
     if (loadedSettings?.userSub !== userSub) return <FullScreenSpinner />;
-    return <EditorClient settings={loadedSettings.settings} onReadyToSave={handleReadyToSave} />;
+    return (
+      <AuthenticatedEditor key={userSub} settings={loadedSettings.settings} client={editorClient} />
+    );
   }
 
   if (provider == null) {

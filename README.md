@@ -212,7 +212,7 @@ These don't map onto a native chat-api concept, so they travel inside `CUSTOM_CL
 | Key                      | Required | Description                                                                                                                                                                                                                                                    |
 | ------------------------ | :------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `allowedOrigin`          |    No    | Origin(s) allowed to send/receive `postMessage` events with the editor iframe: one origin, a comma-separated list, or a JSON array. Set to the exact `ai-dial-chat`/admin origins in production; `*` (or unset) accepts any origin — unsafe outside local dev. |
-| `dialAdminHost`          |    No    | Origin of the admin host this app is embedded in. Default target for `@epam/ai-dial-chat-visualizer-connector`.                                                                                                                                                |
+| `dialAdminHost`          |    No    | Origin of the admin host this app is embedded in. Default target for editor lifecycle and legacy Admin handshakes.                                                                                                                                             |
 | `dialChatHost`           |    No    | Origin of the `ai-dial-chat` host. Used instead of `dialAdminHost` when the app detects it's embedded directly inside chat (`document.location.ancestorOrigins[0]` matches this value).                                                                        |
 | `codeInterpreterEnabled` |    No    | Boolean. Offers the Code interpreter setting (read as `isCodeInterpreterEnabled`); off when unset.                                                                                                                                                             |
 | `webFetchEnabled`        |    No    | Boolean. Offers the Web fetch setting (read as `isWebFetchEnabled`); off when unset.                                                                                                                                                                           |
@@ -266,13 +266,24 @@ and redeploy it.
 
 ## postMessage protocol
 
-The editor page (at `/`) communicates with its host via `postMessage`. Both sides validate
-`event.origin` against `allowedOrigin` (see [Configuration](#configuration)).
+The editor page (at `/`) accepts `postMessage` commands only from its embedding parent
+window, after validating `event.origin` against `allowedOrigin` (see
+[Configuration](#configuration)) and checking the message fields.
 
-In Dev mode the messages can be sent via console, e.g.
+QuickApps pins `@epam/ai-dial-visualizer-connector@1.3.0-dev.163`, replacing
+`@epam/ai-dial-chat-visualizer-connector`. Its `AppsEditorClient` reports editor lifecycle
+to Chat; `ChatVisualizerConnector` from the same package retains the uppercase Admin
+handshake. Existing save payloads and multiple-origin/wildcard configuration are preserved;
+no host configuration or data migration is needed. See the normative
+[host-integration spec](openspec/specs/host-integration/spec.md) for the complete contract.
 
-```
-document.querySelector('iframe').contentWindow.postMessage({ type: 'TRIGGER_SAVE' }, '*')
+For local debugging, run this in the **embedding parent page's** browser console,
+with the iframe pointing to QuickApps and its parent origin allowed by the editor:
+
+```js
+const editorFrame = document.querySelector('iframe');
+const editorOrigin = new URL(editorFrame.src, window.location.href).origin;
+editorFrame.contentWindow.postMessage({ type: 'TRIGGER_SAVE' }, editorOrigin);
 ```
 
 **Host → iframe**
