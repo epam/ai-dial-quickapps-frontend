@@ -2,12 +2,12 @@ import {
   DIAL_ICON_SIZE,
   DIAL_KIT_ICON_STROKE,
   ElementSize,
+  FormSection,
   NeutralButton,
 } from '@epam/ai-dial-ui-kit';
 import { IconPlus } from '@tabler/icons-react';
 import { FC, MouseEvent, ReactNode } from 'react';
 
-import { SectionRow } from '@/components/common/SectionRow/SectionRow';
 import { ButtonsI18nKeys } from '@/constants/translation-keys';
 import { useTranslation } from 'react-i18next';
 
@@ -42,7 +42,7 @@ export const AddOnRow: FC<AddOnRowProps> = ({
   };
 
   return (
-    <SectionRow
+    <FormSection
       title={label}
       description={isEmpty ? emptyDescription : undefined}
       action={
@@ -59,6 +59,6 @@ export const AddOnRow: FC<AddOnRowProps> = ({
       }
     >
       {children}
-    </SectionRow>
+    </FormSection>
   );
 };

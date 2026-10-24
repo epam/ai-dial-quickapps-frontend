@@ -4,9 +4,6 @@ import { FC, memo, useCallback, useState } from 'react';
 import { ApplicationEditorI18nKeys, BasicI18nKeys } from '@/constants/translation-keys';
 import { useTranslation } from 'react-i18next';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
-import { SectionRowVariant } from '@/types/section-row';
-
-import { SectionRow } from '@/components/common/SectionRow/SectionRow';
 
 import AdvancedSettingsPopup from '../AdvancedSettingsPopup/AdvancedSettingsPopup';
 
@@ -17,6 +14,8 @@ import {
   DIAL_ICON_SIZE,
   DIAL_KIT_ICON_STROKE,
   ElementSize,
+  FormSection,
+  FormSectionVariant,
 } from '@epam/ai-dial-ui-kit';
 
 export interface SettingsSectionProps {
@@ -40,9 +39,10 @@ const SettingsSection: FC<SettingsSectionProps> = ({ onAdvancedSettingsSave, ...
 
   return (
     <>
-      <SectionRow
+      <FormSection
         title={t(BasicI18nKeys.Settings)}
-        variant={SectionRowVariant.Caption}
+        variant={FormSectionVariant.Caption}
+        titleClassName="text-secondary"
         action={
           <Button
             label={t(ApplicationEditorI18nKeys.AdvancedSettingsAdvanced)}
