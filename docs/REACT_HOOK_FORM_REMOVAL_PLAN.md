@@ -1,6 +1,6 @@
 # React Hook Form Removal Plan
 
-**Status:** Source migration complete; dependencies removed; only the host-flow check (6.2) and archiving remain (see [Current state](#current-state-2026-10-23) below).
+**Status:** Source migration complete; complete; only archiving the OpenSpec change remains (see [Current state](#current-state-2026-10-23) below).
 
 **OpenSpec change:** [`openspec/changes/remove-react-hook-form/`](../openspec/changes/remove-react-hook-form/)
 
@@ -271,3 +271,7 @@ Steps 1 to 3 fit in one small PR; step 4 is a manual gate before merge.
 ### Update (2026-10-23, later)
 
 `react-hook-form` and `@hookform/resolvers` are uninstalled and the lockfile regenerated; stale mentions in `AGENTS.md`, `openspec/config.yaml`, `docs/TECH_DEBT.md` and the migration guide are fixed. Tasks 4.2, 4.3, 5.1 and 5.2 are ticked. Remaining: 5.3 sign-off, 6.1 build record, 6.2 host-flow check.
+
+### Final (2026-10-24)
+
+Tasks 5.3, 6.1 and 6.2 are done: typecheck, lint, build and the test suite pass (977/977 without coverage), and save/dirty/autosave/reset were verified manually against a live host. Only archiving `remove-react-hook-form` remains. Known unrelated flake: two `FileManagerModal` selection tests fail under `npm test` (coverage) but pass alone.
