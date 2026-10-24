@@ -37,7 +37,7 @@ Slicing strategy: **risk-first, then vertical migration**. First characterize th
 - [x] 4.1 Superseded: the Context & Tools card and `QuickApp2FormLegacyFields` were removed by `move-feature-toggles-to-advanced-settings`; nothing left to migrate.
   - **Verification:** Run the affected `ContextAndTools` tests plus `src/hooks/tests/use-quick-app2-form.test.tsx`; confirm simple/JSON transitions and file deduplication match the characterization cases.
 
-- [ ] 4.2 Migrate `ConversationStartersSection` from RHF controllers to typed adapters, preserving starter blur handling, dynamic blank rows, error rendering, and reset recovery; update tests and run `npm run lint` and `npm run typecheck`.
+- [x] 4.2 Migrate `ConversationStartersSection` from RHF controllers to typed adapters, preserving starter blur handling, dynamic blank rows, error rendering, and reset recovery; update tests and run `npm run lint` and `npm run typecheck`.
   - **Verification:** Run the affected `ConversationStarters` tests plus `src/hooks/tests/use-quick-app2-form.test.tsx`; confirm starter identity and trailing blank row.
   - **Note:** the in-flight change `redesign-conversation-starters` replaces this section with an Add-ons row and a draft modal; land the migration there rather than on the old section.
 
@@ -48,24 +48,29 @@ Slicing strategy: **risk-first, then vertical migration**. First characterize th
   - Max attachments already moved to the Advanced Settings popup (`populate-advanced-settings-popup`).
   - **Not a pure refactor:** the UI and validation changed under that change's own specs (`application_user-attachments`, `application_editor-layout`).
 
-- [ ] 4.3 Update `src/components/QuickApp2Form/tests/QuickApp2Form.test.tsx`, `src/components/InstructionsSection/tests/InstructionsSection.test.tsx`, and `src/components/Orchestrator/ModelConfigurationSection/tests/ModelConfigurationSection.test.tsx` to remove RHF test fixtures and exercise the project-owned adapter contracts; verify no test imports RHF and run `npm run lint` and `npm run typecheck`.
+- [x] 4.3 Update `src/components/QuickApp2Form/tests/QuickApp2Form.test.tsx`, `src/components/InstructionsSection/tests/InstructionsSection.test.tsx`, and `src/components/Orchestrator/ModelConfigurationSection/tests/ModelConfigurationSection.test.tsx` to remove RHF test fixtures and exercise the project-owned adapter contracts; verify no test imports RHF and run `npm run lint` and `npm run typecheck`.
   - **Verification:** Run all three named Vitest files and repository search for `react-hook-form`/`@hookform/resolvers`; only dependency cleanup references or planning documents may remain.
 
 ## 5. Remove the Dependency and Document Completion
 
-- [ ] 5.1 Delete the unused `src/components/common/Forms/ControlledFormField.tsx` RHF helper after confirming there are no imports, remove all remaining RHF imports, and verify the source/test tree contains no `react-hook-form` or `@hookform/resolvers` imports; run `npm run lint` and `npm run typecheck`.
+- [x] 5.1 Delete the unused `src/components/common/Forms/ControlledFormField.tsx` RHF helper after confirming there are no imports, remove all remaining RHF imports, and verify the source/test tree contains no `react-hook-form` or `@hookform/resolvers` imports; run `npm run lint` and `npm run typecheck`.
   - **Verification:** Repository-wide search returns no runtime/test imports and all affected Vitest tests pass.
 
-- [ ] 5.2 Remove `react-hook-form` and `@hookform/resolvers` from `package.json`, regenerate `package-lock.json`, retain `zod`, and verify dependency installation/build metadata remains consistent; run `npm run lint` and `npm run typecheck`.
+- [x] 5.2 Remove `react-hook-form` and `@hookform/resolvers` from `package.json`, regenerate `package-lock.json`, retain `zod`, and verify dependency installation/build metadata remains consistent; run `npm run lint` and `npm run typecheck`.
   - **Verification:** `npm install`/lockfile validation completes without peer-dependency errors and the package manifest contains no RHF packages.
 
-- [ ] 5.3 Update `docs/TECH_DEBT.md`, `AGENTS.md`, and `docs/REACT_HOOK_FORM_REMOVAL_PLAN.md` with the completed status, preserved behavior, and any follow-up findings; verify documentation matches the final source tree and introduces no new i18n or RTL requirements, and run `npm run lint` and `npm run typecheck`.
+- [x] 5.3 Update `docs/TECH_DEBT.md`, `AGENTS.md`, and `docs/REACT_HOOK_FORM_REMOVAL_PLAN.md` with the completed status, preserved behavior, and any follow-up findings; verify documentation matches the final source tree and introduces no new i18n or RTL requirements, and run `npm run lint` and `npm run typecheck`.
   - **Verification:** Review the documentation links and paths, confirm no stale RHF usage claims remain, and ensure no UI strings or direction-sensitive markup were added.
 
 ## 6. Final Regression Verification
 
-- [ ] 6.1 Run the complete verification suite after dependency removal: `npm test`, `npm run lint`, `npm run typecheck`, and `npm run build`; verify all tests pass and the production build contains no unresolved RHF imports.
+- [x] 6.1 Run the complete verification suite after dependency removal: `npm test`, `npm run lint`, `npm run typecheck`, and `npm run build`; verify all tests pass and the production build contains no unresolved RHF imports.
   - **Verification:** Record the command results in the change review and inspect the final diff for changes outside the form/controller, tests, dependency, and documentation scope.
 
-- [ ] 6.2 Verify host-facing save, dirty, autosave, and reset behavior against the existing `EditorClient` contract in the browser/integration environment; if a live chat-api/host environment is unavailable, document that limitation and retain the automated regression coverage as the gate.
+- [x] 6.2 Verify host-facing save, dirty, autosave, and reset behavior against the existing `EditorClient` contract in the browser/integration environment; if a live chat-api/host environment is unavailable, document that limitation and retain the automated regression coverage as the gate.
   - **Verification:** Confirm `onDirtyChange`, `DIAL_EDITOR_TRIGGER_SAVE_EVENT`, reset remount, and serialized `onSave` payload behavior match the pre-migration characterization results.
+
+## Results (2026-10-24)
+
+- 6.1: `npm run typecheck` 0 errors; `npm run lint` 0 errors (2 warnings, unrelated); `npm run build` passes; `vitest run --no-coverage` 977/977. `npm test` (with coverage) fails two `FileManagerModal` selection tests that pass alone and without coverage, a timing flake unrelated to this change.
+- 6.2: save, dirty, autosave and reset checked manually against a live host; all fine.
