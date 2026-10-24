@@ -1,8 +1,8 @@
 # React Hook Form Removal Plan
 
-**Status:** Source migration complete; complete; only archiving the OpenSpec change remains (see [Current state](#current-state-2026-10-23) below).
+**Status:** Complete. The OpenSpec change is archived.
 
-**OpenSpec change:** [`openspec/changes/remove-react-hook-form/`](../openspec/changes/remove-react-hook-form/)
+**OpenSpec change:** [`openspec/changes/archive/2026-10-24-remove-react-hook-form/`](../openspec/changes/archive/2026-10-24-remove-react-hook-form/)
 
 ## Objective
 
@@ -181,7 +181,7 @@ Avoid independent `useState` per field. Correlated updates—toolset transitions
 
 ## Next steps
 
-The detailed OpenSpec artifacts are in `openspec/changes/remove-react-hook-form/`:
+The detailed OpenSpec artifacts are in `openspec/changes/archive/2026-10-24-remove-react-hook-form/`:
 
 - `proposal.md` — motivation, scope, impact, alternatives, and acceptance criteria.
 - `design.md` — reducer/controller design, migration strategy, risks, and test matrix.
@@ -192,7 +192,7 @@ Implementation should proceed only after reviewing the proposal and design. Star
 
 ## Status history (paused, then superseded)
 
-Work is paused after task 3 of `openspec/changes/remove-react-hook-form/tasks.md`. Resume from task 4.1.
+Work is paused after task 3 of `openspec/changes/archive/2026-10-24-remove-react-hook-form/tasks.md`. Resume from task 4.1.
 
 Done:
 
@@ -220,7 +220,7 @@ Next: 4.1 `ContextAndToolsSection` (uses the controller actions `setAgentIds`, `
 
 ### Update after `move-attachments-to-settings` (2026-10-07)
 
-User attachments are off RHF. This is tracked as task 4.4 in `openspec/changes/remove-react-hook-form/tasks.md`, and was done in change `move-attachments-to-settings` (#199):
+User attachments are off RHF. This is tracked as task 4.4 in `openspec/changes/archive/2026-10-24-remove-react-hook-form/tasks.md`, and was done in change `move-attachments-to-settings` (#199):
 
 - `UserAttachmentsSection` is deleted. Attachment types now live in an Attachments row in Configuration (`src/components/Attachments/AttachmentsSection/AttachmentsSection.tsx`), driven by `useQuickApp2Form`:
   - `inputAttachmentTypes`;
@@ -246,7 +246,7 @@ Verified against the tree on `development` (`8cd5279`):
 - Stale mentions to fix: `AGENTS.md:16` (`form/` described as "react-hook-form schema definitions"), `openspec/config.yaml:24,42,74`, `docs/TECH_DEBT.md:10,124`, `docs/quickapps-migration-guide.md:408`.
 - Not re-run in this update: `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`. The last recorded green run (26 files, 206 tests) predates the later changes.
 
-### Remaining tasks (`openspec/changes/remove-react-hook-form/tasks.md`)
+### Remaining tasks (`openspec/changes/archive/2026-10-24-remove-react-hook-form/tasks.md`)
 
 | Task | State |
 | --- | --- |
