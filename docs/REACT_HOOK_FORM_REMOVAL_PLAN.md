@@ -1,6 +1,6 @@
 # React Hook Form Removal Plan
 
-**Status:** In progress, paused after task 3 (see [Status](#status-paused) below).
+**Status:** Source migration complete; dependencies removed; only the host-flow check (6.2) and archiving remain (see [Current state](#current-state-2026-10-23) below).
 
 **OpenSpec change:** [`openspec/changes/remove-react-hook-form/`](../openspec/changes/remove-react-hook-form/)
 
@@ -190,7 +190,7 @@ The detailed OpenSpec artifacts are in `openspec/changes/remove-react-hook-form/
 
 Implementation should proceed only after reviewing the proposal and design. Start with characterization tests, then implement the controller and migrate sections in slices. Do not remove the packages until the regression matrix and final lint/typecheck/build/test checks pass.
 
-## Status (paused)
+## Status history (paused, then superseded)
 
 Work is paused after task 3 of `openspec/changes/remove-react-hook-form/tasks.md`. Resume from task 4.1.
 
@@ -231,3 +231,43 @@ User attachments are off RHF. This is tracked as task 4.4 in `openspec/changes/r
 - Remaining RHF consumers: `ContextAndToolsSection` and `ConversationStartersSection` (via `QuickApp2FormLegacyFields`). The starters section is being replaced by `redesign-conversation-starters`.
 
 Next: 4.1 `ContextAndToolsSection`, then 4.2 (inside `redesign-conversation-starters`), 4.3, 5.x, 6.x.
+
+## Current state (2026-10-23)
+
+Verified against the tree on `development` (`8cd5279`):
+
+- `src` and its tests contain **no** imports of `react-hook-form` or `@hookform/resolvers`.
+- `src/components/QuickApp2FormLegacyFields/` and `src/components/common/Forms/ControlledFormField.tsx` are deleted (no `LegacyFields`/`ControlledFormField`/`withController` references remain).
+- Remaining RHF consumers were removed by other changes, not by this one:
+  - `ContextAndToolsSection`: removed by `move-feature-toggles-to-advanced-settings` (task 4.1 superseded).
+  - `UserAttachmentsSection`: removed by `move-attachments-to-settings` (task 4.4).
+  - `ConversationStartersSection`: replaced and moved to the controller by `redesign-conversation-starters` (archived 2026-10-08; task 4.2).
+- Still present: `react-hook-form` (`package.json:47`) and `@hookform/resolvers` (`package.json:34`), plus their entries in `package-lock.json`. Nothing imports them, so they are dead dependencies.
+- Stale mentions to fix: `AGENTS.md:16` (`form/` described as "react-hook-form schema definitions"), `openspec/config.yaml:24,42,74`, `docs/TECH_DEBT.md:10,124`, `docs/quickapps-migration-guide.md:408`.
+- Not re-run in this update: `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`. The last recorded green run (26 files, 206 tests) predates the later changes.
+
+### Remaining tasks (`openspec/changes/remove-react-hook-form/tasks.md`)
+
+| Task | State |
+| --- | --- |
+| 4.2 starters migration | Done via `redesign-conversation-starters`; tick it. |
+| 4.3 RHF-free test fixtures | Appears done (no RHF in tests); confirm by running the three named test files, then tick. |
+| 5.1 delete helper / RHF imports | Done; tick after a repo-wide search. |
+| 5.2 remove packages, regenerate lockfile | Open. |
+| 5.3 docs (`TECH_DEBT.md`, `AGENTS.md`, this plan, plus `config.yaml`, migration guide) | Open. |
+| 6.1 full test/lint/typecheck/build | Open. |
+| 6.2 host save/dirty/autosave/reset check | Open; use the embedded browser if a chat-api host is available, otherwise record the limitation. |
+
+### Proposed next steps
+
+1. Run `npm test`, `npm run lint`, `npm run typecheck` on the current tree to confirm a green baseline.
+2. `npm uninstall react-hook-form @hookform/resolvers` (keeps `zod`), then run `npm run build`.
+3. Update the stale docs listed above and tick tasks 4.2, 4.3, 5.1 and 5.2 in `tasks.md`.
+4. Do the 6.2 host-flow check, or record that it was not possible.
+5. Archive the change with `openspec-archive-change` (it has `skip_specs: true`, so no spec sync is needed).
+
+Steps 1 to 3 fit in one small PR; step 4 is a manual gate before merge.
+
+### Update (2026-10-23, later)
+
+`react-hook-form` and `@hookform/resolvers` are uninstalled and the lockfile regenerated; stale mentions in `AGENTS.md`, `openspec/config.yaml`, `docs/TECH_DEBT.md` and the migration guide are fixed. Tasks 4.2, 4.3, 5.1 and 5.2 are ticked. Remaining: 5.3 sign-off, 6.1 build record, 6.2 host-flow check.
