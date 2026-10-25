@@ -58,13 +58,8 @@ const MockPopup = ({
 vi.mock('@/components/Settings/AdvancedSettingsPopup/AdvancedSettingsPopup', () => ({
   default: (props: MockPopupProps) => <MockPopup {...props} />,
 }));
-vi.mock('@epam/ai-dial-ui-kit', () => ({
-  ButtonAppearance: { Link: 'link' },
-  ButtonVariant: { Primary: 'primary' },
-  DIAL_ICON_SIZE: { SM: 16 },
-  DIAL_KIT_ICON_STROKE: 1.5,
-  ElementSize: { Small: 'small' },
-  mergeClasses: (...classes: Array<string | undefined>) => classes.filter(Boolean).join(' '),
+vi.mock('@epam/ai-dial-ui-kit', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@epam/ai-dial-ui-kit')>()),
   Button: ({ label, disabled, onClick }: MockButtonProps) => (
     <button type="button" disabled={disabled} onClick={onClick}>
       {label}
