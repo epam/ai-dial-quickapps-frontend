@@ -3,11 +3,13 @@ import { FC, memo, useCallback, useId } from 'react';
 import { ATTACHMENT_TYPE_SUGGESTIONS } from '@/constants/attachment-types';
 import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { useTranslation } from 'react-i18next';
-import { SectionRowVariant } from '@/types/section-row';
 
-import { SectionRow } from '@/components/common/SectionRow/SectionRow';
-
-import { AutocompleteTagInput, Switch } from '@epam/ai-dial-ui-kit';
+import {
+  AutocompleteTagInput,
+  FormSection,
+  FormSectionVariant,
+  Switch,
+} from '@epam/ai-dial-ui-kit';
 
 export interface AttachmentsSectionProps {
   isEnabled: boolean;
@@ -33,10 +35,10 @@ const AttachmentsSection: FC<AttachmentsSectionProps> = ({
   );
 
   return (
-    <SectionRow
+    <FormSection
       title={t(ApplicationEditorI18nKeys.AttachmentsTitle)}
       description={t(ApplicationEditorI18nKeys.AttachmentsDescription)}
-      variant={SectionRowVariant.Setting}
+      variant={FormSectionVariant.Setting}
       action={
         <Switch
           isOn={isEnabled}
@@ -59,7 +61,7 @@ const AttachmentsSection: FC<AttachmentsSectionProps> = ({
           getRemoveTagLabel={getRemoveTagLabel}
         />
       ) : undefined}
-    </SectionRow>
+    </FormSection>
   );
 };
 

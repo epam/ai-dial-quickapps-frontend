@@ -4,16 +4,16 @@ import { ApplicationEditorI18nKeys, ButtonsI18nKeys } from '@/constants/translat
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from 'react-i18next';
 import { LoadStatus } from '@/types/load-status';
-import { SectionRowVariant } from '@/types/section-row';
 import {
   DIAL_ICON_SIZE,
   DIAL_KIT_ICON_STROKE,
   ElementSize,
+  FormSection,
+  FormSectionVariant,
   NeutralButton,
 } from '@epam/ai-dial-ui-kit';
 import { IconPencil } from '@tabler/icons-react';
 
-import { SectionRow } from '@/components/common/SectionRow/SectionRow';
 import { SelectedModelCard } from '@/components/Orchestrator/SelectedModelCard/SelectedModelCard';
 
 // The picker brings in the catalog list (ag-grid + @epam/ai-dial-catalog),
@@ -57,9 +57,10 @@ export const DefaultModelBlock: FC<DefaultModelBlockProps> = ({
   );
 
   return (
-    <SectionRow
+    <FormSection
       title={t(ApplicationEditorI18nKeys.OrchestratorDefaultModel)}
-      variant={SectionRowVariant.Caption}
+      variant={FormSectionVariant.Caption}
+      titleClassName="text-secondary"
       action={
         <NeutralButton
           size={ElementSize.Small}
@@ -85,6 +86,6 @@ export const DefaultModelBlock: FC<DefaultModelBlockProps> = ({
           <ModelCatalogModal value={value} onConfirm={handleConfirm} onClose={handleClose} />
         </Suspense>
       )}
-    </SectionRow>
+    </FormSection>
   );
 };
