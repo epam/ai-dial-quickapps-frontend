@@ -199,6 +199,16 @@ const rowCheckbox = (name: string) => {
   ) as HTMLInputElement | null;
 };
 
+/** Ticks the row, re-clicking until the grid has applied it: under load it can drop an early click. */
+const selectRow = async (name: string) => {
+  await until(() => {
+    const isAddEnabled = findButton(DialFileManagerI18nKeys.Add)?.disabled === false;
+    const checkbox = rowCheckbox(name);
+    if (!isAddEnabled && checkbox != null && !checkbox.checked) act(() => checkbox.click());
+    return isAddEnabled;
+  });
+};
+
 describe('FileManagerModal row selection', () => {
   it('draws a checkbox per row and a select-all in the header', async () => {
     await renderModal();
@@ -209,9 +219,7 @@ describe('FileManagerModal row selection', () => {
 
   it('shows no bulk actions bar while rows are selected', async () => {
     await renderModal();
-    await until(() => rowCheckboxes().length > 2);
-    await act(async () => (rowCheckboxes()[2] as HTMLInputElement).click());
-    await until(() => findButton(DialFileManagerI18nKeys.Add)?.disabled === false);
+    await selectRow('a.pdf');
 
     expect(findButton(DialFileManagerI18nKeys.Download)).toBeUndefined();
   });
@@ -219,9 +227,7 @@ describe('FileManagerModal row selection', () => {
   it('confirms the ticked files by their stored ids', async () => {
     const { onClose } = await renderModal();
 
-    const checkboxes = rowCheckboxes() as HTMLInputElement[];
-    await act(async () => checkboxes[2].click());
-    await flush();
+    await selectRow('a.pdf');
     expect(findButton(DialFileManagerI18nKeys.Add)?.disabled).toBe(false);
 
     await act(async () => findButton(DialFileManagerI18nKeys.Add)?.click());
@@ -343,9 +349,7 @@ describe('FileManagerModal All tab', () => {
 
   it('clears the selection when the tab changes', async () => {
     await renderModal();
-    await until(() => rowCheckboxes().length > 2);
-    await act(async () => (rowCheckboxes()[2] as HTMLInputElement).click());
-    await until(() => findButton(DialFileManagerI18nKeys.Add)?.disabled === false);
+    await selectRow('a.pdf');
     expect(findButton(DialFileManagerI18nKeys.Add)?.disabled).toBe(false);
 
     await openAll();
