@@ -21,7 +21,7 @@ context: |
   - i18n: i18next + react-i18next + i18next-browser-languagedetector, same setup as
     ai-dial-chat (one `translation` namespace, semantic keys, enums in
     src/constants/translation-keys.ts)
-  - Forms: react-hook-form + zod (pending removal — see docs/TECH_DEBT.md)
+  - Forms: project-owned `useQuickApp2Form` controller + zod
   - State: React Context (AppContext, DataContext, AuthContext, ThemeContext) + custom hooks
   - Testing: Vitest 4 + jsdom
   - Linting: ESLint 9 flat config + Prettier 3
@@ -39,8 +39,7 @@ context: |
   - @epam/ai-dial-react-file-manager: context-files UI
   - @tabler/icons-react: Icon set
   - react-i18next / i18next: Internationalisation
-  - react-hook-form + @hookform/resolvers + zod: form schema/validation (pending
-    removal — see docs/TECH_DEBT.md)
+  - zod: form schema/validation (state lives in the `useQuickApp2Form` hook)
 
   ## Path Aliases
   - @/*  → src/*
@@ -71,7 +70,7 @@ context: |
     the component folder.
   - `src/context/` — React context providers (AppContext, DataContext, AuthContext,
     ThemeContext)
-  - `src/form/` — react-hook-form schema definitions and form data builders
+  - `src/form/` — zod schema definitions and form data builders
     (zod-validated)
   - `src/hooks/` — custom hooks
   - `src/i18n/` — i18next setup and locale JSON files
