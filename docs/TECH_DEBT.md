@@ -7,9 +7,7 @@
       a plain watch-mode run without coverage) across all of `src/**/*.{ts,tsx}`. Every threshold is a
       fixed 70%, maintained by hand (no `autoUpdate`). As of 2026-10-09: statements 90.29%, branches
       81.2%, functions 89.13%, lines 91.27%.
-- [ ] react-hook-form usage - should get rid of it. In progress in change `remove-react-hook-form`:
-      the root form and every section now run on `useQuickApp2Form` (the Context & Tools card moved into the Advanced Settings popup in `move-feature-toggles-to-advanced-settings`);
-      only the dependency removal (tasks 5.x) is open.
+- [x] react-hook-form usage - removed in change `remove-react-hook-form`: the root form and every section run on `useQuickApp2Form`, and `react-hook-form` / `@hookform/resolvers` are no longer dependencies (`zod` stays).
 - [ ] need to review components, some seem to be unnecessary. No concrete candidate is known right
       now (the last one, the `AgentSkillsField` → `SkillsSelector` proxy, was removed in
       `redesign-skills-selection`); name one here before picking this up.
@@ -121,8 +119,7 @@
     `dial-client.ts` is dropped). chat-api DTO `type` checks in `dial-client.ts` stay string
     comparisons, since they compare the API's own type;
   - `src/types/quick-app-form.ts` imports `QuickApp2Form` from `@/form/quickApp2Form`, so types depend
-    on the form layer. This resolves itself when zod is removed (`remove-react-hook-form`): define
-    the form values interface in `src/types/` directly.
+    on the form layer. Fix by defining the form values interface in `src/types/` directly.
 - [ ] ...
 
 ## Findings from `specify-uncovered-capabilities`

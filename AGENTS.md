@@ -13,7 +13,7 @@ lives under `src/`:
 - `pages/` — top-level route components other than the root (currently just the sign-in popup).
 - `components/` — React components. Shared reusables go in `components/common/`; form-specific components go in `components/QuickApp2Form/`.
 - `context/` — React context providers (`AppContext`, `DataContext`, `AuthContext`, `ThemeContext`).
-- `form/` — `react-hook-form` schema definitions and form data builders (validated with `zod`).
+- `form/` — Zod schema definitions and form data builders (validated with `zod`).
 - `hooks/` — Custom React hooks.
 - `i18n/` — i18next setup (`config.ts`, same as ai-dial-chat), typed resources (`i18next.d.ts`) and the one locale file `locales/en.json` (default `translation` namespace).
 - `types/` — TypeScript types, interfaces, and enums.
