@@ -43,10 +43,14 @@ export const EDIT_JSON_EDITOR_OPTIONS: editor.IStandaloneEditorConstructionOptio
   scrollBeyondLastLine: false,
   tabSize: 2,
   lineNumbers: 'off',
-  folding: false,
+  // Sections can be collapsed; the fold arrows show on hover in the space left of the text.
+  folding: true,
+  showFoldingControls: 'mouseover',
+  foldingHighlight: false,
   glyphMargin: false,
-  // With no gutter this is the space between the box's left border and the text (about 18px in the design).
-  lineDecorationsWidth: 18,
+  // Monaco adds 16px for the folding column to this, so the text starts about 18px inside the box
+  // border, as in the design.
+  lineDecorationsWidth: 2,
   fontSize: 13,
   lineHeight: 21,
   lineNumbersMinChars: 0,

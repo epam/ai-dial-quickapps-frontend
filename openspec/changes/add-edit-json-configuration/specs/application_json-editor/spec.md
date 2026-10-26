@@ -59,6 +59,12 @@ Each time the popup opens it SHALL show, pretty-printed with two-space indentati
 - **WHEN** the app theme is dark or the document direction is `rtl`
 - **THEN** the code editor SHALL use the matching dark theme and the popup layout SHALL follow the direction, while the JSON text remains left-to-right
 
+#### Scenario: Sections can be collapsed
+
+- **WHEN** the user hovers the start edge of a line that opens an object or array
+- **THEN** a fold control SHALL appear, and activating it SHALL collapse that section to one line and expand it again on a second activation
+- **AND** collapsing SHALL NOT change the text that is saved or copied
+
 #### Scenario: Code box colours follow the design
 
 - **WHEN** the popup is shown with a light theme

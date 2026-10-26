@@ -91,7 +91,12 @@ vi.mock('@epam/ai-dial-ui-kit', () => ({
       currentTheme: string;
       themesConfig?: Record<string, { colors: Record<string, string> }>;
       onChange: (value: string) => void;
-      options: { ariaLabel: string; lineNumbers?: string; lineDecorationsWidth?: number };
+      options: {
+        ariaLabel: string;
+        lineNumbers?: string;
+        lineDecorationsWidth?: number;
+        folding?: boolean;
+      };
     }) => (
       <textarea
         aria-label={options.ariaLabel}
@@ -99,6 +104,7 @@ vi.mock('@epam/ai-dial-ui-kit', () => ({
         data-background={themesConfig?.[currentTheme]?.colors['editor.background']}
         data-line-numbers={options.lineNumbers}
         data-start-space={options.lineDecorationsWidth}
+        data-folding={String(options.folding)}
         value={value}
         onChange={(event) => onChange(event.target.value)}
       />
@@ -171,7 +177,14 @@ describe('EditJsonPopup', () => {
     expect(getEditor()?.dataset.background).toBe('#FCFCFC');
     expect(getEditor()?.dataset.lineNumbers).toBe('off');
     // The text starts about 18px inside the box border, as in the design.
-    expect(getEditor()?.dataset.startSpace).toBe('18');
+    // 2px of its own plus Monaco's 16px folding column.
+    expect(getEditor()?.dataset.startSpace).toBe('2');
+  });
+
+  it('lets sections of the JSON be collapsed and expanded', async () => {
+    await renderPopup();
+
+    expect(getEditor()?.dataset.folding).toBe('true');
   });
 
   it('uses the dark editor theme of the kit for a loaded non-light theme', async () => {
