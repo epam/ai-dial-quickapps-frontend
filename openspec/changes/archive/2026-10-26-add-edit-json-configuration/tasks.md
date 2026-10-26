@@ -23,4 +23,4 @@ Slicing strategy: contract-first for the split / compose mapping and the JSON he
 ## 4. Specs, docs and final checks
 
 - [x] 4.1 Sync delta specs (`application_json-editor`, `application_editor-layout`, `application_editing`, `application_advanced-settings`) into `openspec/specs/` (`openspec-sync-specs`) and update `docs/TECH_DEBT.md`'s coverage matrix for `application_json-editor`; verify `openspec validate add-edit-json-configuration --strict` passes.
-- [ ] 4.2 Run `npm run lint`, `npm run typecheck`, `npm test` (coverage thresholds) and `npm run build`; manually check light / dark and an RTL pass in the browser with the dev server.
+- [x] 4.2 Run `npm run lint`, `npm run typecheck`, `npm test` (coverage thresholds) and `npm run build`; manually check light / dark and an RTL pass in the browser with the dev server.
