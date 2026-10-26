@@ -145,6 +145,14 @@ const SCENARIOS: Array<{ name: string; app?: AppFixture }> = [
     },
   },
   {
+    name: 'an app with a stored temperature on a model without temperature support',
+    app: {
+      applicationProperties: {
+        orchestrator: orchestrator('Plain model', 'model-2', { parameters: { temperature: 0.4 } }),
+      },
+    },
+  },
+  {
     name: 'an app on a model without temperature support',
     app: {
       applicationProperties: {
@@ -173,9 +181,13 @@ const REPRESENTATION: Record<
     expect(get(doc, 'orchestrator.system_prompt.content')).toBe(values.instructions),
   model: (doc, values) =>
     expect(get(doc, 'orchestrator.deployment.deployment_id')).toBe(values.model),
+  // Written for a model that supports it. For any other model only a stored temperature is shown;
+  // the form's default is never invented into the JSON.
   temperature: (doc, values) => {
     const temperature = get(doc, 'orchestrator.deployment.parameters.temperature');
-    if (supportsTemperature(values)) expect(temperature).toBe(values.temperature);
+    const isStored =
+      get(values.extraConfig, 'orchestrator.deployment.parameters.temperature') !== undefined;
+    if (supportsTemperature(values) || isStored) expect(temperature).toBe(values.temperature);
     else expect(temperature).toBeUndefined();
   },
   documentRelativeUrl: (doc, values) =>

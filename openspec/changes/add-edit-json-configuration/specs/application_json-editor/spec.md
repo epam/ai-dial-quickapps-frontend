@@ -47,7 +47,7 @@ Each time the popup opens it SHALL show, pretty-printed with two-space indentati
 - **WHEN** the selected model supports temperature
 - **THEN** `orchestrator.deployment.parameters.temperature` SHALL show the form value, which is `0.5` when none is stored (the value a save would write)
 - **WHEN** the selected model is loaded and does not support temperature
-- **THEN** `temperature` SHALL be absent while other stored parameters remain
+- **THEN** a stored `temperature` SHALL still be shown and kept, and no temperature SHALL be added when none is stored
 
 #### Scenario: Metadata excluded
 

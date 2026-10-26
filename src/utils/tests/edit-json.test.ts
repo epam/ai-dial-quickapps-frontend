@@ -100,11 +100,12 @@ describe('parseEditJsonDocument', () => {
 
     expect(result.isValid).toBe(true);
     if (!result.isValid) return;
-    const idless = (form: QuickApp2Form) => ({
-      ...form,
+    const comparable = (form: QuickApp2Form) => ({
+      ...omit(form, 'extraConfig'),
       starters: form.starters.map((starter) => omit(starter, 'id')),
     });
-    expect(idless(result.values)).toEqual(idless(values));
+    expect(comparable(result.values)).toEqual(comparable(values));
+    expect(areSameEditJsonDocuments(result.values, values, context)).toBe(true);
   });
 
   it('reports a syntax error with the parser message', () => {

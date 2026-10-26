@@ -83,7 +83,11 @@ describe('split and compose of the stored config', () => {
 
     expect(at('tool_sets')).toBeUndefined();
     expect(at('orchestrator.deployment.deployment_id')).toBeUndefined();
-    expect(at('orchestrator.deployment.parameters')).toEqual({ top_p: 1, seed: 7 });
+    expect(at('orchestrator.deployment.parameters')).toEqual({
+      temperature: 0.2,
+      top_p: 1,
+      seed: 7,
+    });
     expect(at('orchestrator.system_prompt.content')).toBeUndefined();
     expect(at('features')).toEqual({ stage_display: { mode: 'full' } });
     expect(at('conversation_starters')).toEqual({ custom_group_key: 1 });
@@ -95,20 +99,40 @@ describe('split and compose of the stored config', () => {
     expect(parameters).toEqual({ temperature: 0.2, top_p: 1, seed: 7 });
   });
 
-  it('removes only the temperature for a model that does not support it', () => {
+  it('keeps a stored temperature and other parameters for a model that does not support it', () => {
     const parameters = compose(load(), PLAIN_MODEL).orchestrator.deployment.parameters;
 
-    expect(parameters).toEqual({ top_p: 1, seed: 7 });
+    expect(parameters).toEqual({ temperature: 0.2, top_p: 1, seed: 7 });
   });
 
-  it('omits the parameters when nothing is left for a model without temperature', () => {
+  it('does not invent a temperature for a model that does not support it', () => {
     const data = load({
-      orchestrator: {
-        deployment: { deployment_id: 'model-1', parameters: { temperature: 0.2 } },
-      },
+      orchestrator: { deployment: { deployment_id: 'model-1', parameters: { seed: 7 } } },
+    } as unknown as QuickApp2Config);
+
+    expect(data.temperature).toBe(0.5);
+    expect(compose(data, PLAIN_MODEL).orchestrator.deployment.parameters).toEqual({ seed: 7 });
+    expect(compose(data).orchestrator.deployment.parameters).toEqual({
+      seed: 7,
+      temperature: 0.5,
+    });
+  });
+
+  it('omits the parameters when none are stored for a model without temperature support', () => {
+    const data = load({
+      orchestrator: { deployment: { deployment_id: 'model-1' } },
     } as unknown as QuickApp2Config);
 
     expect(compose(data, PLAIN_MODEL).orchestrator.deployment).not.toHaveProperty('parameters');
+  });
+
+  it('follows the form temperature for a stored one when the model changes back', () => {
+    const data = { ...load(), temperature: 0.9 };
+
+    expect(compose(data).orchestrator.deployment.parameters).toMatchObject({ temperature: 0.9 });
+    expect(compose(data, PLAIN_MODEL).orchestrator.deployment.parameters).toMatchObject({
+      temperature: 0.2,
+    });
   });
 
   it('keeps the loaded parameters and the form temperature while the model is not loaded', () => {

@@ -242,9 +242,7 @@ export const getQuickApp2FormData = (
       ? !!appProperties?.orchestrator?.attachment_strategy
       : true;
   const fileTools =
-    'dial_files' in (appProperties?.features ?? {})
-      ? !!appProperties?.features?.dial_files
-      : true;
+    'dial_files' in (appProperties?.features ?? {}) ? !!appProperties?.features?.dial_files : true;
   const addAttachment =
     'representation_tooling' in (appProperties?.features ?? {})
       ? !!appProperties?.features?.representation_tooling?.add_attachment
@@ -298,16 +296,20 @@ export const getQuickApp2FormData = (
   };
 };
 
-// `parameters` is the stored object (its `temperature` was split off) plus the form's
-// temperature while the model supports it. While the model is not loaded nothing can be said
-// about support, so the form temperature is kept next to the stored parameters.
+// `parameters` is the stored object, with the form's temperature on top for a model that supports
+// it. For any other model the stored parameters are kept as they are and no temperature is
+// invented from the form default. While the model is not loaded nothing can be said about support,
+// so a stored temperature follows the form value and nothing is added.
 const getDeploymentParameters = (
   extraParameters: unknown,
   model: DialAIEntityModel | undefined,
   temperature: number,
 ): Record<string, unknown> | undefined => {
-  const parameters = isPlainObject(extraParameters) ? (extraParameters as Record<string, unknown>) : {};
-  if (!model || doesModelAllowTemperature(model)) return { ...parameters, temperature };
+  const parameters = isPlainObject(extraParameters)
+    ? (extraParameters as Record<string, unknown>)
+    : {};
+  if (model && doesModelAllowTemperature(model)) return { ...parameters, temperature };
+  if (!model && 'temperature' in parameters) return { ...parameters, temperature };
   return isEmpty(parameters) ? undefined : parameters;
 };
 
