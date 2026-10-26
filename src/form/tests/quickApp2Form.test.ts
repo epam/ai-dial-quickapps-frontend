@@ -230,8 +230,8 @@ describe('getQuickApp2FormData', () => {
       addOns: [],
       autoSubmit: true,
       timestamp: true,
-      processLargeFiles: false,
-      fileTools: false,
+      processLargeFiles: true,
+      fileTools: true,
       addAttachment: true,
       webFetch: true,
     });
@@ -321,11 +321,11 @@ const buildConfig = (
   });
 
 describe('orchestrator temperature and process files', () => {
-  it('defaults the temperature to 0.5 and process files to off for a new app', () => {
+  it('defaults the temperature to 0.5 and process files to on for a new app', () => {
     const data = getQuickApp2FormData(undefined, ['model-1'], ['model-1'], 'model-1');
 
     expect(data.temperature).toBe(0.5);
-    expect(data.processLargeFiles).toBe(false);
+    expect(data.processLargeFiles).toBe(true);
   });
 
   it('loads the temperature and turns process files on when an attachment strategy is saved', () => {
@@ -549,11 +549,11 @@ describe('advanced settings', () => {
     expect(isValidMaxInputAttachments(2, true)).toBe(true);
   });
 
-  it('defaults time awareness to on and built-in file tools to off for a new app', () => {
+  it('defaults time awareness and built-in file tools to on for a new app', () => {
     const data = getQuickApp2FormData(undefined, ['model-1'], ['model-1'], 'model-1');
 
     expect(data.timestamp).toBe(true);
-    expect(data.fileTools).toBe(false);
+    expect(data.fileTools).toBe(true);
     expect(data.maxInputAttachments).toBeUndefined();
   });
 
