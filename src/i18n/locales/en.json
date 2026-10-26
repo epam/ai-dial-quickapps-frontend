@@ -244,6 +244,14 @@
       "dragCancelled": "Reordering cancelled."
     },
     "configuration": "Configuration",
+    "editJson": {
+      "link": "Edit JSON",
+      "title": "Edit JSON",
+      "editorLabel": "QuickApp configuration as JSON",
+      "syntaxError": "Invalid JSON: {{message}}",
+      "rootMustBeObject": "The configuration must be a JSON object.",
+      "invalidStructure": "Invalid configuration: {{message}}"
+    },
     "skills": {
       "title": "Skills",
       "description": "Reusable instruction modules the agent loads on demand when the task matches.",

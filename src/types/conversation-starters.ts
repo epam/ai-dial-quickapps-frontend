@@ -2,6 +2,8 @@ import type { ConversationStarter } from '@/types/quick-apps';
 
 export interface StarterWithId extends ConversationStarter {
   id: string;
+  /** Keys of the stored starter the editor has no field for; kept as loaded. */
+  extra?: Record<string, unknown>;
 }
 
 export type StarterField = keyof ConversationStarter;

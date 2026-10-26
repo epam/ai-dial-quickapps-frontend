@@ -1,4 +1,5 @@
-import { FC, useCallback, useEffect, useMemo, useRef } from 'react';
+import omit from 'lodash-es/omit';
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
 import type { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
@@ -7,6 +8,12 @@ import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
 import { getQuickApp2FormData } from '@/form/quickApp2Form';
 import { useQuickApp2Form } from '@/hooks/use-quick-app2-form';
+import {
+  areSameEditJsonDocuments,
+  buildEditJsonDocument,
+  reuseStarterIds,
+  type EditJsonContext,
+} from '@/utils/edit-json';
 import type { TriggerSaveEventDetail, TriggerSaveGeneralPayload } from '@/types/editor-messages';
 import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
 import type { QuickApp2Config } from '@/types/quick-apps';
@@ -16,6 +23,7 @@ import type { DialAIEntityModel, LocalizedText } from '@/types/dial-entities';
 import { useTranslation } from 'react-i18next';
 
 import AddOnsSection from '../AddOns/AddOnsSection/AddOnsSection';
+import EditJsonPopup from '../EditJson/EditJsonPopup/EditJsonPopup';
 import InstructionsSection from '../InstructionsSection/InstructionsSection';
 import ModelConfigurationSection from '../Orchestrator/ModelConfigurationSection/ModelConfigurationSection';
 
@@ -47,7 +55,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   onValidityChange,
   onModelReady,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { app, settings } = useAppContext();
   const { models, modelsMap, toolsetsMap, mcpAgentsMap, status } = useDataContext();
 
@@ -243,6 +251,54 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     [setField],
   );
 
+  const [editJsonDocument, setEditJsonDocument] = useState<string | null>(null);
+  const language = i18n.resolvedLanguage ?? i18n.language;
+  const editJsonContext = useMemo<EditJsonContext>(
+    () => ({
+      allEntitiesMap,
+      language,
+      toolSupportingModelIds,
+      availableModelIds,
+      defaultModelId: settings.defaultModelId,
+    }),
+    [allEntitiesMap, availableModelIds, language, settings.defaultModelId, toolSupportingModelIds],
+  );
+  const handleEditJsonOpen = useCallback(
+    () => setEditJsonDocument(buildEditJsonDocument(values, editJsonContext)),
+    [editJsonContext, values],
+  );
+  const handleEditJsonClose = useCallback(() => setEditJsonDocument(null), []);
+  const handleEditJsonSave = useCallback(
+    (next: QuickApp2FormType) => {
+      // A document that reads back as the current configuration changes nothing, so saving it
+      // unchanged does not make the form dirty (the extra config is stored in a normalised
+      // shape that can differ from the loaded one without differing in what is saved).
+      if (areSameEditJsonDocuments(next, values, editJsonContext)) return;
+      // The model lists belong to the loaded data, not to the document.
+      const nextValues = omit(next, ['toolSupportingModelIds', 'availableModelIds']);
+      // The JSON cannot switch on a feature the host setting keeps off (as on load).
+      isMaxAttachmentsSeededRef.current = false;
+      setValues(
+        {
+          ...nextValues,
+          starters: reuseStarterIds(nextValues.starters, values.starters),
+          codeInterpreter: nextValues.codeInterpreter && !!settings.isCodeInterpreterEnabled,
+          webFetch: nextValues.webFetch && !!settings.isWebFetchEnabled,
+          addAttachment: nextValues.addAttachment && !!settings.isAddAttachmentEnabled,
+        },
+        { shouldValidate: true },
+      );
+    },
+    [
+      editJsonContext,
+      setValues,
+      settings.isAddAttachmentEnabled,
+      settings.isCodeInterpreterEnabled,
+      settings.isWebFetchEnabled,
+      values,
+    ],
+  );
+
   return (
     <form
       onSubmit={(event) => {
@@ -288,7 +344,18 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         onAttachmentsEnabledChange={handleAttachmentsEnabledChange}
         inputAttachmentTypes={values.inputAttachmentTypes}
         onInputAttachmentTypesChange={handleInputAttachmentTypesChange}
+        onEditJsonClick={handleEditJsonOpen}
       />
+
+      {editJsonDocument != null && (
+        // Mounted only while open so every open re-seeds the popup draft from the form.
+        <EditJsonPopup
+          document={editJsonDocument}
+          context={editJsonContext}
+          onSave={handleEditJsonSave}
+          onClose={handleEditJsonClose}
+        />
+      )}
     </form>
   );
 };

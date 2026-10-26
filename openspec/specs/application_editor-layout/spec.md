@@ -390,3 +390,23 @@ The primary content column SHALL NOT render a standalone Advanced settings (Time
 - **AND** no Context and tools section, and no Code Interpreter, Add attachment or Web fetch switch SHALL be rendered there (Code Interpreter appears only in Configuration)
 - **AND** no User attachments section or Attachment types control SHALL be rendered there
 - **AND** no Context files control SHALL be rendered there
+
+### Requirement: Configuration footer holds the Edit JSON entry
+
+The Configuration column SHALL end with a footer, separated from the rows above by a thin divider and pinned to the bottom of the column, that contains the Edit JSON link button defined by `application_json-editor`, aligned to the end edge.
+
+#### Scenario: Footer position
+
+- **WHEN** the editor renders Configuration at the desktop layout
+- **THEN** the Edit JSON link button SHALL be at the bottom-end corner of the column, below a divider
+- **AND** it SHALL stay below all Configuration rows whether they are few or many
+
+#### Scenario: Right-to-left document
+
+- **WHEN** the document direction is `rtl`
+- **THEN** the link SHALL be aligned to the end edge in that direction (the physical left), using logical alignment
+
+#### Scenario: Narrow viewport
+
+- **WHEN** the editor is stacked below the desktop breakpoint
+- **THEN** the footer SHALL follow the Configuration rows without horizontal scrolling
