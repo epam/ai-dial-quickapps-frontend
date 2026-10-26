@@ -58,6 +58,14 @@ The Configuration area SHALL contain the model selector, presented as the **Defa
 - **WHEN** the editor renders Configuration
 - **THEN** the Attachments row SHALL be rendered immediately after the Settings row
 
+#### Scenario: Code Interpreter row
+
+- **WHEN** the editor renders Configuration and the host setting `isCodeInterpreterEnabled` is on
+- **THEN** a Code Interpreter switch row (title `ApplicationEditorI18nKeys.CodeInterpreterTitle`, description `ApplicationEditorI18nKeys.CodeInterpreterDescription`) SHALL be rendered immediately after the Attachments row
+- **AND** toggling it SHALL update the form value `codeInterpreter` directly, not through the Advanced Settings popup draft, and the saved `tool_sets` entry SHALL be unchanged from before the move
+- **AND** when the host setting is off the row SHALL NOT render and the form value SHALL be `false`
+- **AND** the row SHALL be editable for a shared application, as every other control (see "Presentation change preserves form contract (editable)")
+
 ### Requirement: Instructions is standalone and always visible
 
 The editor SHALL render the existing Instructions editor in a standalone, always-visible section. The Instructions section SHALL NOT be wrapped in a collapsible Orchestrator control, and no empty Orchestrator wrapper SHALL be rendered.
@@ -373,12 +381,12 @@ The Settings row SHALL own only transient popup visibility in local component st
 
 ### Requirement: Advanced Settings controls live only in the popup
 
-The primary content column SHALL NOT render a standalone Advanced settings (Time awareness) section, a Context and tools section, or a max attachments control. These settings SHALL be editable only from the Advanced Settings popup, including the Code Interpreter, Add attachment and Web fetch switches. The primary content column SHALL NOT render a User attachments section; attachment types SHALL be editable only from the Attachments row in Configuration. The primary content column SHALL NOT render a Context files control; context files SHALL be managed only from the Knowledge base row in Add-ons.
+The primary content column SHALL NOT render a standalone Advanced settings (Time awareness) section, a Context and tools section, or a max attachments control. These settings SHALL be editable only from the Advanced Settings popup, including the Add attachment and Web fetch switches; the Code Interpreter switch is its own row in Configuration (see "Code Interpreter row"). The primary content column SHALL NOT render a User attachments section; attachment types SHALL be editable only from the Attachments row in Configuration. The primary content column SHALL NOT render a Context files control; context files SHALL be managed only from the Knowledge base row in Add-ons.
 
 #### Scenario: Main column without moved controls
 
 - **WHEN** the editor renders its primary content column
 - **THEN** no Time awareness switch, File tools switch, or max attachments input SHALL be rendered there
-- **AND** no Context and tools section, and no Code Interpreter, Add attachment or Web fetch switch SHALL be rendered there
+- **AND** no Context and tools section, and no Code Interpreter, Add attachment or Web fetch switch SHALL be rendered there (Code Interpreter appears only in Configuration)
 - **AND** no User attachments section or Attachment types control SHALL be rendered there
 - **AND** no Context files control SHALL be rendered there
