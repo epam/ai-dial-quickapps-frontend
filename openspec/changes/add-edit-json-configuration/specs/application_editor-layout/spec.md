@@ -15,7 +15,9 @@ The Configuration column SHALL end with a footer, separated from the rows above 
 #### Scenario: Configuration column does not scroll
 
 - **WHEN** the editor content is taller than the view at the desktop layout and the user scrolls
-- **THEN** the Configuration column SHALL stay in place and only the other columns SHALL scroll
+- **THEN** only the primary content column SHALL scroll, and its scrollbar SHALL sit at that column's own end edge, between it and the Configuration column
+- **AND** there SHALL be space between that scrollbar and the cards, and the cards' shadows SHALL NOT be cut off into a band between the cards
+- **AND** the Configuration column SHALL stay in place
 - **AND** the Edit JSON footer SHALL stay at the bottom of the view, never scrolled out of sight
 - **AND** the Configuration rows SHALL scroll inside the column only when they cannot fit in the view
 

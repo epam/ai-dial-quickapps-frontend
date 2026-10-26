@@ -164,14 +164,13 @@ describe('ModelConfigurationSection', () => {
     expect(onEditJsonClick).toHaveBeenCalledTimes(1);
   });
 
-  it('stays in place while the editor scrolls and keeps the footer in view', () => {
+  it('fills the view without scrolling and keeps the footer in sight', () => {
     dom.render(<TestForm />);
 
     const section = dom.container.querySelector('section');
-    expect(section?.className).toContain('desktop:sticky');
-    expect(section?.className).toContain('desktop:top-0');
-    expect(section?.className).toContain('desktop:h-dvh');
-    expect(section?.className).toContain('desktop:self-start');
+    expect(section?.className).toContain('desktop:h-full');
+    expect(section?.className).toContain('desktop:overflow-hidden');
+    expect(section?.className).not.toContain('sticky');
     const footer = dom.container.querySelector('[data-testid="edit-json"]')?.parentElement;
     expect(footer?.className).toContain('shrink-0');
     const rows = footer?.previousElementSibling;

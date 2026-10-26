@@ -108,6 +108,8 @@ const EditJsonPopup: FC<EditJsonPopupProps> = ({ document, context, onSave, onCl
       additionalButtons={[
         {
           label: t(ButtonsI18nKeys.Cancel),
+          // The design leaves about 25px between Cancel and Save: the footer's 8px gap plus this.
+          className: 'me-4',
           onClick: onClose,
           variant: ButtonVariant.Primary,
           appearance: ButtonAppearance.Link,
@@ -116,6 +118,8 @@ const EditJsonPopup: FC<EditJsonPopupProps> = ({ document, context, onSave, onCl
       mainButtons={[
         {
           label: t(ButtonsI18nKeys.Save),
+          // The design's Save is a wider pill (about 94px) than the kit's default padding gives.
+          className: 'px-8',
           variant: ButtonVariant.Neutral,
           disabled: !result.isValid,
           onClick: handleSave,

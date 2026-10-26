@@ -305,9 +305,15 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         event.preventDefault();
         handleSubmitForm();
       }}
-      className="grid grid-cols-1 gap-4 desktop:grid-cols-[minmax(0,1fr)_minmax(280px,440px)] desktop:gap-x-0"
+      // From the desktop layout the form is exactly as tall as the view: only the primary column
+      // scrolls, so its scrollbar sits between the two columns and Configuration never moves.
+      className="grid grid-cols-1 gap-4 desktop:h-dvh desktop:grid-cols-[minmax(0,1fr)_minmax(280px,440px)] desktop:grid-rows-[minmax(0,1fr)] desktop:gap-x-0"
     >
-      <div className="min-w-0 flex flex-col min-h-0 gap-4">
+      {/* `relative` keeps the UI kit's visually hidden inputs inside this scroller (Issue #260).
+          The padding keeps the cards off the scrollbar and gives their shadows room, which the
+          scroller would otherwise clip into a band between the cards; the negative start margin
+          keeps the cards where they were. */}
+      <div className="relative min-w-0 flex flex-col min-h-0 gap-4 desktop:-ms-4 desktop:overflow-y-auto desktop:ps-4 desktop:pe-4">
         <InstructionsSection
           value={values.instructions}
           error={errors.instructions}

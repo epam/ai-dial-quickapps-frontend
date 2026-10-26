@@ -61,6 +61,21 @@ describe('QuickApp2Form layout', () => {
     );
   });
 
+  it('scrolls only the primary column from the desktop layout, between the two columns', () => {
+    dom.render(<QuickApp2Form onSave={vi.fn()} onDirtyChange={vi.fn()} onModelReady={vi.fn()} />);
+
+    const form = dom.container.querySelector('form');
+    expect(form?.className).toContain('desktop:h-dvh');
+    expect(form?.className).toContain('desktop:grid-rows-[minmax(0,1fr)]');
+    const primaryColumn = dom.container.querySelector('form > div');
+    expect(primaryColumn?.className).toContain('desktop:overflow-y-auto');
+    expect(primaryColumn?.className).toContain('relative');
+    // Room between the cards and the scrollbar, and for the card shadows the scroller would clip.
+    expect(primaryColumn?.className).toContain('desktop:pe-4');
+    expect(primaryColumn?.className).toContain('desktop:ps-4');
+    expect(primaryColumn?.className).toContain('desktop:-ms-4');
+  });
+
   it('places Add-ons immediately after Instructions and keeps its add actions visible', () => {
     dom.render(<QuickApp2Form onSave={vi.fn()} onDirtyChange={vi.fn()} onModelReady={vi.fn()} />);
 

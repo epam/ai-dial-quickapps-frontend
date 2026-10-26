@@ -15,6 +15,7 @@ import EditJsonPopup from '../EditJsonPopup';
 
 interface MockButtonProps {
   label: string;
+  className?: string;
   disabled?: boolean;
   onClick: () => void;
 }
@@ -69,6 +70,7 @@ vi.mock('@epam/ai-dial-ui-kit', () => ({
         <button
           key={button.label}
           type="button"
+          className={button.className}
           disabled={button.disabled}
           onClick={button.onClick}
         >
@@ -89,13 +91,14 @@ vi.mock('@epam/ai-dial-ui-kit', () => ({
       currentTheme: string;
       themesConfig?: Record<string, { colors: Record<string, string> }>;
       onChange: (value: string) => void;
-      options: { ariaLabel: string; lineNumbers?: string };
+      options: { ariaLabel: string; lineNumbers?: string; lineDecorationsWidth?: number };
     }) => (
       <textarea
         aria-label={options.ariaLabel}
         data-theme={currentTheme}
         data-background={themesConfig?.[currentTheme]?.colors['editor.background']}
         data-line-numbers={options.lineNumbers}
+        data-start-space={options.lineDecorationsWidth}
         value={value}
         onChange={(event) => onChange(event.target.value)}
       />
@@ -167,6 +170,8 @@ describe('EditJsonPopup', () => {
     expect(getEditor()?.dataset.theme).toBe('light');
     expect(getEditor()?.dataset.background).toBe('#FCFCFC');
     expect(getEditor()?.dataset.lineNumbers).toBe('off');
+    // The text starts about 18px inside the box border, as in the design.
+    expect(getEditor()?.dataset.startSpace).toBe('18');
   });
 
   it('uses the dark editor theme of the kit for a loaded non-light theme', async () => {
@@ -222,6 +227,13 @@ describe('EditJsonPopup', () => {
 
     expect(onSave).not.toHaveBeenCalled();
     expect(onClose).toHaveBeenCalledTimes(2);
+  });
+
+  it('spaces the footer buttons as the design does: roomy Save pill, gap after Cancel', async () => {
+    await renderPopup();
+
+    expect(getSave().className).toContain('px-8');
+    expect(getButton(ButtonsI18nKeys.Cancel, dom.container)?.className).toContain('me-4');
   });
 
   it('labels the code box JSON', async () => {
