@@ -235,11 +235,11 @@ export const getQuickApp2FormData = (
   const addAttachment =
     'representation_tooling' in (appProperties?.features ?? {})
       ? !!appProperties?.features?.representation_tooling?.add_attachment
-      : false;
+      : true;
   const webFetch =
     'web_fetch' in (appProperties?.features ?? {})
       ? !!appProperties?.features?.web_fetch?.enabled
-      : false;
+      : true;
 
   return {
     documentRelativeUrl: getQuick2AppDocumentUrl(app) ?? [],

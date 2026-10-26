@@ -232,8 +232,8 @@ describe('getQuickApp2FormData', () => {
       timestamp: true,
       processLargeFiles: true,
       fileTools: true,
-      addAttachment: false,
-      webFetch: false,
+      addAttachment: true,
+      webFetch: true,
     });
     expect(data.starters).toHaveLength(1);
     expect(data.starters[0]).toMatchObject({ title: '', text: '' });

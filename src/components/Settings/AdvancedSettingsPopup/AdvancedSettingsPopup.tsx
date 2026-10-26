@@ -29,7 +29,6 @@ export interface AdvancedSettingsPopupProps {
   advancedSettings: AdvancedSettingsValues;
   isTemperatureAvailable: boolean;
   isProcessLargeFilesAvailable: boolean;
-  isCodeInterpreterEnabled: boolean;
   isAddAttachmentEnabled: boolean;
   isWebFetchEnabled: boolean;
   isAttachmentsEnabled: boolean;
@@ -43,7 +42,6 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
   advancedSettings,
   isTemperatureAvailable,
   isProcessLargeFilesAvailable,
-  isCodeInterpreterEnabled,
   isAddAttachmentEnabled,
   isWebFetchEnabled,
   isAttachmentsEnabled,
@@ -105,11 +103,6 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
 
   const handleProcessLargeFilesChange = useCallback(
     (processLargeFiles: boolean) => setDraft((current) => ({ ...current, processLargeFiles })),
-    [],
-  );
-
-  const handleCodeInterpreterChange = useCallback(
-    (codeInterpreter: boolean) => setDraft((current) => ({ ...current, codeInterpreter })),
     [],
   );
 
@@ -230,15 +223,6 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
             onChange={handleProcessLargeFilesChange}
             labelProps={{ label: t(ApplicationEditorI18nKeys.AdvancedSettingsProcessFiles) }}
             caption={t(ApplicationEditorI18nKeys.AdvancedSettingsProcessFilesDescription)}
-          />
-        )}
-
-        {isCodeInterpreterEnabled && (
-          <Switch
-            isOn={draft.codeInterpreter}
-            onChange={handleCodeInterpreterChange}
-            labelProps={{ label: t(ApplicationEditorI18nKeys.CodeInterpreterTitle) }}
-            caption={t(ApplicationEditorI18nKeys.CodeInterpreterDescription)}
           />
         )}
 

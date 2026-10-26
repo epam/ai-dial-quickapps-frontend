@@ -5,7 +5,6 @@ export interface AdvancedSettingsValues {
   timestamp: boolean;
   fileTools: boolean;
   processLargeFiles: boolean;
-  codeInterpreter: boolean;
   addAttachment: boolean;
   webFetch: boolean;
 }

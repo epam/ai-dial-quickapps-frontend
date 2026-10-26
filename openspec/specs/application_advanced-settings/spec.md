@@ -2,13 +2,13 @@
 
 ## Purpose
 
-Defines the content of the Quick App editor's Advanced Settings popup (opened from the Settings row in Configuration, see `application_editor-layout`): the orchestrator Temperature slider with its value input, the max attachments input, the Time awareness switch, the Built-in file tools switch and the Allow orchestrator to process files switch, the feature-flagged Code Interpreter, Add attachment and Web fetch switches, how the popup edits a local draft and applies it to the editor form state (`useQuickApp2Form`: `temperature`, `maxInputAttachments`, `timestamp`, `fileTools`, `processLargeFiles`, `codeInterpreter`, `addAttachment`, `webFetch`) on Save, validation, and how the values load from and save through the existing application update. No context or chat-api endpoint of its own.
+Defines the content of the Quick App editor's Advanced Settings popup (opened from the Settings row in Configuration, see `application_editor-layout`): the orchestrator Temperature slider with its value input, the max attachments input, the Time awareness switch, the Built-in file tools switch and the Allow orchestrator to process files switch, the feature-flagged Add attachment and Web fetch switches (Code Interpreter is a Settings-row switch in the Configuration column, not in the popup), how the popup edits a local draft and applies it to the editor form state (`useQuickApp2Form`: `temperature`, `maxInputAttachments`, `timestamp`, `fileTools`, `processLargeFiles`, `addAttachment`, `webFetch`) on Save, validation, and how the values load from and save through the existing application update. No context or chat-api endpoint of its own.
 
 ## Requirements
 
 ### Requirement: Popup lists the Advanced Settings controls
 
-The Advanced Settings popup body SHALL render, in this order: the Temperature slider (when available, see "Temperature in the popup"), a max attachments number input, a Time awareness switch, a Built-in file tools switch, the Allow orchestrator to process files switch (when available, see "Allow orchestrator to process files in the popup"), and then the Code Interpreter, Add attachment and Web fetch switches (when enabled, see "Feature toggles in the popup (editable)"). Each control SHALL show its translated label, and each control except the Temperature slider SHALL show its translated helper text.
+The Advanced Settings popup body SHALL render, in this order: the Temperature slider (when available, see "Temperature in the popup"), a max attachments number input, a Time awareness switch, a Built-in file tools switch, the Allow orchestrator to process files switch (when available, see "Allow orchestrator to process files in the popup"), and then the Add attachment and Web fetch switches (when enabled, see "Feature toggles in the popup (editable)"). Each control SHALL show its translated label, and each control except the Temperature slider SHALL show its translated helper text.
 
 #### Scenario: Controls and copy
 
@@ -18,7 +18,7 @@ The Advanced Settings popup body SHALL render, in this order: the Temperature sl
 - **AND** a switch labelled `ApplicationEditorI18nKeys.AdvancedSettingsTimeAwareness` ("Time awareness") with the description `ApplicationEditorI18nKeys.AdvancedSettingsTimeAwarenessDescription` ("Gives the agent the current date and time, helping it understand references like \"today,\" deadlines, and schedules.")
 - **AND** a switch labelled `ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileTools` ("Built-in file tools") with the description `ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileToolsDescription` ("Lets the agent browse, search, read, and edit files within the app's file context. Includes write access, so worth reviewing for agents handling sensitive files.")
 - **AND** a switch labelled `ApplicationEditorI18nKeys.AdvancedSettingsProcessFiles` with the description `ApplicationEditorI18nKeys.AdvancedSettingsProcessFilesDescription`
-- **AND** any enabled feature toggles after it, in the order Code Interpreter, Add attachment, Web fetch
+- **AND** any enabled feature toggles after it, in the order Add attachment, Web fetch
 - **AND** no visible string in the popup body SHALL be hardcoded in the component
 
 #### Scenario: Conditional controls absent
@@ -206,7 +206,7 @@ The Advanced Settings popup SHALL show the orchestrator temperature as the first
 
 ### Requirement: Allow orchestrator to process files in the popup
 
-The Advanced Settings popup SHALL show the orchestrator attachment strategy as its last body control: a kit `Switch` labelled `ApplicationEditorI18nKeys.AdvancedSettingsProcessFiles` ("Allow orchestrator to process files"), with the caption `ApplicationEditorI18nKeys.AdvancedSettingsProcessFilesDescription` ("Handle attachments by reading file content on demand instead of including all attachment content in the initial prompt."). It SHALL edit the draft `processLargeFiles` value, which is seeded from the form field `processLargeFiles`. On load that field is read as stored when `application_properties.orchestrator.attachment_strategy` is present (`true` when set, `false` when saved as off) and defaults to `true` when the key is absent, as for a new application.
+The Advanced Settings popup SHALL show the orchestrator attachment strategy as its last body control: a kit `Switch` labelled `ApplicationEditorI18nKeys.AdvancedSettingsProcessFiles` ("Process files"), with the caption `ApplicationEditorI18nKeys.AdvancedSettingsProcessFilesDescription` ("Agent will handle attachments by reading file content on demand instead of including all attachment content in the initial prompt."). It SHALL edit the draft `processLargeFiles` value, which is seeded from the form field `processLargeFiles`. On load that field is read as stored when `application_properties.orchestrator.attachment_strategy` is present (`true` when set, `false` when saved as off) and defaults to `true` when the key is absent, as for a new application.
 
 #### Scenario: Shown only for models that accept attachments
 
@@ -228,14 +228,13 @@ The Advanced Settings popup SHALL show the orchestrator attachment strategy as i
 
 ### Requirement: Feature toggles in the popup (editable)
 
-The popup SHALL show, after the existing switches, a Code Interpreter switch when the host setting `isCodeInterpreterEnabled` is on, an Add attachment switch when `isAddAttachmentEnabled` is on, and a Web fetch switch when `isWebFetchEnabled` is on. Each SHALL be a kit `Switch` presented like the Time awareness switch, labelled with the control's title and captioned with its description. A control whose setting is off SHALL NOT render.
+The popup SHALL show, after the existing switches, an Add attachment switch when `isAddAttachmentEnabled` is on, and a Web fetch switch when `isWebFetchEnabled` is on. Code Interpreter SHALL NOT appear in the popup: it is a switch row below Attachments in the Configuration column, shown only when `isCodeInterpreterEnabled` is on, and edits the form value `codeInterpreter` directly (not through the popup draft). Each SHALL be a kit `Switch` presented like the Time awareness switch, labelled with the control's title and captioned with its description. A control whose setting is off SHALL NOT render.
 
 #### Scenario: Copy
 
-- **WHEN** all three host settings are on and the popup opens
-- **THEN** a switch labelled `ApplicationEditorI18nKeys.CodeInterpreterTitle` ("Code Interpreter") SHALL show the caption `ApplicationEditorI18nKeys.CodeInterpreterDescription`
-- **AND** a switch labelled `ApplicationEditorI18nKeys.AdvancedSettingsAddAttachment` ("Add attachment") SHALL show the caption `ApplicationEditorI18nKeys.AdvancedSettingsAddAttachmentDescription`
-- **AND** a switch labelled `ApplicationEditorI18nKeys.AdvancedSettingsWebFetch` ("Web fetch") SHALL show the caption `ApplicationEditorI18nKeys.AdvancedSettingsWebFetchDescription`
+- **WHEN** both host settings are on and the popup opens
+- **THEN** a switch labelled `ApplicationEditorI18nKeys.AdvancedSettingsAddAttachment` ("Add attachments to the orchestrator response") SHALL show the caption `ApplicationEditorI18nKeys.AdvancedSettingsAddAttachmentDescription`
+- **AND** a switch labelled `ApplicationEditorI18nKeys.AdvancedSettingsWebFetch` ("Fetch web resources") SHALL show the caption `ApplicationEditorI18nKeys.AdvancedSettingsWebFetchDescription`
 - **AND** no "Allow the agent to ..." inline label SHALL be rendered
 
 #### Scenario: Host setting off
@@ -246,7 +245,9 @@ The popup SHALL show, after the existing switches, a Code Interpreter switch whe
 
 ### Requirement: Feature toggles are drafted and saved with the popup
 
-The draft SHALL be seeded from the form values `codeInterpreter`, `addAttachment` and `webFetch`. Edits SHALL change only the draft; Save SHALL write them with the other popup values in a single update; dismissal SHALL discard them. Persistence SHALL be unchanged: the values are serialized by the editor's existing application save, with no new request and no change in saved shape.
+When the stored application has no `features.representation_tooling` / `features.web_fetch` key (including a new application), the form values `addAttachment` and `webFetch` SHALL default to `true`, like `timestamp`; a stored key, including one saved as off, SHALL be read as stored. A host setting that is off still forces the value to `false`.
+
+The draft SHALL be seeded from the form values `addAttachment` and `webFetch`. Edits SHALL change only the draft; Save SHALL write them with the other popup values in a single update; dismissal SHALL discard them. Persistence SHALL be unchanged: the values are serialized by the editor's existing application save, with no new request and no change in saved shape.
 
 #### Scenario: Toggle and save
 

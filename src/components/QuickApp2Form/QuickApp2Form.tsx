@@ -172,13 +172,11 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
       timestamp: values.timestamp,
       fileTools: values.fileTools,
       processLargeFiles: values.processLargeFiles,
-      codeInterpreter: values.codeInterpreter,
       addAttachment: values.addAttachment,
       webFetch: values.webFetch,
     }),
     [
       values.addAttachment,
-      values.codeInterpreter,
       values.webFetch,
       values.fileTools,
       values.maxInputAttachments,
@@ -236,6 +234,10 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     },
     [setField, setValues, values],
   );
+  const handleCodeInterpreterChange = useCallback(
+    (isEnabled: boolean) => setField('codeInterpreter', isEnabled),
+    [setField],
+  );
   const handleInputAttachmentTypesChange = useCallback(
     (mimeTypes: string[]) => setField('inputAttachmentTypes', mimeTypes),
     [setField],
@@ -276,6 +278,8 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
         errors={errors}
         isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
         isCodeInterpreterEnabled={!!settings.isCodeInterpreterEnabled}
+        isCodeInterpreterOn={values.codeInterpreter}
+        onCodeInterpreterChange={handleCodeInterpreterChange}
         isAddAttachmentEnabled={!!settings.isAddAttachmentEnabled}
         isWebFetchEnabled={!!settings.isWebFetchEnabled}
         advancedSettings={advancedSettings}

@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { doesModelAllowTemperature } from '@/utils/application';
 
 import AttachmentsSection from '@/components/Attachments/AttachmentsSection/AttachmentsSection';
+import CodeInterpreterSection from '@/components/Settings/CodeInterpreterSection/CodeInterpreterSection';
 import SettingsSection from '@/components/Settings/SettingsSection/SettingsSection';
 
 import { DefaultModelBlock } from '@/components/Orchestrator/DefaultModelBlock/DefaultModelBlock';
@@ -18,6 +19,8 @@ export interface ModelConfigurationSectionProps {
   errors: QuickApp2FormErrors;
   isProcessLargeFilesAvailable: boolean;
   isCodeInterpreterEnabled: boolean;
+  isCodeInterpreterOn: boolean;
+  onCodeInterpreterChange: (isEnabled: boolean) => void;
   isAddAttachmentEnabled: boolean;
   isWebFetchEnabled: boolean;
   advancedSettings: AdvancedSettingsValues;
@@ -34,6 +37,8 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
   errors,
   isProcessLargeFilesAvailable,
   isCodeInterpreterEnabled,
+  isCodeInterpreterOn,
+  onCodeInterpreterChange,
   isAddAttachmentEnabled,
   isWebFetchEnabled,
   advancedSettings,
@@ -67,7 +72,6 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
           advancedSettings={advancedSettings}
           isTemperatureAvailable={isTemperatureAvailable}
           isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
-          isCodeInterpreterEnabled={isCodeInterpreterEnabled}
           isAddAttachmentEnabled={isAddAttachmentEnabled}
           isWebFetchEnabled={isWebFetchEnabled}
           isAttachmentsEnabled={isAttachmentsEnabled}
@@ -82,6 +86,13 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
           onEnabledChange={onAttachmentsEnabledChange}
           onChange={onInputAttachmentTypesChange}
         />
+
+        {isCodeInterpreterEnabled && (
+          <CodeInterpreterSection
+            isEnabled={isCodeInterpreterOn}
+            onEnabledChange={onCodeInterpreterChange}
+          />
+        )}
       </div>
     </section>
   );

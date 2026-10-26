@@ -53,6 +53,8 @@ const TestForm = ({ isProcessLargeFilesAvailable = true }: TestFormProps) => (
     errors={{}}
     isProcessLargeFilesAvailable={isProcessLargeFilesAvailable}
     isCodeInterpreterEnabled={false}
+    isCodeInterpreterOn={false}
+    onCodeInterpreterChange={vi.fn()}
     isAddAttachmentEnabled={false}
     isWebFetchEnabled={false}
     advancedSettings={{
@@ -61,7 +63,6 @@ const TestForm = ({ isProcessLargeFilesAvailable = true }: TestFormProps) => (
       timestamp: true,
       fileTools: false,
       processLargeFiles: false,
-      codeInterpreter: false,
       addAttachment: false,
       webFetch: false,
     }}

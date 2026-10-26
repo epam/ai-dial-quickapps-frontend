@@ -50,7 +50,7 @@ The Configuration area SHALL contain the model selector, presented as the **Defa
 #### Scenario: No inline temperature or process-files controls
 
 - **WHEN** the editor renders Configuration for a model that supports temperature and accepts attachments
-- **THEN** no Temperature slider and no "Allow orchestrator to process files" switch SHALL be rendered in Configuration
+- **THEN** no Temperature slider and no "Process files" switch SHALL be rendered in Configuration
 - **AND** no "Process files" block title or temperature description text SHALL be rendered there
 
 #### Scenario: Settings and Attachments order
