@@ -248,6 +248,7 @@
       "link": "Edit JSON",
       "title": "Edit JSON",
       "editorLabel": "QuickApp configuration as JSON",
+      "formatLabel": "JSON",
       "syntaxError": "Invalid JSON: {{message}}",
       "rootMustBeObject": "The configuration must be a JSON object.",
       "invalidStructure": "Invalid configuration: {{message}}"

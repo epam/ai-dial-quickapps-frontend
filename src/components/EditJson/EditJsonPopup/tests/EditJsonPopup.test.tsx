@@ -1,7 +1,11 @@
 import { act, type ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { ApplicationEditorI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
+import {
+  ApplicationEditorI18nKeys,
+  ButtonsI18nKeys,
+  ChatI18nKeys,
+} from '@/constants/translation-keys';
 import { getQuickApp2FormData } from '@/form/quickApp2Form';
 import { click, getButton, typeInto } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
@@ -26,6 +30,22 @@ vi.mock('@epam/ai-dial-ui-kit', () => ({
   ButtonAppearance: { Link: 'link' },
   ButtonVariant: { Primary: 'primary', Neutral: 'neutral' },
   PopupSize: { Lg: 'lg' },
+  ElementSize: { Small: 'small' },
+  DIAL_ICON_SIZE: { SM: 16 },
+  DIAL_KIT_ICON_STROKE: 1.5,
+  GhostIconButton: ({
+    icon,
+    onClick,
+    'aria-label': ariaLabel,
+  }: {
+    icon: ReactNode;
+    onClick: () => void;
+    'aria-label': string;
+  }) => (
+    <button type="button" aria-label={ariaLabel} onClick={onClick}>
+      {icon}
+    </button>
+  ),
   EditorThemes: { dark: 'dark', light: 'light' },
   mergeClasses: (...classes: (string | undefined)[]) => classes.filter(Boolean).join(' '),
   DialLoader: () => <span>loading</span>,
@@ -61,17 +81,21 @@ vi.mock('@epam/ai-dial-ui-kit', () => ({
     DialJsonEditor: ({
       value,
       currentTheme,
+      themesConfig,
       onChange,
       options,
     }: {
       value: string;
       currentTheme: string;
+      themesConfig?: Record<string, { colors: Record<string, string> }>;
       onChange: (value: string) => void;
-      options: { ariaLabel: string };
+      options: { ariaLabel: string; lineNumbers?: string };
     }) => (
       <textarea
         aria-label={options.ariaLabel}
         data-theme={currentTheme}
+        data-background={themesConfig?.[currentTheme]?.colors['editor.background']}
+        data-line-numbers={options.lineNumbers}
         value={value}
         onChange={(event) => onChange(event.target.value)}
       />
@@ -104,6 +128,9 @@ const values = getQuickApp2FormData(
 );
 const document = buildEditJsonDocument(values, context);
 
+const downloadTextFile = vi.hoisted(() => vi.fn());
+vi.mock('@/utils/file-download', () => ({ downloadTextFile }));
+
 const dom = setupTestRoot();
 
 const renderPopup = async () => {
@@ -134,11 +161,20 @@ describe('EditJsonPopup', () => {
     expect(getEditor()?.closest('[dir="ltr"]')).toBeTruthy();
   });
 
-  it('uses the dark editor theme for a loaded non-light theme', async () => {
+  it('draws the light code box as the design does: plain white, no line numbers', async () => {
+    await renderPopup();
+
+    expect(getEditor()?.dataset.theme).toBe('light');
+    expect(getEditor()?.dataset.background).toBe('#FCFCFC');
+    expect(getEditor()?.dataset.lineNumbers).toBe('off');
+  });
+
+  it('uses the dark editor theme of the kit for a loaded non-light theme', async () => {
     themeState.currentTheme = { id: 'dark' };
     await renderPopup();
 
     expect(getEditor()?.dataset.theme).toBe('dark');
+    expect(getEditor()?.dataset.background).toBeUndefined();
     themeState.currentTheme = { id: 'light' };
   });
 
@@ -186,5 +222,44 @@ describe('EditJsonPopup', () => {
 
     expect(onSave).not.toHaveBeenCalled();
     expect(onClose).toHaveBeenCalledTimes(2);
+  });
+
+  it('labels the code box JSON', async () => {
+    await renderPopup();
+
+    expect(dom.container.textContent).toContain(ApplicationEditorI18nKeys.EditJsonFormatLabel);
+  });
+
+  it('copies the current text and confirms it', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    await renderPopup();
+    typeInto(getEditor(), '{ "draft": 1 }');
+
+    await act(async () => click(getButton(ChatI18nKeys.CopyCode, dom.container)));
+
+    expect(writeText).toHaveBeenCalledWith('{ "draft": 1 }');
+    expect(getButton(ButtonsI18nKeys.Copied, dom.container)).toBeTruthy();
+  });
+
+  it('keeps working when the clipboard is unavailable', async () => {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: vi.fn().mockRejectedValue(new Error('denied')) },
+      configurable: true,
+    });
+    await renderPopup();
+
+    await act(async () => click(getButton(ChatI18nKeys.CopyCode, dom.container)));
+
+    expect(getButton(ChatI18nKeys.CopyCode, dom.container)).toBeTruthy();
+  });
+
+  it('downloads the current text as a JSON file', async () => {
+    await renderPopup();
+    typeInto(getEditor(), '{ "draft": 2 }');
+
+    click(getButton(ChatI18nKeys.DownloadCode, dom.container));
+
+    expect(downloadTextFile).toHaveBeenCalledWith('{ "draft": 2 }', 'quick-app-configuration.json');
   });
 });

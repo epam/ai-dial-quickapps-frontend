@@ -62,12 +62,14 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
   return (
     <section
       aria-labelledby="model-configuration-heading"
-      className="flex min-h-0 flex-col px-8 pb-4"
+      // From the desktop layout the column stays put while the rest of the editor scrolls, so the
+      // Edit JSON footer is always at the bottom of the view. Rows scroll only if they cannot fit.
+      className="flex min-h-0 flex-col px-8 pb-4 desktop:sticky desktop:top-0 desktop:h-dvh desktop:self-start"
     >
       <h2 id="model-configuration-heading" className="dial-small-semi-text">
         {t(ApplicationEditorI18nKeys.Configuration)}
       </h2>
-      <div className="mt-3 mb-6 flex flex-col gap-3">
+      <div className="mt-3 mb-6 flex min-h-0 flex-1 flex-col gap-3 desktop:overflow-y-auto">
         <DefaultModelBlock
           value={model}
           onChange={onModelChange}
@@ -101,7 +103,7 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
         )}
       </div>
 
-      <div className="mt-auto flex justify-end border-t border-primary pt-3">
+      <div className="mt-auto flex shrink-0 justify-end border-t border-tertiary pt-3">
         <EditJsonLink onClick={onEditJsonClick} />
       </div>
     </section>

@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { prepareDownloadDestination, triggerBrowserDownload } from '@/utils/file-download';
+import {
+  downloadTextFile,
+  prepareDownloadDestination,
+  triggerBrowserDownload,
+} from '@/utils/file-download';
 import { DownloadDestinationType } from '@/types/dial-files';
 
 type PickerWindow = Window & { showSaveFilePicker?: unknown };
@@ -108,5 +112,26 @@ describe('triggerBrowserDownload', () => {
 
     expect(new TextDecoder().decode(chunks[0])).toBe('abc');
     expect(clicked).toHaveLength(0);
+  });
+});
+
+describe('downloadTextFile', () => {
+  it('saves the text as a file with the given name and type', async () => {
+    const clicked: HTMLAnchorElement[] = [];
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      clicked.push(this);
+    });
+    const createObjectURL = vi.fn(() => 'blob:text');
+    URL.createObjectURL = createObjectURL;
+    URL.revokeObjectURL = vi.fn();
+
+    downloadTextFile('{"a":1}', 'config.json');
+
+    expect(clicked[0].download).toBe('config.json');
+    const blob = (createObjectURL.mock.calls[0] as unknown as [Blob])[0];
+    expect(blob.type).toBe('application/json');
+    expect(await blob.text()).toBe('{"a":1}');
   });
 });

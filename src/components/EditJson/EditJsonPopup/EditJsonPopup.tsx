@@ -1,18 +1,33 @@
-import { FC, lazy, memo, Suspense, useCallback, useMemo, useState } from 'react';
+import { IconCheck, IconCopy, IconDownload } from '@tabler/icons-react';
+import { FC, lazy, memo, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { MOBILE_FULLSCREEN_POPUP_CLASS_NAMES } from '@/constants/popup';
-import { ApplicationEditorI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
+import {
+  EDIT_JSON_EDITOR_OPTIONS,
+  EDIT_JSON_LIGHT_THEMES_CONFIG,
+} from '@/constants/edit-json-editor';
+import { EDIT_JSON_COPIED_RESET_MS, EDIT_JSON_DOWNLOAD_FILE_NAME } from '@/constants/editor';
+import {
+  ApplicationEditorI18nKeys,
+  ButtonsI18nKeys,
+  ChatI18nKeys,
+} from '@/constants/translation-keys';
 import { useThemeContext } from '@/context/ThemeContext';
 import type { QuickApp2Form } from '@/form/quickApp2Form';
 import { ThemeId } from '@/types/theme';
 import { parseEditJsonDocument, type EditJsonContext } from '@/utils/edit-json';
+import { downloadTextFile } from '@/utils/file-download';
 import { useTranslation } from 'react-i18next';
 
 import {
   ButtonAppearance,
   ButtonVariant,
+  DIAL_ICON_SIZE,
+  DIAL_KIT_ICON_STROKE,
   DialLoader,
   EditorThemes,
+  ElementSize,
+  GhostIconButton,
   LazyDialJsonEditor,
   mergeClasses,
   Popup,
@@ -35,6 +50,7 @@ const EditJsonPopup: FC<EditJsonPopupProps> = ({ document, context, onSave, onCl
   const { t } = useTranslation();
   const { currentTheme } = useThemeContext();
   const [draft, setDraft] = useState(document);
+  const [isCopied, setIsCopied] = useState(false);
 
   // With no loaded theme the page keeps the light stylesheet defaults, so the editor goes
   // dark only for a loaded non-light theme.
@@ -43,10 +59,8 @@ const EditJsonPopup: FC<EditJsonPopupProps> = ({ document, context, onSave, onCl
 
   const editorOptions = useMemo(
     () => ({
+      ...EDIT_JSON_EDITOR_OPTIONS,
       ariaLabel: t(ApplicationEditorI18nKeys.EditJsonEditorLabel),
-      minimap: { enabled: false },
-      scrollBeyondLastLine: false,
-      tabSize: 2,
     }),
     [t],
   );
@@ -54,6 +68,26 @@ const EditJsonPopup: FC<EditJsonPopupProps> = ({ document, context, onSave, onCl
   const result = useMemo(() => parseEditJsonDocument(draft, context), [context, draft]);
 
   const handleChange = useCallback((value?: string) => setDraft(value ?? ''), []);
+
+  useEffect(() => {
+    if (!isCopied) return;
+    const timer = setTimeout(() => setIsCopied(false), EDIT_JSON_COPIED_RESET_MS);
+    return () => clearTimeout(timer);
+  }, [isCopied]);
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(draft);
+      setIsCopied(true);
+    } catch {
+      // The clipboard can be unavailable (insecure context, denied permission): nothing to copy to.
+    }
+  }, [draft]);
+
+  const handleDownload = useCallback(
+    () => downloadTextFile(draft, EDIT_JSON_DOWNLOAD_FILE_NAME),
+    [draft],
+  );
 
   const handleSave = useCallback(() => {
     if (!result.isValid) return;
@@ -66,9 +100,8 @@ const EditJsonPopup: FC<EditJsonPopupProps> = ({ document, context, onSave, onCl
       open
       size={PopupSize.Lg}
       {...MOBILE_FULLSCREEN_POPUP_CLASS_NAMES}
-      className={mergeClasses(MOBILE_FULLSCREEN_POPUP_CLASS_NAMES.className, 'md:max-w-[860px]')}
+      className={mergeClasses(MOBILE_FULLSCREEN_POPUP_CLASS_NAMES.className, 'md:max-w-[1270px]')}
       header={t(ApplicationEditorI18nKeys.EditJsonTitle)}
-      headerDivider
       footerDivider
       onClose={onClose}
       bodyClassName="max-w-full px-4 py-4 md:px-6"
@@ -90,19 +123,47 @@ const EditJsonPopup: FC<EditJsonPopupProps> = ({ document, context, onSave, onCl
       ]}
     >
       <div className="flex flex-col gap-3 text-start">
-        {/* Code reads left to right whatever the document direction is. */}
-        <div dir="ltr" className="h-[min(32rem,55vh)] overflow-hidden rounded border border-primary">
-          <Suspense fallback={<DialLoader fullWidth />}>
-            <DialJsonEditor
-              value={draft}
-              currentTheme={editorTheme}
-              onChange={handleChange}
-              options={editorOptions}
-            />
-          </Suspense>
+        <div className="overflow-hidden rounded-lg border border-tertiary">
+          <div className="flex items-center justify-between ps-3 pe-2 pt-2">
+            <span className="dial-small-semi-text text-secondary">
+              {t(ApplicationEditorI18nKeys.EditJsonFormatLabel)}
+            </span>
+            <div className="flex items-center gap-1">
+              <GhostIconButton
+                size={ElementSize.Small}
+                icon={
+                  isCopied ? (
+                    <IconCheck size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} />
+                  ) : (
+                    <IconCopy size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} />
+                  )
+                }
+                aria-label={t(isCopied ? ButtonsI18nKeys.Copied : ChatI18nKeys.CopyCode)}
+                onClick={handleCopy}
+              />
+              <GhostIconButton
+                size={ElementSize.Small}
+                icon={<IconDownload size={DIAL_ICON_SIZE.SM} stroke={DIAL_KIT_ICON_STROKE} />}
+                aria-label={t(ChatI18nKeys.DownloadCode)}
+                onClick={handleDownload}
+              />
+            </div>
+          </div>
+          {/* Code reads left to right whatever the document direction is. */}
+          <div dir="ltr" className="h-[min(36rem,60vh)]">
+            <Suspense fallback={<DialLoader fullWidth />}>
+              <DialJsonEditor
+                value={draft}
+                currentTheme={editorTheme}
+                themesConfig={isDarkEditor ? undefined : EDIT_JSON_LIGHT_THEMES_CONFIG}
+                onChange={handleChange}
+                options={editorOptions}
+              />
+            </Suspense>
+          </div>
         </div>
         {!result.isValid && (
-          <ul role="alert" className="flex flex-col gap-1 text-error dial-tiny">
+          <ul role="alert" className="flex flex-col gap-1 text-error dial-tiny-text">
             {result.errors.map(({ key, values }) => (
               <li key={`${key}:${values?.message ?? ''}`}>{t(key, values)}</li>
             ))}

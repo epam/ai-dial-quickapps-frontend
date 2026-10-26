@@ -205,6 +205,7 @@ export enum ApplicationEditorI18nKeys {
   EditJson = 'applicationEditor.editJson.link',
   EditJsonTitle = 'applicationEditor.editJson.title',
   EditJsonEditorLabel = 'applicationEditor.editJson.editorLabel',
+  EditJsonFormatLabel = 'applicationEditor.editJson.formatLabel',
   EditJsonSyntaxError = 'applicationEditor.editJson.syntaxError',
   EditJsonRootMustBeObject = 'applicationEditor.editJson.rootMustBeObject',
   EditJsonInvalidStructure = 'applicationEditor.editJson.invalidStructure',

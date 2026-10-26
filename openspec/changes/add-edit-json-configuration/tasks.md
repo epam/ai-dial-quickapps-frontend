@@ -13,6 +13,8 @@ Slicing strategy: contract-first for the split / compose mapping and the JSON he
 - [x] 2.1 Add `src/components/EditJson/EditJsonPopup/EditJsonPopup.tsx` (ui-kit `Popup`, lazy `DialJsonEditor` in `Suspense`, theme from `ThemeContext`, `dir="ltr"` editor, derived validation, `role="alert"` errors, Save disabled when invalid, Cancel / close / Escape discard); verify `tests/EditJsonPopup.test.tsx`: Save disabled + error for invalid text, enabled after fixing, Cancel does not call `onSave`, editor labelled, focus returns to the opener.
 - [x] 2.2 Add `src/components/EditJson/EditJsonLink/EditJsonLink.tsx` (link-appearance button, `IconCode` with `DIAL_ICON_SIZE` / `DIAL_KIT_ICON_STROKE`) and the footer slot (divider, end-aligned, `mt-auto`) in `ModelConfigurationSection.tsx`; verify the section test renders the footer after all rows and, with `document.documentElement.dir = 'rtl'`, uses logical alignment.
 
+- [x] 2.3 Align the popup with the Figma frame: wide dialog, bordered code box with a "JSON" header and copy / download icon buttons (`downloadTextFile` in `src/utils/file-download.ts`); verify `EditJsonPopup.test.tsx` and `file-download.test.ts` cover copy, clipboard failure and download.
+
 ## 3. Wire to the form
 
 - [x] 3.1 In `QuickApp2Form.tsx` build the document when the popup opens and, on popup Save, `setValues(..., { shouldValidate: true })`, force host-disabled features off and reset `isMaxAttachmentsSeededRef`; verify `QuickApp2Form` tests: changing the model id and removing a skill in the JSON updates Default model and Skills; invalid JSON never reaches `setValues`; Code Interpreter stays off when the host setting is off; metadata untouched; saving the unchanged document leaves the form not dirty; Cancel leaves the form unchanged.

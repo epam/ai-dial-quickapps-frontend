@@ -154,6 +154,7 @@ describe('ModelConfigurationSection', () => {
     const link = dom.container.querySelector<HTMLElement>('[data-testid="edit-json"]');
     const footer = link?.parentElement;
     expect(footer?.className).toContain('border-t');
+    expect(footer?.className).toContain('border-tertiary');
     expect(footer?.className).toContain('mt-auto');
     expect(footer?.className).toContain('justify-end');
     expect(footer?.previousElementSibling?.contains(getSettings())).toBe(true);
@@ -161,6 +162,21 @@ describe('ModelConfigurationSection', () => {
 
     act(() => link?.click());
     expect(onEditJsonClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('stays in place while the editor scrolls and keeps the footer in view', () => {
+    dom.render(<TestForm />);
+
+    const section = dom.container.querySelector('section');
+    expect(section?.className).toContain('desktop:sticky');
+    expect(section?.className).toContain('desktop:top-0');
+    expect(section?.className).toContain('desktop:h-dvh');
+    expect(section?.className).toContain('desktop:self-start');
+    const footer = dom.container.querySelector('[data-testid="edit-json"]')?.parentElement;
+    expect(footer?.className).toContain('shrink-0');
+    const rows = footer?.previousElementSibling;
+    expect(rows?.className).toContain('min-h-0');
+    expect(rows?.className).toContain('desktop:overflow-y-auto');
   });
 
   it('uses logical alignment only, so the footer follows the document direction', () => {

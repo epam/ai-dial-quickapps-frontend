@@ -59,6 +59,14 @@ Each time the popup opens it SHALL show, pretty-printed with two-space indentati
 - **WHEN** the app theme is dark or the document direction is `rtl`
 - **THEN** the code editor SHALL use the matching dark theme and the popup layout SHALL follow the direction, while the JSON text remains left-to-right
 
+#### Scenario: Code box colours follow the design
+
+- **WHEN** the popup is shown with a light theme
+- **THEN** the code box SHALL have a light `border-tertiary` border, a white background, no line numbers and no header divider under the title
+- **AND** keys SHALL be blue, string values green, numbers orange, `true` / `false` / `null` purple and punctuation grey
+- **WHEN** the theme is dark
+- **THEN** the code editor SHALL use the UI kit's dark theme
+
 ### Requirement: Only valid JSON can be saved
 
 The popup SHALL have a Save button and a Cancel button (`ButtonsI18nKeys`). Save SHALL be disabled while the text is not valid. Valid means: it parses as JSON, the root is an object, the content maps to the editor form without type errors, and the result passes the editor's own form validation (for example non-blank instructions, an existing model that supports tools, attachment types when attachments are on). While invalid, the popup SHALL show the error messages in an alert region.
@@ -124,6 +132,25 @@ The popup's Save SHALL write the values read from the JSON into the editor form 
 - **WHEN** the user saves the popup
 - **THEN** name, description, version, avatar and tags SHALL be unchanged
 
+### Requirement: Code box header with copy and download
+
+The popup SHALL show the JSON editor inside a bordered, rounded code box whose header row carries the label `ApplicationEditorI18nKeys.EditJsonFormatLabel` ("JSON") on the start side and two icon buttons on the end side: copy and download. Copy SHALL put the editor's current text on the clipboard, then show a check icon named `ButtonsI18nKeys.Copied` for about two seconds; it SHALL do nothing visible if the clipboard is unavailable. Download SHALL save the editor's current text as `quick-app-configuration.json`. The buttons SHALL be named `ChatI18nKeys.CopyCode` and `ChatI18nKeys.DownloadCode` and SHALL work whether or not the JSON is valid. The popup SHALL be wide, up to 1270px, and fullscreen below the `md` breakpoint.
+
+#### Scenario: Copy the draft
+
+- **WHEN** the user edits the text and activates Copy
+- **THEN** the clipboard SHALL receive the edited text, not the text the popup opened with
+
+#### Scenario: Download the draft
+
+- **WHEN** the user activates Download
+- **THEN** a file named `quick-app-configuration.json` with the editor's current text SHALL be saved
+
+#### Scenario: Invalid text can still be copied
+
+- **WHEN** the text is not valid JSON
+- **THEN** Copy and Download SHALL stay enabled
+
 ### Requirement: Cancel leaves the configuration unchanged
 
 Cancel, the popup's close button and Escape SHALL close the popup and discard the draft without changing the form. Reopening SHALL show the current form values, not the discarded draft.
@@ -145,7 +172,7 @@ All visible strings and `aria-label`s SHALL come from translation keys. The popu
 
 ### Requirement: State ownership, requests and presentation
 
-The editor form state (`useQuickApp2Form`, owned by `QuickApp2Form`) SHALL own the saved JSON values, including the form-only `extraConfig` (the stored configuration without the leaves the form owns); `QuickApp2Form` SHALL own whether the popup is open and the document it was opened with, and the popup SHALL own its draft text. Edit JSON SHALL make no chat-api request and no host message of its own: values reach chat-api only through the editor's normal save (`application_editing`). Its visible strings SHALL be `ApplicationEditorI18nKeys.EditJson` (`applicationEditor.editJson.link`, "Edit JSON"), `EditJsonTitle` (`applicationEditor.editJson.title`), `EditJsonEditorLabel` (`applicationEditor.editJson.editorLabel`), `EditJsonSyntaxError` (`applicationEditor.editJson.syntaxError`, with the parser message), `EditJsonRootMustBeObject` (`applicationEditor.editJson.rootMustBeObject`) and `EditJsonInvalidStructure` (`applicationEditor.editJson.invalidStructure`), plus `ButtonsI18nKeys.Save` and `ButtonsI18nKeys.Cancel`. The link, the popup and the footer SHALL use logical placement only, the `</>` icon SHALL NOT be mirrored, and the JSON text SHALL stay left-to-right. The popup's document, parse result and handlers SHALL be memoised so typing re-parses only the draft, and the code editor SHALL be loaded lazily.
+The editor form state (`useQuickApp2Form`, owned by `QuickApp2Form`) SHALL own the saved JSON values, including the form-only `extraConfig` (the stored configuration without the leaves the form owns); `QuickApp2Form` SHALL own whether the popup is open and the document it was opened with, and the popup SHALL own its draft text. Edit JSON SHALL make no chat-api request and no host message of its own: values reach chat-api only through the editor's normal save (`application_editing`). Its visible strings SHALL be `ApplicationEditorI18nKeys.EditJson` (`applicationEditor.editJson.link`, "Edit JSON"), `EditJsonTitle` (`applicationEditor.editJson.title`), `EditJsonEditorLabel` (`applicationEditor.editJson.editorLabel`), `EditJsonFormatLabel` (`applicationEditor.editJson.formatLabel`, "JSON"), `EditJsonSyntaxError` (`applicationEditor.editJson.syntaxError`, with the parser message), `EditJsonRootMustBeObject` (`applicationEditor.editJson.rootMustBeObject`) and `EditJsonInvalidStructure` (`applicationEditor.editJson.invalidStructure`), plus `ButtonsI18nKeys.Save` and `ButtonsI18nKeys.Cancel`. The link, the popup and the footer SHALL use logical placement only, the `</>` icon SHALL NOT be mirrored, and the JSON text SHALL stay left-to-right. The popup's document, parse result and handlers SHALL be memoised so typing re-parses only the draft, and the code editor SHALL be loaded lazily.
 
 #### Scenario: Unchanged document leaves the form clean
 

@@ -9,8 +9,15 @@ The Configuration column SHALL end with a footer, separated from the rows above 
 #### Scenario: Footer position
 
 - **WHEN** the editor renders Configuration at the desktop layout
-- **THEN** the Edit JSON link button SHALL be at the bottom-end corner of the column, below a divider
+- **THEN** the Edit JSON link button SHALL be at the bottom-end corner of the column, below a divider drawn in the `border-tertiary` colour
 - **AND** it SHALL stay below all Configuration rows whether they are few or many
+
+#### Scenario: Configuration column does not scroll
+
+- **WHEN** the editor content is taller than the view at the desktop layout and the user scrolls
+- **THEN** the Configuration column SHALL stay in place and only the other columns SHALL scroll
+- **AND** the Edit JSON footer SHALL stay at the bottom of the view, never scrolled out of sight
+- **AND** the Configuration rows SHALL scroll inside the column only when they cannot fit in the view
 
 #### Scenario: Right-to-left document
 
