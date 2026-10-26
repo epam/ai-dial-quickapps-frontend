@@ -263,12 +263,12 @@
       "pathLabel": "Path of {{name}}"
     },
     "advancedSettings": {
-      "processFiles": "Allow orchestrator to process files",
-      "processFilesDescription": "Handle attachments by reading file content on demand instead of including all attachment content in the initial prompt.",
-      "addAttachment": "Add attachment",
-      "addAttachmentDescription": "Enables the orchestrator’s built-in tool for attaching a file to the final response. When enabled, the agent can add a file it produced (e.g. one created via the file tools) to the response’s attachments. When disabled, no attachment tool is exposed to the orchestrator.",
-      "webFetch": "Web fetch",
-      "webFetchDescription": "Enables the orchestrator’s built-in tool for fetching an external web resource for this app. When enabled, the agent can fetch an external URL and get its content back inline, or saved to the app’s workspace for larger content. When disabled, no fetch tool is exposed to the orchestrator.",
+      "processFiles": "Process files",
+      "processFilesDescription": "Agent will handle attachments by reading file content on demand instead of including all attachment content in the initial prompt.",
+      "addAttachment": "Add attachments to the orchestrator response",
+      "addAttachmentDescription": "Includes attachments in the orchestrator’s response, so users can access them alongside the answer.",
+      "webFetch": "Fetch web resources",
+      "webFetchDescription": "Lets the agent retrieve content from web links and use it to inform its responses.",
       "temperatureValue": "Temperature value",
       "temperatureCold": "Cold",
       "temperatureHot": "Hot",
