@@ -227,9 +227,11 @@ export const getQuickApp2FormData = (
   const processLargeFiles =
     'attachment_strategy' in (appProperties?.orchestrator ?? {})
       ? !!appProperties?.orchestrator?.attachment_strategy
-      : false;
+      : true;
   const fileTools =
-    'dial_files' in (appProperties?.features ?? {}) ? !!appProperties?.features?.dial_files : false;
+    'dial_files' in (appProperties?.features ?? {})
+      ? !!appProperties?.features?.dial_files
+      : true;
   const addAttachment =
     'representation_tooling' in (appProperties?.features ?? {})
       ? !!appProperties?.features?.representation_tooling?.add_attachment

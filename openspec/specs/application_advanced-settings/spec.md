@@ -96,7 +96,7 @@ The max attachments draft SHALL be a positive integer when attachments are enabl
 The popup values SHALL be serialized by the editor's existing application save without any change in shape, sent in the chat-api application update request (`@epam/ai-dial-chat-api-client` `updateApplicationBodyDto`):
 
 - `timestamp` → `application_properties.features.timestamp`
-- `fileTools` → `application_properties.features.dial_files`
+- `fileTools` → `application_properties.features.dial_files` (defaults to `true` when the key is absent, as for a new application)
 - `maxInputAttachments` → the application's `maxInputAttachments`
 - `temperature` → `application_properties.orchestrator.deployment.parameters.temperature` (only when the model supports temperature)
 - `processLargeFiles` → `application_properties.orchestrator.attachment_strategy` (only when the model accepts attachments)
@@ -127,7 +127,7 @@ The popup values SHALL be serialized by the editor's existing application save w
 #### Scenario: Defaults on load
 
 - **WHEN** an application is loaded whose `features` has no `timestamp` key and no `dial_files` key, with no `maxInputAttachments`, no `orchestrator.deployment.parameters.temperature` and no `orchestrator.attachment_strategy`
-- **THEN** the popup SHALL show the temperature at `0.5`, Time awareness on, Built-in file tools off, process files off (when shown), and an empty max attachments input
+- **THEN** the popup SHALL show the temperature at `0.5`, Time awareness on, Built-in file tools on, process files on (when shown), and an empty max attachments input
 
 ### Requirement: Advanced Settings is accessible and direction-aware
 
@@ -206,7 +206,7 @@ The Advanced Settings popup SHALL show the orchestrator temperature as the first
 
 ### Requirement: Allow orchestrator to process files in the popup
 
-The Advanced Settings popup SHALL show the orchestrator attachment strategy as its last body control: a kit `Switch` labelled `ApplicationEditorI18nKeys.AdvancedSettingsProcessFiles` ("Allow orchestrator to process files"), with the caption `ApplicationEditorI18nKeys.AdvancedSettingsProcessFilesDescription` ("Handle attachments by reading file content on demand instead of including all attachment content in the initial prompt."). It SHALL edit the draft `processLargeFiles` value, which is seeded from the form field `processLargeFiles`. On load that field is `true` when `application_properties.orchestrator.attachment_strategy` is set, and `false` otherwise.
+The Advanced Settings popup SHALL show the orchestrator attachment strategy as its last body control: a kit `Switch` labelled `ApplicationEditorI18nKeys.AdvancedSettingsProcessFiles` ("Allow orchestrator to process files"), with the caption `ApplicationEditorI18nKeys.AdvancedSettingsProcessFilesDescription` ("Handle attachments by reading file content on demand instead of including all attachment content in the initial prompt."). It SHALL edit the draft `processLargeFiles` value, which is seeded from the form field `processLargeFiles`. On load that field is read as stored when `application_properties.orchestrator.attachment_strategy` is present (`true` when set, `false` when saved as off) and defaults to `true` when the key is absent, as for a new application.
 
 #### Scenario: Shown only for models that accept attachments
 
