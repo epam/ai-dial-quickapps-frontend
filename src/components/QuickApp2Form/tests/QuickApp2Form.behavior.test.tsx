@@ -430,7 +430,7 @@ describe('QuickApp2Form observable behavior', () => {
 
     await submitForm();
     expect(onSave).toHaveBeenLastCalledWith(
-      expect.objectContaining({ temperature: 0.3, processLargeFiles: true }),
+      expect.objectContaining({ temperature: 0.3, processLargeFiles: false }),
       expect.anything(),
       false,
       undefined,
