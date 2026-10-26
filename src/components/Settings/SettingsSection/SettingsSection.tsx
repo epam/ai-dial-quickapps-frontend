@@ -22,7 +22,6 @@ export interface SettingsSectionProps {
   advancedSettings: AdvancedSettingsValues;
   isTemperatureAvailable: boolean;
   isProcessLargeFilesAvailable: boolean;
-  isCodeInterpreterEnabled: boolean;
   isAddAttachmentEnabled: boolean;
   isWebFetchEnabled: boolean;
   isAttachmentsEnabled: boolean;

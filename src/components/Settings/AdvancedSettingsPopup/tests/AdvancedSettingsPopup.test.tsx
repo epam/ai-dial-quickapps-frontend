@@ -165,7 +165,6 @@ const initialValues: AdvancedSettingsValues = {
   timestamp: true,
   fileTools: false,
   processLargeFiles: true,
-  codeInterpreter: false,
   addAttachment: false,
   webFetch: false,
 };
@@ -181,7 +180,6 @@ const renderPopup = (props: Partial<React.ComponentProps<typeof AdvancedSettings
       advancedSettings={initialValues}
       isTemperatureAvailable={false}
       isProcessLargeFilesAvailable={false}
-      isCodeInterpreterEnabled={false}
       isAddAttachmentEnabled={false}
       isWebFetchEnabled={false}
       isAttachmentsEnabled={false}
@@ -568,7 +566,6 @@ describe('AdvancedSettingsPopup', () => {
     ) =>
       renderPopup({
         isProcessLargeFilesAvailable: true,
-        isCodeInterpreterEnabled: true,
         isAddAttachmentEnabled: true,
         isWebFetchEnabled: true,
         ...props,
@@ -585,11 +582,9 @@ describe('AdvancedSettingsPopup', () => {
         ApplicationEditorI18nKeys.AdvancedSettingsTimeAwareness,
         ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileTools,
         ApplicationEditorI18nKeys.AdvancedSettingsProcessFiles,
-        ApplicationEditorI18nKeys.CodeInterpreterTitle,
         ApplicationEditorI18nKeys.AdvancedSettingsAddAttachment,
         ApplicationEditorI18nKeys.AdvancedSettingsWebFetch,
       ]);
-      expect(body.textContent).toContain(ApplicationEditorI18nKeys.CodeInterpreterDescription);
       expect(body.textContent).toContain(
         ApplicationEditorI18nKeys.AdvancedSettingsAddAttachmentDescription,
       );
@@ -599,7 +594,6 @@ describe('AdvancedSettingsPopup', () => {
     });
 
     it.each([
-      ['isCodeInterpreterEnabled', ApplicationEditorI18nKeys.CodeInterpreterTitle],
       ['isAddAttachmentEnabled', ApplicationEditorI18nKeys.AdvancedSettingsAddAttachment],
       ['isWebFetchEnabled', ApplicationEditorI18nKeys.AdvancedSettingsWebFetch],
     ] as const)('hides the matching switch when %s is off', (prop, name) => {
@@ -615,13 +609,11 @@ describe('AdvancedSettingsPopup', () => {
       });
 
       click(getSwitch(ApplicationEditorI18nKeys.AdvancedSettingsWebFetch));
-      click(getSwitch(ApplicationEditorI18nKeys.CodeInterpreterTitle));
       click(getButton(ButtonsI18nKeys.Save));
 
       expect(onSave).toHaveBeenCalledWith({
         ...initialValues,
         addAttachment: true,
-        codeInterpreter: true,
         webFetch: true,
       });
     });
