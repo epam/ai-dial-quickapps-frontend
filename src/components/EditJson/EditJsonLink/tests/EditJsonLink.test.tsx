@@ -8,12 +8,10 @@ import { setupTestRoot } from '@/test-utils/test-root';
 import EditJsonLink from '../EditJsonLink';
 
 vi.mock('@epam/ai-dial-ui-kit', () => ({
-  ButtonAppearance: { Link: 'link' },
-  ButtonVariant: { Primary: 'primary' },
   ElementSize: { Small: 'small' },
   DIAL_ICON_SIZE: { SM: 16 },
   DIAL_KIT_ICON_STROKE: 1.5,
-  Button: ({
+  LinkButton: ({
     label,
     iconBefore,
     onClick,

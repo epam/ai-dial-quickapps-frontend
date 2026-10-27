@@ -50,6 +50,7 @@ vi.mock('@epam/ai-dial-ui-kit', () => ({
   EditorThemes: { dark: 'dark', light: 'light' },
   mergeClasses: (...classes: (string | undefined)[]) => classes.filter(Boolean).join(' '),
   DialLoader: () => <span>loading</span>,
+  ErrorText: ({ text }: { text?: string }) => (text ? <span>{text}</span> : null),
   Popup: ({
     header,
     children,

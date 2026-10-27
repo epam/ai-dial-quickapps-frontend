@@ -27,6 +27,7 @@ import {
   DialLoader,
   EditorThemes,
   ElementSize,
+  ErrorText,
   GhostIconButton,
   LazyDialJsonEditor,
   mergeClasses,
@@ -167,11 +168,15 @@ const EditJsonPopup: FC<EditJsonPopupProps> = ({ document, context, onSave, onCl
           </div>
         </div>
         {!result.isValid && (
-          <ul role="alert" className="flex flex-col gap-1 text-error dial-tiny-text">
+          <div role="alert" className="flex flex-col gap-1">
             {result.errors.map(({ key, values }) => (
-              <li key={`${key}:${values?.message ?? ''}`}>{t(key, values)}</li>
+              <ErrorText
+                key={`${key}:${values?.message ?? ''}`}
+                text={t(key, values)}
+                className="block"
+              />
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </Popup>
