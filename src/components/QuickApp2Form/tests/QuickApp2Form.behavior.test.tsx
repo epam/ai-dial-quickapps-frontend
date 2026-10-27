@@ -1,3 +1,6 @@
+import get from 'lodash-es/get';
+import set from 'lodash-es/set';
+import unset from 'lodash-es/unset';
 import { act } from 'react';
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
@@ -58,6 +61,10 @@ const testContext = vi.hoisted(() => {
   };
 });
 
+const editJsonState = vi.hoisted(() => ({
+  edit: (document: Record<string, unknown>): Record<string, unknown> => document,
+}));
+
 vi.mock('@/context/AppContext', () => ({
   useAppContext: () => testContext.appContext,
 }));
@@ -99,8 +106,10 @@ vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationS
     onAttachmentsEnabledChange,
     inputAttachmentTypes,
     onInputAttachmentTypesChange,
+    onEditJsonClick,
     errors,
   }: {
+    onEditJsonClick: () => void;
     model: string;
     onModelChange: (value: string) => void;
     advancedSettings: AdvancedSettingsValues;
@@ -112,6 +121,10 @@ vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationS
     errors: Record<string, string | undefined>;
   }) => (
     <div>
+      <button type="button" onClick={onEditJsonClick}>
+        Open Edit JSON
+      </button>
+      <output data-testid="model-value">{model}</output>
       <output data-testid="attachments-enabled">{String(isAttachmentsEnabled)}</output>
       <output data-testid="attachment-value">{inputAttachmentTypes.join('|')}</output>
       <output data-testid="max-value">{String(advancedSettings.maxInputAttachments ?? '')}</output>
@@ -165,6 +178,43 @@ vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationS
   return { default: ModelTestField };
 });
 
+// Stands in for the popup: edits the opened document with `editJsonState.edit` and saves it
+// through the real parser, as the popup's Save does.
+vi.mock('@/components/EditJson/EditJsonPopup/EditJsonPopup', async () => {
+  const { parseEditJsonDocument } =
+    await vi.importActual<typeof import('@/utils/edit-json')>('@/utils/edit-json');
+  const EditJsonTestPopup = ({
+    document,
+    context,
+    onSave,
+    onClose,
+  }: {
+    document: string;
+    context: Parameters<typeof parseEditJsonDocument>[1];
+    onSave: (values: QuickApp2Form) => void;
+    onClose: () => void;
+  }) => (
+    <div>
+      <output data-testid="edit-json-document">{document}</output>
+      <button
+        type="button"
+        onClick={() => {
+          const edited = editJsonState.edit(JSON.parse(document) as Record<string, unknown>);
+          const result = parseEditJsonDocument(JSON.stringify(edited), context);
+          if (result.isValid) onSave(result.values);
+          onClose();
+        }}
+      >
+        Save edited JSON
+      </button>
+      <button type="button" onClick={onClose}>
+        Cancel Edit JSON
+      </button>
+    </div>
+  );
+
+  return { default: EditJsonTestPopup };
+});
 vi.mock('@/components/AgentSkills/AgentSkillsFormSection/AgentSkillsFormSection', () => {
   // Stands in for the skill details popup's Delete, which detaches one skill.
   const SkillsTestSection = ({
@@ -872,5 +922,141 @@ describe('QuickApp2Form observable behavior', () => {
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
     await submitForm();
     expect(onSave.mock.calls[0][0].documentRelativeUrl).toEqual(['files/abc/b.pdf']);
+  });
+});
+
+describe('QuickApp2Form Edit JSON', () => {
+  const openEditJson = () => {
+    click(getButton('Open Edit JSON'));
+    return JSON.parse(
+      dom.container.querySelector('[data-testid="edit-json-document"]')?.textContent ?? '{}',
+    ) as Record<string, unknown>;
+  };
+
+  beforeEach(() => {
+    editJsonState.edit = (document) => document;
+    testContext.appContext.app = {
+      id: 'app',
+      applicationProperties: {
+        tool_defaults: { timeout_seconds: 30 },
+        orchestrator: { ...SAVED_ORCHESTRATOR, max_iterations: 9 },
+        skills: ['a', 'b'].map((name) => ({ type: 'dial-skill', url: `skills/public/${name}` })),
+      },
+    };
+  });
+
+  it('opens with the current form values and the stored keys the form has no field for', async () => {
+    renderForm();
+    await dispatchInput(
+      dom.container.querySelector('[aria-label="Instructions"]') as HTMLInputElement,
+      'Unsaved text',
+    );
+
+    const document = openEditJson();
+
+    expect(get(document, 'orchestrator.system_prompt.content')).toBe('Unsaved text');
+    expect(get(document, 'orchestrator.max_iterations')).toBe(9);
+    expect(get(document, 'tool_defaults')).toEqual({ timeout_seconds: 30 });
+  });
+
+  it('shows the values of the saved JSON in the form and marks it dirty', async () => {
+    const { onDirtyChange } = renderForm();
+    editJsonState.edit = (document) => {
+      set(document, 'orchestrator.system_prompt.content', 'From JSON');
+      set(document, 'skills', [{ type: 'dial-skill', url: 'skills/public/a' }]);
+      return document;
+    };
+    openEditJson();
+
+    click(getButton('Save edited JSON'));
+
+    expect(
+      (dom.container.querySelector('[aria-label="Instructions"]') as HTMLInputElement).value,
+    ).toBe('From JSON');
+    expect(dom.container.querySelector('[data-testid="skills-value"]')?.textContent).toBe(
+      'skills/public/a',
+    );
+    expect(dom.container.querySelector('[data-testid="edit-json-document"]')).toBeNull();
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+  });
+
+  it('saves extra keys typed in the JSON and keeps them after a later form edit', async () => {
+    const { onSave } = renderForm();
+    editJsonState.edit = (document) => {
+      set(document, 'my_section', { a: 1 });
+      set(document, 'features.custom_flag', true);
+      return document;
+    };
+    openEditJson();
+    click(getButton('Save edited JSON'));
+    await dispatchInput(
+      dom.container.querySelector('[aria-label="Instructions"]') as HTMLInputElement,
+      'Edited after',
+    );
+
+    await submitForm();
+
+    const { extraConfig, instructions } = onSave.mock.calls[0][0];
+    expect(instructions).toBe('Edited after');
+    expect(extraConfig?.my_section).toEqual({ a: 1 });
+    expect(get(extraConfig, 'features.custom_flag')).toBe(true);
+    expect(extraConfig?.tool_defaults).toEqual({ timeout_seconds: 30 });
+  });
+
+  it('removes an extra key deleted in the JSON', async () => {
+    const { onSave } = renderForm();
+    editJsonState.edit = (document) => {
+      unset(document, 'tool_defaults');
+      return document;
+    };
+    openEditJson();
+    click(getButton('Save edited JSON'));
+
+    await submitForm();
+
+    expect(onSave.mock.calls[0][0].extraConfig).not.toHaveProperty('tool_defaults');
+  });
+
+  it('keeps the form clean when the unchanged document is saved', () => {
+    const { onDirtyChange } = renderForm();
+    openEditJson();
+
+    click(getButton('Save edited JSON'));
+
+    expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it('leaves the form unchanged when the popup is cancelled', () => {
+    const { onDirtyChange } = renderForm();
+    editJsonState.edit = (document) => {
+      set(document, 'orchestrator.system_prompt.content', 'Never applied');
+      return document;
+    };
+    openEditJson();
+
+    click(getButton('Cancel Edit JSON'));
+
+    expect(
+      (dom.container.querySelector('[aria-label="Instructions"]') as HTMLInputElement).value,
+    ).toBe('Be helpful');
+    expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it('keeps Code Interpreter off when the host setting is off', async () => {
+    const { onSave } = renderForm();
+    editJsonState.edit = (document) => {
+      const toolSets = get(document, 'tool_sets') as unknown[];
+      set(document, 'tool_sets', [
+        ...toolSets,
+        { template_name: 'py_interpreter', type: 'predefined' },
+      ]);
+      return document;
+    };
+    openEditJson();
+    click(getButton('Save edited JSON'));
+
+    await submitForm();
+
+    expect(onSave.mock.calls[0][0].codeInterpreter).toBe(false);
   });
 });

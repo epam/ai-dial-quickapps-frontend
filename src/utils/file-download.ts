@@ -36,6 +36,9 @@ const triggerBlobDownload = (blob: Blob, filename: string): void => {
   URL.revokeObjectURL(url);
 };
 
+export const downloadTextFile = (text: string, filename: string, type = 'application/json'): void =>
+  triggerBlobDownload(new Blob([text], { type }), filename);
+
 export const prepareDownloadDestination = async (
   filename: string,
   mimeType = 'application/octet-stream',

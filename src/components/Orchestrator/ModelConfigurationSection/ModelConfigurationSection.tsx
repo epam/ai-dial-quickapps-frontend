@@ -9,6 +9,7 @@ import { doesModelAllowTemperature } from '@/utils/application';
 
 import AttachmentsSection from '@/components/Attachments/AttachmentsSection/AttachmentsSection';
 import CodeInterpreterSection from '@/components/Settings/CodeInterpreterSection/CodeInterpreterSection';
+import EditJsonLink from '@/components/EditJson/EditJsonLink/EditJsonLink';
 import SettingsSection from '@/components/Settings/SettingsSection/SettingsSection';
 
 import { DefaultModelBlock } from '@/components/Orchestrator/DefaultModelBlock/DefaultModelBlock';
@@ -29,6 +30,7 @@ export interface ModelConfigurationSectionProps {
   onAttachmentsEnabledChange: (isEnabled: boolean) => void;
   inputAttachmentTypes: string[];
   onInputAttachmentTypesChange: (mimeTypes: string[]) => void;
+  onEditJsonClick: () => void;
 }
 
 const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
@@ -47,6 +49,7 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
   onAttachmentsEnabledChange,
   inputAttachmentTypes,
   onInputAttachmentTypesChange,
+  onEditJsonClick,
 }) => {
   const { t } = useTranslation();
   const { modelsMap } = useDataContext();
@@ -57,11 +60,16 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
   }, [model, modelsMap]);
 
   return (
-    <section aria-labelledby="model-configuration-heading" className="px-8">
+    <section
+      aria-labelledby="model-configuration-heading"
+      // The form is as tall as the view from the desktop layout and this column fills it without
+      // scrolling, so the Edit JSON footer is always at the bottom. Rows scroll only if they cannot fit.
+      className="relative flex min-h-0 flex-col px-8 pb-4 desktop:h-full desktop:overflow-hidden"
+    >
       <h2 id="model-configuration-heading" className="dial-small-semi-text">
         {t(ApplicationEditorI18nKeys.Configuration)}
       </h2>
-      <div className="mt-3 flex flex-col gap-3">
+      <div className="mt-3 mb-6 flex min-h-0 flex-1 flex-col gap-3 desktop:overflow-y-auto">
         <DefaultModelBlock
           value={model}
           onChange={onModelChange}
@@ -93,6 +101,10 @@ const ModelConfigurationSection: FC<ModelConfigurationSectionProps> = ({
             onEnabledChange={onCodeInterpreterChange}
           />
         )}
+      </div>
+
+      <div className="mt-auto flex shrink-0 justify-end border-t border-tertiary pt-3">
+        <EditJsonLink onClick={onEditJsonClick} />
       </div>
     </section>
   );

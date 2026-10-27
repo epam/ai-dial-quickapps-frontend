@@ -219,7 +219,6 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
         const newConfig = buildQuickApp2Config({
           data,
           allEntitiesMap,
-          existingConfig,
           language,
         });
         const appWithFormValues = {

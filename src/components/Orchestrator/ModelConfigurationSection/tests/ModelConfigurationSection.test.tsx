@@ -1,3 +1,4 @@
+import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { setupTestRoot } from '@/test-utils/test-root';
@@ -36,6 +37,13 @@ vi.mock('@/components/Settings/SettingsSection/SettingsSection', () => ({
     />
   ),
 }));
+vi.mock('@/components/EditJson/EditJsonLink/EditJsonLink', () => ({
+  default: ({ onClick }: { onClick: () => void }) => (
+    <button type="button" data-testid="edit-json" onClick={onClick}>
+      Edit JSON
+    </button>
+  ),
+}));
 vi.mock('@/components/Attachments/AttachmentsSection/AttachmentsSection', () => ({
   default: ({ value }: { value: string[] }) => (
     <div data-testid="attachments-section" data-value={value.join(',')} />
@@ -45,6 +53,8 @@ vi.mock('@/components/Attachments/AttachmentsSection/AttachmentsSection', () => 
 interface TestFormProps {
   isProcessLargeFilesAvailable?: boolean;
 }
+
+const onEditJsonClick = vi.fn();
 
 const TestForm = ({ isProcessLargeFilesAvailable = true }: TestFormProps) => (
   <ModelConfigurationSection
@@ -71,6 +81,7 @@ const TestForm = ({ isProcessLargeFilesAvailable = true }: TestFormProps) => (
     onAttachmentsEnabledChange={vi.fn()}
     inputAttachmentTypes={['application/pdf']}
     onInputAttachmentTypesChange={vi.fn()}
+    onEditJsonClick={onEditJsonClick}
   />
 );
 
@@ -134,5 +145,44 @@ describe('ModelConfigurationSection', () => {
     dom.render(<TestForm isProcessLargeFilesAvailable={isAvailable} />);
 
     expect(getSettings().getAttribute('data-process-files')).toBe(String(isAvailable));
+  });
+
+  it('ends with a divided footer holding the Edit JSON link, after all the rows', () => {
+    onEditJsonClick.mockClear();
+    dom.render(<TestForm />);
+
+    const link = dom.container.querySelector<HTMLElement>('[data-testid="edit-json"]');
+    const footer = link?.parentElement;
+    expect(footer?.className).toContain('border-t');
+    expect(footer?.className).toContain('border-tertiary');
+    expect(footer?.className).toContain('mt-auto');
+    expect(footer?.className).toContain('justify-end');
+    expect(footer?.previousElementSibling?.contains(getSettings())).toBe(true);
+    expect(footer?.nextElementSibling).toBeNull();
+
+    act(() => link?.click());
+    expect(onEditJsonClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('fills the view without scrolling and keeps the footer in sight', () => {
+    dom.render(<TestForm />);
+
+    const section = dom.container.querySelector('section');
+    expect(section?.className).toContain('desktop:h-full');
+    expect(section?.className).toContain('desktop:overflow-hidden');
+    expect(section?.className).not.toContain('sticky');
+    const footer = dom.container.querySelector('[data-testid="edit-json"]')?.parentElement;
+    expect(footer?.className).toContain('shrink-0');
+    const rows = footer?.previousElementSibling;
+    expect(rows?.className).toContain('min-h-0');
+    expect(rows?.className).toContain('desktop:overflow-y-auto');
+  });
+
+  it('uses logical alignment only, so the footer follows the document direction', () => {
+    dom.render(<TestForm />);
+
+    const footerClass =
+      dom.container.querySelector('[data-testid="edit-json"]')?.parentElement?.className ?? '';
+    expect(footerClass).not.toMatch(/(?:^|\s)(?:ml|mr|pl|pr|left|right|text-left|text-right)-/);
   });
 });

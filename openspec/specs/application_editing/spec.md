@@ -644,7 +644,14 @@ configuration.
 `orchestrator.system_prompt.content` SHALL be the instructions exactly as typed, whitespace
 included, and `orchestrator.system_prompt.variables` SHALL be the loaded
 `system_prompt.variables`, or `{}` when none were loaded. Keys inside the loaded
-`orchestrator` and `features` objects that the editor does not set SHALL be kept.
+`orchestrator` and `features` objects that the editor does not set SHALL be kept, including
+keys nested inside `orchestrator.deployment` (such as `name`, and `parameters` keys other than
+`temperature`) and inside `orchestrator.system_prompt`.
+Top-level keys of the loaded `application_properties` other than the six in the table (and
+other than `input_attachment_types` and `max_input_attachments`, which the editor owns)
+SHALL be kept as loaded. Keys of array items that the editor does not own SHALL be kept too:
+extra keys on a starter, on a skill or on a context, and `skills` and `contexts` entries of a
+`type` the editor does not manage, are saved as loaded.
 
 #### Scenario: Unknown orchestrator and feature keys are kept
 
@@ -664,3 +671,29 @@ included, and `orchestrator.system_prompt.variables` SHALL be the loaded
   the user changes the instructions to `"  Be brief  "` and saves
 - **THEN** the saved `system_prompt` SHALL be
   `{ "type": "custom", "variables": { "team": "support" }, "content": "  Be brief  " }`
+
+#### Scenario: Unknown top-level keys are kept
+
+- **WHEN** the loaded `application_properties` has `my_section: { "a": 1 }` and the user
+  changes the instructions and saves
+- **THEN** the saved `application_properties.my_section` SHALL be `{ "a": 1 }`
+
+#### Scenario: Unknown nested orchestrator keys are kept
+
+- **WHEN** the loaded `orchestrator` has `max_iterations: 25`, `deployment.name: "Main"` and
+  `tool_discovery: { "enabled": true }` and the user changes the model and saves
+- **THEN** the saved `orchestrator` SHALL keep `max_iterations`, `tool_discovery` and
+  `deployment.name`, with `deployment.deployment_id` set to the new model
+
+#### Scenario: Deployment parameters other than temperature are kept
+
+- **WHEN** the loaded `orchestrator.deployment.parameters` has `top_p` and `seed` and the user saves
+- **THEN** the saved `parameters` SHALL still contain `top_p` and `seed` (see `application_advanced-settings` for `temperature`)
+
+#### Scenario: Unknown skill type and item keys are kept
+
+- **WHEN** the loaded `skills` has `{ "type": "dial-skill", "url": "skills/a", "note": "x" }` and
+  `{ "type": "other-skill", "ref": "r" }`, the loaded starters have a starter with `"tag": "t"`,
+  and the user saves
+- **THEN** the saved `skills` SHALL contain both entries with their extra keys, and the saved
+  starter SHALL still have `"tag": "t"`

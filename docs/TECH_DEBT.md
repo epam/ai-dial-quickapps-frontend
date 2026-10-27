@@ -324,6 +324,7 @@ Track these dimensions separately for every capability:
 | `orchestrator_model-selection`      | Yes         | Yes                | Partial     | Planned           |
 | `application_advanced-settings`     | Yes         | Yes                | Partial     | Planned           |
 | `application_conversation-starters` | Yes         | Yes                | Partial     | Planned           |
+| `application_json-editor`           | Yes         | Yes                | Yes         | Planned           |
 | `app-configuration`                 | Yes         | Yes                | Partial     | Planned           |
 | `theming`                           | Yes         | Yes                | Partial     | Planned           |
 | `i18n`                              | Yes         | Yes                | Partial     | Planned           |

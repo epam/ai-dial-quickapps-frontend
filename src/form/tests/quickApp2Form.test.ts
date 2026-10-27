@@ -311,12 +311,11 @@ type EntitiesMap = Parameters<typeof buildQuickApp2Config>[0]['allEntitiesMap'];
 const buildConfig = (
   overrides: Partial<QuickApp2Form> = {},
   model: Record<string, unknown> = {},
-  existingConfig?: Parameters<typeof buildQuickApp2Config>[0]['existingConfig'],
+  extraConfig?: Record<string, unknown>,
 ) =>
   buildQuickApp2Config({
-    data: createForm(overrides),
+    data: createForm({ ...overrides, extraConfig }),
     allEntitiesMap: { 'model-1': { id: 'model-1', ...model } } as unknown as EntitiesMap,
-    existingConfig,
     language: 'en',
   });
 
@@ -368,12 +367,10 @@ describe('orchestrator temperature and process files', () => {
   });
 
   it('keeps the loaded attachment strategy for a model that does not accept attachments', () => {
-    const existingConfig = {
-      orchestrator: { attachment_strategy: { type: 'lazy_on_demand' } },
-    } as Parameters<typeof buildQuickApp2Config>[0]['existingConfig'];
+    const extraConfig = { orchestrator: { attachment_strategy: { type: 'lazy_on_demand' } } };
 
     expect(
-      buildConfig({ processLargeFiles: false }, {}, existingConfig).orchestrator
+      buildConfig({ processLargeFiles: false }, {}, extraConfig).orchestrator
         ?.attachment_strategy,
     ).toEqual({ type: 'lazy_on_demand' });
   });
@@ -565,10 +562,8 @@ describe('advanced settings', () => {
   });
 
   it('saves null features when off and keeps other existing features', () => {
-    const existingConfig = {
-      features: { custom_feature: { enabled: true } },
-    } as unknown as Parameters<typeof buildQuickApp2Config>[0]['existingConfig'];
-    const features = buildConfig({ timestamp: false, fileTools: false }, {}, existingConfig)
+    const extraConfig = { features: { custom_feature: { enabled: true } } };
+    const features = buildConfig({ timestamp: false, fileTools: false }, {}, extraConfig)
       .features as Record<string, unknown>;
 
     expect(features.timestamp).toBeNull();
