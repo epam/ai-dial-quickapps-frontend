@@ -58,6 +58,14 @@ The Configuration area SHALL contain the model selector, presented as the **Defa
 - **WHEN** the editor renders Configuration
 - **THEN** the Attachments row SHALL be rendered immediately after the Settings row
 
+#### Scenario: Code Interpreter row
+
+- **WHEN** the editor renders Configuration and the host setting `isCodeInterpreterEnabled` is on
+- **THEN** a Code Interpreter switch row (title `ApplicationEditorI18nKeys.CodeInterpreterTitle`, description `ApplicationEditorI18nKeys.CodeInterpreterDescription`) SHALL be rendered immediately after the Attachments row
+- **AND** toggling it SHALL update the form value `codeInterpreter` directly, not through the Advanced Settings popup draft, and the saved `tool_sets` entry SHALL be unchanged from before the move
+- **AND** when the host setting is off the row SHALL NOT render and the form value SHALL be `false`
+- **AND** the row SHALL be editable for a shared application, as every other control (see "Presentation change preserves form contract (editable)")
+
 ### Requirement: Instructions is standalone and always visible
 
 The editor SHALL render the existing Instructions editor in a standalone, always-visible section. The Instructions section SHALL NOT be wrapped in a collapsible Orchestrator control, and no empty Orchestrator wrapper SHALL be rendered.
@@ -373,12 +381,41 @@ The Settings row SHALL own only transient popup visibility in local component st
 
 ### Requirement: Advanced Settings controls live only in the popup
 
-The primary content column SHALL NOT render a standalone Advanced settings (Time awareness) section, a Context and tools section, or a max attachments control. These settings SHALL be editable only from the Advanced Settings popup, including the Code Interpreter, Add attachment and Web fetch switches. The primary content column SHALL NOT render a User attachments section; attachment types SHALL be editable only from the Attachments row in Configuration. The primary content column SHALL NOT render a Context files control; context files SHALL be managed only from the Knowledge base row in Add-ons.
+The primary content column SHALL NOT render a standalone Advanced settings (Time awareness) section, a Context and tools section, or a max attachments control. These settings SHALL be editable only from the Advanced Settings popup, including the Add attachment and Web fetch switches; the Code Interpreter switch is its own row in Configuration (see "Code Interpreter row"). The primary content column SHALL NOT render a User attachments section; attachment types SHALL be editable only from the Attachments row in Configuration. The primary content column SHALL NOT render a Context files control; context files SHALL be managed only from the Knowledge base row in Add-ons.
 
 #### Scenario: Main column without moved controls
 
 - **WHEN** the editor renders its primary content column
 - **THEN** no Time awareness switch, File tools switch, or max attachments input SHALL be rendered there
-- **AND** no Context and tools section, and no Code Interpreter, Add attachment or Web fetch switch SHALL be rendered there
+- **AND** no Context and tools section, and no Code Interpreter, Add attachment or Web fetch switch SHALL be rendered there (Code Interpreter appears only in Configuration)
 - **AND** no User attachments section or Attachment types control SHALL be rendered there
 - **AND** no Context files control SHALL be rendered there
+
+### Requirement: Configuration footer holds the Edit JSON entry
+
+The Configuration column SHALL end with a footer, separated from the rows above by a thin divider and pinned to the bottom of the column, that contains the Edit JSON link button defined by `application_json-editor`, aligned to the end edge.
+
+#### Scenario: Footer position
+
+- **WHEN** the editor renders Configuration at the desktop layout
+- **THEN** the Edit JSON link button SHALL be at the bottom-end corner of the column, below a divider drawn in the `border-tertiary` colour
+- **AND** it SHALL stay below all Configuration rows whether they are few or many
+
+#### Scenario: Configuration column does not scroll
+
+- **WHEN** the editor content is taller than the view at the desktop layout and the user scrolls
+- **THEN** only the primary content column SHALL scroll, and its scrollbar SHALL sit at that column's own end edge, between it and the Configuration column
+- **AND** there SHALL be space between that scrollbar and the cards, and the cards' shadows SHALL NOT be cut off into a band between the cards
+- **AND** the Configuration column SHALL stay in place
+- **AND** the Edit JSON footer SHALL stay at the bottom of the view, never scrolled out of sight
+- **AND** the Configuration rows SHALL scroll inside the column only when they cannot fit in the view
+
+#### Scenario: Right-to-left document
+
+- **WHEN** the document direction is `rtl`
+- **THEN** the link SHALL be aligned to the end edge in that direction (the physical left), using logical alignment
+
+#### Scenario: Narrow viewport
+
+- **WHEN** the editor is stacked below the desktop breakpoint
+- **THEN** the footer SHALL follow the Configuration rows without horizontal scrolling

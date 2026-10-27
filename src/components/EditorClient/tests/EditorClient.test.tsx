@@ -390,6 +390,12 @@ describe('EditorClient save outcome messages', () => {
       BUILT_CONFIG,
       expect.anything(),
     );
+    // The stored config reaches the save through the form's `extraConfig`, not as a second base.
+    expect(Object.keys(mocks.buildQuickApp2Config.mock.calls.at(-1)?.[0] ?? {}).sort()).toEqual([
+      'allEntitiesMap',
+      'data',
+      'language',
+    ]);
     expect(postMessage).toHaveBeenLastCalledWith(
       {
         type: OutboundMessageType.SaveSuccess,

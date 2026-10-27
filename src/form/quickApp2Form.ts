@@ -13,7 +13,6 @@ import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import {
   doesAgentSupportMcp,
   doesModelAllowTemperature,
-  getQuick2AppDocumentUrl,
   getQuickAppItemNameFromConfig,
   migrateMCPToolsetIdName,
 } from '@/utils/application';
@@ -21,6 +20,13 @@ import { decodeApiUrl, encodeApiUrl, isApplicationId, isToolsetId } from '@/util
 import type { DialAIEntityModel, LocalizedText } from '@/types/dial-entities';
 import { DialEntityType } from '@/types/dial-entities';
 import { getLocalizedText } from '@/utils/get-localized-text';
+import {
+  findExtraContext,
+  findExtraSkill,
+  getQuickApp2ExtraConfig,
+  isOwnedContext,
+  isOwnedSkill,
+} from '@/utils/quick-app-extra-config';
 import {
   AnyToolset,
   CodeInterpreterTemplate,
@@ -48,6 +54,8 @@ import {
   isUnknownToolset,
 } from '@/utils/toolset-guards';
 
+import isEmpty from 'lodash-es/isEmpty';
+import isPlainObject from 'lodash-es/isPlainObject';
 import omit from 'lodash-es/omit';
 import sortBy from 'lodash-es/sortBy';
 import { nanoid } from 'nanoid';
@@ -107,6 +115,8 @@ export const QuickApp2Schema = z
         id: z.string(),
         title: z.string(),
         text: z.string(),
+        // Keys of a stored starter the editor has no field for; written back on save.
+        extra: z.record(z.string(), z.unknown()).optional(),
       }),
     ),
     toolSupportingModelIds: z.array(z.string()).optional(),
@@ -117,6 +127,9 @@ export const QuickApp2Schema = z
     fileTools: z.boolean(),
     addAttachment: z.boolean(),
     webFetch: z.boolean(),
+    // Form-only: the stored config without the leaves this form owns (see
+    // `getQuickApp2ExtraConfig`). It is merged back under the form values on save.
+    extraConfig: z.record(z.string(), z.unknown()).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.attachmentsEnabled && data.maxInputAttachments == null) {
@@ -229,9 +242,7 @@ export const getQuickApp2FormData = (
       ? !!appProperties?.orchestrator?.attachment_strategy
       : true;
   const fileTools =
-    'dial_files' in (appProperties?.features ?? {})
-      ? !!appProperties?.features?.dial_files
-      : true;
+    'dial_files' in (appProperties?.features ?? {}) ? !!appProperties?.features?.dial_files : true;
   const addAttachment =
     'representation_tooling' in (appProperties?.features ?? {})
       ? !!appProperties?.features?.representation_tooling?.add_attachment
@@ -242,7 +253,7 @@ export const getQuickApp2FormData = (
       : true;
 
   return {
-    documentRelativeUrl: getQuick2AppDocumentUrl(app) ?? [],
+    documentRelativeUrl: (appProperties?.contexts ?? []).filter(isOwnedContext).map((c) => c.url),
     model,
     instructions: appProperties?.orchestrator?.system_prompt?.content ?? '',
     temperature:
@@ -261,10 +272,14 @@ export const getQuickApp2FormData = (
       appProperties?.conversation_starters?.chat_message_input_disabled ?? false,
     autoSubmit: appProperties?.conversation_starters?.auto_submit ?? true,
     starters: [
-      ...(appProperties?.conversation_starters?.starters ?? []).map((starter) => ({
-        ...starter,
-        id: nanoid(),
-      })),
+      ...(appProperties?.conversation_starters?.starters ?? []).map(
+        ({ title, text, ...extra }) => ({
+          id: nanoid(),
+          title,
+          text,
+          ...(isEmpty(extra) ? {} : { extra }),
+        }),
+      ),
       { id: nanoid(), title: '', text: '' },
     ],
     toolSupportingModelIds,
@@ -277,13 +292,30 @@ export const getQuickApp2FormData = (
     fileTools,
     addAttachment,
     webFetch,
+    extraConfig: getQuickApp2ExtraConfig(appProperties),
   };
+};
+
+// `parameters` is the stored object, with the form's temperature on top for a model that supports
+// it. For any other model the stored parameters are kept as they are and no temperature is
+// invented from the form default. While the model is not loaded nothing can be said about support,
+// so a stored temperature follows the form value and nothing is added.
+const getDeploymentParameters = (
+  extraParameters: unknown,
+  model: DialAIEntityModel | undefined,
+  temperature: number,
+): Record<string, unknown> | undefined => {
+  const parameters = isPlainObject(extraParameters)
+    ? (extraParameters as Record<string, unknown>)
+    : {};
+  if (model && doesModelAllowTemperature(model)) return { ...parameters, temperature };
+  if (!model && 'temperature' in parameters) return { ...parameters, temperature };
+  return isEmpty(parameters) ? undefined : parameters;
 };
 
 export const buildQuickApp2Config = ({
   data,
   allEntitiesMap,
-  existingConfig,
   language,
 }: {
   data: QuickApp2Form;
@@ -291,60 +323,89 @@ export const buildQuickApp2Config = ({
     string,
     DialAIEntityModel & { id: string; name?: LocalizedText; type?: string }
   >;
-  existingConfig?: QuickApp2Config;
   language: string;
 }): QuickApp2Config => {
   const toolSets = getQuickApp2Toolsets({ allEntitiesMap, data, language });
+  const extra = (data.extraConfig ?? {}) as Record<string, unknown>;
+  const {
+    orchestrator: extraOrchestrator,
+    contexts: extraContexts,
+    skills: extraSkills,
+    conversation_starters: extraStarters,
+    features: extraFeatures,
+    ...extraRest
+  } = extra as {
+    orchestrator?: QuickApp2Config['orchestrator'];
+    contexts?: unknown[];
+    skills?: unknown[];
+    conversation_starters?: object;
+    features?: object;
+  } & Record<string, unknown>;
 
   const starters = data.starters
     .filter((s) => s.title.trim() || s.text.trim())
-    .map(({ title, text }) => ({ title, text }));
+    .map(({ title, text, extra: starterExtra }) => ({ ...starterExtra, title, text }));
 
-  const skills = data.agentSkills.map((url) => ({
-    type: SkillRefType.DialSkill,
-    url,
-  }));
+  const skills = [
+    ...data.agentSkills.map((url) => ({
+      ...findExtraSkill(extra, url),
+      type: SkillRefType.DialSkill,
+      url,
+    })),
+    ...(extraSkills ?? []).filter((skill) => !isOwnedSkill(skill)),
+  ];
 
   const timestampFeature = data.timestamp
     ? { injection_strategy: TimestampInjectionStrategy.ToolCall }
     : null;
   const model = allEntitiesMap[data.model];
   const supportsAttachments = !!(model?.inputAttachmentTypes as string[] | undefined)?.length;
+  const parameters = getDeploymentParameters(
+    extraOrchestrator?.deployment?.parameters,
+    model,
+    data.temperature,
+  );
 
   return {
+    ...extraRest,
     orchestrator: {
-      ...existingConfig?.orchestrator,
+      ...extraOrchestrator,
       deployment: {
+        ...extraOrchestrator?.deployment,
         deployment_id: data.model,
-        parameters: doesModelAllowTemperature(model)
-          ? { temperature: data.temperature }
-          : undefined,
+        ...(parameters && { parameters: parameters as { temperature: number } }),
       },
       system_prompt: {
+        ...extraOrchestrator?.system_prompt,
         type: SystemPromptType.Custom,
-        variables: existingConfig?.orchestrator?.system_prompt?.variables ?? {},
+        variables: extraOrchestrator?.system_prompt?.variables ?? {},
         content: data.instructions,
       },
       ...(supportsAttachments && {
         attachment_strategy: data.processLargeFiles ? ORCHESTRATOR_ATTACHMENT_STRATEGY_VALUE : null,
       }),
     },
-    contexts: data.documentRelativeUrl.map((url) => ({
-      url,
-      type: ContextType.File,
-    })),
+    contexts: [
+      ...data.documentRelativeUrl.map((url) => ({
+        ...findExtraContext(extra, url),
+        url,
+        type: ContextType.File,
+      })),
+      ...(extraContexts ?? []).filter((context) => !isOwnedContext(context)),
+    ] as QuickApp2Config['contexts'],
     tool_sets: toolSets,
     conversation_starters: starters.length
       ? {
+          ...extraStarters,
           intro_text: data.introText || undefined,
           chat_message_input_disabled: data.chatMessageInputDisabled,
           auto_submit: data.autoSubmit,
           starters,
         }
       : null,
-    ...(skills.length && { skills }),
+    ...(skills.length && { skills: skills as QuickApp2Config['skills'] }),
     features: {
-      ...existingConfig?.features,
+      ...extraFeatures,
       timestamp: timestampFeature,
       dial_files: data.fileTools ? {} : null,
       representation_tooling: data.addAttachment ? REPRESENTATION_TOOLING_FEATURE_VALUE : null,
