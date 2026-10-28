@@ -10,7 +10,7 @@
 ## 2. Specs
 
 - [x] 2.1 Validate the change: `openspec validate single-writer-quick-app-save` reports no errors, including no conflict with `keep-translations-on-save-without-general`.
-- [ ] 2.2 After review and implementation, sync the deltas into `openspec/specs/host-integration` and `openspec/specs/application_editing` with `openspec-sync-specs`; verify the two new requirements appear in the main specs.
+- [x] 2.2 After review and implementation, sync the deltas into `openspec/specs/host-integration` and `openspec/specs/application_editing` with `openspec-sync-specs`; verify the two new requirements appear in the main specs.
 
 ## 3. ai-dial-chat (other repository; track in its own PR)
 
