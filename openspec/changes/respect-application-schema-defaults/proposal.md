@@ -19,7 +19,8 @@ A new QuickApp opens with values the editor hardcodes (`src/form/quickApp2Form.t
 - Pre-fill the form from those defaults for properties the app has not stored: the model
   (`orchestrator.deployment.deployment_id`), the conversation starters settings (`intro_text`, `auto_submit`,
   `chat_message_input_disabled`), Add attachment (`RepresentationToolingConfig.add_attachment`) and Web fetch
-  (`WebFetchConfig.enabled`).
+  (`WebFetchConfig.enabled`), and the temperature when the schema default is a number from 0 to 1 (a `null`
+  default keeps the editor's `0.5`).
 - **Behaviour change:** the schema's Web fetch default is `false`, so a new app on such a backend starts with
   Web fetch off instead of on (`9913cff`). A backend whose schema gives no default keeps today's `true`.
 - A schema default model that is not among the loaded deployments, or is not tool-capable, is skipped and the
@@ -43,14 +44,13 @@ None.
 - `orchestrator_model-selection`: "Initial model for an application without a stored model" gains the schema
   default as the first choice.
 - `application_advanced-settings`: "Feature toggles are drafted and saved with the popup" takes the schema default
-  for Add attachment and Web fetch before the built-in `true`.
+  for Add attachment and Web fetch before the built-in `true`, and a new requirement for the initial temperature.
 - `application_conversation-starters`: "Starters settings controls" takes the schema defaults for the intro
   message, Require a starter and When starter is selected.
 
 ## Non-goals
 
-- Temperature and system prompt: the schema's `temperature: null` (model default) has no representation in the
-  number field and the system prompt default is an empty string (see design, open question 1).
+- System prompt: the schema default is an empty string, which is what the form already starts with.
 - Time awareness, Built-in file tools, Process files: `Features` / orchestrator defaults for them are `null`.
 - Validating the manifest against the schema, remote `$ref`, and listing schemas (`listApplicationSchemas`).
 

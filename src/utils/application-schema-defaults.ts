@@ -1,5 +1,6 @@
 import isPlainObject from 'lodash-es/isPlainObject';
 
+import { MAX_TEMPERATURE, MIN_TEMPERATURE } from '@/constants/quick-apps';
 import type { ApplicationSchemaDefaults } from '@/types/dial-entities';
 
 type SchemaNode = Record<string, unknown>;
@@ -61,6 +62,14 @@ const getString = (node: SchemaNode): string | undefined =>
 const getBoolean = (node: SchemaNode): boolean | undefined =>
   typeof node.default === 'boolean' ? node.default : undefined;
 
+// `null` means the model's own default, which the number field cannot hold, so it is not a default.
+const getTemperature = (node: SchemaNode): number | undefined => {
+  const { default: value } = node;
+  const isUsable =
+    typeof value === 'number' && value >= MIN_TEMPERATURE && value <= MAX_TEMPERATURE;
+  return isUsable ? value : undefined;
+};
+
 const getDeploymentId = (node: SchemaNode): string | undefined => {
   const { default: value } = node;
   const deploymentId = isSchemaNode(value) ? value.deployment_id : undefined;
@@ -85,8 +94,12 @@ export const getApplicationSchemaDefaults = (schema?: unknown): ApplicationSchem
   const representationTooling = getProperty(root, features, 'representation_tooling');
   const webFetch = getProperty(root, features, 'web_fetch');
 
+  const deployment = getProperty(root, orchestrator, 'deployment');
+  const parameters = getProperty(root, deployment, 'parameters');
+
   const defaults: ApplicationSchemaDefaults = {
-    deploymentId: getDeploymentId(getProperty(root, orchestrator, 'deployment')),
+    deploymentId: getDeploymentId(deployment),
+    temperature: getTemperature(getProperty(root, parameters, 'temperature')),
     conversationStarters: compact({
       introText: getString(getProperty(root, starters, 'intro_text')),
       autoSubmit: getBoolean(getProperty(root, starters, 'auto_submit')),

@@ -237,6 +237,7 @@ describe('resolveDefaultModelId', () => {
 describe('getQuickApp2FormData with application schema defaults', () => {
   const schemaDefaults = {
     deploymentId: 'model-2',
+    temperature: 0.2,
     conversationStarters: {
       introText: 'Select an action',
       autoSubmit: false,
@@ -252,6 +253,7 @@ describe('getQuickApp2FormData with application schema defaults', () => {
 
     expect(data).toMatchObject({
       model: 'model-2',
+      temperature: 0.2,
       introText: 'Select an action',
       autoSubmit: false,
       chatMessageInputDisabled: true,
@@ -299,6 +301,23 @@ describe('getQuickApp2FormData with application schema defaults', () => {
 
     expect(data.introText).toBeUndefined();
     expect(data).toMatchObject({ autoSubmit: true, chatMessageInputDisabled: false });
+  });
+
+  it('keeps the built-in temperature when the schema has none, and honours a zero default', () => {
+    expect(getQuickApp2FormData(undefined, models, models, undefined, {}).temperature).toBe(0.5);
+    expect(
+      getQuickApp2FormData(undefined, models, models, undefined, { temperature: 0 }).temperature,
+    ).toBe(0);
+  });
+
+  it('keeps the stored temperature over the schema default', () => {
+    const app = {
+      applicationProperties: { orchestrator: { deployment: { parameters: { temperature: 0.7 } } } },
+    };
+
+    const data = getQuickApp2FormData(app, models, models, undefined, schemaDefaults);
+
+    expect(data.temperature).toBe(0.7);
   });
 
   it('keeps the stored model over the schema default', () => {

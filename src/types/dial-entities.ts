@@ -106,6 +106,7 @@ export type ToolsetsMap = Record<string, DialToolset>;
 /** Defaults of the application type schema that the editor form edits. */
 export interface ApplicationSchemaDefaults {
   deploymentId?: string;
+  temperature?: number;
   conversationStarters?: {
     introText?: string;
     autoSubmit?: boolean;

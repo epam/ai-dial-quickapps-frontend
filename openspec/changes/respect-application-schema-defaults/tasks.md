@@ -34,6 +34,13 @@
 - [x] 5.2 Form tests: schema defaults, no schema default keeps `true`, stored `null` stays off, stored
       conversation starters without `intro_text` stay empty, not dirty.
 
-## 6. Docs and checks
+## 6. Temperature
 
-- [x] 6.1 `openspec validate respect-application-schema-defaults --strict`; typecheck, lint, tests.
+- [x] 6.1 Read `orchestrator.deployment.parameters.temperature.default` (number in `MIN_TEMPERATURE`..`MAX_TEMPERATURE`)
+      into `ApplicationSchemaDefaults.temperature` and use it in `getQuickApp2FormData` before `DEFAULT_TEMPERATURE`.
+- [x] 6.2 Reader tests (valid, `0`, `null`, out of range, wrong type) and form tests (default, stored wins, not
+      dirty).
+
+## 7. Docs and checks
+
+- [x] 7.1 `openspec validate respect-application-schema-defaults --strict`; typecheck, lint, tests.

@@ -25,6 +25,7 @@ The supported properties are:
 | Schema property (after resolution) | Form value |
 |---|---|
 | `orchestrator.deployment.default.deployment_id` | `model` |
+| `orchestrator.deployment` → `parameters` → `temperature.default` | `temperature` |
 | `conversation_starters` → `intro_text.default` | `introText` |
 | `conversation_starters` → `auto_submit.default` | `autoSubmit` |
 | `conversation_starters` → `chat_message_input_disabled.default` | `chatMessageInputDisabled` |
@@ -72,6 +73,18 @@ editor's own fallback SHALL apply for a value the schema does not provide.
 
 - **WHEN** a node references `#/$defs/Missing`, or references itself
 - **THEN** that node SHALL yield no default and the load SHALL succeed
+
+#### Scenario: Temperature default
+
+- **WHEN** the application stores no `orchestrator.deployment.parameters.temperature`
+- **AND** the schema default of `temperature` is `0.2`
+- **THEN** the `temperature` form value SHALL be `0.2`
+- **AND** the form SHALL NOT be dirty
+
+#### Scenario: Temperature default that is not a usable number
+
+- **WHEN** the schema default of `temperature` is `null`, a string, or a number outside `0`–`1`
+- **THEN** it SHALL be ignored and the `temperature` form value SHALL be the editor's own default
 
 #### Scenario: Conversation starters defaults for an app without them
 

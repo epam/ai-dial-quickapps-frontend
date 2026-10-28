@@ -6,7 +6,18 @@ import { getApplicationSchemaDefaults } from '../application-schema-defaults';
 // definition, and an optional object declared as `anyOf` with a `null` branch.
 const createSchema = (overrides: Record<string, unknown> = {}) => ({
   $defs: {
-    DialDeploymentConfig: { properties: { deployment_id: { type: 'string' } }, type: 'object' },
+    DialDeploymentConfig: {
+      properties: {
+        deployment_id: { type: 'string' },
+        parameters: { $ref: '#/$defs/DialDeploymentParameters' },
+      },
+      type: 'object',
+    },
+    DialDeploymentParameters: {
+      properties: {
+        temperature: { anyOf: [{ type: 'number' }, { type: 'null' }], default: 0.2 },
+      },
+    },
     ConversationStartersConfig: {
       properties: {
         intro_text: { anyOf: [{ type: 'string' }, { type: 'null' }], default: 'Select an action' },
@@ -51,6 +62,7 @@ describe('getApplicationSchemaDefaults', () => {
   it('reads every default the form edits', () => {
     expect(getApplicationSchemaDefaults(createSchema())).toEqual({
       deploymentId: 'model-2',
+      temperature: 0.2,
       conversationStarters: {
         introText: 'Select an action',
         autoSubmit: true,
@@ -131,7 +143,27 @@ describe('getApplicationSchemaDefaults', () => {
       properties: { orchestrator: { properties: orchestratorProperties } },
     };
 
-    expect(getApplicationSchemaDefaults(schema)).toEqual({});
+    expect(getApplicationSchemaDefaults(schema).deploymentId).toBeUndefined();
+  });
+
+  it.each([
+    ['zero', 0, 0],
+    ['one', 1, 1],
+    ['null', null, undefined],
+    ['above the range', 1.5, undefined],
+    ['below the range', -0.1, undefined],
+    ['a string', '0.5', undefined],
+  ])('reads a temperature default of %s', (_name, value, expected) => {
+    const schema = createSchema({
+      $defs: {
+        DialDeploymentConfig: {
+          properties: { parameters: { $ref: '#/$defs/DialDeploymentParameters' } },
+        },
+        DialDeploymentParameters: { properties: { temperature: { default: value } } },
+      },
+    });
+
+    expect(getApplicationSchemaDefaults(schema).temperature).toBe(expected);
   });
 
   it('ignores defaults of the wrong type', () => {

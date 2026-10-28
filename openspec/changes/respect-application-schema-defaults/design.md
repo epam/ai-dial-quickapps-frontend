@@ -52,8 +52,9 @@ The real QuickApps schema (`myQA4-scheme.json`) puts the interesting defaults in
 
 ## Open questions
 
-1. **Temperature and system prompt.** Left out. `temperature: null` (model default) has no representation in the
-   number field, which holds `0.5` today; the system prompt default is an empty string.
+1. ~~Temperature~~ Resolved: honoured when the schema default is a number in `0`–`1`; `null` (the model's own
+   default) has no representation in the number field, so it keeps `0.5`. The system prompt default is an empty
+   string, which the form already starts with, so it is not read.
 2. ~~Precedence of the schema default over client-config `defaultDeploymentId`~~ Resolved: schema first (confirmed by
    the user). The schema is QuickApp-specific and is how the backend steers new apps (Issue #290); the client-config
    default is chat-wide and stays the next fallback.

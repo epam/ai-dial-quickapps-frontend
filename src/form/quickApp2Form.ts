@@ -277,7 +277,9 @@ export const getQuickApp2FormData = (
     model,
     instructions: appProperties?.orchestrator?.system_prompt?.content ?? '',
     temperature:
-      appProperties?.orchestrator?.deployment?.parameters?.temperature ?? DEFAULT_TEMPERATURE,
+      appProperties?.orchestrator?.deployment?.parameters?.temperature ??
+      schemaDefaults?.temperature ??
+      DEFAULT_TEMPERATURE,
     addOns: getAddOnsFormValue(appProperties?.tool_sets),
     codeInterpreter:
       appProperties?.tool_sets?.some((toolset) => toolset.type === ToolsetTypes.CodeInterpreter) ??
