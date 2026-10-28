@@ -12,7 +12,7 @@ per segment, carrying:
   fields" when a `general` payload is present;
 - `inputAttachmentTypes` and `maxInputAttachments` from the validated form values (owned by
   `application_user-attachments` and `application_advanced-settings`);
-- `applicationProperties` built by `buildQuickApp2Config` (`src/form/quickApp2Form.ts`)
+- `applicationProperties` built by `buildQuickApp2Config` (`src/form/build-quick-app-config.ts`)
   from the validated form values, as described in "Application properties written on save",
   with every `contexts[].url` and `skills[].url` re-encoded per path segment.
 

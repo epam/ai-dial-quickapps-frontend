@@ -273,7 +273,7 @@ direction-agnostic (RTL impact: none).
 The editor's Settings-step values SHALL be owned by `useQuickApp2Form`
 (`src/hooks/use-quick-app2-form.ts`), a reducer hook used only by `QuickApp2Form`
 (`src/components/QuickApp2Form/QuickApp2Form.tsx`). Its initial values and its dirty
-baseline SHALL be built by `getQuickApp2FormData` (`src/form/quickApp2Form.ts`) from the
+baseline SHALL be built by `getQuickApp2FormData` (`src/form/quick-app-form-data.ts`) from the
 loaded application when the form mounts. The hook's result SHALL be memoised (`useMemo`)
 and its actions SHALL be stable (`useCallback`), so that consumers' effects keyed on them
 do not re-run on unrelated renders.
@@ -426,7 +426,7 @@ per segment, carrying:
   fields" when a `general` payload is present;
 - `inputAttachmentTypes` and `maxInputAttachments` from the validated form values (owned by
   `application_user-attachments` and `application_advanced-settings`);
-- `applicationProperties` built by `buildQuickApp2Config` (`src/form/quickApp2Form.ts`)
+- `applicationProperties` built by `buildQuickApp2Config` (`src/form/build-quick-app-config.ts`)
   from the validated form values, as described in "Application properties written on save",
   with every `contexts[].url` and `skills[].url` re-encoded per path segment.
 
@@ -627,7 +627,7 @@ change whether the application counts as saved.
 
 ### Requirement: Application properties written on save
 
-`buildQuickApp2Config` (`src/form/quickApp2Form.ts`) SHALL build `application_properties`
+`buildQuickApp2Config` (`src/form/build-quick-app-config.ts`) SHALL build `application_properties`
 with these top-level keys. Each section's values are owned by the capability named; this
 requirement fixes only the top-level shape and what is carried over from the loaded
 configuration.

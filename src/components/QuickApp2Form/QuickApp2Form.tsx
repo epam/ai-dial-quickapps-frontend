@@ -6,7 +6,7 @@ import type { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { DEFAULT_MAX_INPUT_ATTACHMENTS } from '@/constants/quick-apps';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
-import { getQuickApp2FormData } from '@/form/quickApp2Form';
+import { getQuickApp2FormData } from '@/form/quick-app-form-data';
 import { useQuickApp2Form } from '@/hooks/use-quick-app2-form';
 import {
   areSameEditJsonDocuments,
@@ -15,7 +15,7 @@ import {
   type EditJsonContext,
 } from '@/utils/edit-json';
 import type { TriggerSaveEventDetail, TriggerSaveGeneralPayload } from '@/types/editor-messages';
-import type { QuickApp2Form as QuickApp2FormType } from '@/form/quickApp2Form';
+import type { QuickApp2Form as QuickApp2FormType } from '@/form/quick-app-form-schema';
 import type { QuickApp2Config } from '@/types/quick-apps';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
