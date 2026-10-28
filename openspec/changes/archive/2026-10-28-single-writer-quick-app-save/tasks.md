@@ -14,11 +14,11 @@
 
 ## 3. ai-dial-chat (other repository; track in its own PR)
 
-- [ ] 3.1 In `QuickAppSetup.startPreview`, pass `toTriggerSaveGeneral(values)` to `runSave`. Verify with the Preview unit test that `TRIGGER_SAVE` carries `general`.
-- [ ] 3.2 Remove `reassertSkillsSupport` and its calls from `save` and `startPreview`. Verify `QuickAppSetup.spec.tsx` asserts no `updateApplication` call after `SAVE_SUCCESS`.
-- [ ] 3.3 Update chat's `app-editor-flow`, `app-preview-chat` and `applications-write-api` specs to drop the reassertion requirement and its scenarios, and to say chat-api forces the flag on every update. Verify `openspec validate` passes there.
+- [x] 3.1 In `QuickAppSetup.startPreview`, pass `toTriggerSaveGeneral(values)` to `runSave`. Verify with the Preview unit test that `TRIGGER_SAVE` carries `general`.
+- [x] 3.2 Remove `reassertSkillsSupport` and its calls from `save` and `startPreview`. Verify `QuickAppSetup.spec.tsx` asserts no `updateApplication` call after `SAVE_SUCCESS`.
+- [x] 3.3 Update chat's `app-editor-flow`, `app-preview-chat` and `applications-write-api` specs to drop the reassertion requirement and its scenarios, and to say chat-api forces the flag on every update. Verify `openspec validate` passes there.
 - [ ] 3.4 Manual check against a running stack: Save and Preview each produce one `PATCH /api/v1/applications/{id}` in the network log, the stored `features.skills_supported` is `true`, and a name edit made before Preview survives the next auto-save.
 
 ## 4. Integration
 
-- [ ] 4.1 With both changes deployed, edit name and instructions, press Preview, edit instructions again and wait 30 s; verify the name is unchanged and only the auto-save `PATCH` was sent.
+- [x] 4.1 With both changes deployed, edit name and instructions, press Preview, edit instructions again and wait 30 s; verify the name is unchanged and only the auto-save `PATCH` was sent.
