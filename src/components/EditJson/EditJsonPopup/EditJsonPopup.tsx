@@ -13,7 +13,7 @@ import {
   ChatI18nKeys,
 } from '@/constants/translation-keys';
 import { useThemeContext } from '@/context/ThemeContext';
-import type { QuickApp2Form } from '@/form/quickApp2Form';
+import type { QuickApp2Form } from '@/form/quick-app-form-schema';
 import { ThemeId } from '@/types/theme';
 import { parseEditJsonDocument, type EditJsonContext } from '@/utils/edit-json';
 import { downloadTextFile } from '@/utils/file-download';

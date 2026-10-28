@@ -1,7 +1,7 @@
 import { act } from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { QuickApp2Schema, type QuickApp2Form } from '@/form/quickApp2Form';
+import { QuickApp2Schema, type QuickApp2Form } from '@/form/quick-app-form-schema';
 import { AddOnSchemaKeys } from '@/types/quick-app-form';
 import { useQuickApp2Form, type UseQuickApp2FormResult } from '@/hooks/use-quick-app2-form';
 import { setupTestRoot } from '@/test-utils/test-root';

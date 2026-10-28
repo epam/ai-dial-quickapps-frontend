@@ -3,15 +3,16 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_MAX_INPUT_ATTACHMENTS } from '@/constants/quick-apps';
 import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import {
-  buildQuickApp2Config,
   QuickApp2Schema,
+  isValidMaxInputAttachments,
+  type QuickApp2Form,
+} from '@/form/quick-app-form-schema';
+import {
   getAddOnsFormValue,
   getQuickApp2FormData,
-  getQuickApp2Toolsets,
-  isValidMaxInputAttachments,
   resolveDefaultModelId,
-  type QuickApp2Form,
-} from '@/form/quickApp2Form';
+} from '@/form/quick-app-form-data';
+import { buildQuickApp2Config, getQuickApp2Toolsets } from '@/form/build-quick-app-config';
 import { AddOnSchemaKeys } from '@/types/quick-app-form';
 import { type AnyToolset, ToolsetTypes } from '@/types/quick-apps';
 

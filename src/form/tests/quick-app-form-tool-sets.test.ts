@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildQuickApp2Config, getQuickApp2FormData } from '@/form/quickApp2Form';
+import { getQuickApp2FormData } from '@/form/quick-app-form-data';
+import { buildQuickApp2Config } from '@/form/build-quick-app-config';
 import {
   AnyToolset,
   DialDeploymentToolsetToolTypes,

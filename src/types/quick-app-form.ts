@@ -1,4 +1,4 @@
-import type { QuickApp2Form } from '@/form/quickApp2Form';
+import type { QuickApp2Form } from '@/form/quick-app-form-schema';
 import type { LoadStatus } from '@/types/load-status';
 
 export type QuickApp2FormValues = Omit<QuickApp2Form, 'maxInputAttachments'> & {
