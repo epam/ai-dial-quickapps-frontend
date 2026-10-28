@@ -6,7 +6,7 @@ import {
   ButtonsI18nKeys,
   ChatSettingsI18nKeys,
 } from '@/constants/translation-keys';
-import { isValidMaxInputAttachments } from '@/form/quickApp2Form';
+import { isValidMaxInputAttachments } from '@/form/quick-app-form-schema';
 import { useTranslation } from 'react-i18next';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import { getTemperatureScaleLabelKey } from '@/utils/application';

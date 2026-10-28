@@ -4,12 +4,9 @@ import omit from 'lodash-es/omit';
 import { z } from 'zod';
 
 import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
-import {
-  buildQuickApp2Config,
-  getQuickApp2FormData,
-  QuickApp2Schema,
-  type QuickApp2Form,
-} from '@/form/quickApp2Form';
+import { QuickApp2Schema, type QuickApp2Form } from '@/form/quick-app-form-schema';
+import { getQuickApp2FormData } from '@/form/quick-app-form-data';
+import { buildQuickApp2Config } from '@/form/build-quick-app-config';
 import type {
   ApplicationSchemaDefaults,
   DialAIEntityModel,

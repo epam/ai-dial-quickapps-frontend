@@ -4,11 +4,9 @@ import set from 'lodash-es/set';
 import { describe, expect, it } from 'vitest';
 
 import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
-import {
-  buildQuickApp2Config,
-  getQuickApp2FormData,
-  type QuickApp2Form,
-} from '@/form/quickApp2Form';
+import { type QuickApp2Form } from '@/form/quick-app-form-schema';
+import { getQuickApp2FormData } from '@/form/quick-app-form-data';
+import { buildQuickApp2Config } from '@/form/build-quick-app-config';
 import {
   areSameEditJsonDocuments,
   buildEditJsonDocument,

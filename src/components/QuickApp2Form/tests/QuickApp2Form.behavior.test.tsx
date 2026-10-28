@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
 import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import type { QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form/QuickApp2Form';
-import type { QuickApp2Form } from '@/form/quickApp2Form';
+import type { QuickApp2Form } from '@/form/quick-app-form-schema';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
 import type { TriggerSaveGeneralPayload } from '@/types/editor-messages';

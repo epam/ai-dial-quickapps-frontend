@@ -108,7 +108,7 @@
       `defaultAddon`…) without mapping the JSON, so their types do not match the real body
       (`app-logo`, `default-addon`…). ai-dial-chat's own `ThemeContext` makes the same raw call
       (`get<ThemeConfiguration>(ApiEndpoints.THEMES)`). Revisit if the client generator maps those keys.
-- [x] Agent transport default: the save (`src/form/quickApp2Form.ts`) and the agent Settings tab
+- [x] Agent transport default: the save (`src/form/build-quick-app-config.ts`) and the agent Settings tab
       (`AgentSettingsTab`) both read `DEFAULT_AGENT_TRANSPORT` (`src/constants/quick-apps.ts`), so an
       MCP-capable application with no saved `transport` shows and saves the same value.
 - [ ] `src/types` follow-ups (left over from the constants/types clean-up):
@@ -118,7 +118,7 @@
     the host-protocol locale entry is now `HostLocaleTextEntry` (its redundant cast in
     `dial-client.ts` is dropped). chat-api DTO `type` checks in `dial-client.ts` stay string
     comparisons, since they compare the API's own type;
-  - `src/types/quick-app-form.ts` imports `QuickApp2Form` from `@/form/quickApp2Form`, so types depend
+  - `src/types/quick-app-form.ts` imports `QuickApp2Form` from `@/form/quick-app-form-schema`, so types depend
     on the form layer. Fix by defining the form values interface in `src/types/` directly.
 - [ ] ...
 
@@ -133,7 +133,7 @@ OpenSpec change).
       call fails and resolves to `{}`), `useQuickApp2Form` forces the value to `false` without
       dirtying the form, and the next save removes the stored code-interpreter toolset,
       `web_fetch` or `representation_tooling` (`use-quick-app2-form.ts:159-170`,
-      `quickApp2Form.ts:325-326,422-429`). Decided: intended — a feature the deployment does not
+      `build-quick-app-config.ts`, `getDeploymentParameters` and the `features` block). Decided: intended — a feature the deployment does not
       offer is not kept on the application (`app-configuration`, "Feature flags gate the Advanced
       Settings switches").
 - [x] **Load-time baseline is never refreshed after a save** — a successful save now makes the
@@ -147,7 +147,7 @@ OpenSpec change).
       validation failure all end silently, while `host-integration` says a
       save always ends in exactly one outcome message.
 - [ ] **`application_properties` keys outside the editor's six are dropped on save**
-      (`quickApp2Form.ts:289-328`; chat-api replaces the stored object).
+      (`build-quick-app-config.ts`, `buildQuickApp2Config`; chat-api replaces the stored object).
 - [x] **General summary lookup misses encoded ids** — `fetchApplicationSummary` now matches the
       listing entry by its decoded id (change `match-summary-by-decoded-id`).
 - [ ] **Read-only mode is unreachable** — `isReadonly` is never passed to `QuickApp2Form` (shared apps are

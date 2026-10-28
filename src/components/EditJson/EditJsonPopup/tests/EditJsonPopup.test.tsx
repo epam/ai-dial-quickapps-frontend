@@ -6,7 +6,7 @@ import {
   ButtonsI18nKeys,
   ChatI18nKeys,
 } from '@/constants/translation-keys';
-import { getQuickApp2FormData } from '@/form/quickApp2Form';
+import { getQuickApp2FormData } from '@/form/quick-app-form-data';
 import { click, getButton, typeInto } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
 import { buildEditJsonDocument, type EditJsonContext } from '@/utils/edit-json';
