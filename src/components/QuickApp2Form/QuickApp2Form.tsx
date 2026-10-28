@@ -64,11 +64,14 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     [models],
   );
   const availableModelIds = useMemo(() => models.map((model) => model.id), [models]);
+  const schemaDefaults = app.schemaDefaults;
+  const schemaDefaultModelId = schemaDefaults?.deploymentId;
   const defaultValues = getQuickApp2FormData(
     app,
     toolSupportingModelIds,
     availableModelIds,
     settings.defaultModelId,
+    schemaDefaults,
   );
   const {
     values,
@@ -97,6 +100,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
       availableModelIds,
       existingModelId,
       defaultModelId: settings.defaultModelId,
+      schemaDefaultModelId,
       isCodeInterpreterEnabled: !!settings.isCodeInterpreterEnabled,
       isWebFetchEnabled: !!settings.isWebFetchEnabled,
       isAddAttachmentEnabled: !!settings.isAddAttachmentEnabled,
@@ -105,6 +109,7 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
   }, [
     availableModelIds,
     existingModelId,
+    schemaDefaultModelId,
     settings.defaultModelId,
     status,
     settings.isAddAttachmentEnabled,
@@ -260,8 +265,16 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
       toolSupportingModelIds,
       availableModelIds,
       defaultModelId: settings.defaultModelId,
+      schemaDefaults,
     }),
-    [allEntitiesMap, availableModelIds, language, settings.defaultModelId, toolSupportingModelIds],
+    [
+      allEntitiesMap,
+      availableModelIds,
+      language,
+      schemaDefaults,
+      settings.defaultModelId,
+      toolSupportingModelIds,
+    ],
   );
   const handleEditJsonOpen = useCallback(
     () => setEditJsonDocument(buildEditJsonDocument(values, editJsonContext)),

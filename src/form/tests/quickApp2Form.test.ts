@@ -210,6 +210,106 @@ describe('resolveDefaultModelId', () => {
       resolveDefaultModelId('model-3', ['model-1', 'model-2'], ['model-1', 'model-2'], 'model-2'),
     ).toBe('model-3');
   });
+
+  it('prefers the schema default over the configured default', () => {
+    const models = ['model-1', 'model-2', 'model-4'];
+    expect(resolveDefaultModelId(undefined, models, models, 'model-2', 'model-4')).toBe('model-4');
+  });
+
+  it('keeps the stored model over the schema default', () => {
+    const models = ['model-3', 'model-4'];
+    expect(resolveDefaultModelId('model-3', models, models, undefined, 'model-4')).toBe('model-3');
+  });
+
+  it('skips a schema default that is not loaded', () => {
+    expect(resolveDefaultModelId(undefined, ['model-2'], ['model-2'], 'model-2', 'model-4')).toBe(
+      'model-2',
+    );
+  });
+
+  it('skips a schema default that does not support tools', () => {
+    expect(
+      resolveDefaultModelId(undefined, ['model-2'], ['model-2', 'model-4'], 'model-2', 'model-4'),
+    ).toBe('model-2');
+  });
+});
+
+describe('getQuickApp2FormData with application schema defaults', () => {
+  const schemaDefaults = {
+    deploymentId: 'model-2',
+    conversationStarters: {
+      introText: 'Select an action',
+      autoSubmit: false,
+      chatMessageInputDisabled: true,
+    },
+    addAttachment: false,
+    webFetch: false,
+  };
+  const models = ['model-1', 'model-2'];
+
+  it('pre-fills a new app from the schema defaults', () => {
+    const data = getQuickApp2FormData(undefined, models, models, undefined, schemaDefaults);
+
+    expect(data).toMatchObject({
+      model: 'model-2',
+      introText: 'Select an action',
+      autoSubmit: false,
+      chatMessageInputDisabled: true,
+      addAttachment: false,
+      webFetch: false,
+    });
+  });
+
+  it('keeps the built-in defaults for what the schema does not provide', () => {
+    const data = getQuickApp2FormData(undefined, models, models, undefined, {});
+
+    expect(data).toMatchObject({
+      model: 'model-1',
+      autoSubmit: true,
+      chatMessageInputDisabled: false,
+      addAttachment: true,
+      webFetch: true,
+    });
+    expect(data.introText).toBeUndefined();
+  });
+
+  it('keeps the stored feature values, including one saved as off', () => {
+    const app = {
+      applicationProperties: {
+        features: { representation_tooling: null, web_fetch: { enabled: true } },
+      },
+    };
+
+    const data = getQuickApp2FormData(app, models, models, undefined, {
+      addAttachment: true,
+      webFetch: false,
+    });
+
+    expect(data).toMatchObject({ addAttachment: false, webFetch: true });
+  });
+
+  it('does not apply conversation starters defaults to stored conversation starters', () => {
+    const app = {
+      applicationProperties: {
+        conversation_starters: { starters: [{ title: 'Tips', text: 'Suggest' }] },
+      },
+    };
+
+    const data = getQuickApp2FormData(app, models, models, undefined, schemaDefaults);
+
+    expect(data.introText).toBeUndefined();
+    expect(data).toMatchObject({ autoSubmit: true, chatMessageInputDisabled: false });
+  });
+
+  it('keeps the stored model over the schema default', () => {
+    const app = {
+      applicationProperties: { orchestrator: { deployment: { deployment_id: 'model-1' } } },
+    };
+
+    const data = getQuickApp2FormData(app, models, models, undefined, schemaDefaults);
+
+    expect(data.model).toBe('model-1');
+  });
 });
 
 describe('getQuickApp2FormData', () => {
@@ -370,8 +470,7 @@ describe('orchestrator temperature and process files', () => {
     const extraConfig = { orchestrator: { attachment_strategy: { type: 'lazy_on_demand' } } };
 
     expect(
-      buildConfig({ processLargeFiles: false }, {}, extraConfig).orchestrator
-        ?.attachment_strategy,
+      buildConfig({ processLargeFiles: false }, {}, extraConfig).orchestrator?.attachment_strategy,
     ).toEqual({ type: 'lazy_on_demand' });
   });
 });

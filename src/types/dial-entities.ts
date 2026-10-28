@@ -103,12 +103,25 @@ export interface DialToolset {
 
 export type ToolsetsMap = Record<string, DialToolset>;
 
+/** Defaults of the application type schema that the editor form edits. */
+export interface ApplicationSchemaDefaults {
+  deploymentId?: string;
+  conversationStarters?: {
+    introText?: string;
+    autoSubmit?: boolean;
+    chatMessageInputDisabled?: boolean;
+  };
+  addAttachment?: boolean;
+  webFetch?: boolean;
+}
+
 export interface DialApp {
   id: string;
   name: string;
   type?: string;
   applicationProperties?: unknown;
   applicationTypeSchemaId?: string;
+  schemaDefaults?: ApplicationSchemaDefaults;
   mcp?: boolean;
   features?: { mcp?: boolean };
   sharedWithMe?: boolean;
