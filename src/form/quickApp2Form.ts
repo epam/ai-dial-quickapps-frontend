@@ -17,7 +17,11 @@ import {
   migrateMCPToolsetIdName,
 } from '@/utils/application';
 import { decodeApiUrl, encodeApiUrl, isApplicationId, isToolsetId } from '@/utils/api';
-import type { DialAIEntityModel, LocalizedText } from '@/types/dial-entities';
+import type {
+  ApplicationSchemaDefaults,
+  DialAIEntityModel,
+  LocalizedText,
+} from '@/types/dial-entities';
 import { DialEntityType } from '@/types/dial-entities';
 import { getLocalizedText } from '@/utils/get-localized-text';
 import {
@@ -211,8 +215,17 @@ export const resolveDefaultModelId = (
   toolSupportingModelIds?: string[],
   availableModelIds?: string[],
   defaultModelId?: string,
+  schemaDefaultModelId?: string,
 ): string => {
   if (existingModelId) return existingModelId;
+  // An unusable schema default is skipped, not reported: the user cannot fix a backend default.
+  if (
+    schemaDefaultModelId &&
+    availableModelIds?.includes(schemaDefaultModelId) &&
+    toolSupportingModelIds?.includes(schemaDefaultModelId)
+  ) {
+    return schemaDefaultModelId;
+  }
   if (defaultModelId && availableModelIds?.includes(defaultModelId)) return defaultModelId;
   return toolSupportingModelIds?.[0] ?? '';
 };
@@ -226,6 +239,7 @@ export const getQuickApp2FormData = (
   toolSupportingModelIds?: string[],
   availableModelIds?: string[],
   defaultModelId?: string,
+  schemaDefaults?: ApplicationSchemaDefaults,
 ): QuickApp2Form => {
   const appProperties = app?.applicationProperties as QuickApp2Config | undefined;
   const inputAttachmentTypes = (app?.inputAttachmentTypes as string[] | undefined) ?? [];
@@ -234,7 +248,13 @@ export const getQuickApp2FormData = (
     toolSupportingModelIds,
     availableModelIds,
     defaultModelId,
+    schemaDefaults?.deploymentId,
   );
+  // Schema defaults fill what the app has not stored. A stored `conversation_starters` object
+  // without `intro_text` means the intro was left empty, so it is read as stored.
+  const starterDefaults = appProperties?.conversation_starters
+    ? undefined
+    : schemaDefaults?.conversationStarters;
   const timestamp =
     'timestamp' in (appProperties?.features ?? {}) ? !!appProperties?.features?.timestamp : true;
   const processLargeFiles =
@@ -246,18 +266,20 @@ export const getQuickApp2FormData = (
   const addAttachment =
     'representation_tooling' in (appProperties?.features ?? {})
       ? !!appProperties?.features?.representation_tooling?.add_attachment
-      : true;
+      : (schemaDefaults?.addAttachment ?? true);
   const webFetch =
     'web_fetch' in (appProperties?.features ?? {})
       ? !!appProperties?.features?.web_fetch?.enabled
-      : true;
+      : (schemaDefaults?.webFetch ?? true);
 
   return {
     documentRelativeUrl: (appProperties?.contexts ?? []).filter(isOwnedContext).map((c) => c.url),
     model,
     instructions: appProperties?.orchestrator?.system_prompt?.content ?? '',
     temperature:
-      appProperties?.orchestrator?.deployment?.parameters?.temperature ?? DEFAULT_TEMPERATURE,
+      appProperties?.orchestrator?.deployment?.parameters?.temperature ??
+      schemaDefaults?.temperature ??
+      DEFAULT_TEMPERATURE,
     addOns: getAddOnsFormValue(appProperties?.tool_sets),
     codeInterpreter:
       appProperties?.tool_sets?.some((toolset) => toolset.type === ToolsetTypes.CodeInterpreter) ??
@@ -267,10 +289,13 @@ export const getQuickApp2FormData = (
     maxInputAttachments:
       normalizeMaxInputAttachments(app?.maxInputAttachments) ??
       (inputAttachmentTypes.length > 0 ? DEFAULT_MAX_INPUT_ATTACHMENTS : undefined),
-    introText: appProperties?.conversation_starters?.intro_text,
+    introText: appProperties?.conversation_starters?.intro_text ?? starterDefaults?.introText,
     chatMessageInputDisabled:
-      appProperties?.conversation_starters?.chat_message_input_disabled ?? false,
-    autoSubmit: appProperties?.conversation_starters?.auto_submit ?? true,
+      appProperties?.conversation_starters?.chat_message_input_disabled ??
+      starterDefaults?.chatMessageInputDisabled ??
+      false,
+    autoSubmit:
+      appProperties?.conversation_starters?.auto_submit ?? starterDefaults?.autoSubmit ?? true,
     starters: [
       ...(appProperties?.conversation_starters?.starters ?? []).map(
         ({ title, text, ...extra }) => ({

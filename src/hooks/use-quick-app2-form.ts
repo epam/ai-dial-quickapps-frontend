@@ -154,6 +154,7 @@ const reduceFormState = (state: FormState, action: FormAction): FormState => {
         externalState.toolSupportingModelIds,
         externalState.availableModelIds,
         externalState.defaultModelId,
+        externalState.schemaDefaultModelId,
       );
 
       if (!state.values.model && resolvedModel) {

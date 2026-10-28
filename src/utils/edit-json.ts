@@ -10,7 +10,11 @@ import {
   QuickApp2Schema,
   type QuickApp2Form,
 } from '@/form/quickApp2Form';
-import type { DialAIEntityModel, LocalizedText } from '@/types/dial-entities';
+import type {
+  ApplicationSchemaDefaults,
+  DialAIEntityModel,
+  LocalizedText,
+} from '@/types/dial-entities';
 import type { QuickApp2FormValues } from '@/types/quick-app-form';
 
 type EntitiesMap = Record<
@@ -29,6 +33,7 @@ export interface EditJsonContext {
   toolSupportingModelIds?: string[];
   availableModelIds?: string[];
   defaultModelId?: string;
+  schemaDefaults?: ApplicationSchemaDefaults;
 }
 
 export type EditJsonParseResult =
@@ -106,7 +111,10 @@ const getIssueError = (issue: z.core.$ZodIssue): EditJsonError => {
 };
 
 /** Parses the popup text into form values (including the new extra config), or errors. */
-export const parseEditJsonDocument = (text: string, context: EditJsonContext): EditJsonParseResult => {
+export const parseEditJsonDocument = (
+  text: string,
+  context: EditJsonContext,
+): EditJsonParseResult => {
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);
@@ -143,6 +151,7 @@ export const parseEditJsonDocument = (text: string, context: EditJsonContext): E
     context.toolSupportingModelIds,
     context.availableModelIds,
     context.defaultModelId,
+    context.schemaDefaults,
   );
 
   const result = QuickApp2Schema.safeParse(values);
