@@ -20,6 +20,7 @@ export interface QuickApp2FormExternalState {
   availableModelIds?: string[];
   existingModelId?: string;
   defaultModelId?: string;
+  schemaDefaultModelId?: string;
   isCodeInterpreterEnabled: boolean;
   isWebFetchEnabled: boolean;
   isAddAttachmentEnabled: boolean;

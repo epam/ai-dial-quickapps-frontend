@@ -8,6 +8,7 @@ import {
 
 import type {
   AppSettings,
+  ApplicationSchemaDefaults,
   DialApp,
   DialModel,
   DialSkill,
@@ -30,6 +31,7 @@ import {
   toolsetsApi,
 } from '@/utils/chat-api-client';
 import { parseAllowedOrigins } from '@/utils/allowed-origins';
+import { getApplicationSchemaDefaults } from '@/utils/application-schema-defaults';
 import { isHiddenPath } from '@/utils/dial-file-path';
 import { ForbiddenError } from '@/utils/forbidden-error';
 import { getLocalizedText } from '@/utils/get-localized-text';
@@ -348,6 +350,19 @@ export const fetchDialApp = async (appId: string): Promise<DialApp | null> => {
     summary = undefined;
   }
   const appDetails = details.applicationDetails;
+  // Defaults for a new app come from the application type schema. A missing id or a failed
+  // call must not fail the load: the form then keeps its own fallbacks.
+  let schemaDefaults: ApplicationSchemaDefaults = {};
+  if (appDetails?.applicationTypeSchemaId) {
+    try {
+      const schema = await applicationsApi.getApplicationSchema({
+        id: appDetails.applicationTypeSchemaId,
+      });
+      schemaDefaults = getApplicationSchemaDefaults(schema);
+    } catch {
+      schemaDefaults = {};
+    }
+  }
   // appDetails.displayName comes from the same getDeploymentDetails call that
   // just succeeded, so it's always available; summary (a separate, interface-
   // filtered /deployments listing) can miss this app entirely — e.g. when it
@@ -360,6 +375,7 @@ export const fetchDialApp = async (appId: string): Promise<DialApp | null> => {
     id: appId,
     name: toDisplayName(displayName, appId),
     applicationTypeSchemaId: appDetails?.applicationTypeSchemaId,
+    schemaDefaults,
     applicationProperties: mapApplicationPropertiesFromApi(appDetails?.applicationProperties),
     inputAttachmentTypes: appDetails?.inputAttachmentTypes ?? [],
     maxInputAttachments: appDetails?.maxInputAttachments,
