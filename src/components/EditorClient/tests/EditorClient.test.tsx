@@ -493,6 +493,32 @@ describe('EditorClient saved application', () => {
     expect(mocks.hasQuickAppChanges.mock.calls[1][3]).toMatchObject({ display_version: '1.0.1' });
   });
 
+  it('sends one update carrying the General fields and the configuration for a save with general', async () => {
+    await renderEditor();
+
+    await saveFromForm(false, { name: 'Renamed', description: 'New text' });
+
+    expect(mocks.saveDialApp).toHaveBeenCalledTimes(1);
+    expect(mocks.saveDialApp).toHaveBeenCalledWith(
+      expect.objectContaining({ id: APP_ID, ...FORM_DATA }),
+      BUILT_CONFIG,
+      expect.objectContaining({ name: 'Renamed', description: 'New text' }),
+    );
+  });
+
+  it('keeps the name and description of a manual save for a later auto-save', async () => {
+    await renderEditor();
+
+    await saveFromForm(false, { name: 'Renamed', description: 'New text' });
+    await saveFromForm(true);
+
+    expect(mocks.saveDialApp).toHaveBeenCalledTimes(2);
+    expect(mocks.saveDialApp.mock.calls[1][2]).toMatchObject({
+      name: 'Renamed',
+      description: 'New text',
+    });
+  });
+
   it('remounts the form on Reset from the last saved application', async () => {
     await renderEditor();
 

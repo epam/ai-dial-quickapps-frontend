@@ -74,6 +74,28 @@ describe('saveDialApp', () => {
     expect(body).toMatchObject({ description: 'Edited in the editor' });
   });
 
+  it('sends the loaded General fields unchanged on a save without general fields', async () => {
+    await saveDialApp(
+      {
+        ...app,
+        _rawForSave: {
+          displayName: 'qa-quickapp-version-check',
+          description: 'Original description',
+          iconUrl: 'https://example.com/icon.png',
+          topics: ['support'],
+        },
+      },
+      {},
+    );
+
+    expect(getSentBody()).toMatchObject({
+      name: 'qa-quickapp-version-check',
+      description: 'Original description',
+      iconUrl: 'https://example.com/icon.png',
+      topics: ['support'],
+    });
+  });
+
   it('sends the held translations back on a save without general fields', async () => {
     await saveDialApp(
       {
