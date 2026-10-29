@@ -143,9 +143,12 @@ OpenSpec change).
       translations back as `locales` with `primaryLocale: "en"`, rebuilt with ai-dial-chat's
       `decomposeLocalizedFields` / `composeLocalePayload` (change
       `keep-translations-on-save-without-general`).
-- [ ] **Ignored saves post no outcome** — a not-yet-saved auto-save, a clean auto-save, a
-      validation failure all end silently, while `host-integration` says a
-      save always ends in exactly one outcome message.
+- [x] **Ignored saves post no outcome** — decided: by design. A manual save that fails validation
+      posts `SaveError`; a not-yet-saved, clean or invalid auto-save, and a trigger that arrives
+      before the form mounts, post nothing (`host-integration` "A save trigger is skipped",
+      `application_editing` "Save trigger gating"). ai-dial-chat sends neither `TRIGGER_AUTO_SAVE`
+      nor handles `AUTO_SAVE_COMPLETE`, gates `TriggerSave` on `ReadyToSave`, and bounds its save
+      wait with a timeout, so a skipped trigger cannot hang it.
 - [ ] **`application_properties` keys outside the editor's six are dropped on save**
       (`build-quick-app-config.ts`, `buildQuickApp2Config`; chat-api replaces the stored object).
 - [x] **General summary lookup misses encoded ids** — `fetchApplicationSummary` now matches the
