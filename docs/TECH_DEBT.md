@@ -8,9 +8,13 @@
       fixed 70%, maintained by hand (no `autoUpdate`). As of 2026-10-09: statements 90.29%, branches
       81.2%, functions 89.13%, lines 91.27%.
 - [x] react-hook-form usage - removed in change `remove-react-hook-form`: the root form and every section run on `useQuickApp2Form`, and `react-hook-form` / `@hookform/resolvers` are no longer dependencies (`zod` stays).
-- [ ] need to review components, some seem to be unnecessary. No concrete candidate is known right
-      now (the last one, the `AgentSkillsField` → `SkillsSelector` proxy, was removed in
-      `redesign-skills-selection`); name one here before picking this up.
+- [x] need to review components, some seem to be unnecessary. Reviewed: no component is unused, and
+      the remaining single-use ones are legitimate (the `AgentSkillsField` → `SkillsSelector` proxy
+      went in `redesign-skills-selection`). The only finding is duplication, left as is for now:
+      `AgentSkillsFormSection`, `ToolsetsFormSection` and `AgentsFormSection` repeat the same
+      open-state / confirm / lazy-picker code, and `SkillsList`, `ToolsetsList` and `AgentsList`
+      share about 70% of their structure. Fold them into a shared row and list only if it starts
+      to cause drift.
 - [x] Extract the model picker popup out of `components/Orchestrator/ModelField.tsx` into its own
       component — now `components/Orchestrator/ModelCatalogModal` (see the `redesign-model-picker-catalog-list` change).
 - [ ] Model picker upstream asks to ai-dial-chat `libs/catalog` / `libs/chat-shared` (from the
