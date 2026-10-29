@@ -8,9 +8,13 @@
       fixed 70%, maintained by hand (no `autoUpdate`). As of 2026-10-09: statements 90.29%, branches
       81.2%, functions 89.13%, lines 91.27%.
 - [x] react-hook-form usage - removed in change `remove-react-hook-form`: the root form and every section run on `useQuickApp2Form`, and `react-hook-form` / `@hookform/resolvers` are no longer dependencies (`zod` stays).
-- [ ] need to review components, some seem to be unnecessary. No concrete candidate is known right
-      now (the last one, the `AgentSkillsField` → `SkillsSelector` proxy, was removed in
-      `redesign-skills-selection`); name one here before picking this up.
+- [x] need to review components, some seem to be unnecessary. Reviewed: no component is unused, and
+      the remaining single-use ones are legitimate (the `AgentSkillsField` → `SkillsSelector` proxy
+      went in `redesign-skills-selection`). The only finding is duplication, left as is for now:
+      `AgentSkillsFormSection`, `ToolsetsFormSection` and `AgentsFormSection` repeat the same
+      open-state / confirm / lazy-picker code, and `SkillsList`, `ToolsetsList` and `AgentsList`
+      share about 70% of their structure. Fold them into a shared row and list only if it starts
+      to cause drift.
 - [x] Extract the model picker popup out of `components/Orchestrator/ModelField.tsx` into its own
       component — now `components/Orchestrator/ModelCatalogModal` (see the `redesign-model-picker-catalog-list` change).
 - [ ] Model picker upstream asks to ai-dial-chat `libs/catalog` / `libs/chat-shared` (from the
@@ -25,10 +29,11 @@
 - [x] Auth screens other than the sign-in prompt - `ForbiddenPage` and `AuthError` now share
       `LoginScreen`'s layout (`components/common/AuthStateScreen`), use 2.0 buttons and take all copy from
       `common` i18n keys (see the `redesign-auth-state-screens` change).
-- [ ] Conversation starters: a starter with only a title or only a prompt is saved to
-      `conversation_starters`, but it does not enable the starters settings (that needs both). Needs a
-      product decision — either require both fields to save a starter, or enable the settings for any
-      non-blank starter (see the `application_conversation-starters` spec, "Partially filled starter").
+- [x] Conversation starters: a starter with only a title or only a prompt is saved to
+      `conversation_starters` but does not enable the starters settings (that needs both). Decided by
+      the spec: kept as is, and the modal explains it with the "At least one starter is required to
+      enable settings." hint (`application_conversation-starters`, "Starters settings gating" and
+      "Partially filled starter"). Reopen only if product wants a different rule.
 - [x] Conversation starters: `useQuickApp2Form` no longer exposes `updateStarter` / `removeStarter`
       (only the hook's own tests used them since the starters modal edits a local draft). The starter
       row behaviour stays covered by `src/utils/tests/conversation-starters.test.ts`.
@@ -118,8 +123,9 @@
     the host-protocol locale entry is now `HostLocaleTextEntry` (its redundant cast in
     `dial-client.ts` is dropped). chat-api DTO `type` checks in `dial-client.ts` stay string
     comparisons, since they compare the API's own type;
-  - `src/types/quick-app-form.ts` imports `QuickApp2Form` from `@/form/quick-app-form-schema`, so types depend
-    on the form layer. Fix by defining the form values interface in `src/types/` directly.
+  - done: `QuickApp2Form`, `AddOnEntry` and `QuickApp2FormStarter` are interfaces in
+    `src/types/quick-app-form.ts`, and `QuickApp2Schema` is checked against them with
+    `satisfies z.ZodType<QuickApp2Form>`, so types no longer import from `@/form`.
 - [ ] ...
 
 ## Findings from `specify-uncovered-capabilities`
@@ -143,16 +149,22 @@ OpenSpec change).
       translations back as `locales` with `primaryLocale: "en"`, rebuilt with ai-dial-chat's
       `decomposeLocalizedFields` / `composeLocalePayload` (change
       `keep-translations-on-save-without-general`).
-- [ ] **Ignored saves post no outcome** — a not-yet-saved auto-save, a clean auto-save, a
-      validation failure all end silently, while `host-integration` says a
-      save always ends in exactly one outcome message.
-- [ ] **`application_properties` keys outside the editor's six are dropped on save**
-      (`build-quick-app-config.ts`, `buildQuickApp2Config`; chat-api replaces the stored object).
+- [x] **Ignored saves post no outcome** — decided: by design. A manual save that fails validation
+      posts `SaveError`; a not-yet-saved, clean or invalid auto-save, and a trigger that arrives
+      before the form mounts, post nothing (`host-integration` "A save trigger is skipped",
+      `application_editing` "Save trigger gating"). ai-dial-chat sends neither `TRIGGER_AUTO_SAVE`
+      nor handles `AUTO_SAVE_COMPLETE`, gates `TriggerSave` on `ReadyToSave`, and bounds its save
+      wait with a timeout, so a skipped trigger cannot hang it.
+- [x] **`application_properties` keys outside the editor's six are dropped on save** — they are kept:
+      `buildQuickApp2Config` spreads the loaded extra keys back in, and `application_editing`
+      ("Unknown orchestrator and feature keys are kept") specifies it.
 - [x] **General summary lookup misses encoded ids** — `fetchApplicationSummary` now matches the
       listing entry by its decoded id (change `match-summary-by-decoded-id`).
-- [ ] **Read-only mode is unreachable** — `isReadonly` is never passed to `QuickApp2Form` (shared apps are
-      deliberately NOT read-only, #208), yet `application_editor-layout` and
-      `application_user-attachments` specify a read-only editor.
+- [x] **Read-only mode is unreachable** — decided: the editor has no read-only mode (shared apps are
+      edited like own ones, #208). The `isReadonly` prop is gone (#280, #285, #287), neither
+      `application_editor-layout` nor `application_user-attachments` mentions a read-only editor, and
+      `skills_catalog` / `agents_selection` state there is none. The stale "read-only app" comments
+      on the list and details components are reworded.
 - [x] **SaveError text** — SaveError now carries chat-api's own message or the translated
       `appsEditor.error.saveFailed`; the load error screen, the two `model` validation messages and
       the picker's load-error description no longer show raw English (change
@@ -251,9 +263,11 @@ following known discrepancies. These are deliberately tracked separately from ca
 coverage: each item may require a product decision, a spec change, a code change, or only a
 documentation correction.
 
-- [ ] **Host entry and authentication contract** — decide whether `authProvider` is optional
-      or required. `openspec/specs/host-integration/spec.md` describes optional provider pinning,
-      while `src/App.tsx` currently shows an error when no provider is present.
+- [ ] **Host entry and authentication contract** — the behaviour is settled: an authenticated session
+      works without `authProvider`, and an unauthenticated one shows the `NoProvider` error
+      (`src/App.tsx`, `auth` spec "No auth provider is requested"). Only the wording is left:
+      `host-integration`'s "absence is meaningful ... rather than treating it as an error" should say
+      the error applies when the session is unauthenticated.
 - [ ] **Host message protocol** — reconcile the exact handshake and message contract:
       application-name prefixes, connector-generated versus manually posted messages, the README's
       `INIT` claim, and the timing/duplication semantics of `READY`, `readyToSave`, and `loggedOut`.

@@ -7,7 +7,7 @@ import ForbiddenPage from '@/components/ForbiddenPage/ForbiddenPage';
 import FullScreenSpinner from '@/components/FullScreenSpinner/FullScreenSpinner';
 import { DataContextProvider } from '@/context/DataContext';
 import { buildQuickApp2Config } from '@/form/build-quick-app-config';
-import type { QuickApp2Form as QuickApp2FormType } from '@/form/quick-app-form-schema';
+import type { QuickApp2Form as QuickApp2FormType } from '@/types/quick-app-form';
 import { QuickApp2Config } from '@/types/quick-apps';
 import { postEditorMessage } from '@/utils/post-editor-message';
 import { readHostEditorMessage } from '@/utils/read-host-editor-message';

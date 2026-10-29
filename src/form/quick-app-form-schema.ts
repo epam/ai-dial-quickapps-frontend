@@ -2,15 +2,13 @@ import { z } from 'zod';
 
 z.config({ jitless: true });
 import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
-import { AddOnSchemaKeys } from '@/types/quick-app-form';
+import { AddOnSchemaKeys, type QuickApp2Form } from '@/types/quick-app-form';
 
 const AddOnSchema = z.object({
   [AddOnSchemaKeys.id]: z.string(),
   [AddOnSchemaKeys.tool]: z.record(z.string(), z.any()).optional(),
   [AddOnSchemaKeys.isDialDeploymentTool]: z.boolean().optional(),
 });
-
-export type AddOnEntry = z.infer<typeof AddOnSchema>;
 
 const AttachmentTypesSchema = z.array(z.string());
 const MaxInputAttachmentsSchema = z.preprocess(
@@ -33,6 +31,7 @@ export const normalizeMaxInputAttachments = (value: unknown): number | undefined
   return result.success ? result.data : undefined;
 };
 
+// `satisfies` keeps the schema's output in step with the `QuickApp2Form` interface in `@/types`.
 export const QuickApp2Schema = z
   .object({
     // `refine`, not `trim()`: the saved system prompt must keep its whitespace as typed.
@@ -106,6 +105,4 @@ export const QuickApp2Schema = z
         message: ApplicationEditorI18nKeys.OrchestratorModelToolsUnsupported,
       });
     }
-  });
-
-export type QuickApp2Form = z.infer<typeof QuickApp2Schema>;
+  }) satisfies z.ZodType<QuickApp2Form>;

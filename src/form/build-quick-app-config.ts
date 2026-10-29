@@ -41,7 +41,7 @@ import isEmpty from 'lodash-es/isEmpty';
 import isPlainObject from 'lodash-es/isPlainObject';
 import omit from 'lodash-es/omit';
 import { AddOnSchemaKeys } from '@/types/quick-app-form';
-import type { QuickApp2Form } from '@/form/quick-app-form-schema';
+import type { QuickApp2Form } from '@/types/quick-app-form';
 
 // `parameters` is the stored object, with the form's temperature on top for a model that supports
 // it. For any other model the stored parameters are kept as they are and no temperature is
@@ -188,7 +188,7 @@ export const getQuickApp2Toolsets = ({
           if (isApplicationId(addOn[AddOnSchemaKeys.id])) {
             acc.dialAppToolsets.push({
               ...toolData,
-              name: getQuickAppItemNameFromConfig(toolData as DialAppToolset),
+              name: getQuickAppItemNameFromConfig(toolData as unknown as DialAppToolset),
               type: ToolsetTypes.DialApp,
               deployment_id: encodeApiUrl(addOn[AddOnSchemaKeys.id]),
             });
@@ -199,7 +199,7 @@ export const getQuickApp2Toolsets = ({
               type: ToolsetTypes.DialMcp,
             });
           } else if (addOn[AddOnSchemaKeys.tool] && addOn[AddOnSchemaKeys.isDialDeploymentTool]) {
-            acc.dialDeploymentsToolsets.push(toolData as DialDeploymentSimpleTool);
+            acc.dialDeploymentsToolsets.push(toolData as unknown as DialDeploymentSimpleTool);
           } else if (addOn[AddOnSchemaKeys.tool]) {
             acc.otherToolsets.push(toolData);
           }
@@ -222,7 +222,7 @@ export const getQuickApp2Toolsets = ({
             type: ToolsetTypes.DialApp,
             deployment_id: encodeApiUrl(entity.id),
             ...(doesAgentSupportMcp(entity) && {
-              transport: (toolData as DialAppToolset).transport ?? DEFAULT_AGENT_TRANSPORT,
+              transport: (toolData as Partial<DialAppToolset>).transport ?? DEFAULT_AGENT_TRANSPORT,
             }),
           });
         } else {

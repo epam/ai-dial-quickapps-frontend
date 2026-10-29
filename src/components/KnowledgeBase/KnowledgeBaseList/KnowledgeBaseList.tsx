@@ -16,7 +16,7 @@ import { parseKnowledgeBaseItem } from '@/utils/knowledge-base-path';
 
 export interface KnowledgeBaseListProps {
   files: string[];
-  /** Omitted in a read-only app, which hides the remove buttons. */
+  /** Optional: the list shows no remove buttons without it. */
   onRemove?: (file: string) => void;
 }
 
