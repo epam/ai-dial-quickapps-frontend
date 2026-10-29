@@ -1,6 +1,9 @@
 import { AUTH_ME_URL } from '@/constants/auth';
+import { getClientTimeZone } from '@/utils/get-client-time-zone';
 
 const CSRF_HEADER = 'X-CSRF-Token';
+// Provisional name, to be agreed with the QuickApps backend (ai-dial-quickapps-backend#649).
+const TIME_ZONE_HEADER = 'X-Timezone';
 const CSRF_INVALID_CODE = 'CSRF_INVALID';
 
 // chat-api rotates the CSRF token on every response that carries a session
@@ -52,6 +55,8 @@ const reprimeCsrfToken = async (): Promise<void> => {
 export const chatApiFetch: typeof fetch = async (input, init) => {
   const method = init?.method ?? 'GET';
   const headers = new Headers(init?.headers);
+  const timeZone = getClientTimeZone();
+  if (timeZone) headers.set(TIME_ZONE_HEADER, timeZone);
   if (method !== 'GET' && csrfToken) headers.set(CSRF_HEADER, csrfToken);
 
   const res = await fetch(input, { ...init, method, headers, credentials: 'include' });
@@ -60,6 +65,7 @@ export const chatApiFetch: typeof fetch = async (input, init) => {
   if (method !== 'GET' && (await isCsrfInvalid(res))) {
     await reprimeCsrfToken();
     const retryHeaders = new Headers(init?.headers);
+    if (timeZone) retryHeaders.set(TIME_ZONE_HEADER, timeZone);
     if (csrfToken) retryHeaders.set(CSRF_HEADER, csrfToken);
     const retryRes = await fetch(input, {
       ...init,

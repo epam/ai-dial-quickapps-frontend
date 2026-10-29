@@ -1,8 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { chatApiFetch, getCsrfToken, resetCsrfToken } from '@/utils/chat-api-fetch';
+import { getClientTimeZone } from '@/utils/get-client-time-zone';
+
+vi.mock('@/utils/get-client-time-zone', () => ({ getClientTimeZone: vi.fn() }));
 
 const fetchMock = vi.fn<typeof fetch>();
+const timeZoneMock = vi.mocked(getClientTimeZone);
 
 const response = (status: number, token?: string, body?: unknown): Response =>
   new Response(body == null ? null : JSON.stringify(body), {
@@ -15,6 +19,7 @@ const sentHeaders = (call: number): Headers => fetchMock.mock.calls[call][1]?.he
 beforeEach(() => {
   resetCsrfToken();
   fetchMock.mockReset();
+  timeZoneMock.mockReset();
   vi.stubGlobal('fetch', fetchMock);
 });
 
@@ -93,5 +98,36 @@ describe('chatApiFetch', () => {
     resetCsrfToken();
 
     expect(getCsrfToken()).toBeUndefined();
+  });
+
+  it('sends the client time zone on every request, GET included', async () => {
+    timeZoneMock.mockReturnValue('Europe/Warsaw');
+    fetchMock.mockResolvedValue(response(200));
+
+    await chatApiFetch('/api/v1/deployments');
+
+    expect(sentHeaders(0).get('X-Timezone')).toBe('Europe/Warsaw');
+  });
+
+  it('omits the time zone header when there is no valid time zone', async () => {
+    timeZoneMock.mockReturnValue(undefined);
+    fetchMock.mockResolvedValue(response(200));
+
+    await chatApiFetch('/api/v1/deployments');
+
+    expect(sentHeaders(0).has('X-Timezone')).toBe(false);
+  });
+
+  it('keeps the time zone header on the CSRF retry', async () => {
+    timeZoneMock.mockReturnValue('Europe/Warsaw');
+    fetchMock
+      .mockResolvedValueOnce(response(403, undefined, { code: 'CSRF_INVALID' }))
+      .mockResolvedValueOnce(response(200, 'fresh'))
+      .mockResolvedValueOnce(response(200));
+
+    await chatApiFetch('/api/v1/applications/a', { method: 'PATCH' });
+
+    expect(sentHeaders(0).get('X-Timezone')).toBe('Europe/Warsaw');
+    expect(sentHeaders(2).get('X-Timezone')).toBe('Europe/Warsaw');
   });
 });
