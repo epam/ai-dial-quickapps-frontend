@@ -1,10 +1,12 @@
 import { FC, lazy, memo, Suspense, useCallback, useState } from 'react';
 
 import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
+import { useDataContext } from '@/context/DataContext';
 import { useAddOnEntityMap } from '@/hooks/use-add-on-entity-map';
 import { useListRemoveFocus } from '@/hooks/use-list-remove-focus';
 import { useTranslation } from 'react-i18next';
 import type { DialModel } from '@/types/dial-entities';
+import { LoadStatus } from '@/types/load-status';
 import type { DialAppTransportType } from '@/types/quick-apps';
 import { getAddOnDisplay } from '@/utils/get-add-on-display';
 import { getEntityStatus, getEntityStatusMessage } from '@/utils/get-entity-status';
@@ -33,6 +35,7 @@ const AgentsList: FC<AgentsListProps> = ({ ids, allIds, onChange, transports, on
   const { t, i18n } = useTranslation();
   const language = i18n.resolvedLanguage ?? i18n.language;
   const entityMap = useAddOnEntityMap();
+  const isCatalogReady = useDataContext().status === LoadStatus.Ready;
   const { listRef, markRemoval } = useListRemoveFocus(ids);
 
   const handleRemove = useCallback(
@@ -54,8 +57,8 @@ const AgentsList: FC<AgentsListProps> = ({ ids, allIds, onChange, transports, on
         {ids.map((id) => {
           const agent = entityMap[id] as DialModel | undefined;
           const { name, version, iconUrl } = getAddOnDisplay(id, agent, language);
-          const statusText = getEntityStatusMessage(
-            getEntityStatus(agent, id),
+          const statusMessage = getEntityStatusMessage(
+            getEntityStatus(agent, id, isCatalogReady),
             t,
             t(ApplicationEditorI18nKeys.AddOnsEntityTypeAgent),
           );
@@ -66,7 +69,8 @@ const AgentsList: FC<AgentsListProps> = ({ ids, allIds, onChange, transports, on
                 name={name}
                 version={version}
                 iconUrl={iconUrl}
-                statusText={statusText}
+                statusText={statusMessage?.text}
+                statusSeverity={statusMessage?.severity}
                 detailsLabel={t(ApplicationEditorI18nKeys.AddOnsDetails, { name })}
                 removeLabel={t(ApplicationEditorI18nKeys.AddOnsRemove, { name })}
                 onClick={setOpenAgentId}

@@ -1,10 +1,12 @@
 import { FC, lazy, memo, Suspense, useCallback, useState } from 'react';
 
 import { ApplicationEditorI18nKeys, CatalogI18nKeys } from '@/constants/translation-keys';
+import { useDataContext } from '@/context/DataContext';
 import { useAddOnEntityMap } from '@/hooks/use-add-on-entity-map';
 import { useListRemoveFocus } from '@/hooks/use-list-remove-focus';
 import { useTranslation } from 'react-i18next';
 import type { DialToolset } from '@/types/dial-entities';
+import { LoadStatus } from '@/types/load-status';
 import { getAddOnDisplay } from '@/utils/get-add-on-display';
 import { getEntityStatus, getEntityStatusMessage } from '@/utils/get-entity-status';
 
@@ -35,6 +37,7 @@ const ToolsetsList: FC<ToolsetsListProps> = ({ ids, allIds, onChange }) => {
   const { t, i18n } = useTranslation();
   const language = i18n.resolvedLanguage ?? i18n.language;
   const entityMap = useAddOnEntityMap();
+  const isCatalogReady = useDataContext().status === LoadStatus.Ready;
   const { listRef, markRemoval } = useListRemoveFocus(ids);
 
   const handleRemove = useCallback(
@@ -56,8 +59,8 @@ const ToolsetsList: FC<ToolsetsListProps> = ({ ids, allIds, onChange }) => {
         {ids.map((id) => {
           const toolset = entityMap[id] as DialToolset | undefined;
           const { name, version, iconUrl } = getAddOnDisplay(id, toolset, language);
-          const statusText = getEntityStatusMessage(
-            getEntityStatus(toolset, id),
+          const statusMessage = getEntityStatusMessage(
+            getEntityStatus(toolset, id, isCatalogReady),
             t,
             t(ApplicationEditorI18nKeys.AddOnsEntityTypeToolset),
           );
@@ -68,7 +71,8 @@ const ToolsetsList: FC<ToolsetsListProps> = ({ ids, allIds, onChange }) => {
                 name={name}
                 version={version}
                 iconUrl={iconUrl}
-                statusText={statusText}
+                statusText={statusMessage?.text}
+                statusSeverity={statusMessage?.severity}
                 badge={
                   toolset && (
                     <Suspense fallback={null}>
