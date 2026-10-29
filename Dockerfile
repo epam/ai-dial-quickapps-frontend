@@ -7,7 +7,7 @@
 ARG CHAT_API_IMAGE=ghcr.io/epam/ai-dial-chat-bff:development
 
 # Pin exact Node (and, if needed for a security patch, npm) versions for reproducible builds.
-FROM node:24.17-alpine AS builder
+FROM node:24.22.2-alpine3.24 AS builder
 # RUN npm install --global npm@<patched-version>
 WORKDIR /app
 
