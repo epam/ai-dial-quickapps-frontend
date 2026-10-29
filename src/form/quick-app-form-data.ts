@@ -22,12 +22,8 @@ import {
 import isEmpty from 'lodash-es/isEmpty';
 import sortBy from 'lodash-es/sortBy';
 import { nanoid } from 'nanoid';
-import { AddOnSchemaKeys } from '@/types/quick-app-form';
-import {
-  normalizeMaxInputAttachments,
-  type AddOnEntry,
-  type QuickApp2Form,
-} from '@/form/quick-app-form-schema';
+import { AddOnSchemaKeys, type AddOnEntry, type QuickApp2Form } from '@/types/quick-app-form';
+import { normalizeMaxInputAttachments } from '@/form/quick-app-form-schema';
 
 export const getAddOnsFormValue = (tools?: AnyToolset[]): AddOnEntry[] => {
   const deploymentTools = tools?.filter(isDialDeploymentToolset)?.flatMap((t) => t.tools) ?? [];

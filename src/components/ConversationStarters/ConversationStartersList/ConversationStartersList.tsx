@@ -13,7 +13,7 @@ import type { StarterWithId } from '@/types/conversation-starters';
 
 export interface ConversationStartersListProps {
   starters: StarterWithId[];
-  /** Omitted in a read-only app, which hides the remove buttons. */
+  /** Optional: the list shows no remove buttons without it. */
   onRemove?: (id: string) => void;
 }
 

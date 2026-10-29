@@ -15,7 +15,7 @@ import {
   type EditJsonContext,
 } from '@/utils/edit-json';
 import type { TriggerSaveEventDetail, TriggerSaveGeneralPayload } from '@/types/editor-messages';
-import type { QuickApp2Form as QuickApp2FormType } from '@/form/quick-app-form-schema';
+import type { QuickApp2Form as QuickApp2FormType } from '@/types/quick-app-form';
 import type { QuickApp2Config } from '@/types/quick-apps';
 import type { AdvancedSettingsValues } from '@/types/advanced-settings';
 import type { ConversationStartersValues } from '@/types/conversation-starters';

@@ -66,7 +66,7 @@ export interface AddOnDetailsPopupProps {
   iconUrl?: string;
   /** Folder path segments (scope label first); the line is hidden when empty. */
   folder: string[];
-  /** Enables the header's credentials action; omitted in a read-only app or without auth. */
+  /** Enables the header's credentials action; omitted without auth. */
   credentials?: AddOnDetailsCredentials;
   /** This app's own buttons under the header, e.g. an agent's Credentials. */
   actions?: ReactNode;
