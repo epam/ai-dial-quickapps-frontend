@@ -25,7 +25,7 @@ export interface AddOnListItemProps {
   /** Accessible name of the remove button, e.g. "Remove Figma". */
   removeLabel: string;
   onClick: (id: string) => void;
-  /** Omitted in a read-only app, which hides the remove button. */
+  /** Optional: the item shows no remove button without it. */
   onRemove?: (id: string) => void;
 }
 

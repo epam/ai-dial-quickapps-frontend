@@ -154,9 +154,11 @@ OpenSpec change).
       (`build-quick-app-config.ts`, `buildQuickApp2Config`; chat-api replaces the stored object).
 - [x] **General summary lookup misses encoded ids** — `fetchApplicationSummary` now matches the
       listing entry by its decoded id (change `match-summary-by-decoded-id`).
-- [ ] **Read-only mode is unreachable** — `isReadonly` is never passed to `QuickApp2Form` (shared apps are
-      deliberately NOT read-only, #208), yet `application_editor-layout` and
-      `application_user-attachments` specify a read-only editor.
+- [x] **Read-only mode is unreachable** — decided: the editor has no read-only mode (shared apps are
+      edited like own ones, #208). The `isReadonly` prop is gone (#280, #285, #287), neither
+      `application_editor-layout` nor `application_user-attachments` mentions a read-only editor, and
+      `skills_catalog` / `agents_selection` state there is none. The stale "read-only app" comments
+      on the list and details components are reworded.
 - [x] **SaveError text** — SaveError now carries chat-api's own message or the translated
       `appsEditor.error.saveFailed`; the load error screen, the two `model` validation messages and
       the picker's load-error description no longer show raw English (change
