@@ -25,10 +25,11 @@
 - [x] Auth screens other than the sign-in prompt - `ForbiddenPage` and `AuthError` now share
       `LoginScreen`'s layout (`components/common/AuthStateScreen`), use 2.0 buttons and take all copy from
       `common` i18n keys (see the `redesign-auth-state-screens` change).
-- [ ] Conversation starters: a starter with only a title or only a prompt is saved to
-      `conversation_starters`, but it does not enable the starters settings (that needs both). Needs a
-      product decision — either require both fields to save a starter, or enable the settings for any
-      non-blank starter (see the `application_conversation-starters` spec, "Partially filled starter").
+- [x] Conversation starters: a starter with only a title or only a prompt is saved to
+      `conversation_starters` but does not enable the starters settings (that needs both). Decided by
+      the spec: kept as is, and the modal explains it with the "At least one starter is required to
+      enable settings." hint (`application_conversation-starters`, "Starters settings gating" and
+      "Partially filled starter"). Reopen only if product wants a different rule.
 - [x] Conversation starters: `useQuickApp2Form` no longer exposes `updateStarter` / `removeStarter`
       (only the hook's own tests used them since the starters modal edits a local draft). The starter
       row behaviour stays covered by `src/utils/tests/conversation-starters.test.ts`.
@@ -150,8 +151,9 @@ OpenSpec change).
       `application_editing` "Save trigger gating"). ai-dial-chat sends neither `TRIGGER_AUTO_SAVE`
       nor handles `AUTO_SAVE_COMPLETE`, gates `TriggerSave` on `ReadyToSave`, and bounds its save
       wait with a timeout, so a skipped trigger cannot hang it.
-- [ ] **`application_properties` keys outside the editor's six are dropped on save**
-      (`build-quick-app-config.ts`, `buildQuickApp2Config`; chat-api replaces the stored object).
+- [x] **`application_properties` keys outside the editor's six are dropped on save** — they are kept:
+      `buildQuickApp2Config` spreads the loaded extra keys back in, and `application_editing`
+      ("Unknown orchestrator and feature keys are kept") specifies it.
 - [x] **General summary lookup misses encoded ids** — `fetchApplicationSummary` now matches the
       listing entry by its decoded id (change `match-summary-by-decoded-id`).
 - [x] **Read-only mode is unreachable** — decided: the editor has no read-only mode (shared apps are
@@ -257,9 +259,11 @@ following known discrepancies. These are deliberately tracked separately from ca
 coverage: each item may require a product decision, a spec change, a code change, or only a
 documentation correction.
 
-- [ ] **Host entry and authentication contract** — decide whether `authProvider` is optional
-      or required. `openspec/specs/host-integration/spec.md` describes optional provider pinning,
-      while `src/App.tsx` currently shows an error when no provider is present.
+- [ ] **Host entry and authentication contract** — the behaviour is settled: an authenticated session
+      works without `authProvider`, and an unauthenticated one shows the `NoProvider` error
+      (`src/App.tsx`, `auth` spec "No auth provider is requested"). Only the wording is left:
+      `host-integration`'s "absence is meaningful ... rather than treating it as an error" should say
+      the error applies when the session is unauthenticated.
 - [ ] **Host message protocol** — reconcile the exact handshake and message contract:
       application-name prefixes, connector-generated versus manually posted messages, the README's
       `INIT` claim, and the timing/duplication semantics of `READY`, `readyToSave`, and `loggedOut`.
