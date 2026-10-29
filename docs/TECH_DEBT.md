@@ -118,8 +118,9 @@
     the host-protocol locale entry is now `HostLocaleTextEntry` (its redundant cast in
     `dial-client.ts` is dropped). chat-api DTO `type` checks in `dial-client.ts` stay string
     comparisons, since they compare the API's own type;
-  - `src/types/quick-app-form.ts` imports `QuickApp2Form` from `@/form/quick-app-form-schema`, so types depend
-    on the form layer. Fix by defining the form values interface in `src/types/` directly.
+  - done: `QuickApp2Form`, `AddOnEntry` and `QuickApp2FormStarter` are interfaces in
+    `src/types/quick-app-form.ts`, and `QuickApp2Schema` is checked against them with
+    `satisfies z.ZodType<QuickApp2Form>`, so types no longer import from `@/form`.
 - [ ] ...
 
 ## Findings from `specify-uncovered-capabilities`

@@ -7,7 +7,7 @@ import { setupTestRoot } from '@/test-utils/test-root';
 import { AUTO_SAVE_INTERVAL_MS, DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
 import { AppsEditorI18nKeys, BasicI18nKeys } from '@/constants/translation-keys';
 import type { QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form/QuickApp2Form';
-import type { QuickApp2Form } from '@/form/quick-app-form-schema';
+import type { QuickApp2Form } from '@/types/quick-app-form';
 import {
   InboundMessageType,
   OutboundMessageType,
