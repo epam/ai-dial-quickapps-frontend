@@ -206,6 +206,7 @@
       "redeployingApp": "Redeploying app.",
       "entityTypeAgent": "agent",
       "entityTypeToolset": "toolset",
+      "entityTypeSkill": "skill",
       "title": "Add-ons",
       "details": "{{name}} details",
       "select": "Select {{name}}",
