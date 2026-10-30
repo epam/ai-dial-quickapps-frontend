@@ -45,7 +45,14 @@ The Toolsets row of the Add-ons card SHALL list the attached toolsets in `addOns
 
 **Logged-out badge.** When the toolset needs authentication (`authSettings.authenticationType` is not `NONE`) and `authSettings.authStatus` is not `SIGNED_IN`, the avatar SHALL carry the catalog `CredentialsBadge` from `@epam/ai-dial-catalog`. Its label SHALL be `CatalogI18nKeys.CredentialsBadgeLoggedOut` ("Authorize to use this toolset.").
 
-**Status line.** Below the name, the item SHALL show the status text from `getEntityStatusMessage` (read-only wording) when the toolset is logged out or is not found in the catalog.
+**Status line.** Below the name, the item SHALL show the status text from `getEntityStatusMessage` (read-only wording) when the toolset is logged out or is not found in the catalog. `getEntityStatusMessage` SHALL return the text together with an `EntityStatusSeverity` (string enum in `src/types/entity-status.ts`: `Info = 'info'`, `Error = 'error'`):
+
+- **Not found in the catalog** (`ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired` with `entityType` = `ApplicationEditorI18nKeys.AddOnsEntityTypeToolset`, "The toolset is not available and needs to be removed."): severity `Error`. The item SHALL render the text with the ui-kit 2.0 `ErrorText` (`dial-tiny-text`, `text-error`).
+- **Logged out** (`ApplicationEditorI18nKeys.AddOnsLoggedOutToolset`): severity `Info`. The item SHALL render the text with the ui-kit 2.0 `CaptionText` in its default description variant (`dial-tiny-text`, `text-secondary`), unchanged from today.
+
+The not-found status SHALL be shown only while `DataContext.status` is `LoadStatus.Ready`. While the status is `Idle`, `Loading` or `Error`, an id that is missing from `toolsetsMap` SHALL show no status line, because a missing entry then does not mean the toolset is unavailable.
+
+The status line SHALL keep its `id` and stay the details button's `aria-describedby` target, whatever the severity, and SHALL keep truncating to one line. It SHALL NOT be a live region: it describes the item and is not announced. The text states the problem itself, so colour is not the only cue. RTL impact: none, since the line uses no directional classes.
 
 **Details button.** Each item SHALL hold a button named by `ApplicationEditorI18nKeys.AddOnsDetails` with `{{name}}` (e.g. "Figma details"). Activating it SHALL open the toolset details popup.
 
@@ -53,7 +60,7 @@ The Toolsets row of the Add-ons card SHALL list the attached toolsets in `addOns
 
 **Not rendered.** Items SHALL NOT render a chip box, a tooltip or a configure (gear) button.
 
-**Data.** The list SHALL be read from `DataContext` and SHALL make no chat-api request of its own. The item component SHALL be shared with the Skills and Agents rows. The open popup id SHALL be local `useState` in the list component; no new context SHALL be introduced.
+**Data.** The list SHALL be read from `DataContext` (including its `status`) and SHALL make no chat-api request of its own. The item component SHALL be shared with the Skills and Agents rows, and SHALL take the severity as an optional `statusSeverity` prop that defaults to `Info`. The open popup id SHALL be local `useState` in the list component. No new context SHALL be introduced.
 
 #### Scenario: Toolsets are listed
 
@@ -63,9 +70,26 @@ The Toolsets row of the Add-ons card SHALL list the attached toolsets in `addOns
 
 #### Scenario: Toolset missing from the catalog
 
-- **WHEN** an attached id `toolsets/public/old-tool` is not in `toolsetsMap`
-- **THEN** its item SHALL show "old-tool" and the `ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired` status text
+- **WHEN** `DataContext.status` is `Ready` and an attached id `toolsets/public/old-tool` is not in `toolsetsMap`
+- **THEN** its item SHALL show "old-tool" and, under it, "The toolset is not available and needs to be removed." rendered as `ErrorText` (class `text-error`)
+- **AND** the item's details button SHALL have that text as its accessible description
 - **AND** activating it SHALL open the details popup in its unavailable state
+
+#### Scenario: Logged-out status stays neutral
+
+- **WHEN** an attached OAuth toolset is in `toolsetsMap` with `authStatus` other than `SIGNED_IN`
+- **THEN** its status line SHALL read `ApplicationEditorI18nKeys.AddOnsLoggedOutToolset` ("Logged out toolset.") with class `text-secondary`, and SHALL NOT have class `text-error`
+
+#### Scenario: No unavailable status before the catalog has loaded
+
+- **WHEN** `DataContext.status` is `Idle` or `Loading` and an attached id `toolsets/public/figma` is not yet in `toolsetsMap`
+- **THEN** its item SHALL be listed with the fallback name "figma" and SHALL show no status line
+- **AND** once the status becomes `Ready` with Figma in `toolsetsMap`, it SHALL still show no unavailable status
+
+#### Scenario: No unavailable status after a failed catalog load
+
+- **WHEN** `DataContext.status` is `Error` and `toolsetsMap` is empty
+- **THEN** no item in the Toolsets row SHALL show the unavailable status
 
 #### Scenario: Remove button hides after the details popup is closed with the mouse
 
