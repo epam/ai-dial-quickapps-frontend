@@ -192,6 +192,7 @@ export enum ApplicationEditorI18nKeys {
   AddOnsRedeployingApp = 'applicationEditor.addOns.redeployingApp',
   AddOnsEntityTypeAgent = 'applicationEditor.addOns.entityTypeAgent',
   AddOnsEntityTypeToolset = 'applicationEditor.addOns.entityTypeToolset',
+  AddOnsEntityTypeSkill = 'applicationEditor.addOns.entityTypeSkill',
   AttachmentsTypesLabel = 'applicationEditor.attachments.typesLabel',
   AttachmentsTitle = 'applicationEditor.attachments.title',
   AttachmentsDescription = 'applicationEditor.attachments.description',

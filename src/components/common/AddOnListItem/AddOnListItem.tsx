@@ -1,12 +1,16 @@
 import { DeploymentIcon, ItemHeader } from '@epam/ai-dial-chat-shared';
 import {
+  CaptionText,
   DIAL_ICON_SIZE,
   DIAL_KIT_ICON_STROKE,
   ElementSize,
+  ErrorText,
   GhostIconButton,
 } from '@epam/ai-dial-ui-kit';
 import { IconTrash } from '@tabler/icons-react';
 import { FC, ReactNode, useId } from 'react';
+
+import { EntityStatusSeverity } from '@/types/entity-status';
 
 const AVATAR_SIZE = 36;
 
@@ -18,6 +22,8 @@ export interface AddOnListItemProps {
   iconUrl?: string;
   /** A status line under the name, e.g. "Logged out toolset." */
   statusText?: string;
+  /** `Error` renders the status line as a validation error (e.g. an add-on that must be removed). Defaults to `Info`. */
+  statusSeverity?: EntityStatusSeverity;
   /** Overlaid on the avatar, e.g. the logged-out credentials badge. */
   badge?: ReactNode;
   /** Accessible name of the details button, e.g. "Figma details". */
@@ -43,6 +49,7 @@ export const AddOnListItem: FC<AddOnListItemProps> = ({
   version,
   iconUrl,
   statusText,
+  statusSeverity = EntityStatusSeverity.Info,
   badge,
   detailsLabel,
   removeLabel,
@@ -50,6 +57,8 @@ export const AddOnListItem: FC<AddOnListItemProps> = ({
   onRemove,
 }) => {
   const statusId = useId();
+  // Described, not announced: the line is there on first render, so no `announce`.
+  const StatusCaption = statusSeverity === EntityStatusSeverity.Error ? ErrorText : CaptionText;
 
   return (
     <div className="group flex min-w-0 items-center gap-1 rounded-[10px] pe-1 hover:bg-control-accent-alpha">
@@ -81,11 +90,7 @@ export const AddOnListItem: FC<AddOnListItemProps> = ({
             postfixClassName="dial-tiny-text text-secondary"
             className="min-w-0 items-baseline gap-1.5"
           />
-          {statusText && (
-            <span id={statusId} className="dial-tiny-text truncate text-secondary">
-              {statusText}
-            </span>
-          )}
+          <StatusCaption id={statusId} text={statusText} className="truncate" />
         </span>
       </button>
       {onRemove && (

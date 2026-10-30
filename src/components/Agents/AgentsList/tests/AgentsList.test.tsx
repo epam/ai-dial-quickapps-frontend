@@ -1,5 +1,5 @@
 import { act, useState } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { getButton } from '@/test-utils/dom';
@@ -7,6 +7,7 @@ import { setupTestRoot } from '@/test-utils/test-root';
 
 import { DialEntityType } from '@/types/dial-entities';
 import { ApplicationStatus, type DialModel } from '@/types/dial-entities';
+import { LoadStatus } from '@/types/load-status';
 
 import AgentsList from '../AgentsList';
 
@@ -19,8 +20,13 @@ const OFFLINE = makeAgent('applications/public/offline', 'Offline', {
   functionStatus: ApplicationStatus.Undeployed,
 });
 
+const data = vi.hoisted(() => ({ status: 'ready' as LoadStatus }));
+
 vi.mock('@/hooks/use-add-on-entity-map', () => ({
   useAddOnEntityMap: () => ({ [RESEARCH.id]: RESEARCH, [GPT.id]: GPT, [OFFLINE.id]: OFFLINE }),
+}));
+vi.mock('@/context/DataContext', () => ({
+  useDataContext: () => ({ status: data.status }),
 }));
 
 interface PopupStubProps {
@@ -77,11 +83,21 @@ const getRemoveButton = (name: string) => {
   return row ? getButton(ApplicationEditorI18nKeys.AddOnsRemove, row) : undefined;
 };
 
+// The status line is the details button's accessible description.
+const getStatus = (name: string) => {
+  const describedBy = getDetailsButton(name)?.getAttribute('aria-describedby');
+  return describedBy ? document.getElementById(describedBy) : null;
+};
+
 const render = async (initial: string[]) => {
   await act(async () => {
     dom.root.render(<Harness initial={initial} />);
   });
 };
+
+afterEach(() => {
+  data.status = LoadStatus.Ready;
+});
 
 describe('AgentsList', () => {
   it('lists applications and models in order, with versions', async () => {
@@ -94,19 +110,30 @@ describe('AgentsList', () => {
     expect(getDetailsButton('GPT-4o')).toBeTruthy();
   });
 
-  it('describes an undeployed agent', async () => {
+  it('describes an undeployed agent in the neutral style', async () => {
     await render([OFFLINE.id]);
 
-    expect(dom.container.textContent).toContain(ApplicationEditorI18nKeys.AddOnsUndeployedApp);
+    const status = getStatus('Offline');
+    expect(status?.textContent).toBe(ApplicationEditorI18nKeys.AddOnsUndeployedApp);
+    expect(status?.classList.contains('text-secondary')).toBe(true);
+    expect(status?.classList.contains('text-error')).toBe(false);
   });
 
-  it('names an application missing from the catalog after its id and flags it', async () => {
+  it('names an application missing from the catalog after its id and flags it as an error', async () => {
     await render(['applications/public/gone__1.0']);
 
     expect(getDetailsButton('gone')).toBeTruthy();
-    expect(dom.container.textContent).toContain(
-      ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired,
-    );
+    const status = getStatus('gone');
+    expect(status?.textContent).toBe(ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired);
+    expect(status?.classList.contains('text-error')).toBe(true);
+  });
+
+  it('does not flag an application missing from the catalog while the catalog is loading', async () => {
+    data.status = LoadStatus.Loading;
+    await render(['applications/public/gone__1.0']);
+
+    expect(getDetailsButton('gone')).toBeTruthy();
+    expect(getStatus('gone')).toBeNull();
   });
 
   it('removes only that agent and keeps the toolsets', async () => {

@@ -6,6 +6,7 @@ import { getButton } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
 import { DialEntityType } from '@/types/dial-entities';
 import type { DialSkill } from '@/types/dial-entities';
+import { LoadStatus } from '@/types/load-status';
 
 import SkillsList from '../SkillsList';
 
@@ -24,8 +25,10 @@ const SKILLS_MAP: Record<string, DialSkill> = {
   'skills/public/user-research': makeSkill('skills/public/user-research', 'User Research'),
 };
 
+const data = vi.hoisted(() => ({ status: 'ready' as LoadStatus }));
+
 vi.mock('@/context/DataContext', () => ({
-  useDataContext: () => ({ skillsMap: SKILLS_MAP }),
+  useDataContext: () => ({ skillsMap: SKILLS_MAP, status: data.status }),
 }));
 
 interface PopupStubProps {
@@ -95,8 +98,15 @@ const click = async (element?: Element | null) => {
   });
 };
 
+// The status line is the details button's accessible description.
+const getStatus = (name: string) => {
+  const describedBy = getDetailsButton(name)?.getAttribute('aria-describedby');
+  return describedBy ? document.getElementById(describedBy) : null;
+};
+
 afterEach(() => {
   document.documentElement.dir = '';
+  data.status = LoadStatus.Ready;
 });
 
 describe('SkillsList', () => {
@@ -120,11 +130,31 @@ describe('SkillsList', () => {
     expect(second.textContent).not.toMatch(/\d+\.\d+/);
   });
 
-  it('names a skill missing from the catalog after its id', async () => {
+  it('names a skill missing from the catalog after its id and flags it as an error', async () => {
     await render(['skills/public/deleted-skill']);
 
     expect(getDetailsButton('deleted-skill')).toBeTruthy();
+    const status = getStatus('deleted-skill');
+    expect(status?.textContent).toBe(ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired);
+    expect(status?.classList.contains('text-error')).toBe(true);
   });
+
+  it('shows no status line for a listed skill', async () => {
+    await render(['skills/public/web-search']);
+
+    expect(getStatus('Web Search')).toBeNull();
+  });
+
+  it.each([LoadStatus.Idle, LoadStatus.Loading, LoadStatus.Error])(
+    'does not flag a skill missing from the catalog while skills are %s',
+    async (status) => {
+      data.status = status;
+      await render(['skills/public/deleted-skill']);
+
+      expect(getDetailsButton('deleted-skill')).toBeTruthy();
+      expect(getStatus('deleted-skill')).toBeNull();
+    },
+  );
 
   it('gives each item a details button followed by a remove button', async () => {
     await render(['skills/public/web-search']);

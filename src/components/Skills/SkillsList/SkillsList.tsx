@@ -4,7 +4,9 @@ import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { useDataContext } from '@/context/DataContext';
 import { useListRemoveFocus } from '@/hooks/use-list-remove-focus';
 import { useTranslation } from 'react-i18next';
+import { LoadStatus } from '@/types/load-status';
 import { getEntityNameFromId } from '@/utils/api';
+import { getEntityStatusMessage, getSkillStatus } from '@/utils/get-entity-status';
 
 import { AddOnListItem } from '@/components/common/AddOnListItem/AddOnListItem';
 
@@ -23,7 +25,8 @@ export interface SkillsListProps {
 /** The attached skills of the Skills row; each item opens that skill's details. */
 const SkillsList: FC<SkillsListProps> = ({ value, onRemove }) => {
   const { t } = useTranslation();
-  const { skillsMap } = useDataContext();
+  const { skillsMap, status } = useDataContext();
+  const isCatalogReady = status === LoadStatus.Ready;
   const [openSkillId, setOpenSkillId] = useState<string | null>(null);
   // Delete removes the item that opened the popup, so focus lands on the list
   // instead of being lost with the removed button.
@@ -49,12 +52,19 @@ const SkillsList: FC<SkillsListProps> = ({ value, onRemove }) => {
         {value.map((id) => {
           const skill = skillsMap[id];
           const name = skill?.name ?? getEntityNameFromId(id);
+          const statusMessage = getEntityStatusMessage(
+            getSkillStatus(skill, isCatalogReady),
+            t,
+            t(ApplicationEditorI18nKeys.AddOnsEntityTypeSkill),
+          );
           return (
             <li key={id}>
               <AddOnListItem
                 id={id}
                 name={name}
                 version={skill?.version}
+                statusText={statusMessage?.text}
+                statusSeverity={statusMessage?.severity}
                 detailsLabel={t(ApplicationEditorI18nKeys.AddOnsDetails, { name })}
                 removeLabel={t(ApplicationEditorI18nKeys.AddOnsRemove, { name })}
                 onClick={setOpenSkillId}

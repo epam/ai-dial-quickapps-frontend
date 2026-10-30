@@ -6,6 +6,7 @@ import { ApplicationEditorI18nKeys, CatalogI18nKeys } from '@/constants/translat
 import { getButton } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
 import { type DialToolset, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
+import { LoadStatus } from '@/types/load-status';
 
 import ToolsetsList from '../ToolsetsList';
 
@@ -23,8 +24,13 @@ const JIRA = makeToolset('toolsets/public/jira', 'Jira', {
   authSettings: { authenticationType: ToolsetAuthType.None },
 });
 
+const data = vi.hoisted(() => ({ status: 'ready' as LoadStatus }));
+
 vi.mock('@/hooks/use-add-on-entity-map', () => ({
   useAddOnEntityMap: () => ({ [FIGMA.id]: FIGMA, [JIRA.id]: JIRA }),
+}));
+vi.mock('@/context/DataContext', () => ({
+  useDataContext: () => ({ status: data.status }),
 }));
 // The real badge needs the catalog's tooltip layer; this stub keeps its
 // contract: it shows only while the toolset is signed out at every level.
@@ -113,8 +119,15 @@ const getRemoveButton = (name: string) => {
 
 const getValue = () => dom.container.querySelector('[data-testid="value"]')?.textContent;
 
+// The status line is the details button's accessible description.
+const getStatus = (name: string) => {
+  const describedBy = getDetailsButton(name)?.getAttribute('aria-describedby');
+  return describedBy ? document.getElementById(describedBy) : null;
+};
+
 afterEach(() => {
   document.documentElement.dir = '';
+  data.status = LoadStatus.Ready;
 });
 
 describe('ToolsetsList', () => {
@@ -142,10 +155,33 @@ describe('ToolsetsList', () => {
     await render(['toolsets/public/old-tool']);
 
     expect(getDetailsButton('old-tool')).toBeTruthy();
-    expect(dom.container.textContent).toContain(
-      ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired,
-    );
+    const status = getStatus('old-tool');
+    expect(status?.textContent).toBe(ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired);
+    expect(status?.classList.contains('text-error')).toBe(true);
   });
+
+  it('keeps the logged-out status neutral', async () => {
+    await render([FIGMA.id]);
+
+    const status = getStatus('Figma');
+    expect(status?.textContent).toBe(ApplicationEditorI18nKeys.AddOnsLoggedOutToolset);
+    expect(status?.classList.contains('text-secondary')).toBe(true);
+    expect(status?.classList.contains('text-error')).toBe(false);
+  });
+
+  it.each([LoadStatus.Idle, LoadStatus.Loading, LoadStatus.Error])(
+    'does not flag a toolset missing from the catalog while the catalog is %s',
+    async (status) => {
+      data.status = status;
+      await render(['toolsets/public/old-tool']);
+
+      expect(getDetailsButton('old-tool')).toBeTruthy();
+      expect(getStatus('old-tool')).toBeNull();
+      expect(dom.container.textContent).not.toContain(
+        ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired,
+      );
+    },
+  );
 
   it('removes only that toolset and moves focus to the remaining one', async () => {
     await render(['applications/public/agent', FIGMA.id, JIRA.id]);

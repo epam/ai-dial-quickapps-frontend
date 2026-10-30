@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { click, getButton } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
+import { EntityStatusSeverity } from '@/types/entity-status';
 
 import { AddOnListItem, type AddOnListItemProps } from '../AddOnListItem';
 
@@ -40,6 +41,27 @@ describe('AddOnListItem', () => {
     const describedBy = details?.getAttribute('aria-describedby');
     expect(describedBy).toBeTruthy();
     expect(document.getElementById(describedBy as string)?.textContent).toBe('Logged out toolset.');
+  });
+
+  it('shows an error status in the error style and still describes the details button', () => {
+    render({
+      statusText: 'The toolset is not available and needs to be removed.',
+      statusSeverity: EntityStatusSeverity.Error,
+    });
+
+    const describedBy = getButton('Figma details')?.getAttribute('aria-describedby');
+    const status = document.getElementById(describedBy as string);
+    expect(status?.textContent).toBe('The toolset is not available and needs to be removed.');
+    expect(status?.classList.contains('text-error')).toBe(true);
+  });
+
+  it('shows a status without severity in the neutral style', () => {
+    render({ statusText: 'Logged out toolset.' });
+
+    const describedBy = getButton('Figma details')?.getAttribute('aria-describedby');
+    const status = document.getElementById(describedBy as string);
+    expect(status?.classList.contains('text-secondary')).toBe(true);
+    expect(status?.classList.contains('text-error')).toBe(false);
   });
 
   it('has no description without a status', () => {
