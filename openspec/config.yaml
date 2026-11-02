@@ -201,9 +201,9 @@ rules:
       (keep extensions only for non-code resources) and preserve bundler module
       resolution
     - Require unit tests for all new hooks, utilities, and domain logic as a
-      dedicated task. Component tests are not enforced repo-wide yet (see
-      docs/TECH_DEBT.md's test-coverage item) but are expected for any new or
-      substantially changed component with non-trivial logic.
+      dedicated task. Component tests are not enforced per file (the gate is the
+      repo-wide 70% coverage threshold in vitest.config.ts) but are expected for any
+      new or substantially changed component with non-trivial logic.
     - Tests co-locate with source — components use a tests/ subfolder
       (ComponentName/tests/ComponentName.spec.tsx)
     - Test names describe observable behaviour — not implementation details

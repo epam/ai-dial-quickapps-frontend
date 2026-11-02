@@ -1,69 +1,13 @@
 ## List of known pending improvements:
 
-- [x] Use typescript-sdk for call to Core instead of hardcoded endpoints
-- [x] Add OpenSpec and start using SDD. `openspec/` is initialised (see `openspec/config.yaml`, `AGENTS.md`'s "Spec-driven development" section) and new work now starts from a spec change. Coverage of old functionality is still in progress — see the coverage matrix below for which capabilities have a spec and the candidates list for what's left.
-- [x] Test coverage - `@vitest/coverage-v8` is wired up (`vitest.config.ts`), enforced by `npm test`
-      (now runs with `--coverage`, so it fails the build below threshold — use `npm run test:watch` for
-      a plain watch-mode run without coverage) across all of `src/**/*.{ts,tsx}`. Every threshold is a
-      fixed 70%, maintained by hand (no `autoUpdate`). As of 2026-10-09: statements 90.29%, branches
-      81.2%, functions 89.13%, lines 91.27%.
-- [x] react-hook-form usage - removed in change `remove-react-hook-form`: the root form and every section run on `useQuickApp2Form`, and `react-hook-form` / `@hookform/resolvers` are no longer dependencies (`zod` stays).
-- [x] need to review components, some seem to be unnecessary. Reviewed: no component is unused, and
-      the remaining single-use ones are legitimate (the `AgentSkillsField` → `SkillsSelector` proxy
-      went in `redesign-skills-selection`). The only finding is duplication, left as is for now:
-      `AgentSkillsFormSection`, `ToolsetsFormSection` and `AgentsFormSection` repeat the same
-      open-state / confirm / lazy-picker code, and `SkillsList`, `ToolsetsList` and `AgentsList`
-      share about 70% of their structure. Fold them into a shared row and list only if it starts
-      to cause drift.
-- [x] Extract the model picker popup out of `components/Orchestrator/ModelField.tsx` into its own
-      component — now `components/Orchestrator/ModelCatalogModal` (see the `redesign-model-picker-catalog-list` change).
 - [ ] Model picker upstream asks to ai-dial-chat `libs/catalog` / `libs/chat-shared` (from the
-      `redesign-model-picker-catalog-list` change). The `Toolbar` toggle, Enter/Space row activation
-      and the selected-row border are resolved (chat libs `1.3.0-dev.282`); still open:
+      `redesign-model-picker-catalog-list` change):
   - `enableRtl` in `ListView` — its ag-grid columns do not follow `dir="rtl"` today;
   - a label override for `EntityTypeLabel`, so the Type cell can be localised.
-- [x] Auth screens other than the sign-in prompt - `ForbiddenPage` and `AuthError` now share
-      `LoginScreen`'s layout (the kit's 2.0 `StateScreen`), use 2.0 buttons and take all copy from
-      `common` i18n keys (see the `redesign-auth-state-screens` change).
-- [x] Conversation starters: a starter with only a title or only a prompt is saved to
-      `conversation_starters` but does not enable the starters settings (that needs both). Decided by
-      the spec: kept as is, and the modal explains it with the "At least one starter is required to
-      enable settings." hint (`application_conversation-starters`, "Starters settings gating" and
-      "Partially filled starter"). Reopen only if product wants a different rule.
-- [x] Conversation starters: `useQuickApp2Form` no longer exposes `updateStarter` / `removeStarter`
-      (only the hook's own tests used them since the starters modal edits a local draft). The starter
-      row behaviour stays covered by `src/utils/tests/conversation-starters.test.ts`.
-- [x] Add-ons: the same mock as the starters redesign is done: the Toolsets / Agents split in
-      `split-agents-and-toolsets` and the Knowledge base row in `redesign-knowledge-base-addon`.
 - [ ] Toolsets / Agents follow-ups (from the `split-agents-and-toolsets` change):
   - chat-api ask: tool descriptions and input schemas in the deployment details
     (`ToolsetDetailsDto` carries names only), so the catalog Tools tab — here and in chat — could
-    show more than names;
-  - done: `AddSkillsModal`, `AddToolsetsModal` and `AddAgentsModal` render the catalog's
-    `AddOnCatalogModal`, and `ModelCatalogModal` its `CatalogPickerModal` (wired through
-    `useCatalogPickerSharedProps`), so the app keeps no list/filter/sort code of its own;
-  - done: the Toolsets, Agents and Skills rows render the catalog's `AddOnListItem` and
-    `useListRemoveFocus`, with the details button named by the item's name and version (change
-    `adopt-catalog-add-on-list-item`). The lists load lazily, because the catalog's root entry
-    brings its markdown chunk (~480 kB) with the row. An ai-dial-chat ask that would let them load
-    eagerly again: a light subpath for the row and the hook;
-  - done: `toolsets_login` specifies the host round-trip (`REQUEST_TOOLSET_LOGIN` /
-    `TOOLSET_LOGIN_RESULT`, change `specify-uncovered-capabilities`); `toolsets_selection` keeps the
-    popup's Log in entry point.
-  - done: the i18n keys Skills, Toolsets and Agents share have generic names (`RemoveAddOn`,
-    `SelectAddOn`, `RemoveAddOnFromApp`, `DetailsTab`, `OverviewTab`), and the
-    `skills_catalog`, `toolsets_selection`, `agents_selection` and `catalog-entity-details` specs use
-    them. `SkillAuthor` and `SkillTypeLabel` keep their names: they label skills only.
-- [x] Editor startup bundle: the editor's static import graph is 884 kB, down from 5876 kB.
-      - ag-grid came in because `KnowledgeBaseRow` imported `FileManagerModal` statically, and
-        through it `@epam/ai-dial-react-file-manager`, whose table is the ui-kit `Grid`. The modal
-        now loads lazily on first open, like the pickers.
-      - Monaco came in through `main.tsx`'s static `./monaco-setup` import. The Edit JSON editor,
-        the app's only Monaco user since ui-kit 0.16, imports it instead, so Monaco loads with that
-        lazy chunk.
-
-      A new static import of the file manager, the catalog's `ListView` or Monaco from startup code
-      brings them back. Measure the entry's transitive static imports after such a change.
+    show more than names.
 - [ ] Catalog details follow-ups (from the `align-entity-details-with-catalog` change):
   - ai-dial-chat ask: `@epam/ai-dial-chat-hooks/catalog` imports `@epam/ai-dial-attachment-input`
     (`mimeTypesToExtensionLabels`) and `@epam/ai-dial-skill-editor` (`SkillFileNodeKind`) at
@@ -75,8 +19,6 @@
     passed yet). Ask upstream for label options, then pass translated ones;
   - the Limits tab renders without a reset line: pass `formatResetTime` in
     `useCatalogDetailsLabels` once the editor has a locale-aware date formatter;
-  - done: the Connect tab shows when a DIAL Core URL is configured (`dialCoreExternalUrl`;
-    `isConnectHidden` otherwise), with translated labels — change `show-connect-tab-in-addon-details`;
   - the skill Details tab shows only `SKILL.md`; its bundled files (`promptContent.files`) are
     dropped. Wiring the catalog file selector needs `onLoadContentFile` from `useCatalogItemDetails`.
 - [ ] Knowledge base file popup (change `restyle-knowledge-base-file-picker`):
@@ -119,25 +61,6 @@
       Confirm whether a host still opens the modal this way. If one does, add the parameter to
       `host-integration` and keep it as a single named constant instead of a one-member enum. If none
       does, remove the parameter and the code that reads it.
-- [x] Themes: `src/context/ThemeContext.tsx` keeps the raw `chatApiFetch('/api/themes')` call as a
-      documented exception instead of the typed `ThemesApi`. Both hit the same `@Public()` endpoint, but
-      the generated `ThemeDto` / `ThemeImagesDto` camelCase the kebab-case keys (`appLogo`,
-      `defaultAddon`…) without mapping the JSON, so their types do not match the real body
-      (`app-logo`, `default-addon`…). ai-dial-chat's own `ThemeContext` makes the same raw call
-      (`get<ThemeConfiguration>(ApiEndpoints.THEMES)`). Revisit if the client generator maps those keys.
-- [x] Agent transport default: the save (`src/form/build-quick-app-config.ts`) and the agent Settings tab
-      (`AgentSettingsTab`) both read `DEFAULT_AGENT_TRANSPORT` (`src/constants/quick-apps.ts`), so an
-      MCP-capable application with no saved `transport` shows and saves the same value.
-- [x] `src/types` follow-ups (left over from the constants/types clean-up):
-  - done: one `LoadStatus` enum (`src/types/load-status.ts`) replaces the `DataContext` string union
-    and `QuickApp2ModelStatus`, and the string → enum `switch` in `QuickApp2Form.tsx` is gone; the
-    `DialEntityType` enum is the `type` discriminant of `DialModel`, `DialToolset` and `DialSkill`;
-    the host-protocol locale entry is now `HostLocaleTextEntry` (its redundant cast in
-    `dial-client.ts` is dropped). chat-api DTO `type` checks in `dial-client.ts` stay string
-    comparisons, since they compare the API's own type;
-  - done: `QuickApp2Form`, `AddOnEntry` and `QuickApp2FormStarter` are interfaces in
-    `src/types/quick-app-form.ts`, and `QuickApp2Schema` is checked against them with
-    `satisfies z.ZodType<QuickApp2Form>`, so types no longer import from `@/form`.
 
 ## Findings from `specify-uncovered-capabilities`
 
@@ -145,50 +68,12 @@ Behaviour found while writing the specs that looks unintended or contradicts ano
 None of it is specified as intended; each needs a decision (and, for a behaviour change, its own
 OpenSpec change).
 
-- [x] **Disabled flag strips stored features** — when `isCodeInterpreterEnabled` /
-      `isWebFetchEnabled` / `isAddAttachmentEnabled` is off (including when the client-config
-      call fails and resolves to `{}`), `useQuickApp2Form` forces the value to `false` without
-      dirtying the form, and the next save removes the stored code-interpreter toolset,
-      `web_fetch` or `representation_tooling` (`use-quick-app2-form.ts:159-170`,
-      `build-quick-app-config.ts`, `getDeploymentParameters` and the `features` block). Decided: intended — a feature the deployment does not
-      offer is not kept on the application (`app-configuration`, "Feature flags gate the Advanced
-      Settings switches").
-- [x] **Load-time baseline is never refreshed after a save** — a successful save now makes the
-      submitted values the dirty baseline and replaces the held application with the saved state,
-      so `hasChanges`, auto-save and `RESET` start from it (change `refresh-baseline-after-save`).
-- [x] **A save without `general` drops translations** — such a save now sends the held
-      translations back as `locales` with `primaryLocale: "en"`, rebuilt with ai-dial-chat's
-      `decomposeLocalizedFields` / `composeLocalePayload` (change
-      `keep-translations-on-save-without-general`).
-- [x] **Ignored saves post no outcome** — decided: by design. A manual save that fails validation
-      posts `SaveError`; a not-yet-saved, clean or invalid auto-save, and a trigger that arrives
-      before the form mounts, post nothing (`host-integration` "A save trigger is skipped",
-      `application_editing` "Save trigger gating"). ai-dial-chat sends neither `TRIGGER_AUTO_SAVE`
-      nor handles `AUTO_SAVE_COMPLETE`, gates `TriggerSave` on `ReadyToSave`, and bounds its save
-      wait with a timeout, so a skipped trigger cannot hang it.
-- [x] **`application_properties` keys outside the editor's six are dropped on save** — they are kept:
-      `buildQuickApp2Config` spreads the loaded extra keys back in, and `application_editing`
-      ("Unknown orchestrator and feature keys are kept") specifies it.
-- [x] **General summary lookup misses encoded ids** — `fetchApplicationSummary` now matches the
-      listing entry by its decoded id (change `match-summary-by-decoded-id`).
-- [x] **Read-only mode is unreachable** — decided: the editor has no read-only mode (shared apps are
-      edited like own ones, #208). The `isReadonly` prop is gone (#280, #285, #287), neither
-      `application_editor-layout` nor `application_user-attachments` mentions a read-only editor, and
-      `skills_catalog` / `agents_selection` state there is none. The stale "read-only app" comments
-      on the list and details components are reworded.
-- [x] **SaveError text** — SaveError now carries chat-api's own message or the translated
-      `appsEditor.error.saveFailed`; the load error screen, the two `model` validation messages and
-      the picker's load-error description no longer show raw English (change
-      `translate-editor-error-messages`).
-- [x] **Client config fetched twice** — `App.tsx` now loads it once per session user and passes
-      it to `EditorClient` (change `fix-settings-locale-theme-defects`).
 - [ ] **Application credentials stay "required" after sign-in** — any non-empty external-services
       list counts, including `authenticationType: NONE` and already-authenticated services
       (`dial-client.ts:162`).
 - [ ] **Toolset login promises can hang** — no timeout when the host never answers, and a second
       request overwrites the pending one so the first never settles
-      (`use-toolset-credentials.ts:94`); `DataContext`'s value is not memoised, so the listener
-      re-subscribes every render. An unsolicited `TOOLSET_LOGOUT_RESULT` is not applied.
+      (`use-toolset-credentials.ts:94`). An unsolicited `TOOLSET_LOGOUT_RESULT` is not applied.
 - [ ] **File manager**:
   - Copy is listed in `application_knowledge-base` but `onCopyFiles` is never passed.
   - A folder or multi-item download opens the save picker before it fails, leaving an open writable.
@@ -196,43 +81,16 @@ OpenSpec change).
   - Listings never page past `limit: 1000`.
   - A mixed or fully cancelled upload shows the success message.
   - The conflict confirm label is "Attach".
-  - done (change `fix-file-manager-and-theme-load-defects`): notifications are announced through a
-    live region, and `.dial_folder` reports `FolderNameReserved`.
   - The forbidden-symbols tooltip omits the backslash and control characters the kit also forbids.
   - Sanitizing runs in `onValidateUpload` instead of `prepareUploadFileName`.
-- [x] **Themes** — `setTheme` and the `localStorage` stored choice are removed: the host always
-      passes `?theme=` and QuickApps has no theme picker (change `remove-theme-setter`). (A failed
-      theme load no longer leaves a dark Markdown editor on the light page —
-      change `fix-settings-locale-theme-defects`; a non-OK response falls back and a late response
-      after unmount is discarded — change `fix-file-manager-and-theme-load-defects`.)
-- [x] **i18n and RTL docs** — `.claude/rules/rtl.md` and AGENTS.md now describe the real layout
-      (one `en.json`, `config.ts` from ai-dial-chat, no language selector, English only so `dir` is
-      `ltr` in production, `index.html`'s `lang="en"` as the default until the config runs).
-- [x] **i18n stack aligned with ai-dial-chat** — one `translation` namespace with semantic keys,
-      enums in `translation-keys.ts`, typed keys, language detector, global `react-i18next` test
-      mock (change `align-i18n-with-dial-chat`).
 - [ ] **Editor UI language from the host** — QuickApps runs on its own origin, so the detected
       language is the browser's, not the host's choice. Following the host (e.g. a language in the
       init `postMessage`) needs a `host-integration` change.
 - [ ] **Shared i18n config with ai-dial-chat** — `src/i18n/config.ts` is a copy of chat's; switch to
       a shared package if chat extracts one.
-- [ ] **Untranslated library defaults** — done: the file manager toolbar's new-item menu and
-      compact "More actions" trigger are translated (change `translate-file-manager-toolbar-labels`).
-      Open, ai-dial-chat ask: the add-on details folder path `nav` is named by the ui-kit
-      `FolderPath` default "Folder path", because `@epam/ai-dial-catalog` renders `FolderPath` in
+- [ ] **Untranslated library defaults** — ai-dial-chat ask: the add-on details folder path `nav` is
+      named by the ui-kit `FolderPath` default "Folder path", because `@epam/ai-dial-catalog` renders `FolderPath` in
       both details headers without an `ariaLabel` and has no prop to pass one through.
-- [x] **RTL wording in specs** — every RTL scenario is now conditional on the document direction
-      being `rtl` and notes that no RTL locale ships yet (see the `i18n` spec).
-- [x] **`buildLocalizedText` drops the primary value** — it now mirrors chat-api's
-      `composeLocalizedFields` (`en` default, plain value without `locales`), change
-      `fix-settings-locale-theme-defects`.
-- [x] **Docs out of date** — README's custom-variable table, credentials wording, RESET,
-      TRIGGER_SAVE `display_version`, READY and auto-save text; `host-integration`'s outbound
-      targets, save-outcome and Reset wording, credentials trigger and the "never broadcast" vs `*`
-      contradiction; `dialClient.ts` in `openspec/config.yaml` and `orchestrator_model-selection`.
-      The origin default itself is still an open decision ("Origin validation defaults" below).
-- [x] **Untested scenarios** — `EditorClient`, `ThemeContext` and `DataContext`'s unsolicited login
-      results now have tests (`src/components/EditorClient/tests/`, `src/context/tests/`).
 
 ## Rollout and live verification
 
@@ -274,19 +132,12 @@ following known discrepancies. These are deliberately tracked separately from ca
 coverage: each item may require a product decision, a spec change, a code change, or only a
 documentation correction.
 
-- [x] **Host entry and authentication contract** — an authenticated session works without
-      `authProvider`, and an unauthenticated one shows the `NoProvider` error (`src/App.tsx`, `auth`
-      spec "No auth provider is requested"); `host-integration`'s `authProvider` entry now says so.
 - [ ] **Host message protocol** — reconcile the exact handshake and message contract:
       application-name prefixes, connector-generated versus manually posted messages, the README's
       `INIT` claim, and the timing/duplication semantics of `READY`, `readyToSave`, and `loggedOut`.
 - [ ] **Save, auto-save, and reset semantics** — document the conditions under which saves are
       ignored, the actual meaning of `SaveSuccess.hasChanges`, and that `RESET` remounts the current
       state rather than refetching from the API.
-- [x] **Stale General fields on auto-save** — a save without a `general` payload now takes
-      `name`/`description`/`iconUrl`/`topics` from the last successful save, not the load-time
-      `_rawForSave` snapshot (change `refresh-baseline-after-save`). A host Metadata edit that was
-      never saved through the editor is still unknown to it.
 - [ ] **Origin validation defaults** — decide and document behavior while runtime settings are
       unresolved and when `allowedOrigin` is empty, including the current `*` fallback and its
       security implications.
@@ -296,22 +147,9 @@ documentation correction.
 - [ ] **Runtime port and image policy** — reconcile the Vite development port with the Docker
       image default, and document whether the floating `development` image/client versions are
       local-only or an accepted deployment policy.
-- [x] **Coverage status and target** — the "Test coverage" item above and `vitest.config.ts`
-      now agree: a fixed, hand-maintained 70% gate on every metric.
-- [x] **Post-migration source map** — the candidate paths below point to the current `src/`
-      tree; the deleted `src/app/api/**` routes are replaced by the chat-api client wrappers that
-      took their place.
 - [ ] **API-layer exceptions and configuration keys** — document the deliberate raw wrappers
       for auth, themes, and file transfer, and add all runtime custom flags to the configuration
       documentation and eventual `app-configuration` spec.
-- [x] **RTL and i18n status** — the `i18n` spec states that only English ships (so `dir` is `ltr`),
-      `.claude/rules/rtl.md` and AGENTS.md say the same, and every RTL scenario in the other specs is
-      conditional on the document direction. Choosing the UI language (host, URL or browser) is
-      still unspecified and would be a new change.
-- [x] **Repository conventions and stale comments** — every component, `QuickApp2Form` included,
-      lives in its own PascalCase folder with a `tests/` subfolder, and source comments no longer
-      refer to next-auth, the old DIAL Core proxy, TRANSITION_PLAN appendices or the merged
-      Agents & Toolsets picker.
 
 Resolve each observable behavior decision through the normal OpenSpec change workflow. Keep
 pure documentation corrections in the same reconciliation change only when they do not alter

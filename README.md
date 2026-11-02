@@ -57,12 +57,10 @@ publishes it on `http://localhost:5001`; the Vite dev server remains on `http://
 ## Test coverage
 
 `npm test` runs the full suite through `@vitest/coverage-v8` across every file under
-`src/**/*.{ts,tsx}` (see `vitest.config.ts`) and fails the build if coverage drops — so it doubles
-as the CI gate. The thresholds aren't 70% yet: they're pinned to the real current baseline (well
-below that — see `docs/TECH_DEBT.md`'s "Test coverage" item for the latest numbers and what's
-still untested) with `autoUpdate: true`, so they ratchet up automatically as tests are added and
-only fail the build on an actual regression, not on the size of the remaining gap to 70%. Use
-`npm run test:watch` for a fast watch-mode loop without the coverage overhead while writing tests.
+`src/**/*.{ts,tsx}` (see `vitest.config.ts`) and fails the build when any metric (statements,
+branches, functions, lines) falls below its threshold, so it doubles as the CI gate. Every threshold
+is a fixed 70%, edited by hand only (no `autoUpdate`). Use `npm run test:watch` for a fast
+watch-mode loop without the coverage overhead while writing tests.
 
 ## Running chat-api from a local checkout
 
