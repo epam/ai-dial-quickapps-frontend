@@ -7,9 +7,7 @@ import { useTranslation } from 'react-i18next';
 const FullScreenSpinner: FC = () => {
   const { t } = useTranslation();
 
-  return (
-    <Spinner fullWidth className="h-screen bg-layer-base" ariaLabel={t(BasicI18nKeys.Loading)} />
-  );
+  return <Spinner fullScreen ariaLabel={t(BasicI18nKeys.Loading)} />;
 };
 
 export default FullScreenSpinner;

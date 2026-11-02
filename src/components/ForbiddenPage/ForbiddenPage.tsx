@@ -1,11 +1,15 @@
 import { IconLockX } from '@tabler/icons-react';
 import { FC, memo, useCallback, useState } from 'react';
 
-import AuthStateScreen from '@/components/common/AuthStateScreen/AuthStateScreen';
 import { AuthI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
 import { useAuthContext } from '@/context/AuthContext';
 import { useTranslation } from 'react-i18next';
-import { DIAL_ICON_SIZE, DIAL_KIT_ICON_STROKE, NeutralButton } from '@epam/ai-dial-ui-kit';
+import {
+  DIAL_ICON_SIZE,
+  DIAL_KIT_ICON_STROKE,
+  NeutralButton,
+  StateScreen,
+} from '@epam/ai-dial-ui-kit';
 
 const ForbiddenPage: FC = () => {
   const { logout } = useAuthContext();
@@ -24,7 +28,8 @@ const ForbiddenPage: FC = () => {
   }, [logout]);
 
   return (
-    <AuthStateScreen
+    <StateScreen
+      className="h-screen"
       icon={<IconLockX size={DIAL_ICON_SIZE.LG} stroke={DIAL_KIT_ICON_STROKE} />}
       title={t(AuthI18nKeys.ForbiddenTitle)}
       description={t(AuthI18nKeys.ForbiddenDescription)}
