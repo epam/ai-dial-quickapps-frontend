@@ -270,22 +270,24 @@ export const DataContextProvider = ({ children }: DataContextProviderProps) => {
     return () => window.removeEventListener('message', handleMessage);
   }, [settings.allowedOrigins]);
 
-  const refreshSkills = async () => {
+  // Stable, so consumers that list them as effect dependencies (the toolset
+  // login listener in `useToolsetCredentials`) do not re-subscribe on every render.
+  const refreshSkills = useCallback(async () => {
     const skills = await fetchDialSkills();
     dispatch({ type: 'SKILLS_LOADED', payload: skills });
-  };
+  }, []);
 
-  const refreshToolsets = async () => {
+  const refreshToolsets = useCallback(async () => {
     const toolsets = await fetchDialToolsets();
     dispatch({ type: 'TOOLSETS_LOADED', payload: toolsets });
-  };
+  }, []);
 
-  const applyToolsetAuthResult = (
-    payload: ToolsetAuthResultPayload,
-    fallbackStatus: ToolsetAuthStatus,
-  ) => {
-    dispatch({ type: 'TOOLSET_AUTH_RESULT_APPLIED', payload, fallbackStatus });
-  };
+  const applyToolsetAuthResult = useCallback(
+    (payload: ToolsetAuthResultPayload, fallbackStatus: ToolsetAuthStatus) => {
+      dispatch({ type: 'TOOLSET_AUTH_RESULT_APPLIED', payload, fallbackStatus });
+    },
+    [],
+  );
 
   const modelsWithFavorites = useMemo(
     () =>
@@ -327,23 +329,32 @@ export const DataContextProvider = ({ children }: DataContextProviderProps) => {
     [state.skills, state.favoriteIds],
   );
 
-  return (
-    <DataContext.Provider
-      value={{
-        ...state,
-        modelsWithFavorites,
-        toolsetsWithFavorites,
-        mcpAgentsWithFavorites,
-        skillsWithFavorites,
-        refreshSkills,
-        refreshToolsets,
-        applyToolsetAuthResult,
-        refreshAll: loadAll,
-      }}
-    >
-      {children}
-    </DataContext.Provider>
+  const value = useMemo<DataContextValue>(
+    () => ({
+      ...state,
+      modelsWithFavorites,
+      toolsetsWithFavorites,
+      mcpAgentsWithFavorites,
+      skillsWithFavorites,
+      refreshSkills,
+      refreshToolsets,
+      applyToolsetAuthResult,
+      refreshAll: loadAll,
+    }),
+    [
+      state,
+      modelsWithFavorites,
+      toolsetsWithFavorites,
+      mcpAgentsWithFavorites,
+      skillsWithFavorites,
+      refreshSkills,
+      refreshToolsets,
+      applyToolsetAuthResult,
+      loadAll,
+    ],
   );
+
+  return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 };
 
 export const useDataContext = (): DataContextValue => useContext(DataContext);

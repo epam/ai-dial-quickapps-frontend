@@ -57,12 +57,10 @@ publishes it on `http://localhost:5001`; the Vite dev server remains on `http://
 ## Test coverage
 
 `npm test` runs the full suite through `@vitest/coverage-v8` across every file under
-`src/**/*.{ts,tsx}` (see `vitest.config.ts`) and fails the build if coverage drops — so it doubles
-as the CI gate. The thresholds aren't 70% yet: they're pinned to the real current baseline (well
-below that — see `docs/TECH_DEBT.md`'s "Test coverage" item for the latest numbers and what's
-still untested) with `autoUpdate: true`, so they ratchet up automatically as tests are added and
-only fail the build on an actual regression, not on the size of the remaining gap to 70%. Use
-`npm run test:watch` for a fast watch-mode loop without the coverage overhead while writing tests.
+`src/**/*.{ts,tsx}` (see `vitest.config.ts`) and fails the build when any metric (statements,
+branches, functions, lines) falls below its threshold, so it doubles as the CI gate. Every threshold
+is a fixed 70%, edited by hand only (no `autoUpdate`). Use `npm run test:watch` for a fast
+watch-mode loop without the coverage overhead while writing tests.
 
 ## Running chat-api from a local checkout
 
@@ -258,7 +256,8 @@ loop-breaker) that every typed API instance is built from.
 CSP is enforced by chat-api's own server (Helmet), not by this app. This app's build carries a
 `__DIAL_CSP_NONCE__` placeholder on its built `<script>`/`<link rel="stylesheet">` tags (see
 `vite.config.ts`) for chat-api's nonce-based `CSP_MODE=enforce` policy, and bundles Monaco locally
-(`src/monaco-setup.ts`) instead of loading it from a CDN, since `script-src` has no CDN allowance.
+(`src/monaco-setup.ts`, loaded with the Edit JSON editor) instead of loading it from a CDN, since
+`script-src` has no CDN allowance.
 The same placeholder goes on a `<meta property="csp-nonce">` tag, which the ag-grid copy bundled in
 ui-kit reads (via the `dial-trusted-style-nonce` build plugin) to put the nonce on the `<style>` tags
 it injects. An image built before that plugin shows blocked ag-grid styles under `enforce`: rebuild
