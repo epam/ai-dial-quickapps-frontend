@@ -1,11 +1,16 @@
-import { FC, memo, useCallback, useState } from 'react';
+import { FC, lazy, memo, Suspense, useCallback, useState } from 'react';
 
 import { AddOnRow } from '@/components/AddOns/AddOnRow/AddOnRow';
-import FileManagerModal from '@/components/common/FileManagerModal/FileManagerModal';
 import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { useTranslation } from 'react-i18next';
 
 import { KnowledgeBaseList } from '../KnowledgeBaseList/KnowledgeBaseList';
+
+// The file manager library renders its table with the ui-kit Grid (ag-grid), so the popup loads
+// on first open instead of with the editor.
+const FileManagerModal = lazy(
+  () => import('@/components/common/FileManagerModal/FileManagerModal'),
+);
 
 export interface KnowledgeBaseRowProps {
   files: string[];
@@ -37,7 +42,11 @@ const KnowledgeBaseRow: FC<KnowledgeBaseRowProps> = ({ files, onAddFiles, onRemo
       >
         {isEmpty ? null : <KnowledgeBaseList files={files} onRemove={onRemoveFile} />}
       </AddOnRow>
-      {isModalOpen && <FileManagerModal isOpen initialFileIds={files} onClose={handleModalClose} />}
+      {isModalOpen && (
+        <Suspense fallback={null}>
+          <FileManagerModal isOpen initialFileIds={files} onClose={handleModalClose} />
+        </Suspense>
+      )}
     </>
   );
 };

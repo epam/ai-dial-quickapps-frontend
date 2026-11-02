@@ -1,3 +1,6 @@
+// Before the editor: points @monaco-editor/react at the bundled Monaco.
+import '@/monaco-setup';
+
 import { Editor, type Monaco } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
 import { type FC, useCallback } from 'react';
@@ -13,8 +16,9 @@ export interface JsonEditorProps {
 }
 
 // ui-kit 0.16 removed its 1.0 `DialJsonEditor` with no replacement; this is the same Monaco
-// set-up, kept here because Edit JSON is the only JSON editor in the app. Monaco itself is loaded
-// from the app bundle by `monaco-setup.ts`.
+// set-up, kept here because Edit JSON is the only JSON editor in the app. It is also the app's
+// only Monaco user, so `monaco-setup.ts` is imported here and loads with this lazy module, not
+// at app startup.
 const JsonEditor: FC<JsonEditorProps> = ({
   value,
   currentTheme,

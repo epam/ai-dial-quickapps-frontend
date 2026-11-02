@@ -18,14 +18,10 @@
 - [x] Extract the model picker popup out of `components/Orchestrator/ModelField.tsx` into its own
       component — now `components/Orchestrator/ModelCatalogModal` (see the `redesign-model-picker-catalog-list` change).
 - [ ] Model picker upstream asks to ai-dial-chat `libs/catalog` / `libs/chat-shared` (from the
-      `redesign-model-picker-catalog-list` change):
-  - [x] a `Toolbar` prop to hide the grid/list toggle — superseded: the pickers now use the
-    catalog's own `CatalogPickerModal` / `AddOnCatalogModal` (chat libs `1.3.0-dev.282`);
-  - [x] Enter/Space row activation in `ListView` — shipped; `use-grid-row-keyboard-select` is gone;
+      `redesign-model-picker-catalog-list` change). The `Toolbar` toggle, Enter/Space row activation
+      and the selected-row border are resolved (chat libs `1.3.0-dev.282`); still open:
   - `enableRtl` in `ListView` — its ag-grid columns do not follow `dir="rtl"` today;
-  - a label override for `EntityTypeLabel`, so the Type cell can be localised;
-  - [x] a thinner selected-row border in `ListView` — the list now draws selection as the kit
-    `Grid`'s fill, so the `_selectedRow_` override is gone.
+  - a label override for `EntityTypeLabel`, so the Type cell can be localised.
 - [x] Auth screens other than the sign-in prompt - `ForbiddenPage` and `AuthError` now share
       `LoginScreen`'s layout (the kit's 2.0 `StateScreen`), use 2.0 buttons and take all copy from
       `common` i18n keys (see the `redesign-auth-state-screens` change).
@@ -54,20 +50,20 @@
   - done: `toolsets_login` specifies the host round-trip (`REQUEST_TOOLSET_LOGIN` /
     `TOOLSET_LOGIN_RESULT`, change `specify-uncovered-capabilities`); `toolsets_selection` keeps the
     popup's Log in entry point.
-  - done: the i18n keys Skills, Toolsets and Agents share have generic names (`AddOnDetails`,
-    `RemoveAddOn`, `SelectAddOn`, `RemoveAddOnFromApp`, `DetailsTab`, `OverviewTab`), and the
+  - done: the i18n keys Skills, Toolsets and Agents share have generic names (`RemoveAddOn`,
+    `SelectAddOn`, `RemoveAddOnFromApp`, `DetailsTab`, `OverviewTab`), and the
     `skills_catalog`, `toolsets_selection`, `agents_selection` and `catalog-entity-details` specs use
     them. `SkillAuthor` and `SkillTypeLabel` keep their names: they label skills only.
-- [ ] Editor startup bundle: ag-grid (~1.5 MB of source) is in the entry's static import graph,
-      measured with chat libs `1.3.0-dev.178` (commit `134bc47`) and `1.3.0-dev.282`. No app module
-      imports it statically. Rolldown puts the ui-kit `Grid` (`components/New/Grid`, with
-      `ag-grid-react` / `ag-grid-community`) in the same shared chunk as the kit components the
-      editor uses at startup (`FileIcon`, `Breadcrumbs`, `Radio`, `Skeleton`, `Avatar`), so that
-      chunk loads with `DataContext`. Monaco is in the entry chunk too, through `main.tsx`'s static
-      `./monaco-setup` import. Next steps:
-      - isolate ag-grid and the kit `Grid` into their own chunk (Rolldown `advancedChunks` / Vite
-        `manualChunks`) and check that the pickers still load them on open;
-      - consider loading `monaco-setup` with the JSON editor.
+- [x] Editor startup bundle: the editor's static import graph is 884 kB, down from 5876 kB.
+      - ag-grid came in because `KnowledgeBaseRow` imported `FileManagerModal` statically, and
+        through it `@epam/ai-dial-react-file-manager`, whose table is the ui-kit `Grid`. The modal
+        now loads lazily on first open, like the pickers.
+      - Monaco came in through `main.tsx`'s static `./monaco-setup` import. The Edit JSON editor,
+        the app's only Monaco user since ui-kit 0.16, imports it instead, so Monaco loads with that
+        lazy chunk.
+
+      A new static import of the file manager, the catalog's `ListView` or Monaco from startup code
+      brings them back. Measure the entry's transitive static imports after such a change.
 - [ ] Catalog details follow-ups (from the `align-entity-details-with-catalog` change):
   - ai-dial-chat ask: `@epam/ai-dial-chat-hooks/catalog` imports `@epam/ai-dial-attachment-input`
     (`mimeTypesToExtensionLabels`) and `@epam/ai-dial-skill-editor` (`SkillFileNodeKind`) at
@@ -132,7 +128,7 @@
 - [x] Agent transport default: the save (`src/form/build-quick-app-config.ts`) and the agent Settings tab
       (`AgentSettingsTab`) both read `DEFAULT_AGENT_TRANSPORT` (`src/constants/quick-apps.ts`), so an
       MCP-capable application with no saved `transport` shows and saves the same value.
-- [ ] `src/types` follow-ups (left over from the constants/types clean-up):
+- [x] `src/types` follow-ups (left over from the constants/types clean-up):
   - done: one `LoadStatus` enum (`src/types/load-status.ts`) replaces the `DataContext` string union
     and `QuickApp2ModelStatus`, and the string → enum `switch` in `QuickApp2Form.tsx` is gone; the
     `DialEntityType` enum is the `type` discriminant of `DialModel`, `DialToolset` and `DialSkill`;
@@ -142,7 +138,6 @@
   - done: `QuickApp2Form`, `AddOnEntry` and `QuickApp2FormStarter` are interfaces in
     `src/types/quick-app-form.ts`, and `QuickApp2Schema` is checked against them with
     `satisfies z.ZodType<QuickApp2Form>`, so types no longer import from `@/form`.
-- [ ] ...
 
 ## Findings from `specify-uncovered-capabilities`
 
@@ -279,11 +274,9 @@ following known discrepancies. These are deliberately tracked separately from ca
 coverage: each item may require a product decision, a spec change, a code change, or only a
 documentation correction.
 
-- [ ] **Host entry and authentication contract** — the behaviour is settled: an authenticated session
-      works without `authProvider`, and an unauthenticated one shows the `NoProvider` error
-      (`src/App.tsx`, `auth` spec "No auth provider is requested"). Only the wording is left:
-      `host-integration`'s "absence is meaningful ... rather than treating it as an error" should say
-      the error applies when the session is unauthenticated.
+- [x] **Host entry and authentication contract** — an authenticated session works without
+      `authProvider`, and an unauthenticated one shows the `NoProvider` error (`src/App.tsx`, `auth`
+      spec "No auth provider is requested"); `host-integration`'s `authProvider` entry now says so.
 - [ ] **Host message protocol** — reconcile the exact handshake and message contract:
       application-name prefixes, connector-generated versus manually posted messages, the README's
       `INIT` claim, and the timing/duplication semantics of `READY`, `readyToSave`, and `loggedOut`.
