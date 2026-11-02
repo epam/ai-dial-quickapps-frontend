@@ -1,20 +1,23 @@
-import { FC, lazy, Suspense, useCallback, useState } from 'react';
+import { FC, lazy, Suspense, useCallback, useMemo, useState } from 'react';
 
 import { ApplicationEditorI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
 import { useDataContext } from '@/context/DataContext';
 import { useTranslation } from 'react-i18next';
 import { LoadStatus } from '@/types/load-status';
+import { getLocalizedText } from '@/utils/get-localized-text';
+import { resolveIconUrl } from '@/utils/resolve-icon-url';
 import {
   DIAL_ICON_SIZE,
   DIAL_KIT_ICON_STROKE,
   ElementSize,
+  type EntityIdentityItem,
+  EntityType,
   FormSection,
   FormSectionVariant,
   NeutralButton,
+  SelectedEntityCard,
 } from '@epam/ai-dial-ui-kit';
 import { IconPencil } from '@tabler/icons-react';
-
-import { SelectedModelCard } from '@/components/Orchestrator/SelectedModelCard/SelectedModelCard';
 
 // The picker brings in the catalog list (ag-grid + @epam/ai-dial-catalog),
 // so it loads on first open instead of with the editor.
@@ -36,7 +39,8 @@ export const DefaultModelBlock: FC<DefaultModelBlockProps> = ({
   isDisabled,
   error,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const language = i18n.resolvedLanguage ?? i18n.language;
   const { modelsMap, status } = useDataContext();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -45,6 +49,18 @@ export const DefaultModelBlock: FC<DefaultModelBlockProps> = ({
   const selectedModel = modelsMap[value];
   const isLoading =
     (status === LoadStatus.Loading || status === LoadStatus.Idle) && selectedModel == null;
+
+  // Every selection, a saved application included, is labelled as a model.
+  const selectedItem = useMemo<EntityIdentityItem | undefined>(
+    () =>
+      selectedModel && {
+        type: EntityType.Model,
+        name: getLocalizedText(selectedModel.name, language, selectedModel.id),
+        version: selectedModel.version,
+        iconUrl: selectedModel.iconUrl ? resolveIconUrl(selectedModel.iconUrl) : undefined,
+      },
+    [language, selectedModel],
+  );
 
   const handleOpen = useCallback(() => setIsOpen(true), []);
   const handleClose = useCallback(() => setIsOpen(false), []);
@@ -73,12 +89,16 @@ export const DefaultModelBlock: FC<DefaultModelBlockProps> = ({
         />
       }
     >
-      <SelectedModelCard
-        modelId={value}
-        model={selectedModel}
+      <SelectedEntityCard
+        entityId={value}
+        item={selectedItem}
         isLoading={isLoading}
         isDisabled={isDisabled}
         error={error}
+        labels={{
+          type: t(ApplicationEditorI18nKeys.OrchestratorModel),
+          placeholder: t(ApplicationEditorI18nKeys.OrchestratorSelectModel),
+        }}
       />
 
       {isOpen && (
