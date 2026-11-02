@@ -17,8 +17,10 @@ ai-dial-chat) can embed QuickApps successfully.
 QuickApps SHALL read the following query parameters from its entry URL:
 
 - `authProvider` — the identity provider the host expects the current session to be
-  authenticated with. Its absence is meaningful: QuickApps falls back to its default
-  (non-provider-pinned) session behavior rather than treating it as an error.
+  authenticated with. Its absence is meaningful: an already authenticated session is used
+  as is, with no provider pinned. An unauthenticated session without it has no provider to
+  sign in with, so QuickApps shows the configuration-error state (`auth` "No auth provider
+  is requested").
 - `id` — a percent-encoded application identifier for the app to open in the editor. It is
   required to reach a usable editor: without it, QuickApps has no application to load and
   never renders past its loading state.

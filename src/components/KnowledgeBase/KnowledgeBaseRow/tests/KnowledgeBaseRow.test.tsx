@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { act } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ApplicationEditorI18nKeys, ButtonsI18nKeys } from '@/constants/translation-keys';
@@ -43,6 +43,15 @@ const renderRow = (props: Partial<React.ComponentProps<typeof KnowledgeBaseRow>>
 const findButton = (label: string) => getButton(label, dom.container) as HTMLButtonElement;
 const getModal = () => dom.container.querySelector('[role="dialog"][aria-label="File manager"]');
 
+// The popup is lazy-loaded; let its module resolve before asserting on it.
+const openModal = async () => {
+  click(findButton(ButtonsI18nKeys.Add));
+  await act(async () => {
+    await import('@/components/common/FileManagerModal/FileManagerModal');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+};
+
 describe('KnowledgeBaseRow', () => {
   it('shows the title, description and Add action when empty', () => {
     renderRow();
@@ -65,11 +74,11 @@ describe('KnowledgeBaseRow', () => {
     expect(findButton(ButtonsI18nKeys.Add)).toBeDefined();
   });
 
-  it('opens the popup with the current files and adds the confirmed selection', () => {
+  it('opens the popup with the current files and adds the confirmed selection', async () => {
     const { onAddFiles } = renderRow({ files: ['files/abc/a.pdf'] });
 
     expect(getModal()).toBeNull();
-    click(findButton(ButtonsI18nKeys.Add));
+    await openModal();
     expect(getModal()?.textContent).toContain('files/abc/a.pdf');
 
     click(findButton('Modal confirm'));
@@ -77,10 +86,10 @@ describe('KnowledgeBaseRow', () => {
     expect(getModal()).toBeNull();
   });
 
-  it('changes nothing when the popup is dismissed without a selection', () => {
+  it('changes nothing when the popup is dismissed without a selection', async () => {
     const { onAddFiles } = renderRow();
 
-    click(findButton(ButtonsI18nKeys.Add));
+    await openModal();
     click(findButton('Modal dismiss'));
 
     expect(onAddFiles).not.toHaveBeenCalled();

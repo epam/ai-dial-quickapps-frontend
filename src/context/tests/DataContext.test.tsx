@@ -198,6 +198,21 @@ describe('DataContext — initial load', () => {
   });
 });
 
+describe('DataContext — value identity', () => {
+  it('keeps the same value and actions across a re-render that changes no data', async () => {
+    await render();
+    const before = latest;
+
+    await render();
+
+    expect(latest).toBe(before);
+    expect(latest.applyToolsetAuthResult).toBe(before.applyToolsetAuthResult);
+    expect(latest.refreshToolsets).toBe(before.refreshToolsets);
+    expect(latest.refreshSkills).toBe(before.refreshSkills);
+    expect(latest.refreshAll).toBe(before.refreshAll);
+  });
+});
+
 describe('DataContext — unsolicited host login results', () => {
   it('signs a known toolset in from a host-initiated login result without refetching the list', async () => {
     await render();
