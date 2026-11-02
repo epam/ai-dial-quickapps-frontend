@@ -19,13 +19,13 @@
       component — now `components/Orchestrator/ModelCatalogModal` (see the `redesign-model-picker-catalog-list` change).
 - [ ] Model picker upstream asks to ai-dial-chat `libs/catalog` / `libs/chat-shared` (from the
       `redesign-model-picker-catalog-list` change):
-  - a `Toolbar` prop to hide the grid/list toggle, so the picker can use `Toolbar` instead of its own heading row;
-  - Enter/Space row activation in `ListView` (then drop `hooks/use-grid-row-keyboard-select.ts`);
+  - [x] a `Toolbar` prop to hide the grid/list toggle — superseded: the pickers now use the
+    catalog's own `CatalogPickerModal` / `AddOnCatalogModal` (chat libs `1.3.0-dev.282`);
+  - [x] Enter/Space row activation in `ListView` — shipped; `use-grid-row-keyboard-select` is gone;
   - `enableRtl` in `ListView` — its ag-grid columns do not follow `dir="rtl"` today;
   - a label override for `EntityTypeLabel`, so the Type cell can be localised;
-  - a thinner (or configurable) selected-row border in `ListView` — its 2px border shifts the row
-    content, so `ModelCatalogModal` overrides it via the `_selectedRow_` class prefix; drop that
-    override once fixed.
+  - [x] a thinner selected-row border in `ListView` — the list now draws selection as the kit
+    `Grid`'s fill, so the `_selectedRow_` override is gone.
 - [x] Auth screens other than the sign-in prompt - `ForbiddenPage` and `AuthError` now share
       `LoginScreen`'s layout (`components/common/AuthStateScreen`), use 2.0 buttons and take all copy from
       `common` i18n keys (see the `redesign-auth-state-screens` change).
@@ -43,8 +43,13 @@
   - chat-api ask: tool descriptions and input schemas in the deployment details
     (`ToolsetDetailsDto` carries names only), so the catalog Tools tab — here and in chat — could
     show more than names;
-  - done: `AddSkillsModal` now renders the shared `components/common/AddOnCatalogModal` that the
-    Add toolset / Add agent pickers use, so its own list/filter/sort code is gone;
+  - done: `AddSkillsModal`, `AddToolsetsModal` and `AddAgentsModal` render the catalog's
+    `AddOnCatalogModal`, and `ModelCatalogModal` its `CatalogPickerModal` (wired through
+    `useCatalogPickerSharedProps`), so the app keeps no list/filter/sort code of its own;
+  - `AddOnListItem` / `useListRemoveFocus`: the catalog now ships both, but its row button is
+    named by the item's name and version, while `toolsets_selection`, `agents_selection` and
+    `skills_catalog` require "<name> details" (`AddOnsDetails`). Moving over needs a spec change
+    or a label prop upstream;
   - done: `toolsets_login` specifies the host round-trip (`REQUEST_TOOLSET_LOGIN` /
     `TOOLSET_LOGIN_RESULT`, change `specify-uncovered-capabilities`); `toolsets_selection` keeps the
     popup's Log in entry point.

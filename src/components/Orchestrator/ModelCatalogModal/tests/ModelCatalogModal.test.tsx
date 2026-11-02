@@ -1,11 +1,14 @@
-import { act } from 'react';
 import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 
-import type { CatalogItem } from '@epam/ai-dial-catalog';
+import {
+  CatalogLoadStatus,
+  type CatalogItem,
+  type CatalogPickerModalProps,
+} from '@epam/ai-dial-catalog';
+import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 
 import { click, getButton } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
-import type { CatalogPickerModalProps } from '@/components/common/CatalogPickerModal/CatalogPickerModal';
 import { DialEntityType } from '@/types/dial-entities';
 import type { DialModel } from '@/types/dial-entities';
 
@@ -20,8 +23,14 @@ import { ModelCatalogModal } from '../ModelCatalogModal';
 
 const USER_BUCKET = 'user-bucket-123';
 
-const { shell } = vi.hoisted(() => ({
+const { shell, SHARED } = vi.hoisted(() => ({
   shell: { props: undefined as unknown, visibleIds: undefined as string[] | undefined },
+  SHARED: {
+    labels: { cancel: 'cancel', add: 'add' },
+    status: 'ready',
+    error: 'chat-api error',
+    onRetry: () => undefined,
+  },
 }));
 
 let models: DialModel[] = [];
@@ -30,60 +39,59 @@ vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({ modelsWithFavorites: models, userBucket: USER_BUCKET }),
 }));
 
-/*
- * The shell (search, filter, sort, states, buttons) is covered by its own
- * test; here it renders the list for `shell.visibleIds` — the rows a search
- * or filter would leave — and an Add button.
- */
-vi.mock('@/components/common/CatalogPickerModal/CatalogPickerModal', () => ({
-  CatalogPickerModal: (props: CatalogPickerModalProps) => {
-    shell.props = props;
-    const rows = shell.visibleIds
-      ? props.items.filter((item) => shell.visibleIds?.includes(item.id))
-      : props.items;
-    return (
-      <div>
-        {props.renderList(rows, '')}
-        <button disabled={props.isConfirmDisabled} onClick={props.onConfirm}>
-          Add
-        </button>
-      </div>
-    );
-  },
+vi.mock('@/hooks/use-catalog-picker-shared-props', () => ({
+  useCatalogPickerSharedProps: () => SHARED,
 }));
 
-// ag-grid needs layout jsdom doesn't have; rows carry `row-id` like
-// ag-grid's do, for keyboard selection.
+/*
+ * The catalog's picker (search, filter, sort, states, buttons) and its list
+ * (ag-grid, keyboard selection) are the library's and tested there. Here the
+ * picker renders the list for `shell.visibleIds` — the rows a search or filter
+ * would leave — and an Add button; the list renders a row per item.
+ */
 vi.mock('@epam/ai-dial-catalog', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@epam/ai-dial-catalog')>();
+  const ListView = ({
+    items,
+    selectedItemId,
+    onItemClick,
+    ariaLabel,
+  }: {
+    items: CatalogItem[];
+    selectedItemId?: string;
+    onItemClick?: (item: CatalogItem) => void;
+    ariaLabel?: string;
+  }) => (
+    <div role="grid" aria-label={ariaLabel}>
+      {items.map((item) => (
+        <div
+          key={item.id}
+          role="row"
+          data-id={item.id}
+          aria-selected={item.id === selectedItemId}
+          onClick={() => onItemClick?.(item)}
+        >
+          {`${item.name} ${item.version} | ${item.folder.join(' / ')}`}
+        </div>
+      ))}
+    </div>
+  );
   return {
     ...actual,
-    ListView: ({
-      items,
-      selectedItemId,
-      onItemClick,
-      ariaLabel,
-    }: {
-      items: CatalogItem[];
-      selectedItemId?: string;
-      onItemClick?: (item: CatalogItem) => void;
-      ariaLabel?: string;
-    }) => (
-      <div role="grid" aria-label={ariaLabel}>
-        {items.map((item) => (
-          <div
-            key={item.id}
-            role="row"
-            {...{ 'row-id': item.id }}
-            tabIndex={0}
-            aria-selected={item.id === selectedItemId}
-            onClick={() => onItemClick?.(item)}
-          >
-            {`${item.name} ${item.version} | ${item.folder.join(' / ')}`}
-          </div>
-        ))}
-      </div>
-    ),
+    CatalogPickerModal: (props: CatalogPickerModalProps) => {
+      shell.props = props;
+      const rows = shell.visibleIds
+        ? props.items.filter((item) => shell.visibleIds?.includes(item.id))
+        : props.items;
+      return (
+        <div>
+          <ListView ariaLabel={props.labels.catalog} {...props.listProps} items={rows} />
+          <button disabled={props.isConfirmDisabled} onClick={props.onConfirm}>
+            Add
+          </button>
+        </div>
+      );
+    },
   };
 });
 
@@ -123,11 +131,11 @@ const render = (props: { value?: string } = {}) =>
 const getRows = () =>
   [...dom.container.querySelectorAll<HTMLElement>('[role="row"]')].map((row) => row.textContent);
 
-const getRow = (id: string) => dom.container.querySelector<HTMLElement>(`[row-id="${id}"]`);
+const getRow = (id: string) => dom.container.querySelector<HTMLElement>(`[data-id="${id}"]`);
 
 const getSelectedRowIds = () =>
   [...dom.container.querySelectorAll('[role="row"][aria-selected="true"]')].map((row) =>
-    row.getAttribute('row-id'),
+    row.getAttribute('data-id'),
   );
 
 const getAddButton = () => getButton('Add');
@@ -159,6 +167,7 @@ describe('ModelCatalogModal', () => {
 
       const props = shell.props as CatalogPickerModalProps;
       expect(props.labels).toEqual({
+        ...SHARED.labels,
         title: ApplicationEditorI18nKeys.OrchestratorChangeModel,
         catalog: ApplicationEditorI18nKeys.OrchestratorCatalogTitle,
         search: ApplicationEditorI18nKeys.OrchestratorSearchPlaceholder,
@@ -167,6 +176,18 @@ describe('ModelCatalogModal', () => {
         empty: BasicI18nKeys.NotAvailable,
       });
       expect(props.onClose).toBe(onClose);
+    });
+
+    it('hands over the load state and lists models without favorites', () => {
+      render();
+
+      const props = shell.props as CatalogPickerModalProps;
+      expect(props.status).toBe(CatalogLoadStatus.Ready);
+      expect(props.error).toBe(SHARED.error);
+      expect(props.onRetry).toBe(SHARED.onRetry);
+      expect(props.listProps?.type).toBe(CatalogEntityType.Model);
+      expect(props.listProps?.columnVisibility?.favorite?.(CatalogEntityType.Model)).toBe(false);
+      expect(props.listProps?.columnVisibility?.folder?.(CatalogEntityType.Model)).toBe(true);
     });
   });
 
@@ -186,24 +207,6 @@ describe('ModelCatalogModal', () => {
       expect(getSelectedRowIds()).toEqual([geminiV2.id]);
       expect(onConfirm).not.toHaveBeenCalled();
       expect(onClose).not.toHaveBeenCalled();
-    });
-
-    it('selects the focused row on Enter or Space', () => {
-      render();
-
-      act(() => {
-        getRow(claude.id)?.dispatchEvent(
-          new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }),
-        );
-      });
-      expect(getSelectedRowIds()).toEqual([claude.id]);
-
-      act(() => {
-        getRow(geminiV2.id)?.dispatchEvent(
-          new KeyboardEvent('keydown', { key: ' ', bubbles: true }),
-        );
-      });
-      expect(getSelectedRowIds()).toEqual([geminiV2.id]);
     });
 
     it('confirms the selected row with its full versioned id on Add', () => {
