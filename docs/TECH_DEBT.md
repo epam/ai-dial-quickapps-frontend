@@ -46,10 +46,11 @@
   - done: `AddSkillsModal`, `AddToolsetsModal` and `AddAgentsModal` render the catalog's
     `AddOnCatalogModal`, and `ModelCatalogModal` its `CatalogPickerModal` (wired through
     `useCatalogPickerSharedProps`), so the app keeps no list/filter/sort code of its own;
-  - `AddOnListItem` / `useListRemoveFocus`: the catalog now ships both, but its row button is
-    named by the item's name and version, while `toolsets_selection`, `agents_selection` and
-    `skills_catalog` require "<name> details" (`AddOnsDetails`). Moving over needs a spec change
-    or a label prop upstream;
+  - done: the Toolsets, Agents and Skills rows render the catalog's `AddOnListItem` and
+    `useListRemoveFocus`, with the details button named by the item's name and version (change
+    `adopt-catalog-add-on-list-item`). The lists load lazily, because the catalog's root entry
+    brings its markdown chunk (~480 kB) with the row. An ai-dial-chat ask that would let them load
+    eagerly again: a light subpath for the row and the hook;
   - done: `toolsets_login` specifies the host round-trip (`REQUEST_TOOLSET_LOGIN` /
     `TOOLSET_LOGIN_RESULT`, change `specify-uncovered-capabilities`); `toolsets_selection` keeps the
     popup's Log in entry point.
@@ -57,6 +58,16 @@
     `RemoveAddOn`, `SelectAddOn`, `RemoveAddOnFromApp`, `DetailsTab`, `OverviewTab`), and the
     `skills_catalog`, `toolsets_selection`, `agents_selection` and `catalog-entity-details` specs use
     them. `SkillAuthor` and `SkillTypeLabel` keep their names: they label skills only.
+- [ ] Editor startup bundle: ag-grid (~1.5 MB of source) is in the entry's static import graph,
+      measured with chat libs `1.3.0-dev.178` (commit `134bc47`) and `1.3.0-dev.282`. No app module
+      imports it statically. Rolldown puts the ui-kit `Grid` (`components/New/Grid`, with
+      `ag-grid-react` / `ag-grid-community`) in the same shared chunk as the kit components the
+      editor uses at startup (`FileIcon`, `Breadcrumbs`, `Radio`, `Skeleton`, `Avatar`), so that
+      chunk loads with `DataContext`. Monaco is in the entry chunk too, through `main.tsx`'s static
+      `./monaco-setup` import. Next steps:
+      - isolate ag-grid and the kit `Grid` into their own chunk (Rolldown `advancedChunks` / Vite
+        `manualChunks`) and check that the pickers still load them on open;
+      - consider loading `monaco-setup` with the JSON editor.
 - [ ] Catalog details follow-ups (from the `align-entity-details-with-catalog` change):
   - ai-dial-chat ask: `@epam/ai-dial-chat-hooks/catalog` imports `@epam/ai-dial-attachment-input`
     (`mimeTypesToExtensionLabels`) and `@epam/ai-dial-skill-editor` (`SkillFileNodeKind`) at

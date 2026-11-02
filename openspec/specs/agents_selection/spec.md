@@ -43,7 +43,7 @@ The Agents row SHALL list the attached agents in `addOns` order. It SHALL use th
 
 The not-found status SHALL be shown only while `DataContext.status` is `LoadStatus.Ready`. While it is `Idle`, `Loading` or `Error`, an agent missing from the maps SHALL show no status line. The status line SHALL keep its `aria-describedby` link to the details button and SHALL NOT be a live region.
 
-**Details button.** Each item SHALL hold a button named by `ApplicationEditorI18nKeys.AddOnsDetails` with `{{name}}`. Activating it SHALL open the agent details popup.
+**Details button.** Each item SHALL hold a button named by the item's name followed by its version when one is known (e.g. "Research Agent 2.1", "GPT-4o"), as defined in `toolsets_selection` "Attached toolsets list (editable)". Activating it SHALL open the agent details popup.
 
 **Remove button.** In an editable application, each item SHALL hold a hover/focus-revealed trash button named by `ApplicationEditorI18nKeys.AddOnsRemove` with `{{name}}`. It SHALL have the same visibility, tab-order, removal and refocus behaviour as the Toolsets row.
 
@@ -72,6 +72,13 @@ The not-found status SHALL be shown only while `DataContext.status` is `LoadStat
 
 - **WHEN** `DataContext.status` is `Loading` and an attached `applications/…` id is not yet in the maps
 - **THEN** its item SHALL show no status line
+
+#### Scenario: Details button is named by the agent
+
+- **WHEN** the row lists Research Agent (version `2.1`) and GPT-4o (no version)
+- **THEN** each item's details button SHALL have the item's name followed by its version as its accessible name, or the name alone when there is no version
+- **AND** an attached id missing from the catalog SHALL be named by its fallback name ("old-agent" for `applications/public/old-agent`)
+- **AND** no button SHALL be named with the removed `ApplicationEditorI18nKeys.AddOnsDetails` template ("<name> details")
 
 ### Requirement: Agent details popup (editable)
 
