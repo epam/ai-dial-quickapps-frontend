@@ -49,7 +49,7 @@ vi.mock('@epam/ai-dial-ui-kit', () => ({
   ),
   EditorThemes: { dark: 'dark', light: 'light' },
   mergeClasses: (...classes: (string | undefined)[]) => classes.filter(Boolean).join(' '),
-  DialLoader: () => <span>loading</span>,
+  Spinner: () => <span>loading</span>,
   ErrorText: ({ text }: { text?: string }) => (text ? <span>{text}</span> : null),
   Popup: ({
     header,
@@ -80,37 +80,37 @@ vi.mock('@epam/ai-dial-ui-kit', () => ({
       ))}
     </div>
   ),
-  LazyDialJsonEditor: async () => ({
-    DialJsonEditor: ({
-      value,
-      currentTheme,
-      themesConfig,
-      onChange,
-      options,
-    }: {
-      value: string;
-      currentTheme: string;
-      themesConfig?: Record<string, { colors: Record<string, string> }>;
-      onChange: (value: string) => void;
-      options: {
-        ariaLabel: string;
-        lineNumbers?: string;
-        lineDecorationsWidth?: number;
-        folding?: boolean;
-      };
-    }) => (
-      <textarea
-        aria-label={options.ariaLabel}
-        data-theme={currentTheme}
-        data-background={themesConfig?.[currentTheme]?.colors['editor.background']}
-        data-line-numbers={options.lineNumbers}
-        data-start-space={options.lineDecorationsWidth}
-        data-folding={String(options.folding)}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-      />
-    ),
-  }),
+}));
+vi.mock('../../JsonEditor/JsonEditor', () => ({
+  default: ({
+    value,
+    currentTheme,
+    themesConfig,
+    onChange,
+    options,
+  }: {
+    value: string;
+    currentTheme: string;
+    themesConfig: Record<string, { colors: Record<string, string> }>;
+    onChange: (value: string) => void;
+    options: {
+      ariaLabel: string;
+      lineNumbers?: string;
+      lineDecorationsWidth?: number;
+      folding?: boolean;
+    };
+  }) => (
+    <textarea
+      aria-label={options.ariaLabel}
+      data-theme={currentTheme}
+      data-background={themesConfig[currentTheme]?.colors['editor.background']}
+      data-line-numbers={options.lineNumbers}
+      data-start-space={options.lineDecorationsWidth}
+      data-folding={String(options.folding)}
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+    />
+  ),
 }));
 
 const context: EditJsonContext = {
@@ -188,12 +188,12 @@ describe('EditJsonPopup', () => {
     expect(getEditor()?.dataset.folding).toBe('true');
   });
 
-  it('uses the dark editor theme of the kit for a loaded non-light theme', async () => {
+  it('uses the dark editor theme for a loaded non-light theme', async () => {
     themeState.currentTheme = { id: 'dark' };
     await renderPopup();
 
     expect(getEditor()?.dataset.theme).toBe('dark');
-    expect(getEditor()?.dataset.background).toBeUndefined();
+    expect(getEditor()?.dataset.background).toBe('#161B2D');
     themeState.currentTheme = { id: 'light' };
   });
 
