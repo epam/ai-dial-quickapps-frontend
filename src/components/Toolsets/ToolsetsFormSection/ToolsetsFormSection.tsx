@@ -48,12 +48,7 @@ const ToolsetsFormSection: FC<ToolsetsFormSectionProps> = ({ allIds, toolsetIds,
 
       {isAddModalOpen && (
         <Suspense fallback={null}>
-          <AddToolsetsModal
-            allIds={allIds}
-            toolsetIds={toolsetIds}
-            onClose={handleCloseModal}
-            onConfirm={handleConfirm}
-          />
+          <AddToolsetsModal allIds={allIds} onClose={handleCloseModal} onConfirm={handleConfirm} />
         </Suspense>
       )}
     </AddOnRow>
