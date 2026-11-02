@@ -31,11 +31,34 @@ const LIGHT_EDIT_JSON_THEME: editor.IStandaloneThemeData = {
   },
 };
 
-// Only the light theme is replaced. The kit asks for both entries but defines just the one that
-// matches `currentTheme`, so the dark popup keeps the kit's own theme (the prop is left unset).
-export const EDIT_JSON_LIGHT_THEMES_CONFIG: Record<EditorThemes, editor.IStandaloneThemeData> = {
+// The dark theme is the one ui-kit's removed 1.0 JSON editor shipped by default (0.15), unchanged.
+const DARK_EDIT_JSON_THEME: editor.IStandaloneThemeData = {
+  base: 'vs-dark',
+  inherit: false,
+  rules: [
+    { token: 'string.key.json', foreground: '#37BABC' },
+    { token: 'string.value.json', foreground: '#5C8DEA' },
+    { token: 'number', foreground: '#D97C27' },
+    { token: 'keyword.json', foreground: '#F4CE46' },
+    { token: 'delimiter', foreground: '#EEF1F7' },
+    { token: 'delimiter.bracket.json', foreground: '#A972FF' },
+    { token: 'delimiter.parenthesis', foreground: '#A972FF' },
+  ],
+  colors: {
+    'editor.foreground': '#F76464',
+    'editor.background': '#161B2D',
+    'editorCursor.foreground': '#EEF1F7',
+    'editor.selectionBackground': '#5C8DEA2B',
+    'editorLineNumber.foreground': '#242C42',
+    'scrollbarSlider.background': '#242C42',
+    'scrollbarSlider.hoverBackground': '#242C42',
+    'scrollbarSlider.activeBackground': '#242C42',
+  },
+};
+
+export const EDIT_JSON_THEMES_CONFIG: Record<EditorThemes, editor.IStandaloneThemeData> = {
   light: LIGHT_EDIT_JSON_THEME,
-  dark: LIGHT_EDIT_JSON_THEME,
+  dark: DARK_EDIT_JSON_THEME,
 };
 
 export const EDIT_JSON_EDITOR_OPTIONS: editor.IStandaloneEditorConstructionOptions = {
