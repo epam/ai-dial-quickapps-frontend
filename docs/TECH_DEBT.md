@@ -7,35 +7,38 @@
 - [ ] Toolsets / Agents follow-ups (from the `split-agents-and-toolsets` change):
   - chat-api ask: tool descriptions and input schemas in the deployment details
     (`ToolsetDetailsDto` carries names only), so the catalog Tools tab — here and in chat — could
-    show more than names.
+    show more than names;
+  - ai-dial-chat ask: a light `@epam/ai-dial-catalog` subpath for `AddOnListItem` and
+    `useListRemoveFocus`. The root entry brings the catalog's markdown chunk (~480 kB) with them,
+    so the Toolsets, Agents and Skills lists load lazily; with a light entry they could load with
+    the editor again.
 - [ ] Catalog details follow-ups (from the `align-entity-details-with-catalog` change):
   - ai-dial-chat ask: `@epam/ai-dial-chat-hooks/catalog` imports `@epam/ai-dial-attachment-input`
     (`mimeTypesToExtensionLabels`) and `@epam/ai-dial-skill-editor` (`SkillFileNodeKind`) at
     runtime, yet declares both as optional peers. This app installs both only for that; move the two
     symbols into `@epam/ai-dial-chat-shared` (or make the peers required), then drop them here;
-  - English text still comes from the catalog where no label prop exists: pricing row labels
-    ("Input tokens"…) and the "N tokens" / "K tokens" formatting in `mapEntityDetailsToCatalogDetails`,
-    and the markdown code-block / table labels of `AboutTab` and `ContentTab` (`markdownLabels`, not
-    passed yet). Ask upstream for label options, then pass translated ones;
-  - the Limits tab renders without a reset line: pass `formatResetTime` in
-    `useCatalogDetailsLabels` once the editor has a locale-aware date formatter;
-  - the skill Details tab shows only `SKILL.md`; its bundled files (`promptContent.files`) are
-    dropped. Wiring the catalog file selector needs `onLoadContentFile` from `useCatalogItemDetails`.
+  - ai-dial-chat ask: English text still comes from `mapEntityDetailsToCatalogDetails`
+    (`@epam/ai-dial-chat-hooks/catalog`) with no label option: the pricing row labels ("Input
+    tokens"…) and the "N tokens" / "K tokens" formatting. Add label options there, then pass
+    translated ones;
+  - the Limits tab renders without a reset line: pass `formatResetTime` in the
+    `deploymentLimits` labels of `useCatalogDetailsLabels` (chat-hooks `DeploymentLimitsLabels`)
+    once the editor has a locale-aware date formatter.
 - [ ] Knowledge base file popup (change `restyle-knowledge-base-file-picker`):
   - **Search only covers folders already loaded.** The popup search uses the file manager's built-in
     client-side filter over the tree the user has opened (`FileManagerModal.tsx`, no `onSearchFiles`), so a
     file in an unopened folder is not found. A real fix needs server-side or recursive search wired through
-    the library's `onSearchFiles` / `searchResults`; `listFiles` supports `recursive`, but `listPublicFiles`
-    and `listSharedFiles` (`src/utils/dial-files-api.ts`) do not, so Shared and Organization need an API
-    change or a client-side crawl first.
+    the library's `onSearchFiles` / `searchResults`. chat-api has no file search endpoint. `listFiles` and
+    `listPublicFiles` take `recursive` (`src/utils/dial-files-api.ts`; no caller asks for it yet), but
+    `listSharedFiles` does not, so Shared needs an API change or a client-side crawl first.
   - **No "+" icon on the popup's Add button.** The target design shows one, but
-    `@epam/ai-dial-react-file-manager` (0.3.0-dev.25) renders a plain `ButtonDropdown` in
-    `DialFileManagerToolbar` with only `label` and `variant`. Needs an icon prop in the library.
+    `@epam/ai-dial-react-file-manager` (0.4.0-dev.26) gives `DialFileManagerToolbar` no icon for the
+    New button (only its dropdown items take one). Needs an icon prop in the library.
   - **Move/copy between sources is refused under All** (`src/hooks/use-dial-file-sources.ts`): My files,
     Shared and Organization live in different buckets and the files API has no single cross-bucket move.
-- [ ] ui-kit: `DialDraggableItem` imports a private bundled copy of react-dnd whose `DndProvider` the
-      kit does not export, and it has no keyboard support, so consumers can't use it. Ask the kit for an
-      exported, keyboard-accessible sortable list; the starters modal uses `@dnd-kit/sortable` meanwhile.
+- [ ] ui-kit ask: an exported, keyboard-accessible sortable list (0.16 removed `DialDraggableItem`
+      with no replacement). The starters modal uses `@dnd-kit/sortable` with its keyboard sensor
+      meanwhile.
 - [ ] Skills follow-ups (from the `redesign-skills-selection` change):
   - chat-api ask: `version` and `tags` on `SkillMetadataItemDto`. The editor already shows them
     when present (`mapCoreToDialSkill` in `src/utils/dial-client.ts`); until then skills have no
@@ -70,7 +73,9 @@ OpenSpec change).
 
 - [ ] **Application credentials stay "required" after sign-in** — any non-empty external-services
       list counts, including `authenticationType: NONE` and already-authenticated services
-      (`dial-client.ts:162`).
+      (`fetchApplicationRequiresAuthentication` in `dial-client.ts`). Fixable here:
+      `ApplicationExternalServiceDto` carries `authenticationType` and the optional
+      `userLevelAuthStatus` / `globalAuthStatus` (`SIGNED_IN` …).
 - [ ] **Toolset login promises can hang** — no timeout when the host never answers, and a second
       request overwrites the pending one so the first never settles
       (`use-toolset-credentials.ts:94`). An unsolicited `TOOLSET_LOGOUT_RESULT` is not applied.
@@ -132,15 +137,6 @@ following known discrepancies. These are deliberately tracked separately from ca
 coverage: each item may require a product decision, a spec change, a code change, or only a
 documentation correction.
 
-- [ ] **Host message protocol** — reconcile the exact handshake and message contract:
-      application-name prefixes, connector-generated versus manually posted messages, the README's
-      `INIT` claim, and the timing/duplication semantics of `READY`, `readyToSave`, and `loggedOut`.
-- [ ] **Save, auto-save, and reset semantics** — document the conditions under which saves are
-      ignored, the actual meaning of `SaveSuccess.hasChanges`, and that `RESET` remounts the current
-      state rather than refetching from the API.
-- [ ] **Origin validation defaults** — decide and document behavior while runtime settings are
-      unresolved and when `allowedOrigin` is empty, including the current `*` fallback and its
-      security implications.
 - [ ] **Authentication error coverage** — reconcile the broad 401/forbidden guarantees in
       `openspec/specs/auth/spec.md` with the different behavior of generated API calls, auth,
       themes, configuration, and file upload/download wrappers.
