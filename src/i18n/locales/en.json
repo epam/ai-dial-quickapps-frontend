@@ -208,7 +208,6 @@
       "entityTypeToolset": "toolset",
       "entityTypeSkill": "skill",
       "title": "Add-ons",
-      "details": "{{name}} details",
       "select": "Select {{name}}",
       "remove": "Remove {{name}}"
     },

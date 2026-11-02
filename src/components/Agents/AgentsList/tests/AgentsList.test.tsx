@@ -2,7 +2,7 @@ import { act, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
-import { getButton } from '@/test-utils/dom';
+import { getAccessibleName, getButton } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
 
 import { DialEntityType } from '@/types/dial-entities';
@@ -70,14 +70,15 @@ const Harness = ({ initial }: HarnessProps) => {
   );
 };
 
-// `t` returns the key without interpolation, so every row's buttons share a label;
-// a row is found by the entity name it shows, and its buttons are looked up inside it.
+// `t` returns the key without interpolation, so every row's remove button shares a
+// label; a row is found by the entity name it shows, and its buttons are looked up inside it.
 const getRow = (name: string) =>
   [...dom.container.querySelectorAll('li')].find((li) => li.textContent?.includes(name));
-const getDetailsButton = (name: string) => {
-  const row = getRow(name);
-  return row ? getButton(ApplicationEditorI18nKeys.AddOnsDetails, row) : undefined;
-};
+// The details button is named by the agent itself (its visible name and version).
+const getDetailsButton = (name: string) =>
+  [...(getRow(name)?.querySelectorAll('button') ?? [])].find((button) =>
+    getAccessibleName(button)?.startsWith(name),
+  );
 const getRemoveButton = (name: string) => {
   const row = getRow(name);
   return row ? getButton(ApplicationEditorI18nKeys.AddOnsRemove, row) : undefined;
@@ -88,6 +89,9 @@ const getStatus = (name: string) => {
   const describedBy = getDetailsButton(name)?.getAttribute('aria-describedby');
   return describedBy ? document.getElementById(describedBy) : null;
 };
+
+const hasClass = (status: Element | null, className: string) =>
+  status?.querySelector(`.${className}`) != null;
 
 const render = async (initial: string[]) => {
   await act(async () => {
@@ -115,8 +119,8 @@ describe('AgentsList', () => {
 
     const status = getStatus('Offline');
     expect(status?.textContent).toBe(ApplicationEditorI18nKeys.AddOnsUndeployedApp);
-    expect(status?.classList.contains('text-secondary')).toBe(true);
-    expect(status?.classList.contains('text-error')).toBe(false);
+    expect(hasClass(status, 'text-secondary')).toBe(true);
+    expect(hasClass(status, 'text-error')).toBe(false);
   });
 
   it('names an application missing from the catalog after its id and flags it as an error', async () => {
@@ -125,7 +129,7 @@ describe('AgentsList', () => {
     expect(getDetailsButton('gone')).toBeTruthy();
     const status = getStatus('gone');
     expect(status?.textContent).toBe(ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired);
-    expect(status?.classList.contains('text-error')).toBe(true);
+    expect(hasClass(status, 'text-error')).toBe(true);
   });
 
   it('does not flag an application missing from the catalog while the catalog is loading', async () => {
@@ -134,6 +138,15 @@ describe('AgentsList', () => {
 
     expect(getDetailsButton('gone')).toBeTruthy();
     expect(getStatus('gone')).toBeNull();
+  });
+
+  it('names each details button after the agent and its version', async () => {
+    await render([RESEARCH.id, GPT.id, 'applications/public/gone']);
+
+    const names = [...dom.container.querySelectorAll('li')].map((item) =>
+      getAccessibleName(item.querySelector('button')),
+    );
+    expect(names).toEqual(['Research Agent 2.1', 'GPT-4o', 'gone']);
   });
 
   it('removes only that agent and keeps the toolsets', async () => {

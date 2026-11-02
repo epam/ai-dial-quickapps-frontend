@@ -238,7 +238,6 @@ export enum ApplicationEditorI18nKeys {
   SkillsEmpty = 'applicationEditor.skills.empty',
   SkillsAddMany = 'applicationEditor.skills.addMany',
   SkillsSearchPlaceholder = 'applicationEditor.skills.searchPlaceholder',
-  AddOnsDetails = 'applicationEditor.addOns.details',
   SkillsUnavailable = 'applicationEditor.skills.unavailable',
   SkillsAdd = 'applicationEditor.skills.add',
   SkillsCatalogTitle = 'applicationEditor.skills.catalogTitle',

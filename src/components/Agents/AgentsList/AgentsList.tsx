@@ -1,17 +1,16 @@
+import { AddOnListItem, useListRemoveFocus } from '@epam/ai-dial-catalog';
 import { FC, lazy, memo, Suspense, useCallback, useState } from 'react';
 
 import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { useDataContext } from '@/context/DataContext';
 import { useAddOnEntityMap } from '@/hooks/use-add-on-entity-map';
-import { useListRemoveFocus } from '@/hooks/use-list-remove-focus';
 import { useTranslation } from 'react-i18next';
 import type { DialModel } from '@/types/dial-entities';
 import { LoadStatus } from '@/types/load-status';
 import type { DialAppTransportType } from '@/types/quick-apps';
 import { getAddOnDisplay } from '@/utils/get-add-on-display';
 import { getEntityStatus, getEntityStatusMessage } from '@/utils/get-entity-status';
-
-import { AddOnListItem } from '@/components/common/AddOnListItem/AddOnListItem';
+import { renderEntityStatus } from '@/utils/render-entity-status';
 
 // The popup renders Markdown and catalog pieces, so it loads on first open.
 const AgentDetailsPopup = lazy(async () => ({
@@ -36,14 +35,13 @@ const AgentsList: FC<AgentsListProps> = ({ ids, allIds, onChange, transports, on
   const language = i18n.resolvedLanguage ?? i18n.language;
   const entityMap = useAddOnEntityMap();
   const isCatalogReady = useDataContext().status === LoadStatus.Ready;
-  const { listRef, markRemoval } = useListRemoveFocus(ids);
+  // A removal takes the item's buttons with it, so focus moves to the list
+  // instead of being lost on the page.
+  const listRef = useListRemoveFocus<HTMLUListElement>(ids.length);
 
   const handleRemove = useCallback(
-    (id: string) => {
-      markRemoval();
-      onChange(allIds.filter((value) => value !== id));
-    },
-    [markRemoval, onChange, allIds],
+    (id: string) => onChange(allIds.filter((value) => value !== id)),
+    [onChange, allIds],
   );
 
   const [openAgentId, setOpenAgentId] = useState<string | null>(null);
@@ -65,16 +63,13 @@ const AgentsList: FC<AgentsListProps> = ({ ids, allIds, onChange, transports, on
           return (
             <li key={id}>
               <AddOnListItem
-                id={id}
                 name={name}
                 version={version}
                 iconUrl={iconUrl}
-                statusText={statusMessage?.text}
-                statusSeverity={statusMessage?.severity}
-                detailsLabel={t(ApplicationEditorI18nKeys.AddOnsDetails, { name })}
-                removeLabel={t(ApplicationEditorI18nKeys.AddOnsRemove, { name })}
-                onClick={setOpenAgentId}
-                onRemove={handleRemove}
+                description={renderEntityStatus(statusMessage)}
+                labels={{ remove: t(ApplicationEditorI18nKeys.AddOnsRemove, { name }) }}
+                onOpen={() => setOpenAgentId(id)}
+                onRemove={() => handleRemove(id)}
               />
             </li>
           );

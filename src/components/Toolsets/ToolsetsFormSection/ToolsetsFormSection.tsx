@@ -4,7 +4,10 @@ import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { useTranslation } from 'react-i18next';
 
 import { AddOnRow } from '@/components/AddOns/AddOnRow/AddOnRow';
-import ToolsetsList from '@/components/Toolsets/ToolsetsList/ToolsetsList';
+
+// The rows come from the catalog bundle, whose markdown chunk would otherwise
+// load with the editor, so the list is a chunk of its own.
+const ToolsetsList = lazy(() => import('@/components/Toolsets/ToolsetsList/ToolsetsList'));
 
 // The picker brings in the catalog list (ag-grid + @epam/ai-dial-catalog),
 // so it loads on first open instead of with the editor.
@@ -44,7 +47,9 @@ const ToolsetsFormSection: FC<ToolsetsFormSectionProps> = ({ allIds, toolsetIds,
       addTooltip={t(ApplicationEditorI18nKeys.ToolsetsAddMany)}
       onAdd={() => setIsAddModalOpen(true)}
     >
-      <ToolsetsList ids={toolsetIds} allIds={allIds} onChange={onChange} />
+      <Suspense fallback={null}>
+        <ToolsetsList ids={toolsetIds} allIds={allIds} onChange={onChange} />
+      </Suspense>
 
       {isAddModalOpen && (
         <Suspense fallback={null}>
