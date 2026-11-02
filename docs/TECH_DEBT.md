@@ -27,7 +27,7 @@
     content, so `ModelCatalogModal` overrides it via the `_selectedRow_` class prefix; drop that
     override once fixed.
 - [x] Auth screens other than the sign-in prompt - `ForbiddenPage` and `AuthError` now share
-      `LoginScreen`'s layout (`components/common/AuthStateScreen`), use 2.0 buttons and take all copy from
+      `LoginScreen`'s layout (the kit's 2.0 `StateScreen`), use 2.0 buttons and take all copy from
       `common` i18n keys (see the `redesign-auth-state-screens` change).
 - [x] Conversation starters: a starter with only a title or only a prompt is saved to
       `conversation_starters` but does not enable the starters settings (that needs both). Decided by

@@ -4,7 +4,7 @@ import { FC, lazy, memo, Suspense, useCallback, useEffect, useMemo, useState } f
 import { MOBILE_FULLSCREEN_POPUP_CLASS_NAMES } from '@/constants/popup';
 import {
   EDIT_JSON_EDITOR_OPTIONS,
-  EDIT_JSON_LIGHT_THEMES_CONFIG,
+  EDIT_JSON_THEMES_CONFIG,
 } from '@/constants/edit-json-editor';
 import { EDIT_JSON_COPIED_RESET_MS, EDIT_JSON_DOWNLOAD_FILE_NAME } from '@/constants/editor';
 import {
@@ -24,20 +24,17 @@ import {
   ButtonVariant,
   DIAL_ICON_SIZE,
   DIAL_KIT_ICON_STROKE,
-  DialLoader,
   EditorThemes,
   ElementSize,
   ErrorText,
   GhostIconButton,
-  LazyDialJsonEditor,
   mergeClasses,
   Popup,
   PopupSize,
+  Spinner,
 } from '@epam/ai-dial-ui-kit';
 
-const DialJsonEditor = lazy(async () => ({
-  default: (await LazyDialJsonEditor()).DialJsonEditor,
-}));
+const JsonEditor = lazy(() => import('../JsonEditor/JsonEditor'));
 
 export interface EditJsonPopupProps {
   /** The JSON shown when the popup opens; seeds the draft once per mount. */
@@ -156,11 +153,11 @@ const EditJsonPopup: FC<EditJsonPopupProps> = ({ document, context, onSave, onCl
           </div>
           {/* Code reads left to right whatever the document direction is. */}
           <div dir="ltr" className="h-[min(36rem,60vh)]">
-            <Suspense fallback={<DialLoader fullWidth />}>
-              <DialJsonEditor
+            <Suspense fallback={<Spinner fullWidth />}>
+              <JsonEditor
                 value={draft}
                 currentTheme={editorTheme}
-                themesConfig={isDarkEditor ? undefined : EDIT_JSON_LIGHT_THEMES_CONFIG}
+                themesConfig={EDIT_JSON_THEMES_CONFIG}
                 onChange={handleChange}
                 options={editorOptions}
               />

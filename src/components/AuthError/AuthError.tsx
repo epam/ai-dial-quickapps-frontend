@@ -1,11 +1,10 @@
 import { IconAlertTriangle } from '@tabler/icons-react';
 import { FC, memo } from 'react';
 
-import AuthStateScreen from '@/components/common/AuthStateScreen/AuthStateScreen';
 import { AuthI18nKeys } from '@/constants/translation-keys';
 import { useTranslation } from 'react-i18next';
 import { AuthErrorReason } from '@/types/auth';
-import { DIAL_ICON_SIZE, DIAL_KIT_ICON_STROKE } from '@epam/ai-dial-ui-kit';
+import { DIAL_ICON_SIZE, DIAL_KIT_ICON_STROKE, StateScreen } from '@epam/ai-dial-ui-kit';
 
 interface AuthErrorProps {
   reason: AuthErrorReason;
@@ -29,7 +28,8 @@ const AuthError: FC<AuthErrorProps> = ({ reason, provider }) => {
 
   // No action: the user can't fix host or deployment configuration from here.
   return (
-    <AuthStateScreen
+    <StateScreen
+      className="h-screen"
       icon={<IconAlertTriangle size={DIAL_ICON_SIZE.LG} stroke={DIAL_KIT_ICON_STROKE} />}
       title={t(AuthI18nKeys.ErrorTitle)}
       description={description}
