@@ -67,9 +67,9 @@ export const AddOnCatalogModal: FC<AddOnCatalogModalProps> = ({
   );
 
   const renderList = (rows: CatalogItem[], query: string) => (
-    // The list windows its rows against the nearest scrolling ancestor, so
-    // this wrapper is the scroll container and the column header sticks to it.
-    <div className="min-h-0 flex-1 overflow-y-auto">
+    // The list fills this box and scrolls its rows inside it, keeping the
+    // column header in view, so the wrapper only passes the body height down.
+    <div className="min-h-0 flex-1">
       <ListView
         type={type}
         items={rows}
@@ -81,7 +81,6 @@ export const AddOnCatalogModal: FC<AddOnCatalogModalProps> = ({
         selectRowAriaLabel={selectRowAriaLabel}
         selectAllAriaLabel={labels.selectAll}
         credentialsBadgeLoggedOutLabel={labels.credentialsBadge}
-        stickyHeaderTop={0}
         columnVisibility={COLUMN_VISIBILITY}
       />
     </div>
