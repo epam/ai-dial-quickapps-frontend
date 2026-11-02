@@ -1,9 +1,8 @@
 import { act, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { CatalogItemCredentials } from '@epam/ai-dial-catalog';
 import { ApplicationEditorI18nKeys, CatalogI18nKeys } from '@/constants/translation-keys';
-import { getButton } from '@/test-utils/dom';
+import { getAccessibleName, getButton } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
 import { type DialToolset, ToolsetAuthStatus, ToolsetAuthType } from '@/types/dial-entities';
 import { LoadStatus } from '@/types/load-status';
@@ -32,25 +31,6 @@ vi.mock('@/hooks/use-add-on-entity-map', () => ({
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({ status: data.status }),
 }));
-// The real badge needs the catalog's tooltip layer; this stub keeps its
-// contract: it shows only while the toolset is signed out at every level.
-vi.mock('@epam/ai-dial-catalog', () => ({
-  CredentialsBadge: ({
-    credentials,
-    loggedOutLabel,
-  }: {
-    credentials?: CatalogItemCredentials;
-    loggedOutLabel?: string;
-  }) => {
-    const isSignedOut =
-      credentials != null &&
-      credentials.authenticationType !== 'NONE' &&
-      credentials.userStatus !== 'SIGNED_IN' &&
-      credentials.globalStatus !== 'SIGNED_IN';
-    return isSignedOut ? <span data-testid="badge">{loggedOutLabel}</span> : null;
-  },
-}));
-
 vi.mock('@/components/Toolsets/ToolsetDetailsPopup/ToolsetDetailsPopup', () => ({
   ToolsetDetailsPopup: ({
     toolsetId,
@@ -95,22 +75,18 @@ const render = async (initial: string[]) => {
   await act(async () => {
     dom.root.render(<Harness initial={initial} />);
   });
-  // Let the lazily loaded badge module resolve and render.
-  await act(async () => {
-    await import('@/components/Toolsets/ToolsetBadge/ToolsetBadge');
-    await new Promise((resolve) => setTimeout(resolve, 0));
-  });
 };
 
-// The labels come from `t`, which the test mock returns as bare keys, so an
-// item's buttons are found inside the list item showing the toolset's name.
+// The remove label comes from `t`, which the test mock returns as a bare key,
+// so an item's buttons are found inside the list item showing the toolset's name.
 const getItem = (name: string) =>
   [...dom.container.querySelectorAll('li')].find((item) => item.textContent?.includes(name));
 
-const getDetailsButton = (name: string) => {
-  const item = getItem(name);
-  return item && getButton(ApplicationEditorI18nKeys.AddOnsDetails, item);
-};
+// The details button is named by the toolset itself (its visible name and version).
+const getDetailsButton = (name: string) =>
+  [...(getItem(name)?.querySelectorAll('button') ?? [])].find((button) =>
+    getAccessibleName(button)?.startsWith(name),
+  );
 
 const getRemoveButton = (name: string) => {
   const item = getItem(name);
@@ -124,6 +100,9 @@ const getStatus = (name: string) => {
   const describedBy = getDetailsButton(name)?.getAttribute('aria-describedby');
   return describedBy ? document.getElementById(describedBy) : null;
 };
+
+const hasClass = (status: Element | null, className: string) =>
+  status?.querySelector(`.${className}`) != null;
 
 afterEach(() => {
   document.documentElement.dir = '';
@@ -144,10 +123,10 @@ describe('ToolsetsList', () => {
   it('badges a signed-out toolset and describes it as logged out', async () => {
     await render([FIGMA.id, JIRA.id]);
 
-    const badges = dom.container.querySelectorAll('[data-testid="badge"]');
+    const badges = dom.container.querySelectorAll('[role="img"][aria-label]');
     expect(badges).toHaveLength(1);
     expect(badges[0].closest('li')?.textContent).toContain('Figma');
-    expect(badges[0].textContent).toBe(CatalogI18nKeys.CredentialsBadgeLoggedOut);
+    expect(badges[0].getAttribute('aria-label')).toBe(CatalogI18nKeys.CredentialsBadgeLoggedOut);
     expect(dom.container.textContent).toContain(ApplicationEditorI18nKeys.AddOnsLoggedOutToolset);
   });
 
@@ -157,7 +136,7 @@ describe('ToolsetsList', () => {
     expect(getDetailsButton('old-tool')).toBeTruthy();
     const status = getStatus('old-tool');
     expect(status?.textContent).toBe(ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired);
-    expect(status?.classList.contains('text-error')).toBe(true);
+    expect(hasClass(status, 'text-error')).toBe(true);
   });
 
   it('keeps the logged-out status neutral', async () => {
@@ -165,8 +144,8 @@ describe('ToolsetsList', () => {
 
     const status = getStatus('Figma');
     expect(status?.textContent).toBe(ApplicationEditorI18nKeys.AddOnsLoggedOutToolset);
-    expect(status?.classList.contains('text-secondary')).toBe(true);
-    expect(status?.classList.contains('text-error')).toBe(false);
+    expect(hasClass(status, 'text-secondary')).toBe(true);
+    expect(hasClass(status, 'text-error')).toBe(false);
   });
 
   it.each([LoadStatus.Idle, LoadStatus.Loading, LoadStatus.Error])(
@@ -182,6 +161,15 @@ describe('ToolsetsList', () => {
       );
     },
   );
+
+  it('names each details button after the toolset and its version', async () => {
+    await render([FIGMA.id, JIRA.id, 'toolsets/public/old-tool']);
+
+    const names = [...dom.container.querySelectorAll('li')].map((item) =>
+      getAccessibleName(item.querySelector('button')),
+    );
+    expect(names).toEqual([`Figma ${FIGMA.version}`, 'Jira', 'old-tool']);
+  });
 
   it('removes only that toolset and moves focus to the remaining one', async () => {
     await render(['applications/public/agent', FIGMA.id, JIRA.id]);

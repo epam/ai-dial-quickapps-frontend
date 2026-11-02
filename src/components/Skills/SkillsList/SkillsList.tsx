@@ -1,14 +1,13 @@
+import { AddOnListItem, useListRemoveFocus } from '@epam/ai-dial-catalog';
 import { FC, lazy, memo, Suspense, useCallback, useState } from 'react';
 
 import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { useDataContext } from '@/context/DataContext';
-import { useListRemoveFocus } from '@/hooks/use-list-remove-focus';
 import { useTranslation } from 'react-i18next';
 import { LoadStatus } from '@/types/load-status';
 import { getEntityNameFromId } from '@/utils/api';
 import { getEntityStatusMessage, getSkillStatus } from '@/utils/get-entity-status';
-
-import { AddOnListItem } from '@/components/common/AddOnListItem/AddOnListItem';
+import { renderEntityStatus } from '@/utils/render-entity-status';
 
 // The popup renders the manifest with the catalog's `ContentTab`, which brings
 // in the catalog bundle (ag-grid), so it loads on first open.
@@ -30,17 +29,9 @@ const SkillsList: FC<SkillsListProps> = ({ value, onRemove }) => {
   const [openSkillId, setOpenSkillId] = useState<string | null>(null);
   // Delete removes the item that opened the popup, so focus lands on the list
   // instead of being lost with the removed button.
-  const { listRef, markRemoval } = useListRemoveFocus(value);
+  const listRef = useListRemoveFocus<HTMLUListElement>(value.length);
 
   const handleClose = useCallback(() => setOpenSkillId(null), []);
-
-  const handleRemove = useCallback(
-    (id: string) => {
-      markRemoval();
-      onRemove(id);
-    },
-    [markRemoval, onRemove],
-  );
 
   if (value.length === 0) return null;
 
@@ -60,15 +51,12 @@ const SkillsList: FC<SkillsListProps> = ({ value, onRemove }) => {
           return (
             <li key={id}>
               <AddOnListItem
-                id={id}
                 name={name}
                 version={skill?.version}
-                statusText={statusMessage?.text}
-                statusSeverity={statusMessage?.severity}
-                detailsLabel={t(ApplicationEditorI18nKeys.AddOnsDetails, { name })}
-                removeLabel={t(ApplicationEditorI18nKeys.AddOnsRemove, { name })}
-                onClick={setOpenSkillId}
-                onRemove={handleRemove}
+                description={renderEntityStatus(statusMessage)}
+                labels={{ remove: t(ApplicationEditorI18nKeys.AddOnsRemove, { name }) }}
+                onOpen={() => setOpenSkillId(id)}
+                onRemove={() => onRemove(id)}
               />
             </li>
           );
@@ -81,7 +69,7 @@ const SkillsList: FC<SkillsListProps> = ({ value, onRemove }) => {
             skillId={openSkillId}
             skill={openSkill}
             fallbackName={getEntityNameFromId(openSkillId)}
-            onRemove={handleRemove}
+            onRemove={onRemove}
             onClose={handleClose}
           />
         </Suspense>

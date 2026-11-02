@@ -7,7 +7,10 @@ import { useTranslation } from 'react-i18next';
 import type { DialAppTransportType } from '@/types/quick-apps';
 
 import { AddOnRow } from '@/components/AddOns/AddOnRow/AddOnRow';
-import AgentsList from '@/components/Agents/AgentsList/AgentsList';
+
+// The rows come from the catalog bundle, whose markdown chunk would otherwise
+// load with the editor, so the list is a chunk of its own.
+const AgentsList = lazy(() => import('@/components/Agents/AgentsList/AgentsList'));
 
 // The picker brings in the catalog list (ag-grid + @epam/ai-dial-catalog),
 // so it loads on first open instead of with the editor.
@@ -59,13 +62,15 @@ const AgentsFormSection: FC<AgentsFormSectionProps> = ({
       addTooltip={t(ApplicationEditorI18nKeys.AgentsAddMany)}
       onAdd={() => setIsAddModalOpen(true)}
     >
-      <AgentsList
-        ids={agentIds}
-        allIds={allIds}
-        onChange={onChange}
-        transports={transports}
-        onConfigure={onConfigure}
-      />
+      <Suspense fallback={null}>
+        <AgentsList
+          ids={agentIds}
+          allIds={allIds}
+          onChange={onChange}
+          transports={transports}
+          onConfigure={onConfigure}
+        />
+      </Suspense>
 
       {isAddModalOpen && (
         <Suspense fallback={null}>

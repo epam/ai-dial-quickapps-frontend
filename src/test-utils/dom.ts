@@ -18,6 +18,33 @@ export const getButton = (name: string, scope: ParentNode = document.body) =>
   );
 
 /**
+ * The element's accessible name as a browser builds it for the common cases:
+ * `aria-labelledby` (the referenced elements' text, with a space between
+ * separate elements, as block and flex children get), then `aria-label`, then
+ * its own text. jsdom computes no accessible names itself.
+ */
+export const getAccessibleName = (element?: Element | null): string | undefined => {
+  if (element == null) return undefined;
+
+  const labelledBy = element.getAttribute('aria-labelledby');
+  if (labelledBy) {
+    const texts = labelledBy
+      .split(/\s+/)
+      .map((id) => document.getElementById(id))
+      .flatMap((label) => {
+        if (label == null) return [];
+        const walker = document.createTreeWalker(label, NodeFilter.SHOW_TEXT);
+        const parts: string[] = [];
+        while (walker.nextNode()) parts.push(walker.currentNode.textContent ?? '');
+        return parts;
+      });
+    return texts.join(' ').replace(/\s+/g, ' ').trim();
+  }
+
+  return element.getAttribute('aria-label') ?? element.textContent ?? undefined;
+};
+
+/**
  * Sets an input's value the way the browser does on typing, so React's
  * `onChange` fires.
  */

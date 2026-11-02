@@ -1,22 +1,16 @@
+import { AddOnListItem, useListRemoveFocus } from '@epam/ai-dial-catalog';
 import { FC, lazy, memo, Suspense, useCallback, useState } from 'react';
 
 import { ApplicationEditorI18nKeys, CatalogI18nKeys } from '@/constants/translation-keys';
 import { useDataContext } from '@/context/DataContext';
 import { useAddOnEntityMap } from '@/hooks/use-add-on-entity-map';
-import { useListRemoveFocus } from '@/hooks/use-list-remove-focus';
 import { useTranslation } from 'react-i18next';
 import type { DialToolset } from '@/types/dial-entities';
 import { LoadStatus } from '@/types/load-status';
 import { getAddOnDisplay } from '@/utils/get-add-on-display';
 import { getEntityStatus, getEntityStatusMessage } from '@/utils/get-entity-status';
-
-import { AddOnListItem } from '@/components/common/AddOnListItem/AddOnListItem';
-
-// The badge comes from the catalog bundle (ag-grid), which stays out of the
-// editor's initial chunk.
-const ToolsetBadge = lazy(async () => ({
-  default: (await import('@/components/Toolsets/ToolsetBadge/ToolsetBadge')).ToolsetBadge,
-}));
+import { mapToolsetCredentials } from '@/utils/map-toolset-to-catalog-item';
+import { renderEntityStatus } from '@/utils/render-entity-status';
 
 // The popup renders Markdown and catalog pieces, so it loads on first open.
 const ToolsetDetailsPopup = lazy(async () => ({
@@ -38,14 +32,13 @@ const ToolsetsList: FC<ToolsetsListProps> = ({ ids, allIds, onChange }) => {
   const language = i18n.resolvedLanguage ?? i18n.language;
   const entityMap = useAddOnEntityMap();
   const isCatalogReady = useDataContext().status === LoadStatus.Ready;
-  const { listRef, markRemoval } = useListRemoveFocus(ids);
+  // A removal takes the item's buttons with it, so focus moves to the list
+  // instead of being lost on the page.
+  const listRef = useListRemoveFocus<HTMLUListElement>(ids.length);
 
   const handleRemove = useCallback(
-    (id: string) => {
-      markRemoval();
-      onChange(allIds.filter((value) => value !== id));
-    },
-    [markRemoval, onChange, allIds],
+    (id: string) => onChange(allIds.filter((value) => value !== id)),
+    [onChange, allIds],
   );
 
   const [openToolsetId, setOpenToolsetId] = useState<string | null>(null);
@@ -67,26 +60,18 @@ const ToolsetsList: FC<ToolsetsListProps> = ({ ids, allIds, onChange }) => {
           return (
             <li key={id}>
               <AddOnListItem
-                id={id}
                 name={name}
                 version={version}
                 iconUrl={iconUrl}
-                statusText={statusMessage?.text}
-                statusSeverity={statusMessage?.severity}
-                badge={
-                  toolset && (
-                    <Suspense fallback={null}>
-                      <ToolsetBadge
-                        toolset={toolset}
-                        label={t(CatalogI18nKeys.CredentialsBadgeLoggedOut)}
-                      />
-                    </Suspense>
-                  )
-                }
-                detailsLabel={t(ApplicationEditorI18nKeys.AddOnsDetails, { name })}
-                removeLabel={t(ApplicationEditorI18nKeys.AddOnsRemove, { name })}
-                onClick={setOpenToolsetId}
-                onRemove={handleRemove}
+                description={renderEntityStatus(statusMessage)}
+                // An unknown toolset has no auth settings, so it gets no badge.
+                credentials={toolset && mapToolsetCredentials(toolset)}
+                labels={{
+                  remove: t(ApplicationEditorI18nKeys.AddOnsRemove, { name }),
+                  credentialsBadge: t(CatalogI18nKeys.CredentialsBadgeLoggedOut),
+                }}
+                onOpen={() => setOpenToolsetId(id)}
+                onRemove={() => handleRemove(id)}
               />
             </li>
           );

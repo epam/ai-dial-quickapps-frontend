@@ -5,7 +5,10 @@ import type { QuickApp2FormValues } from '@/types/quick-app-form';
 import { useTranslation } from 'react-i18next';
 
 import { AddOnRow } from '@/components/AddOns/AddOnRow/AddOnRow';
-import SkillsList from '@/components/Skills/SkillsList/SkillsList';
+
+// The rows come from the catalog bundle, whose markdown chunk would otherwise
+// load with the editor, so the list is a chunk of its own.
+const SkillsList = lazy(() => import('@/components/Skills/SkillsList/SkillsList'));
 
 // The picker brings in the catalog list (ag-grid + @epam/ai-dial-catalog),
 // so it loads on first open instead of with the editor.
@@ -45,7 +48,9 @@ const AgentSkillsFormSection: FC<AgentSkillsFormSectionProps> = ({ value, onChan
       addTooltip={t(ApplicationEditorI18nKeys.SkillsAddMany)}
       onAdd={() => setIsSkillsModalOpen(true)}
     >
-      <SkillsList value={value} onRemove={handleRemove} />
+      <Suspense fallback={null}>
+        <SkillsList value={value} onRemove={handleRemove} />
+      </Suspense>
 
       {isSkillsModalOpen && (
         <Suspense fallback={null}>

@@ -2,7 +2,7 @@ import { act, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
-import { getButton } from '@/test-utils/dom';
+import { getAccessibleName, getButton } from '@/test-utils/dom';
 import { setupTestRoot } from '@/test-utils/test-root';
 import { DialEntityType } from '@/types/dial-entities';
 import type { DialSkill } from '@/types/dial-entities';
@@ -74,15 +74,16 @@ const render = async (initial: string[]) => {
   });
 };
 
-// The labels come from `t`, which the test mock returns as bare keys, so an
-// item's buttons are found inside the list item showing the skill's name.
+// The remove label comes from `t`, which the test mock returns as a bare key,
+// so an item's buttons are found inside the list item showing the skill's name.
 const getItem = (name: string) =>
   [...dom.container.querySelectorAll('li')].find((item) => item.textContent?.includes(name));
 
-const getDetailsButton = (name: string) => {
-  const item = getItem(name);
-  return item && getButton(ApplicationEditorI18nKeys.AddOnsDetails, item);
-};
+// The details button is named by the skill itself (its visible name and version).
+const getDetailsButton = (name: string) =>
+  [...(getItem(name)?.querySelectorAll('button') ?? [])].find((button) =>
+    getAccessibleName(button)?.startsWith(name),
+  );
 
 const getRemoveButton = (name: string) => {
   const item = getItem(name);
@@ -103,6 +104,8 @@ const getStatus = (name: string) => {
   const describedBy = getDetailsButton(name)?.getAttribute('aria-describedby');
   return describedBy ? document.getElementById(describedBy) : null;
 };
+
+const isErrorLine = (status: Element | null) => status?.querySelector('.text-error') != null;
 
 afterEach(() => {
   document.documentElement.dir = '';
@@ -136,7 +139,7 @@ describe('SkillsList', () => {
     expect(getDetailsButton('deleted-skill')).toBeTruthy();
     const status = getStatus('deleted-skill');
     expect(status?.textContent).toBe(ApplicationEditorI18nKeys.AddOnsUnavailableRemovalRequired);
-    expect(status?.classList.contains('text-error')).toBe(true);
+    expect(isErrorLine(status)).toBe(true);
   });
 
   it('shows no status line for a listed skill', async () => {
@@ -156,16 +159,23 @@ describe('SkillsList', () => {
     },
   );
 
-  it('gives each item a details button followed by a remove button', async () => {
-    await render(['skills/public/web-search']);
+  it('gives each item a details button named by the skill, followed by a remove button', async () => {
+    await render(['skills/public/web-search', 'skills/public/user-research']);
 
-    const labels = [...dom.container.querySelectorAll('li button')].map((button) =>
-      button.getAttribute('aria-label'),
-    );
-    expect(labels).toEqual([
-      ApplicationEditorI18nKeys.AddOnsDetails,
+    const names = [...dom.container.querySelectorAll('li button')].map(getAccessibleName);
+    expect(names).toEqual([
+      'Web Search 1.4.6',
+      ApplicationEditorI18nKeys.AddOnsRemove,
+      'User Research',
       ApplicationEditorI18nKeys.AddOnsRemove,
     ]);
+  });
+
+  it('names the details button of a skill missing from the catalog after its id', async () => {
+    await render(['skills/public/deleted-skill']);
+
+    const [details] = dom.container.querySelectorAll('li button');
+    expect(getAccessibleName(details)).toBe('deleted-skill');
   });
 
   it('keeps the remove button hidden until the item is hovered or focused', async () => {
@@ -174,7 +184,7 @@ describe('SkillsList', () => {
     const remove = getRemoveButton('Web Search') as HTMLButtonElement;
     expect(remove.className).toContain('opacity-0');
     expect(remove.className).toContain('group-hover:opacity-100');
-    expect(remove.className).toContain('group-has-[:focus-visible]:opacity-100');
+    expect(remove.className).toContain('group-has-focus-visible:opacity-100');
     expect(remove.className).not.toContain('group-focus-within');
     expect(remove.tabIndex).not.toBe(-1);
   });
