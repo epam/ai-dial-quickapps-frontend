@@ -1,17 +1,15 @@
+import { AddOnCatalogModal, type AddOnCatalogModalLabels } from '@epam/ai-dial-catalog';
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { FC, useMemo } from 'react';
 
 import { ApplicationEditorI18nKeys, CatalogI18nKeys } from '@/constants/translation-keys';
 import { useDataContext } from '@/context/DataContext';
+import { useCatalogPickerSharedProps } from '@/hooks/use-catalog-picker-shared-props';
 import { useScopeLabels } from '@/hooks/use-scope-labels';
 import { useTranslation } from 'react-i18next';
 import { isHiddenDialFolderId } from '@/utils/api';
+import { ADD_ON_LIST_PROPS } from '@/constants/catalog-picker';
 import { mapSkillToCatalogItem } from '@/utils/map-skill-to-catalog-item';
-
-import {
-  AddOnCatalogModal,
-  type AddOnCatalogModalLabels,
-} from '@/components/common/AddOnCatalogModal/AddOnCatalogModal';
 
 export interface AddSkillsModalProps {
   /** The attached skill ids; checked when the popup opens. */
@@ -26,6 +24,7 @@ export const AddSkillsModal: FC<AddSkillsModalProps> = ({ value, onConfirm, onCl
   const { t } = useTranslation();
   const { skills, userBucket } = useDataContext();
   const scopeLabels = useScopeLabels();
+  const { labels: sharedLabels, ...loadState } = useCatalogPickerSharedProps();
 
   const items = useMemo(
     () =>
@@ -37,6 +36,7 @@ export const AddSkillsModal: FC<AddSkillsModalProps> = ({ value, onConfirm, onCl
 
   const labels = useMemo<AddOnCatalogModalLabels>(
     () => ({
+      ...sharedLabels,
       title: t(ApplicationEditorI18nKeys.SkillsAdd),
       catalog: t(ApplicationEditorI18nKeys.SkillsCatalogTitle),
       search: t(ApplicationEditorI18nKeys.SkillsSearchPlaceholder),
@@ -46,7 +46,7 @@ export const AddSkillsModal: FC<AddSkillsModalProps> = ({ value, onConfirm, onCl
       selectAll: t(ApplicationEditorI18nKeys.SkillsSelectAll),
       selectRow: (name) => t(ApplicationEditorI18nKeys.AddOnsSelect, { name }),
     }),
-    [t],
+    [t, sharedLabels],
   );
 
   return (
@@ -54,8 +54,9 @@ export const AddSkillsModal: FC<AddSkillsModalProps> = ({ value, onConfirm, onCl
       type={CatalogEntityType.Skill}
       items={items}
       attachedIds={value}
-      initialCheckedIds={value}
       labels={labels}
+      {...loadState}
+      listProps={ADD_ON_LIST_PROPS}
       onConfirm={onConfirm}
       onClose={onClose}
     />

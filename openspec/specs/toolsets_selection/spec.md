@@ -245,7 +245,7 @@ The Toolsets row's Add action SHALL open the **Add toolset** popup. It SHALL mat
 - **Checkbox names:** row checkboxes use `ApplicationEditorI18nKeys.AddOnsSelect` ("Select {{name}}") and select-all uses `ApplicationEditorI18nKeys.ToolsetsSelectAll`.
 - **States:** the loading label is `ApplicationEditorI18nKeys.ToolsetsLoading`, the error title `ApplicationEditorI18nKeys.ToolsetsLoadError`, and the empty-catalog title `ApplicationEditorI18nKeys.ToolsetsEmpty`.
 - **Pre-check:** only the attached toolset ids start checked.
-- **Add** SHALL apply `applyCatalogSelection(allIds, checkedIds, listedIds)` (`src/utils/apply-catalog-selection.ts`, generalised from `apply-skill-selection.ts`) to the full `addOns` id list:
+- **Add** SHALL apply `applyCatalogSelection(allIds, checkedIds, listedIds)` (done by `@epam/ai-dial-catalog`'s `AddOnCatalogModal`, which took it over from this app) to the full `addOns` id list:
   - kept entries and every agent entry stay in place, with their tool data;
   - unchecked listed toolsets are removed;
   - newly checked toolsets are appended in check order.

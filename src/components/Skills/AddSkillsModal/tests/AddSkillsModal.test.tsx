@@ -1,3 +1,4 @@
+import { type AddOnCatalogModalProps, CatalogLoadStatus } from '@epam/ai-dial-catalog';
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -8,12 +9,19 @@ import {
 } from '@/constants/translation-keys';
 import { setupTestRoot } from '@/test-utils/test-root';
 import { DialEntityType } from '@/types/dial-entities';
-import type { AddOnCatalogModalProps } from '@/components/common/AddOnCatalogModal/AddOnCatalogModal';
 import type { DialSkill } from '@/types/dial-entities';
 
 import { AddSkillsModal } from '../AddSkillsModal';
 
-const { captured } = vi.hoisted(() => ({ captured: { props: undefined as unknown } }));
+const { captured, SHARED } = vi.hoisted(() => ({
+  captured: { props: undefined as unknown },
+  SHARED: {
+    labels: { cancel: 'cancel', add: 'add' },
+    status: 'ready',
+    error: 'chat-api error',
+    onRetry: () => undefined,
+  },
+}));
 
 const USER_BUCKET = 'user-bucket-123';
 
@@ -32,7 +40,11 @@ const HIDDEN = makeSkill('skills/public/.dial_folder', '.dial_folder');
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({ skills: [WEB_SEARCH, HIDDEN, MINE], userBucket: USER_BUCKET }),
 }));
-vi.mock('@/components/common/AddOnCatalogModal/AddOnCatalogModal', () => ({
+vi.mock('@/hooks/use-catalog-picker-shared-props', () => ({
+  useCatalogPickerSharedProps: () => SHARED,
+}));
+vi.mock('@epam/ai-dial-catalog', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@epam/ai-dial-catalog')>()),
   AddOnCatalogModal: (props: unknown) => {
     captured.props = props;
     return null;
@@ -54,7 +66,6 @@ describe('AddSkillsModal', () => {
       ['My notes', CatalogI18nKeys.FolderPersonal],
     ]);
     expect(props.attachedIds).toEqual(value);
-    expect(props.initialCheckedIds).toEqual(value);
     expect(props.onConfirm).toBe(onConfirm);
   });
 
@@ -71,6 +82,17 @@ describe('AddSkillsModal', () => {
       empty: ApplicationEditorI18nKeys.SkillsEmpty,
       selectAll: ApplicationEditorI18nKeys.SkillsSelectAll,
     });
-    expect(labels.selectRow('Web Search')).toBe(ApplicationEditorI18nKeys.AddOnsSelect);
+    expect(labels.selectRow?.('Web Search')).toBe(ApplicationEditorI18nKeys.AddOnsSelect);
+  });
+
+  it('hands over the shared picker strings and the load state', () => {
+    dom.render(<AddSkillsModal value={[]} onConfirm={vi.fn()} onClose={vi.fn()} />);
+
+    const props = captured.props as AddOnCatalogModalProps;
+    expect(props.labels).toMatchObject(SHARED.labels);
+    expect(props.status).toBe(CatalogLoadStatus.Ready);
+    expect(props.error).toBe(SHARED.error);
+    expect(props.onRetry).toBe(SHARED.onRetry);
+    expect(props.listProps?.columnVisibility?.favorite?.(CatalogEntityType.Model)).toBe(false);
   });
 });

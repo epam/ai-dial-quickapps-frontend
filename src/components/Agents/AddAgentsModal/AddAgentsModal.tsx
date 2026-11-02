@@ -1,40 +1,32 @@
+import { AddOnCatalogModal, type AddOnCatalogModalLabels } from '@epam/ai-dial-catalog';
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { FC, useMemo } from 'react';
 
 import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { useAppContext } from '@/context/AppContext';
 import { useDataContext } from '@/context/DataContext';
+import { useCatalogPickerSharedProps } from '@/hooks/use-catalog-picker-shared-props';
 import { useScopeLabels } from '@/hooks/use-scope-labels';
 import { useTranslation } from 'react-i18next';
 import { getEntityIdWithoutVersion, isHiddenDialFolderId } from '@/utils/api';
+import { ADD_ON_LIST_PROPS } from '@/constants/catalog-picker';
 import { mapAgentToCatalogItem } from '@/utils/map-agent-to-catalog-item';
 
-import {
-  AddOnCatalogModal,
-  type AddOnCatalogModalLabels,
-} from '@/components/common/AddOnCatalogModal/AddOnCatalogModal';
-
 export interface AddAgentsModalProps {
-  /** Every `addOns` id; toolset ids stay in place on Add. */
+  /** Every `addOns` id; the attached agents are checked when the popup opens, toolset ids stay in place on Add. */
   allIds: string[];
-  /** The attached agent ids; checked when the popup opens. */
-  agentIds: string[];
   onConfirm: (allIds: string[]) => void;
   onClose: () => void;
 }
 
 /** Agent picker: applications, MCP agents and models, with multi-selection. */
-export const AddAgentsModal: FC<AddAgentsModalProps> = ({
-  allIds,
-  agentIds,
-  onConfirm,
-  onClose,
-}) => {
+export const AddAgentsModal: FC<AddAgentsModalProps> = ({ allIds, onConfirm, onClose }) => {
   const { t, i18n } = useTranslation();
   const language = i18n.resolvedLanguage ?? i18n.language;
   const { app } = useAppContext();
   const { models, mcpAgents, userBucket } = useDataContext();
   const scopeLabels = useScopeLabels();
+  const { labels: sharedLabels, ...loadState } = useCatalogPickerSharedProps();
   // The app being edited must not be selectable as its own agent — that
   // would make it call itself (recursion).
   const currentAppEntityId = getEntityIdWithoutVersion(app.id);
@@ -50,6 +42,7 @@ export const AddAgentsModal: FC<AddAgentsModalProps> = ({
 
   const labels = useMemo<AddOnCatalogModalLabels>(
     () => ({
+      ...sharedLabels,
       title: t(ApplicationEditorI18nKeys.AgentsAdd),
       catalog: t(ApplicationEditorI18nKeys.AgentsCatalogTitle),
       search: t(ApplicationEditorI18nKeys.AgentsSearchPlaceholder),
@@ -59,7 +52,7 @@ export const AddAgentsModal: FC<AddAgentsModalProps> = ({
       selectAll: t(ApplicationEditorI18nKeys.AgentsSelectAll),
       selectRow: (name) => t(ApplicationEditorI18nKeys.AddOnsSelect, { name }),
     }),
-    [t],
+    [t, sharedLabels],
   );
 
   return (
@@ -67,8 +60,9 @@ export const AddAgentsModal: FC<AddAgentsModalProps> = ({
       type={CatalogEntityType.Agent}
       items={items}
       attachedIds={allIds}
-      initialCheckedIds={agentIds}
       labels={labels}
+      {...loadState}
+      listProps={ADD_ON_LIST_PROPS}
       onConfirm={onConfirm}
       onClose={onClose}
     />

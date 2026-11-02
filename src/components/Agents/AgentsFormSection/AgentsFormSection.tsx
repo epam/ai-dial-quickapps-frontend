@@ -69,12 +69,7 @@ const AgentsFormSection: FC<AgentsFormSectionProps> = ({
 
       {isAddModalOpen && (
         <Suspense fallback={null}>
-          <AddAgentsModal
-            allIds={allIds}
-            agentIds={agentIds}
-            onClose={handleCloseModal}
-            onConfirm={handleConfirm}
-          />
+          <AddAgentsModal allIds={allIds} onClose={handleCloseModal} onConfirm={handleConfirm} />
         </Suspense>
       )}
     </AddOnRow>

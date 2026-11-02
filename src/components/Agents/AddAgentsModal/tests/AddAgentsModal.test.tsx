@@ -1,3 +1,4 @@
+import { type AddOnCatalogModalProps, CatalogLoadStatus } from '@epam/ai-dial-catalog';
 import { CatalogEntityType } from '@epam/ai-dial-chat-shared';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -5,12 +6,19 @@ import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { setupTestRoot } from '@/test-utils/test-root';
 
 import { DialEntityType } from '@/types/dial-entities';
-import type { AddOnCatalogModalProps } from '@/components/common/AddOnCatalogModal/AddOnCatalogModal';
 import type { DialModel } from '@/types/dial-entities';
 
 import { AddAgentsModal } from '../AddAgentsModal';
 
-const { captured } = vi.hoisted(() => ({ captured: { props: undefined as unknown } }));
+const { captured, SHARED } = vi.hoisted(() => ({
+  captured: { props: undefined as unknown },
+  SHARED: {
+    labels: { cancel: 'cancel', add: 'add' },
+    status: 'ready',
+    error: 'chat-api error',
+    onRetry: () => undefined,
+  },
+}));
 
 const makeAgent = (id: string, name: string, type: DialModel['type']) =>
   ({ id, reference: id, name, type }) as DialModel;
@@ -26,7 +34,11 @@ vi.mock('@/context/AppContext', () => ({
 vi.mock('@/context/DataContext', () => ({
   useDataContext: () => ({ models: [GPT, RESEARCH, SELF], mcpAgents: [MCP], userBucket: 'me' }),
 }));
-vi.mock('@/components/common/AddOnCatalogModal/AddOnCatalogModal', () => ({
+vi.mock('@/hooks/use-catalog-picker-shared-props', () => ({
+  useCatalogPickerSharedProps: () => SHARED,
+}));
+vi.mock('@epam/ai-dial-catalog', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@epam/ai-dial-catalog')>()),
   AddOnCatalogModal: (props: unknown) => {
     captured.props = props;
     return null;
@@ -40,7 +52,6 @@ describe('AddAgentsModal', () => {
     dom.render(
       <AddAgentsModal
         allIds={['toolsets/public/figma', GPT.id]}
-        agentIds={[GPT.id]}
         onConfirm={vi.fn()}
         onClose={vi.fn()}
       />,
@@ -54,11 +65,10 @@ describe('AddAgentsModal', () => {
       ['MCP agent', CatalogEntityType.Agent],
     ]);
     expect(props.attachedIds).toEqual(['toolsets/public/figma', GPT.id]);
-    expect(props.initialCheckedIds).toEqual([GPT.id]);
   });
 
   it('labels the popup for agents', () => {
-    dom.render(<AddAgentsModal allIds={[]} agentIds={[]} onConfirm={vi.fn()} onClose={vi.fn()} />);
+    dom.render(<AddAgentsModal allIds={[]} onConfirm={vi.fn()} onClose={vi.fn()} />);
 
     const { labels } = captured.props as AddOnCatalogModalProps;
     expect(labels).toMatchObject({
@@ -68,6 +78,17 @@ describe('AddAgentsModal', () => {
       empty: ApplicationEditorI18nKeys.AgentsEmpty,
       selectAll: ApplicationEditorI18nKeys.AgentsSelectAll,
     });
-    expect(labels.selectRow('Research')).toBe(ApplicationEditorI18nKeys.AddOnsSelect);
+    expect(labels.selectRow?.('Research')).toBe(ApplicationEditorI18nKeys.AddOnsSelect);
+  });
+
+  it('hands over the shared picker strings and the load state', () => {
+    dom.render(<AddAgentsModal allIds={[]} onConfirm={vi.fn()} onClose={vi.fn()} />);
+
+    const props = captured.props as AddOnCatalogModalProps;
+    expect(props.labels).toMatchObject(SHARED.labels);
+    expect(props.status).toBe(CatalogLoadStatus.Ready);
+    expect(props.error).toBe(SHARED.error);
+    expect(props.onRetry).toBe(SHARED.onRetry);
+    expect(props.listProps?.columnVisibility?.favorite?.(CatalogEntityType.Model)).toBe(false);
   });
 });
