@@ -90,9 +90,8 @@ export const ModelCatalogModal: FC<ModelCatalogModalProps> = ({ value, onConfirm
   const handleConfirm = useCallback(() => onConfirm(selectedId), [onConfirm, selectedId]);
 
   const renderList = (rows: CatalogItem[], query: string) => (
-    // The list windows its rows against the nearest scrolling ancestor, so
-    // this wrapper is the scroll container and the column header sticks to
-    // its top. The catalog marks the selected row with a 2px border that
+    // The list fills this box and scrolls its rows inside it, keeping the
+    // column header in view. The catalog marks the selected row with a 2px border that
     // pushes the row content in and sits on the table edge (ag-grid rows have
     // a fixed width); a 1px inset outline draws the same accent without either.
     // An outline (not an inset shadow) so the cells can't paint over its
@@ -103,7 +102,7 @@ export const ModelCatalogModal: FC<ModelCatalogModalProps> = ({ value, onConfirm
     <div
       className={mergeClasses(
         COLUMN_WIDTH_CLASS_NAMES,
-        "min-h-0 flex-1 overflow-y-auto [&_[class*='selectedRow']]:z-[1] [&_[class*='selectedRow']]:!border-0 [&_[class*='selectedRow']]:!outline [&_[class*='selectedRow']]:!outline-1 [&_[class*='selectedRow']]:!-outline-offset-1 [&_[class*='selectedRow']]:!outline-accent",
+        "min-h-0 flex-1 [&_[class*='selectedRow']]:z-[1] [&_[class*='selectedRow']]:!border-0 [&_[class*='selectedRow']]:!outline [&_[class*='selectedRow']]:!outline-1 [&_[class*='selectedRow']]:!-outline-offset-1 [&_[class*='selectedRow']]:!outline-accent",
       )}
       onKeyDown={handleListKeyDown}
     >
@@ -115,7 +114,6 @@ export const ModelCatalogModal: FC<ModelCatalogModalProps> = ({ value, onConfirm
         selectedItemId={selectedId}
         onItemClick={handleItemClick}
         columnVisibility={COLUMN_VISIBILITY}
-        stickyHeaderTop={0}
       />
     </div>
   );
