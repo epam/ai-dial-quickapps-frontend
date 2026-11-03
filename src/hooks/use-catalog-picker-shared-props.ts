@@ -43,6 +43,7 @@ export const useCatalogPickerSharedProps = (): CatalogPickerSharedProps => {
       topics: t(CatalogI18nKeys.BrowseSettingsTopics),
       clear: t(ButtonsI18nKeys.Clear),
       apply: t(ButtonsI18nKeys.Apply),
+      scrollToTop: t(CatalogI18nKeys.ScrollToTop),
     }),
     [t],
   );
