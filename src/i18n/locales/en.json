@@ -166,7 +166,8 @@
       "from": "From",
       "my": "My",
       "topics": "Topics"
-    }
+    },
+    "scrollToTop": "Scroll to top"
   },
   "attachmentCanvas": {
     "forbiddenErrorLabel": "You don't have permission to access this file",

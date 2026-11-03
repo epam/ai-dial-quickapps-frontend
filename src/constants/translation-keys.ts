@@ -153,6 +153,7 @@ export enum CatalogI18nKeys {
   BrowseSettingsFrom = 'catalog.browseSettings.from',
   BrowseSettingsMy = 'catalog.browseSettings.my',
   BrowseSettingsTopics = 'catalog.browseSettings.topics',
+  ScrollToTop = 'catalog.scrollToTop',
 }
 
 export enum AttachmentCanvasI18nKeys {

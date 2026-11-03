@@ -56,6 +56,7 @@ describe('useCatalogPickerSharedProps', () => {
       topics: CatalogI18nKeys.BrowseSettingsTopics,
       clear: ButtonsI18nKeys.Clear,
       apply: ButtonsI18nKeys.Apply,
+      scrollToTop: CatalogI18nKeys.ScrollToTop,
     });
   });
 
