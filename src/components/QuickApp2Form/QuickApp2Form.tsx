@@ -320,7 +320,8 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
       }}
       // From the desktop layout the form is exactly as tall as the view: only the primary column
       // scrolls, so its scrollbar sits between the two columns and Configuration never moves.
-      className="grid grid-cols-1 gap-4 desktop:h-dvh desktop:grid-cols-[minmax(0,1fr)_minmax(280px,440px)] desktop:grid-rows-[minmax(0,1fr)] desktop:gap-x-0"
+      // The padding matches the editor app's frame inset, since DIAL Chat renders the frame edge to edge.
+      className="grid grid-cols-1 gap-4 px-8 py-6 desktop:h-dvh desktop:grid-cols-[minmax(0,1fr)_minmax(280px,440px)] desktop:grid-rows-[minmax(0,1fr)] desktop:gap-x-0"
     >
       {/* `relative` keeps the UI kit's visually hidden inputs inside this scroller (Issue #260).
           The padding keeps the cards off the scrollbar and gives their shadows room, which the
