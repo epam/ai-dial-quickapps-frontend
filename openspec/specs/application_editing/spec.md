@@ -8,7 +8,7 @@ save writes, including the General-step (Metadata) values the host owns and send
 save trigger. See `host-integration` for the TriggerSave message itself.
 
 It also defines the editor lifecycle: loading the application, the form state and dirty
-tracking, when a save trigger is skipped, the auto-save interval, the save request and its outcome
+tracking, when a save trigger is skipped, the save request and its outcome
 messages, `RESET`, and the top-level shape of `application_properties`.
 
 ## Requirements
