@@ -27,7 +27,11 @@ const cspNoncePlaceholder = (): Plugin => ({
 
 const isTrustedStyleProducer = (id: string) => {
   const modulePath = id.split('?')[0].replaceAll('\\', '/');
-  return modulePath.endsWith('.js') && modulePath.includes('/node_modules/@epam/ai-dial-ui-kit/dist/');
+  if (!modulePath.endsWith('.js')) return false;
+  return (
+    modulePath.includes('/node_modules/@epam/ai-dial-ui-kit/dist/') ||
+    modulePath.includes('/node_modules/monaco-editor/esm/')
+  );
 };
 
 /**
@@ -35,8 +39,10 @@ const isTrustedStyleProducer = (id: string) => {
  * elements; `provideGlobalGridOptions({ styleNonce })` doesn't reach that copy
  * and `ListView` exposes no grid options. Under `CSP_MODE=enforce` those styles
  * are blocked (and ag-grid then warns about missing `--ag-*` values).
+ * Monaco does the same (`domStylesheets.js`, `contextview.js`) for the cursor, token
+ * colours (`.mtkN`), sticky scroll etc., so the Edit JSON editor loses them under enforce.
  * Mirrors ai-dial-chat's `tools/vite/csp-nonce.mjs`: rewrite literal
- * `createElement('style')` calls in ui-kit's dist to take the nonce from the
+ * `createElement('style')` calls in ui-kit's dist and monaco-editor's esm to take the nonce from the
  * `csp-nonce` meta tag stamped above. Nothing else is touched.
  */
 const addTrustedStyleNonces = (code: string, id: string): string | null => {
