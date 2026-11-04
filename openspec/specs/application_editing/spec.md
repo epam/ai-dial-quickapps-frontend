@@ -332,7 +332,7 @@ QuickApps SHALL route every save through one window-level event
 (`DIAL_EDITOR_TRIGGER_SAVE_EVENT`, `src/constants/editor.ts`, detail
 `TriggerSaveEventDetail`) that the mounted `QuickApp2Form` handles. A save is a manual save
 when it comes from a TriggerSave message, and an auto-save when it comes from a
-TriggerAutoSave message or the editor's own interval (see "Auto-save interval").
+TriggerAutoSave message. QuickApps SHALL NOT start a save on its own.
 
 QuickApps SHALL ignore a save trigger, without a chat-api request and without posting a
 save-outcome message, when:
@@ -341,7 +341,7 @@ save-outcome message, when:
   `404` and no save has succeeded in this session (`hasSavedOnce` in `EditorClient`);
 - it is an auto-save, the form is not dirty, and the trigger did not ask to ignore the dirty
   state — only a TriggerAutoSave with `payload.ignoreDirty: true` does
-  (`shouldIgnoreDirty`); the interval never does;
+  (`shouldIgnoreDirty`);
 - the form values fail validation (`QuickApp2Schema`). The form SHALL then show the
   validation errors, including deferred ones such as empty instructions. A manual save
   SHALL additionally post SaveError carrying the error messages joined with `; `, so the host
@@ -380,6 +380,11 @@ TriggerSave's `general` payload to the save, and SHALL NOT pass `general` with a
 - **WHEN** the form is clean and QuickApps receives a TriggerSave
 - **THEN** QuickApps SHALL save the current values
 
+#### Scenario: No save without a host trigger
+
+- **WHEN** the form is dirty and the host sends neither TriggerSave nor TriggerAutoSave
+- **THEN** QuickApps SHALL NOT call chat-api, however long the form stays dirty
+
 #### Scenario: Invalid form
 
 - **WHEN** QuickApps receives a TriggerSave or a dirty TriggerAutoSave while the
@@ -389,30 +394,6 @@ TriggerSave's `general` payload to the save, and SHALL NOT pass `general` with a
 - **AND** it SHALL NOT call chat-api and SHALL NOT post SaveSuccess or AutoSaveComplete
 - **AND** for a TriggerSave it SHALL post SaveError with `error` "Instructions are required";
   for a TriggerAutoSave it SHALL post nothing
-
-### Requirement: Auto-save interval
-
-`EditorClient` SHALL dispatch an auto-save, once the application has loaded and has been
-saved at least once — it existed on load, or a save has succeeded in this session — every
-`AUTO_SAVE_INTERVAL_MS` (30 000 ms, `src/constants/editor.ts`) while it is mounted. The
-interval auto-save SHALL NOT ignore the dirty state, so it SHALL save only a dirty form (see
-"Save trigger gating"). For an application that did not exist on load, the interval SHALL
-start after the first successful save.
-
-#### Scenario: Dirty form is auto-saved
-
-- **WHEN** an existing application is open and the form is dirty when a 30-second interval tick fires
-- **THEN** QuickApps SHALL save it as an auto-save and post AutoSaveComplete on success
-
-#### Scenario: New application is not auto-saved before its first save
-
-- **WHEN** the load answered `404` and the user edits the form without a manual save
-- **THEN** QuickApps SHALL NOT start the auto-save interval
-
-#### Scenario: Interval starts after the first save
-
-- **WHEN** the load answered `404` and a manual save succeeds
-- **THEN** QuickApps SHALL dispatch an auto-save every 30 seconds from then on
 
 ### Requirement: Save request
 
@@ -530,8 +511,7 @@ host (envelope and targeting per `host-integration`):
   be sent. The resolution lives in `getChatApiErrorMessage` (`src/utils/chat-api-error.ts`).
 
 A successful save of either kind SHALL mark the application as saved (`hasSavedOnce`), which
-enables TriggerAutoSave and the auto-save interval for an application that did not exist on
-load.
+enables TriggerAutoSave for an application that did not exist on load.
 
 #### Scenario: Manual save succeeds
 
