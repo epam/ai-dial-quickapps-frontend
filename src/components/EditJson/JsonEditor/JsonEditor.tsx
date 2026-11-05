@@ -3,9 +3,9 @@ import '@/monaco-setup';
 
 import { Editor, type Monaco } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
-import { type FC, useCallback } from 'react';
+import { type FC, useCallback, useEffect, useRef, useState } from 'react';
 
-import type { EditorThemes } from '@epam/ai-dial-ui-kit';
+import { mergeClasses, Spinner, type EditorThemes } from '@epam/ai-dial-ui-kit';
 
 export interface JsonEditorProps {
   value?: string;
@@ -26,6 +26,33 @@ const JsonEditor: FC<JsonEditorProps> = ({
   onChange,
   options,
 }) => {
+  const [isMounted, setIsMounted] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+  const frameRef = useRef<number | undefined>(undefined);
+
+  // `onMount` fires when Monaco has created the editor, but its first paint is still unstyled:
+  // the font is not measured and the injected token/cursor styles have not applied, so the
+  // lines show glued into one for a moment. Keep the editor invisible until the fonts are
+  // ready and two frames have painted.
+  useEffect(() => {
+    if (!isMounted) return;
+    let isCancelled = false;
+    const reveal = async () => {
+      await document.fonts?.ready;
+      if (isCancelled) return;
+      frameRef.current = requestAnimationFrame(() => {
+        frameRef.current = requestAnimationFrame(() => setIsReady(true));
+      });
+    };
+    void reveal();
+    return () => {
+      isCancelled = true;
+      if (frameRef.current != null) cancelAnimationFrame(frameRef.current);
+    };
+  }, [isMounted]);
+
+  const handleMount = useCallback(() => setIsMounted(true), []);
+
   const handleBeforeMount = useCallback(
     (monaco: Monaco) => {
       monaco.editor.defineTheme(currentTheme, themesConfig[currentTheme]);
@@ -49,32 +76,42 @@ const JsonEditor: FC<JsonEditorProps> = ({
   );
 
   return (
-    <Editor
-      beforeMount={handleBeforeMount}
-      height="100%"
-      defaultLanguage="json"
-      value={value}
-      onChange={onChange}
-      theme={currentTheme}
-      options={{
-        minimap: { enabled: false },
-        formatOnType: true,
-        formatOnPaste: true,
-        selectOnLineNumbers: false,
-        automaticLayout: true,
-        scrollBeyondLastLine: false,
-        wordWrap: 'on',
-        smoothScrolling: true,
-        stickyScroll: { enabled: false },
-        overviewRulerLanes: 0,
-        scrollbar: {
-          horizontal: 'hidden',
-          verticalScrollbarSize: 4,
-          verticalSliderSize: 4,
-        },
-        ...options,
-      }}
-    />
+    <div className="relative h-full">
+      {!isReady && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center">
+          <Spinner fullWidth />
+        </div>
+      )}
+      <div className={mergeClasses('h-full', !isReady && 'invisible')}>
+        <Editor
+          onMount={handleMount}
+          beforeMount={handleBeforeMount}
+          height="100%"
+          defaultLanguage="json"
+          value={value}
+          onChange={onChange}
+          theme={currentTheme}
+          options={{
+            minimap: { enabled: false },
+            formatOnType: true,
+            formatOnPaste: true,
+            selectOnLineNumbers: false,
+            automaticLayout: true,
+            scrollBeyondLastLine: false,
+            wordWrap: 'on',
+            smoothScrolling: true,
+            stickyScroll: { enabled: false },
+            overviewRulerLanes: 0,
+            scrollbar: {
+              horizontal: 'hidden',
+              verticalScrollbarSize: 4,
+              verticalSliderSize: 4,
+            },
+            ...options,
+          }}
+        />
+      </div>
+    </div>
   );
 };
 
