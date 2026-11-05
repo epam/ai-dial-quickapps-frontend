@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { setupTestRoot } from '@/test-utils/test-root';
 
-import { AUTO_SAVE_INTERVAL_MS, DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
+import { DIAL_EDITOR_TRIGGER_SAVE_EVENT } from '@/constants/editor';
 import { AppsEditorI18nKeys, BasicI18nKeys } from '@/constants/translation-keys';
 import type { QuickApp2AllEntitiesMap } from '@/components/QuickApp2Form/QuickApp2Form';
 import type { QuickApp2Form } from '@/types/quick-app-form';
@@ -539,42 +539,15 @@ describe('EditorClient saved application', () => {
   });
 });
 
-describe('EditorClient auto-save interval', () => {
-  it('dispatches an auto-save every interval for an application saved before', async () => {
+describe('EditorClient auto-save', () => {
+  it('does not dispatch a save on its own, however long the form stays open', async () => {
     vi.useFakeTimers();
     await renderEditor();
 
     await act(async () => {
-      vi.advanceTimersByTime(AUTO_SAVE_INTERVAL_MS - 1);
+      vi.advanceTimersByTime(10 * 60 * 1000);
     });
     expect(triggerSaveDetails).toEqual([]);
-
-    await act(async () => {
-      vi.advanceTimersByTime(1);
-    });
-    expect(triggerSaveDetails).toEqual([{ isAutoSave: true }]);
-
-    await act(async () => {
-      vi.advanceTimersByTime(AUTO_SAVE_INTERVAL_MS);
-    });
-    expect(triggerSaveDetails).toHaveLength(2);
-  });
-
-  it('starts the interval for a new application only after the first successful save', async () => {
-    vi.useFakeTimers();
-    mocks.fetchDialApp.mockResolvedValue(null);
-    await renderEditor();
-
-    await act(async () => {
-      vi.advanceTimersByTime(AUTO_SAVE_INTERVAL_MS * 2);
-    });
-    expect(triggerSaveDetails).toEqual([]);
-
-    await saveFromForm(false);
-    await act(async () => {
-      vi.advanceTimersByTime(AUTO_SAVE_INTERVAL_MS);
-    });
-    expect(triggerSaveDetails).toEqual([{ isAutoSave: true }]);
   });
 });
 

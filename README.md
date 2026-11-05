@@ -293,7 +293,7 @@ editorFrame.contentWindow.postMessage({ type: 'TRIGGER_SAVE' }, editorOrigin);
 | `TRIGGER_AUTO_SAVE` | `{ ignoreDirty?: boolean }`                                                                                                                     | Triggers an auto-save                                                                                                                                                                                                                                                                                                         |
 | `RESET`             | —                                                                                                                                               | Remounts the form with the values loaded when the editor opened; it does not refetch the app                                                                                                                                                                                                                                  |
 
-In addition to host-triggered `TRIGGER_AUTO_SAVE` messages, the editor auto-saves itself on a 30-second interval while mounted, once the app has been saved at least once, and only when the form is dirty — no host action is required. Auto-saves (host-triggered or not) are skipped until that first save, and an invalid form is not saved; the `application_editing` spec lists when a save is skipped.
+The editor saves only when the host asks: `TRIGGER_SAVE`, or `TRIGGER_AUTO_SAVE`, which is skipped when the form is clean (unless `ignoreDirty`) and until the app has been saved once, and an invalid form is not saved; the `application_editing` spec lists when a save is skipped.
 
 **Iframe → host**
 
