@@ -139,7 +139,10 @@ const values = getQuickApp2FormData(
 const document = buildEditJsonDocument(values, context);
 
 const downloadTextFile = vi.hoisted(() => vi.fn());
-vi.mock('@/utils/file-download', () => ({ downloadTextFile }));
+vi.mock('@/utils/file-download', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/utils/file-download')>()),
+  downloadTextFile,
+}));
 
 const dom = setupTestRoot();
 
@@ -268,9 +271,28 @@ describe('EditJsonPopup', () => {
     expect(getButton(ButtonsI18nKeys.Copied, dom.container)).toBeTruthy();
   });
 
+  it('falls back to execCommand when the async clipboard is blocked', async () => {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: vi.fn().mockRejectedValue(new Error('blocked by policy')) },
+      configurable: true,
+    });
+    const execCommand = vi.fn().mockReturnValue(true);
+    Object.defineProperty(globalThis.document, 'execCommand', { value: execCommand, configurable: true });
+    await renderPopup();
+
+    await act(async () => click(getButton(ChatI18nKeys.CopyCode, dom.container)));
+
+    expect(execCommand).toHaveBeenCalledWith('copy');
+    expect(getButton(ButtonsI18nKeys.Copied, dom.container)).toBeTruthy();
+  });
+
   it('keeps working when the clipboard is unavailable', async () => {
     Object.defineProperty(navigator, 'clipboard', {
       value: { writeText: vi.fn().mockRejectedValue(new Error('denied')) },
+      configurable: true,
+    });
+    Object.defineProperty(globalThis.document, 'execCommand', {
+      value: vi.fn().mockReturnValue(false),
       configurable: true,
     });
     await renderPopup();
