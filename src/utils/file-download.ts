@@ -105,3 +105,32 @@ export const triggerBrowserDownload = async (
   const blob = await response.blob();
   triggerBlobDownload(blob, filename);
 };
+
+// `navigator.clipboard` is blocked inside a cross-origin iframe unless the host delegates
+// `clipboard-write` to it; the legacy `execCommand('copy')` path has no such policy.
+const copyTextWithExecCommand = (text: string): boolean => {
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.setAttribute('readonly', '');
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  try {
+    textarea.select();
+    return document.execCommand('copy');
+  } catch {
+    return false;
+  } finally {
+    textarea.remove();
+  }
+};
+
+/** Copies `text` to the clipboard; resolves to whether it worked. Never throws. */
+export const copyTextToClipboard = async (text: string): Promise<boolean> => {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return copyTextWithExecCommand(text);
+  }
+};
