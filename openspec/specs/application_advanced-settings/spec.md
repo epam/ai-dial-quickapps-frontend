@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Defines the content of the Quick App editor's Advanced Settings popup (opened from the Settings row in Configuration, see `application_editor-layout`): the orchestrator Temperature slider with its value input, the max attachments input, the Time awareness switch, the Built-in file tools switch and the Allow orchestrator to process files switch, the feature-flagged Add attachment and Web fetch switches (Code Interpreter is a Settings-row switch in the Configuration column, not in the popup), how the popup edits a local draft and applies it to the editor form state (`useQuickApp2Form`: `temperature`, `maxInputAttachments`, `timestamp`, `fileTools`, `processLargeFiles`, `addAttachment`, `webFetch`) on Save, validation, and how the values load from and save through the existing application update. No context or chat-api endpoint of its own.
+Defines the content of the Quick App editor's Advanced Settings popup (opened from the Settings row in Configuration, see `application_editor-layout`): the orchestrator Temperature slider with its value input, the max attachments input, the Time awareness switch and the Allow orchestrator to process files switch, the feature-flagged Add attachment and Web fetch switches (Code Interpreter is a Settings-row switch in the Configuration column, not in the popup), how the popup edits a local draft and applies it to the editor form state (`useQuickApp2Form`: `temperature`, `maxInputAttachments`, `timestamp`, `processLargeFiles`, `addAttachment`, `webFetch`) on Save, validation, and how the values load from and save through the existing application update. No context or chat-api endpoint of its own.
 
 ## Requirements
 

@@ -183,7 +183,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
       temperature: values.temperature,
       maxInputAttachments: values.maxInputAttachments,
       timestamp: values.timestamp,
-      fileTools: values.fileTools,
       processLargeFiles: values.processLargeFiles,
       addAttachment: values.addAttachment,
       webFetch: values.webFetch,
@@ -191,7 +190,6 @@ export const QuickApp2Form: FC<QuickApp2FormProps> = ({
     [
       values.addAttachment,
       values.webFetch,
-      values.fileTools,
       values.maxInputAttachments,
       values.processLargeFiles,
       values.temperature,

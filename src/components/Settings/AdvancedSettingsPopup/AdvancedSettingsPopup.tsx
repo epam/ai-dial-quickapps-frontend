@@ -96,11 +96,6 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
     [],
   );
 
-  const handleFileToolsChange = useCallback(
-    (fileTools: boolean) => setDraft((current) => ({ ...current, fileTools })),
-    [],
-  );
-
   const handleProcessLargeFilesChange = useCallback(
     (processLargeFiles: boolean) => setDraft((current) => ({ ...current, processLargeFiles })),
     [],
@@ -208,13 +203,6 @@ const AdvancedSettingsPopup: FC<AdvancedSettingsPopupProps> = ({
           onChange={handleTimestampChange}
           labelProps={{ label: t(ApplicationEditorI18nKeys.AdvancedSettingsTimeAwareness) }}
           caption={t(ApplicationEditorI18nKeys.AdvancedSettingsTimeAwarenessDescription)}
-        />
-
-        <Switch
-          isOn={draft.fileTools}
-          onChange={handleFileToolsChange}
-          labelProps={{ label: t(ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileTools) }}
-          caption={t(ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileToolsDescription)}
         />
 
         {isProcessLargeFilesAvailable && (

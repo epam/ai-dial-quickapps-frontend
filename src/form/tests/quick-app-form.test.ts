@@ -31,7 +31,6 @@ const createForm = (overrides: Partial<QuickApp2Form> = {}): QuickApp2Form => ({
   agentSkills: [],
   timestamp: true,
   processLargeFiles: false,
-  fileTools: false,
   addAttachment: false,
   webFetch: false,
   ...overrides,
@@ -347,7 +346,6 @@ describe('getQuickApp2FormData', () => {
       autoSubmit: true,
       timestamp: true,
       processLargeFiles: true,
-      fileTools: true,
       addAttachment: true,
       webFetch: true,
     });
@@ -661,28 +659,26 @@ describe('advanced settings', () => {
     expect(isValidMaxInputAttachments(2, true)).toBe(true);
   });
 
-  it('defaults time awareness and built-in file tools to on for a new app', () => {
+  it('defaults time awareness to on for a new app', () => {
     const data = getQuickApp2FormData(undefined, ['model-1'], ['model-1'], 'model-1');
 
     expect(data.timestamp).toBe(true);
-    expect(data.fileTools).toBe(true);
     expect(data.maxInputAttachments).toBeUndefined();
   });
 
-  it('saves time awareness and built-in file tools as features when on', () => {
-    const features = buildConfig({ timestamp: true, fileTools: true }).features;
+  it('saves time awareness as a feature when on and never writes dial_files', () => {
+    const features = buildConfig({ timestamp: true }).features;
 
     expect(features?.timestamp).toEqual({ injection_strategy: 'tool_call' });
-    expect(features?.dial_files).toEqual({});
+    expect(features).not.toHaveProperty('dial_files');
   });
 
   it('saves null features when off and keeps other existing features', () => {
     const extraConfig = { features: { custom_feature: { enabled: true } } };
-    const features = buildConfig({ timestamp: false, fileTools: false }, {}, extraConfig)
+    const features = buildConfig({ timestamp: false }, {}, extraConfig)
       .features as Record<string, unknown>;
 
     expect(features.timestamp).toBeNull();
-    expect(features.dial_files).toBeNull();
     expect(features.custom_feature).toEqual({ enabled: true });
   });
 });

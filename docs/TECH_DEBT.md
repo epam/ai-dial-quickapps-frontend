@@ -280,7 +280,7 @@ Update this matrix as each capability is explored, specified, tested, and checke
 ### Advanced settings
 
 - src/components/Settings/** (the Advanced Settings popup; the old src/components/AdvancedSettings/** section was removed)
-- **Spec written** (`openspec/specs/application_advanced-settings`, from change `populate-advanced-settings-popup`): max attachments, Time awareness and Built-in file tools in the popup; from change `move-model-controls-to-advanced-settings`, also the orchestrator Temperature slider and Allow orchestrator to process files switch.
+- **Spec written** (`openspec/specs/application_advanced-settings`, from change `populate-advanced-settings-popup`): max attachments and Time awareness in the popup; from change `move-model-controls-to-advanced-settings`, also the orchestrator Temperature slider and Allow orchestrator to process files switch.
 
 ### Conversation starters
 

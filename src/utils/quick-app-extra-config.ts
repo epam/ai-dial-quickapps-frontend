@@ -28,7 +28,6 @@ const FORM_OWNED_PATHS = [
   'conversation_starters.auto_submit',
   'conversation_starters.starters',
   'features.timestamp',
-  'features.dial_files',
   'features.representation_tooling',
   'features.web_fetch',
 ];

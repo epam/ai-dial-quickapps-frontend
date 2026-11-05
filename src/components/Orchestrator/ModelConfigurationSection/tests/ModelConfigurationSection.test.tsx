@@ -71,7 +71,6 @@ const TestForm = ({ isProcessLargeFilesAvailable = true }: TestFormProps) => (
       temperature: 0.5,
       maxInputAttachments: undefined,
       timestamp: true,
-      fileTools: false,
       processLargeFiles: false,
       addAttachment: false,
       webFetch: false,

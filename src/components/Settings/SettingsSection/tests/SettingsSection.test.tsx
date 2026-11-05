@@ -41,9 +41,9 @@ const MockPopup = ({
       <button
         type="button"
         role="switch"
-        aria-label={ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileTools}
-        aria-checked={draft.fileTools}
-        onClick={() => setDraft({ ...draft, fileTools: !draft.fileTools })}
+        aria-label={ApplicationEditorI18nKeys.AdvancedSettingsTimeAwareness}
+        aria-checked={draft.timestamp}
+        onClick={() => setDraft({ ...draft, timestamp: !draft.timestamp })}
       />
       <button type="button" onClick={onClose}>
         Close popup
@@ -71,7 +71,6 @@ const advancedSettings: AdvancedSettingsValues = {
   temperature: 0.5,
   maxInputAttachments: 50,
   timestamp: true,
-  fileTools: false,
   processLargeFiles: false,
   addAttachment: false,
   webFetch: false,
@@ -125,14 +124,14 @@ describe('SettingsSection', () => {
     renderSection();
 
     click(getAdvancedButton());
-    const fileToolsSwitch = () =>
+    const timeAwarenessSwitch = () =>
       dom.container.querySelector('[role="switch"]') as HTMLButtonElement;
-    click(fileToolsSwitch());
-    expect(fileToolsSwitch().getAttribute('aria-checked')).toBe('true');
+    click(timeAwarenessSwitch());
+    expect(timeAwarenessSwitch().getAttribute('aria-checked')).toBe('false');
     click(getButton('Close popup'));
 
     click(getAdvancedButton());
-    expect(fileToolsSwitch().getAttribute('aria-checked')).toBe('false');
+    expect(timeAwarenessSwitch().getAttribute('aria-checked')).toBe('true');
   });
 
   it('passes saved popup values to the form', () => {
@@ -143,7 +142,7 @@ describe('SettingsSection', () => {
     click(dom.container.querySelector('[role="switch"]'));
     click(getButton('Save popup'));
 
-    expect(onAdvancedSettingsSave).toHaveBeenCalledWith({ ...advancedSettings, fileTools: true });
+    expect(onAdvancedSettingsSave).toHaveBeenCalledWith({ ...advancedSettings, timestamp: !advancedSettings.timestamp });
   });
 
   it('forwards temperature and process-files availability to the popup', () => {

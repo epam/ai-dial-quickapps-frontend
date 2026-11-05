@@ -3,7 +3,6 @@ export interface AdvancedSettingsValues {
   temperature: number;
   maxInputAttachments?: number | '';
   timestamp: boolean;
-  fileTools: boolean;
   processLargeFiles: boolean;
   addAttachment: boolean;
   webFetch: boolean;

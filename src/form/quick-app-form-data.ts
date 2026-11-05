@@ -113,8 +113,6 @@ export const getQuickApp2FormData = (
     'attachment_strategy' in (appProperties?.orchestrator ?? {})
       ? !!appProperties?.orchestrator?.attachment_strategy
       : true;
-  const fileTools =
-    'dial_files' in (appProperties?.features ?? {}) ? !!appProperties?.features?.dial_files : true;
   const addAttachment =
     'representation_tooling' in (appProperties?.features ?? {})
       ? !!appProperties?.features?.representation_tooling?.add_attachment
@@ -166,7 +164,6 @@ export const getQuickApp2FormData = (
       .map((s) => decodeApiUrl(s.url)),
     timestamp,
     processLargeFiles,
-    fileTools,
     addAttachment,
     webFetch,
     extraConfig: getQuickApp2ExtraConfig(appProperties),

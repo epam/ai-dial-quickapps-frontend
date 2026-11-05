@@ -64,7 +64,6 @@ export const QuickApp2Schema = z
     agentSkills: z.array(z.string()),
     timestamp: z.boolean(),
     processLargeFiles: z.boolean(),
-    fileTools: z.boolean(),
     addAttachment: z.boolean(),
     webFetch: z.boolean(),
     // Form-only: the stored config without the leaves this form owns (see
