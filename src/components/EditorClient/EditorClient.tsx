@@ -20,7 +20,6 @@ import {
   QuickApp2Form,
   type QuickApp2AllEntitiesMap,
 } from '@/components/QuickApp2Form/QuickApp2Form';
-import { AUTO_SAVE_INTERVAL_MS } from '@/constants/editor';
 import { AppsEditorI18nKeys } from '@/constants/translation-keys';
 import {
   InboundMessageType,
@@ -178,16 +177,6 @@ const EditorClient = ({ settings, onReadyToSave }: EditorClientProps) => {
       window.removeEventListener('message', handleMessage);
     };
   }, []);
-
-  useEffect(() => {
-    if (!appState || !hasSavedOnce) return;
-
-    const intervalId = window.setInterval(() => {
-      dispatchTriggerSave({ isAutoSave: true });
-    }, AUTO_SAVE_INTERVAL_MS);
-
-    return () => window.clearInterval(intervalId);
-  }, [appState, hasSavedOnce]);
 
   const formRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
