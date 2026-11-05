@@ -16,7 +16,7 @@ import { useThemeContext } from '@/context/ThemeContext';
 import type { QuickApp2Form } from '@/types/quick-app-form';
 import { ThemeId } from '@/types/theme';
 import { parseEditJsonDocument, type EditJsonContext } from '@/utils/edit-json';
-import { downloadTextFile } from '@/utils/file-download';
+import { copyTextToClipboard, downloadTextFile } from '@/utils/file-download';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -74,12 +74,9 @@ const EditJsonPopup: FC<EditJsonPopupProps> = ({ document, context, onSave, onCl
   }, [isCopied]);
 
   const handleCopy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(draft);
-      setIsCopied(true);
-    } catch {
-      // The clipboard can be unavailable (insecure context, denied permission): nothing to copy to.
-    }
+    // The clipboard can be unavailable (insecure context, iframe without clipboard-write): then
+    // nothing is copied and no check icon shows.
+    if (await copyTextToClipboard(draft)) setIsCopied(true);
   }, [draft]);
 
   const handleDownload = useCallback(

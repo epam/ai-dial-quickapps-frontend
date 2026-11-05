@@ -65,6 +65,7 @@ const JsonEditor: FC<JsonEditorProps> = ({
         scrollBeyondLastLine: false,
         wordWrap: 'on',
         smoothScrolling: true,
+        stickyScroll: { enabled: false },
         overviewRulerLanes: 0,
         scrollbar: {
           horizontal: 'hidden',
