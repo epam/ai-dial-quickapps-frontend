@@ -311,6 +311,8 @@ const FileManagerModal: FC<FileManagerModalProps> = ({ isOpen, initialFileIds, o
   const toolbarOptions = useMemo(
     () => ({
       showHiddenFilesToggle: true,
+      // The footer owns the primary action, so the "Add" button is neutral (gray).
+      newButtonVariant: ButtonVariant.Neutral,
       showHiddenFilesLabel: t(DialFileManagerI18nKeys.ShowHiddenFiles),
       hideHiddenFilesLabel: t(DialFileManagerI18nKeys.HideHiddenFiles),
       // Unset, the library shows its English "Add" / "More actions" defaults.

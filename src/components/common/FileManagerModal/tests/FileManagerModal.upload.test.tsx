@@ -1,4 +1,4 @@
-import { NotificationVariant } from '@epam/ai-dial-ui-kit';
+import { ButtonVariant, NotificationVariant } from '@epam/ai-dial-ui-kit';
 import { act } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -197,6 +197,14 @@ describe('FileManagerModal toolbar', () => {
     expect(fileManager.props?.toolbarOptions).toMatchObject({
       newButtonLabel: ButtonsI18nKeys.Add,
       moreActionsLabel: ConversationPanelI18nKeys.ActionsLabel,
+    });
+  });
+
+  it('renders the Add button with the neutral variant', () => {
+    renderWith(null);
+
+    expect(fileManager.props?.toolbarOptions).toMatchObject({
+      newButtonVariant: ButtonVariant.Neutral,
     });
   });
 });
