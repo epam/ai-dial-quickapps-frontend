@@ -619,11 +619,11 @@ configuration.
 | `tool_sets`             | MCP toolsets, then agents, then one `dial-deployment-tool-set` entry (always present, possibly with no tools), then inline toolsets, then the code interpreter when on                                                                      | `toolsets_selection`, `agents_selection`, `application_advanced-settings` (code interpreter)               |
 | `conversation_starters` | the starters object, or `null` when there are no non-blank starters                                                                                                                                                                         | `application_conversation-starters`                                                                        |
 | `skills`                | `[{ type: "dial-skill", url }]` in attached order; the key SHALL be omitted when no skill is attached                                                                                                                                       | `skills_catalog`                                                                                           |
-| `features`              | the loaded `features` object with `timestamp`, `dial_files`, `representation_tooling` and `web_fetch` set                                                                                                                                   | `application_advanced-settings`                                                                            |
+| `features`              | the loaded `features` object with `timestamp`, `representation_tooling` and `web_fetch` set                                                                                                                                                 | `application_advanced-settings`                                                                            |
 
 `orchestrator.system_prompt.content` SHALL be the instructions exactly as typed, whitespace
 included, and `orchestrator.system_prompt.variables` SHALL be the loaded
-`system_prompt.variables`, or `{}` when none were loaded. Keys inside the loaded
+`system_prompt.variables`, or `{}` when none were loaded. The editor SHALL NOT write `features.dial_files`: a new application is saved without it, and a stored value is saved as loaded. Keys inside the loaded
 `orchestrator` and `features` objects that the editor does not set SHALL be kept, including
 keys nested inside `orchestrator.deployment` (such as `name`, and `parameters` keys other than
 `temperature`) and inside `orchestrator.system_prompt`.
@@ -639,6 +639,16 @@ extra keys on a starter, on a skill or on a context, and `skills` and `contexts`
   `features.beta: {}` and the user saves
 - **THEN** the saved `orchestrator.custom_flag` SHALL be `true` and `features.beta` SHALL be
   `{}`
+
+#### Scenario: Stored dial_files is saved as loaded
+
+- **WHEN** the loaded `features.dial_files` is `{}`, or `{ "enabled_tools": ["read_lines"] }`, or `null`, and the user changes any other setting and saves
+- **THEN** the saved `features.dial_files` SHALL be exactly the loaded value
+
+#### Scenario: New application has no dial_files
+
+- **WHEN** an application whose loaded `features` has no `dial_files` key is saved
+- **THEN** the saved `features` SHALL have no `dial_files` key
 
 #### Scenario: No skills attached
 
@@ -700,15 +710,15 @@ it SHALL be persisted only when the application is saved. A default of the wrong
 
 The supported properties are:
 
-| Schema property (after resolution) | Form value |
-|---|---|
-| `orchestrator.deployment.default.deployment_id` | `model` |
-| `orchestrator.deployment` → `parameters` → `temperature.default` | `temperature` |
-| `conversation_starters` → `intro_text.default` | `introText` |
-| `conversation_starters` → `auto_submit.default` | `autoSubmit` |
-| `conversation_starters` → `chat_message_input_disabled.default` | `chatMessageInputDisabled` |
-| `features.representation_tooling` → `add_attachment.default` | `addAttachment` |
-| `features.web_fetch` → `enabled.default` | `webFetch` |
+| Schema property (after resolution)                               | Form value                 |
+| ---------------------------------------------------------------- | -------------------------- |
+| `orchestrator.deployment.default.deployment_id`                  | `model`                    |
+| `orchestrator.deployment` → `parameters` → `temperature.default` | `temperature`              |
+| `conversation_starters` → `intro_text.default`                   | `introText`                |
+| `conversation_starters` → `auto_submit.default`                  | `autoSubmit`               |
+| `conversation_starters` → `chat_message_input_disabled.default`  | `chatMessageInputDisabled` |
+| `features.representation_tooling` → `add_attachment.default`     | `addAttachment`            |
+| `features.web_fetch` → `enabled.default`                         | `webFetch`                 |
 
 Conversation starters defaults SHALL apply only when the application has no stored `conversation_starters`
 object: an object that is stored without `intro_text` means the intro text was left empty, and SHALL be read as

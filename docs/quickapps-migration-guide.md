@@ -373,7 +373,7 @@ the Settings row, which edits a draft and applies it on **Save**:
 
 - Temperature slider with a value input, shown only for models that support it
 - Max attachments
-- Time awareness and Built-in file tools switches
+- Time awareness switch
 - Allow orchestrator to process files, when the model accepts attachments
 - Code interpreter, Add attachment and Web fetch, each only when its
   `CUSTOM_CLIENT_VARIABLES` flag is `true`

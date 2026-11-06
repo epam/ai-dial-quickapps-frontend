@@ -152,7 +152,7 @@ vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationS
       <button
         type="button"
         onClick={() =>
-          onAdvancedSettingsSave({ ...advancedSettings, fileTools: true, maxInputAttachments: 5 })
+          onAdvancedSettingsSave({ ...advancedSettings, maxInputAttachments: 5 })
         }
       >
         Save changed advanced settings
@@ -465,7 +465,7 @@ describe('QuickApp2Form observable behavior', () => {
 
     await submitForm();
     expect(onSave).toHaveBeenLastCalledWith(
-      expect.objectContaining({ fileTools: true, maxInputAttachments: 5, timestamp: true }),
+      expect.objectContaining({ maxInputAttachments: 5, timestamp: true }),
       expect.anything(),
       false,
       undefined,

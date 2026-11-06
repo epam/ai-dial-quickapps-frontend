@@ -42,7 +42,6 @@ export interface QuickApp2Form {
   agentSkills: string[];
   timestamp: boolean;
   processLargeFiles: boolean;
-  fileTools: boolean;
   addAttachment: boolean;
   webFetch: boolean;
   /**

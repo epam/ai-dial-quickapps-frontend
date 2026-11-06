@@ -300,8 +300,6 @@ export enum ApplicationEditorI18nKeys {
   AdvancedSettingsMaxAttachmentsInvalid = 'applicationEditor.advancedSettings.maxAttachmentsInvalid',
   AdvancedSettingsMaxAttachmentsRequired = 'applicationEditor.advancedSettings.maxAttachmentsRequired',
   AdvancedSettingsTimeAwarenessDescription = 'applicationEditor.advancedSettings.timeAwarenessDescription',
-  AdvancedSettingsBuiltInFileTools = 'applicationEditor.advancedSettings.builtInFileTools',
-  AdvancedSettingsBuiltInFileToolsDescription = 'applicationEditor.advancedSettings.builtInFileToolsDescription',
   OrchestratorSelectModel = 'applicationEditor.orchestrator.selectModel',
   OrchestratorChangeModel = 'applicationEditor.orchestrator.changeModel',
   OrchestratorCatalogTitle = 'applicationEditor.orchestrator.catalogTitle',

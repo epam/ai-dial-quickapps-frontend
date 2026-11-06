@@ -154,7 +154,6 @@ export const buildQuickApp2Config = ({
     features: {
       ...extraFeatures,
       timestamp: timestampFeature,
-      dial_files: data.fileTools ? {} : null,
       representation_tooling: data.addAttachment ? REPRESENTATION_TOOLING_FEATURE_VALUE : null,
       web_fetch: data.webFetch ? WEB_FETCH_FEATURE_VALUE : null,
     },
