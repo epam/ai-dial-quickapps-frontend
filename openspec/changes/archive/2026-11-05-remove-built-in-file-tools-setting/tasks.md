@@ -11,7 +11,7 @@ tests; group 2 syncs the specs and docs.
   `src/form/tests/quick-app-form.test.ts` and `src/hooks/tests/use-quick-app2-form.test.tsx`
   pass, and a built config for a new app has no `features.dial_files` key.
 - [x] 1.2 Remove `'features.dial_files'` from `FORM_OWNED_PATHS` in
-  `src/utils/quick-app-extra-config.ts`. Add tests that `{}`, `{ tools: [...] }` and `null`
+  `src/utils/quick-app-extra-config.ts`. Add tests that `{}`, `{ enabled_tools: [...] }` and `null`
   stored values are saved unchanged and that a new app has no key. Verify:
   `src/form/tests/quick-app-form-extra-config.test.ts`, `src/utils/tests/edit-json.test.ts`,
   `src/utils/tests/edit-json-form-correlation.test.ts`.

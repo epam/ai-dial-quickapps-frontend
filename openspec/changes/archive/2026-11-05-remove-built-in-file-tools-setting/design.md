@@ -26,8 +26,9 @@ popup is built from the same split. See proposal.md for the motivation.
    and would diverge from what Edit JSON shows. A consequence is that `dial_files` now appears in
    Edit JSON as an extra, and a user edit there is saved as typed.
 2. **Delete the `dial_files` line from the builder** instead of writing `undefined`, so the key is
-   absent in the request body for new apps. An explicit `null` would tell the backend to disable
-   the tools, which is not the intent.
+   absent in the request body for new apps. Not writing the key leaves the backend default
+   (all tools) in force. An explicit `null` is not an "off" either: on backend #710 it resolves to the
+   same default, so writing it would add nothing.
 3. **Delete the i18n keys**, not deprecate them: the keys have no other consumer, and the repo's
    "no duplicate/unused keys" convention applies.
 4. **Spec overlap:** the in-flight change `keep-translations-on-save-without-general` also modifies

@@ -94,7 +94,7 @@ describe('split and compose of the stored config', () => {
     expect(at('conversation_starters')).toEqual({ custom_group_key: 1 });
   });
 
-  it.each([{}, { tools: ['read_file'] }, null])(
+  it.each([{}, { enabled_tools: ['read_lines'] }, null])(
     'saves a stored dial_files of %j as loaded',
     (stored) => {
       const config = {

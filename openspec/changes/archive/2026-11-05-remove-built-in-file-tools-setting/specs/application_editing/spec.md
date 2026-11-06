@@ -39,7 +39,7 @@ extra keys on a starter, on a skill or on a context, and `skills` and `contexts`
 
 #### Scenario: Stored dial_files is saved as loaded
 
-- **WHEN** the loaded `features.dial_files` is `{}`, or `{ "tools": ["read_file"] }`, or `null`, and the user changes any other setting and saves
+- **WHEN** the loaded `features.dial_files` is `{}`, or `{ "enabled_tools": ["read_lines"] }`, or `null`, and the user changes any other setting and saves
 - **THEN** the saved `features.dial_files` SHALL be exactly the loaded value
 
 #### Scenario: New application has no dial_files

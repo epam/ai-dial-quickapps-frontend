@@ -92,8 +92,8 @@ The popup values SHALL be serialized by the editor's existing application save w
 
 #### Scenario: File tools setting is not owned by the editor
 
-- **WHEN** the loaded `features.dial_files` is `{ "tools": ["read_file"] }` and the user changes any popup value and saves
-- **THEN** `applicationProperties.features.dial_files` SHALL still be `{ "tools": ["read_file"] }`
+- **WHEN** the loaded `features.dial_files` is `{ "enabled_tools": ["read_lines"] }` and the user changes any popup value and saves
+- **THEN** `applicationProperties.features.dial_files` SHALL still be `{ "enabled_tools": ["read_lines"] }`
 - **WHEN** an application is created with default values and saved
 - **THEN** `applicationProperties.features` SHALL have no `dial_files` key
 
