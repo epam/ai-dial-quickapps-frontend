@@ -163,7 +163,6 @@ const initialValues: AdvancedSettingsValues = {
   temperature: 0.5,
   maxInputAttachments: 50,
   timestamp: true,
-  fileTools: false,
   processLargeFiles: true,
   addAttachment: false,
   webFetch: false,
@@ -225,18 +224,10 @@ describe('AdvancedSettingsPopup', () => {
         'aria-checked',
       ),
     ).toBe('true');
-    expect(
-      getSwitch(ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileTools).getAttribute(
-        'aria-checked',
-      ),
-    ).toBe('false');
 
     const body = dom.container.querySelector('[data-testid="body"]') as HTMLElement;
     expect(body.textContent).toContain(
       ApplicationEditorI18nKeys.AdvancedSettingsTimeAwarenessDescription,
-    );
-    expect(body.textContent).toContain(
-      ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileToolsDescription,
     );
     const controls = [...body.querySelectorAll('input, [role="switch"]')].map(
       (element) => element.getAttribute('aria-label') ?? 'max attachments',
@@ -244,7 +235,6 @@ describe('AdvancedSettingsPopup', () => {
     expect(controls).toEqual([
       'max attachments',
       ApplicationEditorI18nKeys.AdvancedSettingsTimeAwareness,
-      ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileTools,
     ]);
   });
 
@@ -273,7 +263,6 @@ describe('AdvancedSettingsPopup', () => {
   it('saves the edited draft and closes', () => {
     const { onSave, onClose } = renderPopup();
 
-    click(getSwitch(ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileTools));
     click(getSwitch(ApplicationEditorI18nKeys.AdvancedSettingsTimeAwareness));
     typeInto(getInputByLabel(ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachments), '10');
     click(getButton(ButtonsI18nKeys.Save));
@@ -282,7 +271,6 @@ describe('AdvancedSettingsPopup', () => {
       ...initialValues,
       maxInputAttachments: 10,
       timestamp: false,
-      fileTools: true,
     });
     expect(onClose).toHaveBeenCalledTimes(1);
   });
@@ -361,7 +349,7 @@ describe('AdvancedSettingsPopup', () => {
     (name) => {
       const { onSave, onClose } = renderPopup();
 
-      click(getSwitch(ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileTools));
+      click(getSwitch(ApplicationEditorI18nKeys.AdvancedSettingsTimeAwareness));
       click(getButton(name));
 
       expect(onSave).not.toHaveBeenCalled();
@@ -377,7 +365,6 @@ describe('AdvancedSettingsPopup', () => {
       ApplicationEditorI18nKeys.AdvancedSettingsTemperatureValue,
       'max attachments',
       ApplicationEditorI18nKeys.AdvancedSettingsTimeAwareness,
-      ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileTools,
       ApplicationEditorI18nKeys.AdvancedSettingsProcessFiles,
     ];
 
@@ -580,7 +567,6 @@ describe('AdvancedSettingsPopup', () => {
       );
       expect(switches).toEqual([
         ApplicationEditorI18nKeys.AdvancedSettingsTimeAwareness,
-        ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileTools,
         ApplicationEditorI18nKeys.AdvancedSettingsProcessFiles,
         ApplicationEditorI18nKeys.AdvancedSettingsAddAttachment,
         ApplicationEditorI18nKeys.AdvancedSettingsWebFetch,

@@ -90,8 +90,29 @@ describe('split and compose of the stored config', () => {
       seed: 7,
     });
     expect(at('orchestrator.system_prompt.content')).toBeUndefined();
-    expect(at('features')).toEqual({ stage_display: { mode: 'full' } });
+    expect(at('features')).toEqual({ dial_files: {}, stage_display: { mode: 'full' } });
     expect(at('conversation_starters')).toEqual({ custom_group_key: 1 });
+  });
+
+  it.each([{}, { enabled_tools: ['read_lines'] }, null])(
+    'saves a stored dial_files of %j as loaded',
+    (stored) => {
+      const config = {
+        ...STORED_CONFIG,
+        features: { ...STORED_CONFIG.features, dial_files: stored },
+      } as unknown as QuickApp2Config;
+
+      expect(get(compose(load(config)), 'features.dial_files')).toEqual(stored);
+    },
+  );
+
+  it('does not add dial_files when none is stored', () => {
+    const config = {
+      ...STORED_CONFIG,
+      features: { timestamp: { injection_strategy: 'tool_call' } },
+    } as unknown as QuickApp2Config;
+
+    expect(compose(load(config)).features).not.toHaveProperty('dial_files');
   });
 
   it('keeps other deployment parameters next to the temperature', () => {

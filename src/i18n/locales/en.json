@@ -291,9 +291,7 @@
       "maxAttachmentsPlaceholder": "Enter the maximum number of attachments",
       "maxAttachmentsInvalid": "Enter a whole number greater than 0",
       "maxAttachmentsRequired": "Maximum attachments amount is required",
-      "timeAwarenessDescription": "Gives the agent the current date and time, helping it understand references like \"today,\" deadlines, and schedules.",
-      "builtInFileTools": "Built-in file tools",
-      "builtInFileToolsDescription": "Lets the agent browse, search, read, and edit files within the app’s file context. Includes write access, so worth reviewing for agents handling sensitive files."
+      "timeAwarenessDescription": "Gives the agent the current date and time, helping it understand references like \"today,\" deadlines, and schedules."
     },
     "orchestrator": {
       "model": "Model",

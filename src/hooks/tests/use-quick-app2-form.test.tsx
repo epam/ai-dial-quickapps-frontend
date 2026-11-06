@@ -32,7 +32,6 @@ const createValues = (overrides: Partial<QuickApp2FormValues> = {}): QuickApp2Fo
   agentSkills: [],
   timestamp: true,
   processLargeFiles: false,
-  fileTools: false,
   addAttachment: false,
   webFetch: false,
   ...overrides,

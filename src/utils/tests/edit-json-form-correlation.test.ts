@@ -241,8 +241,6 @@ const REPRESENTATION: Record<
     expect(get(doc, 'features.timestamp')).toEqual(
       values.timestamp ? { injection_strategy: 'tool_call' } : null,
     ),
-  fileTools: (doc, values) =>
-    expect(get(doc, 'features.dial_files')).toEqual(values.fileTools ? {} : null),
   addAttachment: (doc, values) =>
     expect(get(doc, 'features.representation_tooling')).toEqual(
       values.addAttachment ? { add_attachment: true } : null,
@@ -315,7 +313,7 @@ describe('a new app', () => {
     expect(get(doc, 'orchestrator.deployment.deployment_id')).toBe('model-1');
     expect(get(doc, 'orchestrator.deployment.parameters.temperature')).toBe(0.5);
     expect(get(doc, 'features.timestamp')).toEqual({ injection_strategy: 'tool_call' });
-    expect(get(doc, 'features.dial_files')).toEqual({});
+    expect(get(doc, 'features')).not.toHaveProperty('dial_files');
     expect(doc.contexts).toEqual([]);
     expect(doc.skills).toBeUndefined();
     expect(doc.conversation_starters).toBeNull();
@@ -361,11 +359,6 @@ describe('editing the JSON of an app with everything filled in', () => {
       'timestamp',
       (doc: Doc) => set(doc, 'features.timestamp', null),
       (v: QuickApp2Form) => expect(v.timestamp).toBe(false),
-    ],
-    [
-      'file tools',
-      (doc: Doc) => set(doc, 'features.dial_files', null),
-      (v: QuickApp2Form) => expect(v.fileTools).toBe(false),
     ],
     [
       'add attachment',
