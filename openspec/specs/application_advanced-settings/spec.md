@@ -8,7 +8,7 @@ Defines the content of the Quick App editor's Advanced Settings popup (opened fr
 
 ### Requirement: Popup lists the Advanced Settings controls
 
-The Advanced Settings popup body SHALL render, in this order: the Temperature slider (when available, see "Temperature in the popup"), a max attachments number input, a Time awareness switch, a Built-in file tools switch, the Allow orchestrator to process files switch (when available, see "Allow orchestrator to process files in the popup"), and then the Add attachment and Web fetch switches (when enabled, see "Feature toggles in the popup (editable)"). Each control SHALL show its translated label, and each control except the Temperature slider SHALL show its translated helper text.
+The Advanced Settings popup body SHALL render, in this order: the Temperature slider (when available, see "Temperature in the popup"), a max attachments number input, a Time awareness switch, the Allow orchestrator to process files switch (when available, see "Allow orchestrator to process files in the popup"), and then the Add attachment and Web fetch switches (when enabled, see "Feature toggles in the popup (editable)"). Each control SHALL show its translated label, and each control except the Temperature slider SHALL show its translated helper text.
 
 #### Scenario: Controls and copy
 
@@ -16,15 +16,15 @@ The Advanced Settings popup body SHALL render, in this order: the Temperature sl
 - **THEN** it SHALL first show the Temperature slider labelled `ChatSettingsI18nKeys.TemperatureLabel`
 - **AND** a number input labelled with `ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachments` ("Maximum attachments amount user can add") and the hint `ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachmentsHint` ("Valid only for the cases when attachments enabled for the agent") below it, with the placeholder `ApplicationEditorI18nKeys.AdvancedSettingsMaxAttachmentsPlaceholder` ("Enter the maximum number of attachments") while empty
 - **AND** a switch labelled `ApplicationEditorI18nKeys.AdvancedSettingsTimeAwareness` ("Time awareness") with the description `ApplicationEditorI18nKeys.AdvancedSettingsTimeAwarenessDescription` ("Gives the agent the current date and time, helping it understand references like \"today,\" deadlines, and schedules.")
-- **AND** a switch labelled `ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileTools` ("Built-in file tools") with the description `ApplicationEditorI18nKeys.AdvancedSettingsBuiltInFileToolsDescription` ("Lets the agent browse, search, read, and edit files within the app's file context. Includes write access, so worth reviewing for agents handling sensitive files.")
 - **AND** a switch labelled `ApplicationEditorI18nKeys.AdvancedSettingsProcessFiles` with the description `ApplicationEditorI18nKeys.AdvancedSettingsProcessFilesDescription`
 - **AND** any enabled feature toggles after it, in the order Add attachment, Web fetch
+- **AND** no Built-in file tools switch SHALL be rendered
 - **AND** no visible string in the popup body SHALL be hardcoded in the component
 
 #### Scenario: Conditional controls absent
 
 - **WHEN** the popup opens for a loaded model with no temperature support and no `inputAttachmentTypes`, and no host feature setting is enabled
-- **THEN** the body SHALL show only the max attachments input, the Time awareness switch and the Built-in file tools switch, in that order
+- **THEN** the body SHALL show only the max attachments input and the Time awareness switch, in that order
 
 #### Scenario: Max attachments hint is informational
 
@@ -34,12 +34,12 @@ The Advanced Settings popup body SHALL render, in this order: the Temperature sl
 
 ### Requirement: Popup edits a draft seeded from the form
 
-Each time the popup opens it SHALL seed a local draft from the current Quick App form values `temperature`, `maxInputAttachments`, `timestamp`, `fileTools`, and `processLargeFiles`. Edits SHALL change only the draft until Save.
+Each time the popup opens it SHALL seed a local draft from the current Quick App form values `temperature`, `maxInputAttachments`, `timestamp`, and `processLargeFiles`. Edits SHALL change only the draft until Save.
 
 #### Scenario: Seeded from current values
 
-- **WHEN** the popup opens for an application with temperature `0.7`, Time awareness on, Built-in file tools off, process files on and max attachments 50, whose model supports temperature and accepts attachments
-- **THEN** the slider SHALL be at `0.7`, the input SHALL show `50`, the Time awareness switch SHALL be on, the Built-in file tools switch SHALL be off, and the process files switch SHALL be on
+- **WHEN** the popup opens for an application with temperature `0.7`, Time awareness on, process files on and max attachments 50, whose model supports temperature and accepts attachments
+- **THEN** the slider SHALL be at `0.7`, the input SHALL show `50`, the Time awareness switch SHALL be on, and the process files switch SHALL be on
 
 #### Scenario: Draft is discarded on dismissal
 
@@ -49,13 +49,13 @@ Each time the popup opens it SHALL seed a local draft from the current Quick App
 
 ### Requirement: Save applies the draft to the form
 
-Activating Save with a valid draft SHALL write `temperature`, `maxInputAttachments`, `timestamp`, `fileTools`, and `processLargeFiles` to the Quick App form in a single update and close the popup. Values of controls that were not rendered SHALL be written back unchanged. The form SHALL become dirty only if at least one value differs from its saved baseline. Save SHALL NOT call chat-api.
+Activating Save with a valid draft SHALL write `temperature`, `maxInputAttachments`, `timestamp`, and `processLargeFiles` to the Quick App form in a single update and close the popup. Values of controls that were not rendered SHALL be written back unchanged. The form SHALL become dirty only if at least one value differs from its saved baseline. Save SHALL NOT call chat-api.
 
 #### Scenario: Save changed values
 
-- **WHEN** a user turns Built-in file tools on, moves the temperature to `0.3`, and activates Save
+- **WHEN** a user turns Time awareness off, moves the temperature to `0.3`, and activates Save
 - **THEN** the popup SHALL close
-- **AND** the form values `fileTools` SHALL be `true` and `temperature` SHALL be `0.3`, and the editor SHALL report a dirty state
+- **AND** the form values `timestamp` SHALL be `false` and `temperature` SHALL be `0.3`, and the editor SHALL report a dirty state
 - **AND** no chat-api request SHALL be made until the editor's own save or auto-save runs
 
 #### Scenario: Save process files
@@ -96,17 +96,16 @@ The max attachments draft SHALL be a positive integer when attachments are enabl
 The popup values SHALL be serialized by the editor's existing application save without any change in shape, sent in the chat-api application update request (`@epam/ai-dial-chat-api-client` `updateApplicationBodyDto`):
 
 - `timestamp` → `application_properties.features.timestamp`
-- `fileTools` → `application_properties.features.dial_files` (defaults to `true` when the key is absent, as for a new application)
 - `maxInputAttachments` → the application's `maxInputAttachments`
 - `temperature` → `application_properties.orchestrator.deployment.parameters.temperature` (written from the form value when the model supports temperature). For any other model a stored `temperature` SHALL be kept as loaded and no temperature SHALL be added from the form default. Other keys of the loaded `deployment.parameters` (for example `top_p`, `seed`, `stop`, `max_tokens`) SHALL be kept as loaded; `parameters` is omitted only when there is nothing to write. While the selected model is not loaded yet, the loaded `parameters` SHALL be kept and a stored `temperature` SHALL follow the form value.
 - `processLargeFiles` → `application_properties.orchestrator.attachment_strategy` (only when the model accepts attachments)
 
 #### Scenario: Saved payload
 
-- **WHEN** the editor saves an application whose form holds `timestamp: true`, `fileTools: true`, `maxInputAttachments: 50`
+- **WHEN** the editor saves an application whose form holds `timestamp: true`, `maxInputAttachments: 50`
 - **THEN** the update body SHALL contain `maxInputAttachments: 50`
 - **AND** `applicationProperties.features.timestamp` SHALL be `{ "injection_strategy": "tool_call" }`
-- **AND** `applicationProperties.features.dial_files` SHALL be `{}`
+- **AND** `applicationProperties.features` SHALL have no `dial_files` key
 
 #### Scenario: Orchestrator payload
 
@@ -118,16 +117,23 @@ The popup values SHALL be serialized by the editor's existing application save w
 - **WHEN** the selected model does not accept attachments
 - **THEN** the save SHALL leave `orchestrator.attachment_strategy` as it was in the loaded configuration
 
+#### Scenario: File tools setting is not owned by the editor
+
+- **WHEN** the loaded `features.dial_files` is `{ "tools": ["read_file"] }` and the user changes any popup value and saves
+- **THEN** `applicationProperties.features.dial_files` SHALL still be `{ "tools": ["read_file"] }`
+- **WHEN** an application is created with default values and saved
+- **THEN** `applicationProperties.features` SHALL have no `dial_files` key
+
 #### Scenario: Switches off
 
-- **WHEN** the editor saves with `timestamp: false` and `fileTools: false`
-- **THEN** `applicationProperties.features.timestamp` and `applicationProperties.features.dial_files` SHALL both be `null`
+- **WHEN** the editor saves with `timestamp: false`
+- **THEN** `applicationProperties.features.timestamp` SHALL be `null`
 - **AND** other existing `features` keys SHALL be preserved
 
 #### Scenario: Defaults on load
 
-- **WHEN** an application is loaded whose `features` has no `timestamp` key and no `dial_files` key, with no `maxInputAttachments`, no `orchestrator.deployment.parameters.temperature` and no `orchestrator.attachment_strategy`
-- **THEN** the popup SHALL show the temperature at `0.5`, Time awareness on, Built-in file tools on, process files on (when shown), and an empty max attachments input
+- **WHEN** an application is loaded whose `features` has no `timestamp` key, with no `maxInputAttachments`, no `orchestrator.deployment.parameters.temperature` and no `orchestrator.attachment_strategy`
+- **THEN** the popup SHALL show the temperature at `0.5`, Time awareness on, process files on (when shown), and an empty max attachments input
 
 #### Scenario: Other deployment parameters are kept
 
@@ -156,7 +162,7 @@ The popup controls SHALL be keyboard-operable and named, and SHALL follow the do
 #### Scenario: Keyboard and names
 
 - **WHEN** a keyboard user tabs through the open popup with all controls shown
-- **THEN** focus SHALL reach the Temperature slider, the temperature value input, the max attachments input, the Time awareness switch, the Built-in file tools switch, the process files switch, then the footer actions, in that order
+- **THEN** focus SHALL reach the Temperature slider, the temperature value input, the max attachments input, the Time awareness switch, the process files switch, then the footer actions, in that order
 - **AND** the input SHALL have an accessible name from its label and an accessible description from its hint
 - **AND** each switch SHALL expose a switch role, its checked state, and an accessible name from its label
 
@@ -231,7 +237,7 @@ The Advanced Settings popup SHALL show the orchestrator attachment strategy as i
 #### Scenario: Shown only for models that accept attachments
 
 - **WHEN** the selected model has a non-empty `inputAttachmentTypes`
-- **THEN** the popup SHALL render the switch after the Built-in file tools switch
+- **THEN** the popup SHALL render the switch after the Time awareness switch
 - **WHEN** the selected model has no `inputAttachmentTypes`, or it is not loaded
 - **THEN** the popup SHALL NOT render the switch
 

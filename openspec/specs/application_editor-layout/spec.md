@@ -26,6 +26,7 @@ The editor SHALL present its primary content and Configuration areas as side-by-
 - **AND** Add-ons SHALL remain directly below Instructions in the primary content flow
 
 #### Scenario: Toggling a switch keeps the scroll position
+
 - **WHEN** the user has scrolled the editor and toggles a switch, such as Attachments
 - **THEN** the editor SHALL keep its scroll position and SHALL NOT shift the page
 - **AND** the editor document SHALL NOT grow taller than the editor's scroll container
@@ -140,6 +141,7 @@ The editor SHALL render an Add-ons section directly below Instructions. The sect
 - **AND** confirming the modal SHALL update the `agentSkills` value, or the corresponding entries of the `addOns` value, and close the modal
 
 #### Scenario: Selection modals on a narrow viewport
+
 - **WHEN** the Add skill, Add toolset, Add agent, Add knowledge base file or Change model modal opens in a viewport narrower than the `md` breakpoint (768px), as on a phone
 - **THEN** the modal SHALL fill the viewport edge to edge, from the top of the screen to the bottom, with no rounded corners
 - **AND** from the `md` breakpoint up the modal SHALL keep the centred dialog presentation
@@ -368,8 +370,8 @@ The Settings row SHALL own only transient popup visibility in local component st
 
 #### Scenario: Existing form contract is preserved
 
-- **WHEN** a user opens the popup, changes temperature, process files, Time awareness, Built-in file tools or max attachments, and closes it without saving
-- **THEN** model, temperature, process-files, Time awareness, Built-in file tools, and max attachments form values SHALL remain unchanged
+- **WHEN** a user opens the popup, changes temperature, process files, Time awareness or max attachments, and closes it without saving
+- **THEN** model, temperature, process-files, Time awareness, and max attachments form values SHALL remain unchanged
 - **AND** no chat-api endpoint SHALL be called because of the Settings row or popup
 - **AND** the editor's existing memoisation and dirty-state behavior SHALL remain unchanged
 
@@ -386,7 +388,7 @@ The primary content column SHALL NOT render a standalone Advanced settings (Time
 #### Scenario: Main column without moved controls
 
 - **WHEN** the editor renders its primary content column
-- **THEN** no Time awareness switch, File tools switch, or max attachments input SHALL be rendered there
+- **THEN** no Time awareness switch or max attachments input SHALL be rendered there
 - **AND** no Context and tools section, and no Code Interpreter, Add attachment or Web fetch switch SHALL be rendered there (Code Interpreter appears only in Configuration)
 - **AND** no User attachments section or Attachment types control SHALL be rendered there
 - **AND** no Context files control SHALL be rendered there
