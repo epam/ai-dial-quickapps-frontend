@@ -38,7 +38,7 @@ popup is built from the same split. See proposal.md for the motivation.
 ## Risks / Trade-offs
 
 - [Apps that relied on the old default `{}` lose nothing: stored values are untouched. New apps get
-  the backend default (read-only tools), which is the intent] → no mitigation needed.
+  the backend default (all tools per #710), which is the intent] → no mitigation needed.
 - [Backend without PR #710 gives new apps no file tools] → release order noted in the proposal.
 - [Edit JSON now exposes `dial_files`] → acceptable; it is the only way to change it and matches
   other extras.

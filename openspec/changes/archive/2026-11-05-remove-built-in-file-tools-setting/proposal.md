@@ -1,10 +1,11 @@
 ## Why
 
-The backend now exposes the read-only DIAL file tools by default when `features.dial_files` is
-absent ([ai-dial-quickapps-backend#710](https://github.com/epam/ai-dial-quickapps-backend/pull/710)).
-The backend owns a sensible default, so the editor no longer needs a "Built-in file tools" setting.
-Worse, the editor's current default (`true` → `dial_files: {}`) means *all 10 tools including
-write/edit/delete* on the backend, which is broader than the new backend default. See issue
+The backend now exposes the DIAL file tools by default when `features.dial_files` is absent
+([ai-dial-quickapps-backend#710](https://github.com/epam/ai-dial-quickapps-backend/pull/710)): an
+absent block, `{}` and `null` all mean all 10 tools, and `{"enabled_tools": "read_only"}` restricts
+them to the read-only five. The backend owns the default, so the editor no longer needs a
+"Built-in file tools" setting. It also no longer needs to write `dial_files: {}` (all tools) or
+`null` (the old "off", which #710 now treats as all tools). See issue
 [#332](https://github.com/epam/ai-dial-quickapps-frontend/issues/332).
 
 ## What Changes
