@@ -12,7 +12,7 @@ The Toolsets row SHALL show and edit only the toolset entries of the `addOns` fo
 
 - its entity in `DataContext.toolsetsMap` has `type: 'toolset'`, or it resolves to a toolset through the display-name index used today (`AgentsAndToolsetsField.tsx:55-61`);
 - it has no entity and its id is a `toolsets/…` id (`isToolsetId`);
-- it has no entity, no `deployment_id`, and is not a dial-deployment tool (an inline toolset config saved by the removed JSON editor).
+- it has no entity, no `deployment_id`, and is not a dial-deployment tool (an inline toolset config saved through the JSON editor).
 
 Every other entry belongs to the Agents row (`agents_selection`). The classification SHALL be the pure util `getAddOnKind` (`src/utils/get-add-on-kind.ts`), which returns the string enum `AddOnKind` (`Toolset`, `Agent`) from `src/types/add-on-kind.ts`.
 

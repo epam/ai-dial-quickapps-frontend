@@ -23,11 +23,13 @@ export interface ToolsetsListProps {
   ids: string[];
   /** Every `addOns` id; edits keep the agent ids in place. */
   allIds: string[];
+  /** The saved config of each entry by id, for toolsets defined inline in the JSON. */
+  inlineConfigs?: Record<string, Record<string, unknown>>;
   onChange: (allIds: string[]) => void;
 }
 
 /** The attached toolsets of the Toolsets row; each item opens that toolset's details. */
-const ToolsetsList: FC<ToolsetsListProps> = ({ ids, allIds, onChange }) => {
+const ToolsetsList: FC<ToolsetsListProps> = ({ ids, allIds, inlineConfigs, onChange }) => {
   const { t, i18n } = useTranslation();
   const language = i18n.resolvedLanguage ?? i18n.language;
   const entityMap = useAddOnEntityMap();
@@ -83,6 +85,7 @@ const ToolsetsList: FC<ToolsetsListProps> = ({ ids, allIds, onChange }) => {
           <ToolsetDetailsPopup
             toolsetId={openToolsetId}
             toolset={entityMap[openToolsetId] as DialToolset | undefined}
+            inlineConfig={inlineConfigs?.[openToolsetId]}
             onRemove={handleRemove}
             onClose={handleClose}
           />

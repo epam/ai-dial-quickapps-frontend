@@ -1,6 +1,6 @@
 import type { AddOnEntry } from '@/types/quick-app-form';
 import { AddOnSchemaKeys } from '@/types/quick-app-form';
-import { AddOnKind } from '@/types/add-on-kind';
+import { AddOnKind, AddOnResolution } from '@/types/add-on-kind';
 import type { DialModel, DialToolset } from '@/types/dial-entities';
 import { DialEntityType } from '@/types/dial-entities';
 import { isApplicationId, isToolsetId } from '@/utils/api';
@@ -15,7 +15,7 @@ export type { AddOnEntry };
 /**
  * Every entity an `addOns` entry can point at, keyed by id.
  * Existing apps may contain inline toolset configs with no `deployment_id`
- * (added via the removed JSON editor) — their entry id is the toolset `name`
+ * (added via the JSON editor) — their entry id is the toolset `name`
  * from the config — so toolsets are also indexed by display name, letting
  * those entries resolve against the toolset list (details, auth status,
  * sign-in). Id-keyed entries always win; the first toolset wins on a
@@ -81,3 +81,18 @@ export const partitionAddOnIds = (
     },
     { toolsetIds: [], agentIds: [] },
   );
+
+/**
+ * Whether an entry's entity is in the catalog, defined inline in the
+ * application's JSON (no entity and no catalog id — e.g. a REST API toolset),
+ * or a catalog id that is no longer listed. The row status and the details
+ * popup share this so they cannot disagree. Readiness of the catalog is the
+ * caller's concern: before it loads, a missing entity says nothing.
+ */
+export const getAddOnResolution = (
+  entity: AddOnEntity | undefined,
+  id: string,
+): AddOnResolution => {
+  if (entity != null) return AddOnResolution.Catalog;
+  return isApplicationId(id) || isToolsetId(id) ? AddOnResolution.NotFound : AddOnResolution.Inline;
+};
