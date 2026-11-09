@@ -2,12 +2,13 @@ import { describe, expect, it } from 'vitest';
 
 import { DialEntityType } from '@/types/dial-entities';
 import { AddOnSchemaKeys } from '@/types/quick-app-form';
-import { AddOnKind } from '@/types/add-on-kind';
+import { AddOnKind, AddOnResolution } from '@/types/add-on-kind';
 import type { DialModel, DialToolset } from '@/types/dial-entities';
 import {
   type AddOnEntry,
   buildAddOnEntityMap,
   getAddOnKind,
+  getAddOnResolution,
   partitionAddOnIds,
 } from '@/utils/get-add-on-kind';
 
@@ -97,5 +98,24 @@ describe('partitionAddOnIds', () => {
       toolsetIds: ['toolsets/public/figma', 'toolsets/public/old'],
       agentIds: ['applications/public/research-agent', 'gpt-4o'],
     });
+  });
+});
+
+describe('getAddOnResolution', () => {
+  it('resolves a listed entity as Catalog', () => {
+    expect(getAddOnResolution(toolset('toolsets/public/figma'), 'toolsets/public/figma')).toBe(
+      AddOnResolution.Catalog,
+    );
+  });
+
+  it('resolves an unlisted catalog id as NotFound', () => {
+    expect(getAddOnResolution(undefined, 'toolsets/public/gone')).toBe(AddOnResolution.NotFound);
+    expect(getAddOnResolution(undefined, 'applications/public/gone')).toBe(
+      AddOnResolution.NotFound,
+    );
+  });
+
+  it('resolves a name-only entry (a toolset defined in the JSON) as Inline', () => {
+    expect(getAddOnResolution(undefined, 'Weather rest-api toolset')).toBe(AddOnResolution.Inline);
   });
 });

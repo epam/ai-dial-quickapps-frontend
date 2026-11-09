@@ -59,6 +59,17 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
       ),
     [addOns],
   );
+  // The saved config of every entry, so a toolset defined inline in the JSON can show its tools.
+  const inlineConfigs = useMemo(
+    () =>
+      Object.fromEntries(
+        addOns.flatMap((entry) => {
+          const config = entry[AddOnSchemaKeys.tool];
+          return config == null ? [] : [[entry[AddOnSchemaKeys.id], config]];
+        }),
+      ),
+    [addOns],
+  );
   const { toolsetIds, agentIds } = useMemo(
     () => partitionAddOnIds(addOns, entityMap),
     [addOns, entityMap],
@@ -69,7 +80,12 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
       <div className="flex flex-col gap-7">
         <AgentSkillsFormSection value={agentSkills} onChange={onAgentSkillsChange} />
 
-        <ToolsetsFormSection allIds={allIds} toolsetIds={toolsetIds} onChange={onAgentsChange} />
+        <ToolsetsFormSection
+          allIds={allIds}
+          toolsetIds={toolsetIds}
+          inlineConfigs={inlineConfigs}
+          onChange={onAgentsChange}
+        />
 
         <AgentsFormSection
           allIds={allIds}

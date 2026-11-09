@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
-import { isApplicationId, isToolsetId } from '@/utils/api';
+import { AddOnResolution } from '@/types/add-on-kind';
+import { getAddOnResolution } from '@/utils/get-add-on-kind';
 import {
   ApplicationStatus,
   type DialSkill,
@@ -61,7 +62,8 @@ export const getEntityStatus = (
     if (!isCatalogReady) {
       return NO_STATUS;
     }
-    const isNotFoundInCatalog = isApplicationId(id) || isToolsetId(id);
+    const isNotFoundInCatalog =
+      getAddOnResolution(undefined, id ?? '') === AddOnResolution.NotFound;
     return {
       ...NO_STATUS,
       isMissingDeploymentId: !isNotFoundInCatalog,

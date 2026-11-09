@@ -82,6 +82,8 @@ export interface AddOnDetailsPopupProps {
   onRetry: () => void;
   /** Downloads a picked file of a skill's package for the Details tab preview. */
   onLoadSkillDetailsFile?: (fileId: string) => Promise<SkillFileContent>;
+  /** Drops the catalog's About tab, for an item that has no description or topics to show. */
+  isAboutHidden?: boolean;
   /** Replaces the tabs, for an entity that is no longer listed. */
   unavailableText?: string;
   /** Hides Delete; only Close is offered. */
@@ -111,6 +113,7 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
   detailsStatus,
   onRetry,
   onLoadSkillDetailsFile,
+  isAboutHidden,
   unavailableText,
   deleteLabel,
   onDelete,
@@ -169,8 +172,10 @@ export const AddOnDetailsPopup: FC<AddOnDetailsPopupProps> = ({
       item == null
         ? []
         : // Without the DIAL Core URL the catalog would build relative endpoints.
-          getCatalogDetailsTabs(item, { isConnectHidden: !dialCoreExternalUrl }),
-    [item, dialCoreExternalUrl],
+          getCatalogDetailsTabs(item, { isConnectHidden: !dialCoreExternalUrl }).filter(
+            (tabId) => !(isAboutHidden && tabId === CatalogDetailsTab.About),
+          ),
+    [item, dialCoreExternalUrl, isAboutHidden],
   );
   // App tabs follow the catalog's, which keep the catalog's own order.
   const tabIds = useMemo(

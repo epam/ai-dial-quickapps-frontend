@@ -270,6 +270,7 @@ export enum ApplicationEditorI18nKeys {
   AgentsUnavailable = 'applicationEditor.agents.unavailable',
   ToolsetsTypeLabel = 'applicationEditor.toolsets.typeLabel',
   ToolsetsUnavailable = 'applicationEditor.toolsets.unavailable',
+  ToolsetsInlineNoDetails = 'applicationEditor.toolsets.inlineNoDetails',
   AdvancedSettingsTitle = 'applicationEditor.advancedSettings.title',
   AdvancedSettingsAdvanced = 'applicationEditor.advancedSettings.advanced',
   AdvancedSettingsClose = 'applicationEditor.advancedSettings.close',
