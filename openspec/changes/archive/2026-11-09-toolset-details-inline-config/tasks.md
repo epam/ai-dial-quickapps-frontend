@@ -28,5 +28,5 @@
 ## 5. Specs and docs
 
 - [x] 5.1 Update the "removed JSON editor" wording in "Toolset entries of the add-ons value" and in `get-add-on-kind.ts` comments (the JSON editor exists, see `application_json-editor`)
-- [ ] 5.3 Sync/archive the delta into `openspec/specs/toolsets_selection/spec.md` (`openspec-sync-specs` / `openspec-archive-change`) after review
+- [x] 5.3 Sync/archive the delta into `openspec/specs/toolsets_selection/spec.md` (`openspec-sync-specs` / `openspec-archive-change`) after review
 - [x] 5.2 Run `npm run lint` and `npm run build`
