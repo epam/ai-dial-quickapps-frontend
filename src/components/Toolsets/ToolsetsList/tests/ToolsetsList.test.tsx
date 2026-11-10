@@ -35,15 +35,21 @@ vi.mock('@/components/Toolsets/ToolsetDetailsPopup/ToolsetDetailsPopup', () => (
   ToolsetDetailsPopup: ({
     toolsetId,
     toolset,
+    inlineConfig,
     onRemove,
     onClose,
   }: {
     toolsetId: string;
     toolset?: DialToolset;
+    inlineConfig?: Record<string, unknown>;
     onRemove: (id: string) => void;
     onClose: () => void;
   }) => (
-    <div role="dialog" aria-label={toolset?.id ?? toolsetId}>
+    <div
+      role="dialog"
+      aria-label={toolset?.id ?? toolsetId}
+      data-inline-config={inlineConfig ? JSON.stringify(inlineConfig) : undefined}
+    >
       <button type="button" onClick={() => (onRemove(toolsetId), onClose())}>
         Delete
       </button>
@@ -55,9 +61,10 @@ const dom = setupTestRoot();
 
 interface HarnessProps {
   initial: string[];
+  inlineConfigs?: Record<string, Record<string, unknown>>;
 }
 
-const Harness = ({ initial }: HarnessProps) => {
+const Harness = ({ initial, inlineConfigs }: HarnessProps) => {
   const [allIds, setAllIds] = useState(initial);
   return (
     <>
@@ -65,6 +72,7 @@ const Harness = ({ initial }: HarnessProps) => {
       <ToolsetsList
         ids={allIds.filter((id) => id.startsWith('toolsets/'))}
         allIds={allIds}
+        inlineConfigs={inlineConfigs}
         onChange={setAllIds}
       />
     </>
@@ -218,5 +226,31 @@ describe('ToolsetsList details popup', () => {
 
     expect(getValue()).toBe(FIGMA.id);
     expect(dom.container.querySelector('[role="dialog"]')).toBeNull();
+  });
+});
+
+describe('ToolsetsList inline toolsets', () => {
+  it('hands the entry config to the popup and shows no error status', async () => {
+    const config = { type: 'rest-api', tools: [] };
+    await act(async () => {
+      dom.root.render(
+        <ToolsetsList
+          ids={['Weather rest-api toolset']}
+          allIds={['Weather rest-api toolset']}
+          inlineConfigs={{ 'Weather rest-api toolset': config }}
+          onChange={() => undefined}
+        />,
+      );
+    });
+
+    expect(getStatus('Weather rest-api toolset')).toBeNull();
+
+    await act(async () => {
+      getDetailsButton('Weather rest-api toolset')?.click();
+    });
+
+    expect(document.querySelector('[role="dialog"]')?.getAttribute('data-inline-config')).toBe(
+      JSON.stringify(config),
+    );
   });
 });

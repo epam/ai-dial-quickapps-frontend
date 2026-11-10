@@ -104,10 +104,11 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 interface HarnessProps {
   initial?: DialToolset;
   toolsetId: string;
+  inlineConfig?: Record<string, unknown>;
 }
 
 /** Plays `DataContext`: an applied auth result updates the toolset it hands down. */
-const Harness = ({ initial, toolsetId }: HarnessProps) => {
+const Harness = ({ initial, toolsetId, inlineConfig }: HarnessProps) => {
   const [toolset, setToolset] = useState(initial);
   dataContext.applyToolsetAuthResult.mockImplementation(
     (_payload: unknown, status: ToolsetAuthStatus) =>
@@ -119,19 +120,23 @@ const Harness = ({ initial, toolsetId }: HarnessProps) => {
     <ToolsetDetailsPopup
       toolsetId={toolsetId}
       toolset={toolset}
+      inlineConfig={inlineConfig}
       onRemove={onRemove}
       onClose={onClose}
     />
   );
 };
 
-const render = async (props: { toolset?: DialToolset; toolsetId?: string } = {}) => {
+const render = async (
+  props: { toolset?: DialToolset; toolsetId?: string; inlineConfig?: Record<string, unknown> } = {},
+) => {
   const toolset = 'toolset' in props ? props.toolset : FIGMA;
   await act(async () => {
     dom.root.render(
       <Harness
         initial={toolset}
         toolsetId={props.toolsetId ?? toolset?.id ?? 'toolsets/public/gone'}
+        inlineConfig={props.inlineConfig}
       />,
     );
     await flush();
@@ -308,6 +313,77 @@ describe('ToolsetDetailsPopup', () => {
     expect(deploymentsApi.getDeploymentDetails).not.toHaveBeenCalled();
     expect(getButtonByText(ButtonsI18nKeys.LogIn)).toBeUndefined();
     expect(getButtonByText(ButtonsI18nKeys.Delete)).toBeTruthy();
+  });
+
+  describe('toolset defined inline in the JSON', () => {
+    const WEATHER_CONFIG = {
+      type: 'rest-api',
+      name: 'Weather rest-api toolset',
+      tools: [
+        {
+          open_ai_tool: {
+            type: 'function',
+            function: {
+              name: 'weather',
+              description: 'To get current weather for geo coordinates (lat, lon)',
+              parameters: {
+                type: 'object',
+                properties: {
+                  latitude: { type: 'number' },
+                  longitude: { type: 'number' },
+                  format: { type: null, const: 'csv' },
+                },
+                required: ['latitude', 'longitude', 'format'],
+              },
+            },
+          },
+        },
+      ],
+    };
+
+    it('shows its tools instead of the unavailable message, without a request', async () => {
+      await render({
+        toolset: undefined,
+        toolsetId: 'Weather rest-api toolset',
+        inlineConfig: WEATHER_CONFIG,
+      });
+
+      const dialog = getDialog('Weather rest-api toolset');
+      expect(dialog?.textContent).not.toContain(ApplicationEditorI18nKeys.ToolsetsUnavailable);
+      expect(dialog?.textContent).not.toContain(ApplicationEditorI18nKeys.ToolsetsInlineNoDetails);
+      expect(getTab(CatalogI18nKeys.DetailsTabAbout)).toBeUndefined();
+      expect(getTab(CatalogI18nKeys.DetailsTabTools)).toBeTruthy();
+      expect(dialog?.textContent).toContain('weather');
+      expect(dialog?.textContent).toContain('latitude');
+      expect(dialog?.textContent).not.toContain('format');
+      expect(deploymentsApi.getDeploymentDetails).not.toHaveBeenCalled();
+      expect(getButtonByText(ButtonsI18nKeys.Delete)).toBeTruthy();
+    });
+
+    it('says it has no catalog details when the config declares no tools', async () => {
+      await render({
+        toolset: undefined,
+        toolsetId: 'dial-deployment-tool-set',
+        inlineConfig: { name: 'dial-deployment-tool-set', tools: [] },
+      });
+
+      const dialog = getDialog('dial-deployment-tool-set');
+      expect(dialog?.textContent).toContain(ApplicationEditorI18nKeys.ToolsetsInlineNoDetails);
+      expect(dialog?.textContent).not.toContain(ApplicationEditorI18nKeys.ToolsetsUnavailable);
+      expect(getButtonByText(ButtonsI18nKeys.Delete)).toBeTruthy();
+    });
+
+    it('still reports a missing catalog id as unavailable even when a config is saved', async () => {
+      await render({
+        toolset: undefined,
+        toolsetId: 'toolsets/public/gone',
+        inlineConfig: WEATHER_CONFIG,
+      });
+
+      expect(getDialog('gone')?.textContent).toContain(
+        ApplicationEditorI18nKeys.ToolsetsUnavailable,
+      );
+    });
   });
 
   it('detaches the toolset on Delete', async () => {

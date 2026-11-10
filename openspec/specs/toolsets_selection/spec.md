@@ -12,7 +12,7 @@ The Toolsets row SHALL show and edit only the toolset entries of the `addOns` fo
 
 - its entity in `DataContext.toolsetsMap` has `type: 'toolset'`, or it resolves to a toolset through the display-name index used today (`AgentsAndToolsetsField.tsx:55-61`);
 - it has no entity and its id is a `toolsets/…` id (`isToolsetId`);
-- it has no entity, no `deployment_id`, and is not a dial-deployment tool (an inline toolset config saved by the removed JSON editor).
+- it has no entity, no `deployment_id`, and is not a dial-deployment tool (an inline toolset config saved through the JSON editor).
 
 Every other entry belongs to the Agents row (`agents_selection`). The classification SHALL be the pure util `getAddOnKind` (`src/utils/get-add-on-kind.ts`), which returns the string enum `AddOnKind` (`Toolset`, `Agent`) from `src/types/add-on-kind.ts`.
 
@@ -140,6 +140,13 @@ The popup SHALL open on About. A tab whose data the details lack SHALL NOT be sh
 
 `DetailsHeader` SHALL show no other action: no Use in chat, Share, Publish, Edit, Download or Manage menu.
 
+**Entries without a catalog entity.** An attached toolset that is not in `toolsetsMap` SHALL be resolved into exactly one of two cases, by the same rule the Toolsets row uses for its status line:
+
+- **Inline:** its id is not a `toolsets/…` or `applications/…` id and the entry carries its own saved config (a toolset defined in the application's JSON, e.g. a REST API toolset). It is available and working, so the popup SHALL NOT call it unavailable.
+- **Not found:** its id is a `toolsets/…` or `applications/…` id that is missing from the catalog once the catalog has loaded. The toolset was deleted or hidden.
+
+For an **Inline** entry the popup SHALL show the entry name as the header name, the "Toolset" caption and the empty-scope folder line, no version and no credentials action. Its only tab SHALL be **Tools**, listing each tool declared in the saved config's `tools` (name, description and input parameters with their JSON type and required flag), shown from the moment the popup opens. No chat-api request SHALL be made. When the config declares no tools, the content SHALL show `ApplicationEditorI18nKeys.ToolsetsInlineNoDetails` ("This toolset is defined in the application's JSON configuration and has no catalog details.") in place of the tabs.
+
 The popup SHALL be loaded with `React.lazy`, because it imports from `@epam/ai-dial-catalog`.
 
 #### Scenario: Popup opens on About
@@ -154,9 +161,26 @@ The popup SHALL be loaded with `React.lazy`, because it imports from `@epam/ai-d
 
 #### Scenario: Toolset unavailable
 
-- **WHEN** the popup opens for an attached toolset that is not in `toolsetsMap`
+- **WHEN** the popup opens for an attached `toolsets/public/old-tool` that is not in `toolsetsMap`
 - **THEN** the header SHALL show the fallback name, and the content SHALL show `ApplicationEditorI18nKeys.ToolsetsUnavailable` ("This toolset is no longer available") in place of the tabs
 - **AND** no chat-api request SHALL be made, no credentials action SHALL be shown, and Delete SHALL still be offered in an editable application
+
+#### Scenario: Inline REST API toolset with tools
+
+- **WHEN** the saved `tool_sets` holds a `rest-api` toolset named "Weather rest-api toolset" with one tool `weather` (description "To get current weather for geo coordinates (lat, lon)", required parameters `latitude` and `longitude`), and the user activates its item
+- **THEN** a dialog named "Weather rest-api toolset" SHALL be displayed with a Tools tab listing `weather`, its description, and `latitude` and `longitude` as required numbers
+- **AND** the text "This toolset is no longer available" SHALL NOT be shown, no chat-api request SHALL be made, and Delete and Close SHALL be offered
+
+#### Scenario: Inline toolset without tools
+
+- **WHEN** the user activates an attached inline toolset whose saved config has `tools: []`
+- **THEN** the content SHALL show the inline-toolset message and no tabs
+- **AND** Delete SHALL still detach the entry
+
+#### Scenario: Row and popup agree
+
+- **WHEN** an attached item shows no error status in the Toolsets row because it is an inline toolset
+- **THEN** its details popup SHALL NOT show the not-found message
 
 ### Requirement: Toolset About and Overview tabs
 

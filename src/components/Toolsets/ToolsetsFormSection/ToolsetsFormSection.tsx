@@ -21,11 +21,18 @@ export interface ToolsetsFormSectionProps {
   allIds: string[];
   /** The toolset entries among them. */
   toolsetIds: string[];
+  /** The saved config of each entry by id; an inline toolset's tools come from it. */
+  inlineConfigs?: Record<string, Record<string, unknown>>;
   onChange: (allIds: string[]) => void;
 }
 
 /** The Toolsets row of the Add-ons card: the attached toolsets and the Add toolset picker. */
-const ToolsetsFormSection: FC<ToolsetsFormSectionProps> = ({ allIds, toolsetIds, onChange }) => {
+const ToolsetsFormSection: FC<ToolsetsFormSectionProps> = ({
+  allIds,
+  toolsetIds,
+  inlineConfigs,
+  onChange,
+}) => {
   const { t } = useTranslation();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
@@ -48,7 +55,12 @@ const ToolsetsFormSection: FC<ToolsetsFormSectionProps> = ({ allIds, toolsetIds,
       onAdd={() => setIsAddModalOpen(true)}
     >
       <Suspense fallback={null}>
-        <ToolsetsList ids={toolsetIds} allIds={allIds} onChange={onChange} />
+        <ToolsetsList
+          ids={toolsetIds}
+          allIds={allIds}
+          inlineConfigs={inlineConfigs}
+          onChange={onChange}
+        />
       </Suspense>
 
       {isAddModalOpen && (
