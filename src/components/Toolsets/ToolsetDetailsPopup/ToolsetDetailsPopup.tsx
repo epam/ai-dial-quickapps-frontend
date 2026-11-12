@@ -8,11 +8,17 @@ import { useScopeLabels } from '@/hooks/use-scope-labels';
 import { useToolsetCredentials } from '@/hooks/use-toolset-credentials';
 import { useTranslation } from 'react-i18next';
 import { AddOnResolution } from '@/types/add-on-kind';
-import { type DialToolset, ToolsetAuthType } from '@/types/dial-entities';
+import {
+  DialEntityType,
+  type DialModel,
+  type DialToolset,
+  ToolsetAuthType,
+} from '@/types/dial-entities';
 import { getCatalogFolder, getEntityScopeInfo } from '@/utils/entity-scope';
 import { getAddOnDisplay } from '@/utils/get-add-on-display';
 import { getAddOnResolution } from '@/utils/get-add-on-kind';
 import { mapInlineToolsetToCatalogItem } from '@/utils/map-inline-toolset-to-catalog-item';
+import { mapAgentToCatalogItem } from '@/utils/map-agent-to-catalog-item';
 import { mapToolsetToCatalogItem } from '@/utils/map-toolset-to-catalog-item';
 
 import { AddOnDetailsPopup } from '@/components/common/AddOnDetailsPopup/AddOnDetailsPopup';
@@ -59,13 +65,15 @@ export const ToolsetDetailsPopup: FC<ToolsetDetailsPopupProps> = ({
   );
 
   // Credentials stay the listing's, which a login updates at once.
-  const listingItem = useMemo(
-    () =>
-      toolset == null
-        ? undefined
-        : mapToolsetToCatalogItem(toolset, { language, userBucket, scopeLabels }),
-    [toolset, language, userBucket, scopeLabels],
-  );
+  const listingItem = useMemo(() => {
+    if (toolset == null) return undefined;
+    const options = { language, userBucket, scopeLabels };
+    // An MCP-only application sits in this row but is still an application entity.
+    if ((toolset.type as DialEntityType) === DialEntityType.Application) {
+      return mapAgentToCatalogItem(toolset as unknown as DialModel, options);
+    }
+    return mapToolsetToCatalogItem(toolset, options);
+  }, [toolset, language, userBucket, scopeLabels]);
   const { status, details, retry } = useEntityDetails(listingItem);
   const resolution = getAddOnResolution(toolset, toolsetId);
   const isInline = resolution === AddOnResolution.Inline;

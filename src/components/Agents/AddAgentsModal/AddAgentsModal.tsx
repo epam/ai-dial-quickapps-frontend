@@ -15,29 +15,45 @@ import { mapAgentToCatalogItem } from '@/utils/map-agent-to-catalog-item';
 export interface AddAgentsModalProps {
   /** Every `addOns` id; the attached agents are checked when the popup opens, toolset ids stay in place on Add. */
   allIds: string[];
+  /** Entries attached in the Toolsets row: listed unchecked; checking one switches it to an agent. */
+  otherRowIds?: string[];
   onConfirm: (allIds: string[]) => void;
   onClose: () => void;
 }
 
-/** Agent picker: applications, MCP agents and models, with multi-selection. */
-export const AddAgentsModal: FC<AddAgentsModalProps> = ({ allIds, onConfirm, onClose }) => {
+/**
+ * Agent picker: models and applications with a chat interface, with multi-selection.
+ * MCP-only applications are toolsets, as in the DIAL Chat catalog.
+ */
+export const AddAgentsModal: FC<AddAgentsModalProps> = ({
+  allIds,
+  otherRowIds = [],
+  onConfirm,
+  onClose,
+}) => {
   const { t, i18n } = useTranslation();
   const language = i18n.resolvedLanguage ?? i18n.language;
   const { app } = useAppContext();
-  const { models, mcpAgents, userBucket } = useDataContext();
+  const { models, userBucket } = useDataContext();
   const scopeLabels = useScopeLabels();
   const { labels: sharedLabels, ...loadState } = useCatalogPickerSharedProps();
   // The app being edited must not be selectable as its own agent — that
   // would make it call itself (recursion).
   const currentAppEntityId = getEntityIdWithoutVersion(app.id);
 
+  // Entries of the other row are listed unchecked: attached, but not as this row.
+  const attachedIds = useMemo(
+    () => allIds.filter((id) => !otherRowIds.includes(id)),
+    [allIds, otherRowIds],
+  );
+
   const items = useMemo(
     () =>
-      [...models, ...mcpAgents]
+      models
         .filter((agent) => !isHiddenDialFolderId(agent.id))
         .filter((agent) => getEntityIdWithoutVersion(agent.id) !== currentAppEntityId)
         .map((agent) => mapAgentToCatalogItem(agent, { language, userBucket, scopeLabels })),
-    [models, mcpAgents, currentAppEntityId, language, userBucket, scopeLabels],
+    [models, currentAppEntityId, language, userBucket, scopeLabels],
   );
 
   const labels = useMemo<AddOnCatalogModalLabels>(
@@ -59,7 +75,7 @@ export const AddAgentsModal: FC<AddAgentsModalProps> = ({ allIds, onConfirm, onC
     <AddOnCatalogModal
       type={CatalogEntityType.Agent}
       items={items}
-      attachedIds={allIds}
+      attachedIds={attachedIds}
       labels={labels}
       {...loadState}
       listProps={ADD_ON_LIST_PROPS}

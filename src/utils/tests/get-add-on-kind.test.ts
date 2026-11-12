@@ -85,6 +85,40 @@ describe('getAddOnKind', () => {
   });
 });
 
+describe('getAddOnKind for MCP-only agents', () => {
+  const MCP_ONLY_IDS = new Set([MCP_AGENT.id]);
+
+  it('puts an application without a chat interface in the Toolsets row', () => {
+    expect(getAddOnKind(entry(MCP_AGENT.id), ENTITY_MAP, MCP_ONLY_IDS)).toBe(AddOnKind.Toolset);
+  });
+
+  it('keeps an application that also serves chat in the Agents row', () => {
+    expect(getAddOnKind(entry(RESEARCH.id), ENTITY_MAP, MCP_ONLY_IDS)).toBe(AddOnKind.Agent);
+  });
+});
+
+describe('getAddOnKind by transport', () => {
+  const CHAT_AND_MCP = {
+    ...deployment('applications/public/loop', DialEntityType.Application),
+    mcp: true,
+  };
+  const map = buildAddOnEntityMap([CHAT_AND_MCP], [], [], 'en');
+  const withTransport = (transport?: string) =>
+    entry(CHAT_AND_MCP.id, { [AddOnSchemaKeys.tool]: transport ? { transport } : undefined });
+
+  it('lists an app saved with the mcp transport as a toolset', () => {
+    expect(getAddOnKind(withTransport('mcp'), map)).toBe(AddOnKind.Toolset);
+  });
+
+  it('lists an app saved with the chat-completion transport as an agent', () => {
+    expect(getAddOnKind(withTransport('chat-completion'), map)).toBe(AddOnKind.Agent);
+  });
+
+  it('reads a missing transport as the default (mcp)', () => {
+    expect(getAddOnKind(withTransport(), map)).toBe(AddOnKind.Toolset);
+  });
+});
+
 describe('partitionAddOnIds', () => {
   it('splits the ids by row and keeps their order', () => {
     const entries = [

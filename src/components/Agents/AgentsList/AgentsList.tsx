@@ -47,6 +47,16 @@ const AgentsList: FC<AgentsListProps> = ({ ids, allIds, onChange, transports, on
   const [openAgentId, setOpenAgentId] = useState<string | null>(null);
   const handleClose = useCallback(() => setOpenAgentId(null), []);
 
+  // The transport decides the row (`mcp` is a tool), so a change may move the
+  // entry out of this row; close its popup rather than leave it orphaned.
+  const handleConfigure = useCallback(
+    (id: string, transport: DialAppTransportType) => {
+      onConfigure(id, transport);
+      setOpenAgentId(null);
+    },
+    [onConfigure],
+  );
+
   if (ids.length === 0) return null;
 
   return (
@@ -83,7 +93,7 @@ const AgentsList: FC<AgentsListProps> = ({ ids, allIds, onChange, transports, on
             agent={entityMap[openAgentId] as DialModel | undefined}
             transport={transports[openAgentId]}
             onRemove={handleRemove}
-            onConfigure={onConfigure}
+            onConfigure={handleConfigure}
             onClose={handleClose}
           />
         </Suspense>

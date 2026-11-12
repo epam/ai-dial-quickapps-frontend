@@ -3,6 +3,9 @@ import { AddOnSchemaKeys } from '@/types/quick-app-form';
 import { AddOnKind, AddOnResolution } from '@/types/add-on-kind';
 import type { DialModel, DialToolset } from '@/types/dial-entities';
 import { DialEntityType } from '@/types/dial-entities';
+import { DEFAULT_AGENT_TRANSPORT } from '@/constants/quick-apps';
+import { DialAppTransportType } from '@/types/quick-apps';
+import { doesAgentSupportMcp } from '@/utils/application';
 import { isApplicationId, isToolsetId } from '@/utils/api';
 import { getLocalizedText } from '@/utils/get-localized-text';
 
@@ -40,16 +43,36 @@ export const buildAddOnEntityMap = (
   return map;
 };
 
+const EMPTY_ID_SET: ReadonlySet<string> = new Set();
+
 /**
  * Which Add-ons row an entry belongs to. Mirrors the branches
  * `getQuickApp2Toolsets` uses to serialize it: models and applications are
  * agents; toolset entities, unresolved `toolsets/…` ids and inline toolset
  * configs (no `deployment_id`) are toolsets.
  */
-export const getAddOnKind = (entry: AddOnEntry, entityMap: AddOnEntityMap): AddOnKind => {
+export const getAddOnKind = (
+  entry: AddOnEntry,
+  entityMap: AddOnEntityMap,
+  mcpOnlyAgentIds: ReadonlySet<string> = EMPTY_ID_SET,
+): AddOnKind => {
   const id = entry[AddOnSchemaKeys.id];
   const entity = entityMap[id];
 
+  // Same rule as the DIAL Chat catalog: an application exposing only the MCP
+  // interface (no chat) is a toolset; one that also serves chat stays an agent.
+  if (entity && mcpOnlyAgentIds.has(id)) return AddOnKind.Toolset;
+  // An application that serves chat as well is listed by its transport: added
+  // as a tool it is saved with `mcp` (Toolsets row), added as an agent with
+  // `chat-completion` (Agents row). No saved transport reads as the default.
+  if (entity?.type === DialEntityType.Application && doesAgentSupportMcp(entity)) {
+    const transport = (
+      entry[AddOnSchemaKeys.tool] as { transport?: DialAppTransportType } | undefined
+    )?.transport;
+    return (transport ?? DEFAULT_AGENT_TRANSPORT) === DialAppTransportType.MCP
+      ? AddOnKind.Toolset
+      : AddOnKind.Agent;
+  }
   if (entity) {
     return entity.type === DialEntityType.Model || entity.type === DialEntityType.Application
       ? AddOnKind.Agent
@@ -71,11 +94,13 @@ export interface AddOnIdsByKind {
 export const partitionAddOnIds = (
   entries: readonly AddOnEntry[],
   entityMap: AddOnEntityMap,
+  mcpOnlyAgentIds?: ReadonlySet<string>,
 ): AddOnIdsByKind =>
   entries.reduce<AddOnIdsByKind>(
     (acc, entry) => {
       const id = entry[AddOnSchemaKeys.id];
-      if (getAddOnKind(entry, entityMap) === AddOnKind.Toolset) acc.toolsetIds.push(id);
+      if (getAddOnKind(entry, entityMap, mcpOnlyAgentIds) === AddOnKind.Toolset)
+        acc.toolsetIds.push(id);
       else acc.agentIds.push(id);
       return acc;
     },

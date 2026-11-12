@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { ApplicationEditorI18nKeys, CatalogI18nKeys } from '@/constants/translation-keys';
 import { setupTestRoot } from '@/test-utils/test-root';
-import { type DialToolset, ToolsetAuthType } from '@/types/dial-entities';
+import { type DialModel, type DialToolset, ToolsetAuthType } from '@/types/dial-entities';
 
 import { AddToolsetsModal } from '../AddToolsetsModal';
 
@@ -27,8 +27,25 @@ const FIGMA = makeToolset('toolsets/public/figma', 'Figma', {
 const JIRA = makeToolset('toolsets/public/jira', 'Jira');
 const HIDDEN = makeToolset('toolsets/public/.dial_folder', 'Hidden');
 
+const makeAgent = (id: string, name: string) =>
+  ({ id, reference: id, name, type: 'application', mcp: true }) as DialModel;
+
+const MCP_AGENT = makeAgent('applications/public/dial-loop', 'Dial Loop');
+const SELF = makeAgent('applications/me/current-app', 'Current');
+const CHAT_AND_MCP_AGENT = makeAgent('applications/public/chat-mcp', 'Chat MCP');
+const CHAT_ONLY_AGENT = { ...makeAgent('applications/public/chat', 'Chat only'), mcp: false };
+const HIDDEN_AGENT = makeAgent('applications/public/.dial_folder', 'Hidden agent');
+
+vi.mock('@/context/AppContext', () => ({
+  useAppContext: () => ({ app: { id: 'applications/me/current-app__1.0' } }),
+}));
 vi.mock('@/context/DataContext', () => ({
-  useDataContext: () => ({ toolsets: [FIGMA, JIRA, HIDDEN], userBucket: 'me' }),
+  useDataContext: () => ({
+    toolsets: [FIGMA, JIRA, HIDDEN],
+    models: [CHAT_AND_MCP_AGENT, CHAT_ONLY_AGENT],
+    mcpAgents: [MCP_AGENT, SELF, HIDDEN_AGENT],
+    userBucket: 'me',
+  }),
 }));
 vi.mock('@/hooks/use-catalog-picker-shared-props', () => ({
   useCatalogPickerSharedProps: () => SHARED,
@@ -44,7 +61,7 @@ vi.mock('@epam/ai-dial-catalog', async (importOriginal) => ({
 const dom = setupTestRoot();
 
 describe('AddToolsetsModal', () => {
-  it('offers the visible toolsets only, with their sign-in state', () => {
+  it('offers the visible toolsets and MCP agents, with their sign-in state', () => {
     const onConfirm = vi.fn();
     dom.render(
       <AddToolsetsModal
@@ -56,10 +73,40 @@ describe('AddToolsetsModal', () => {
 
     const props = captured.props as AddOnCatalogModalProps;
     expect(props.type).toBe(CatalogEntityType.Toolset);
-    expect(props.items.map((item) => item.name)).toEqual(['Figma', 'Jira']);
+    expect(props.items.map((item) => item.name)).toEqual([
+      'Figma',
+      'Jira',
+      'Dial Loop',
+      'Chat MCP',
+    ]);
     expect(props.items[0].credentials?.authenticationType).toBe('OAUTH');
     expect(props.attachedIds).toEqual(['applications/public/agent', FIGMA.id]);
     expect(props.onConfirm).toBe(onConfirm);
+  });
+
+  it('lists an application attached in the Agents row, unchecked', () => {
+    dom.render(
+      <AddToolsetsModal
+        allIds={[MCP_AGENT.id]}
+        otherRowIds={[MCP_AGENT.id]}
+        onConfirm={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+
+    const { items } = captured.props as AddOnCatalogModalProps;
+    const props = captured.props as AddOnCatalogModalProps;
+    expect(items.some((item) => item.id === MCP_AGENT.id)).toBe(true);
+    expect(props.attachedIds).toEqual([]);
+  });
+
+  it('lists MCP agents as toolsets, never the edited app itself', () => {
+    dom.render(<AddToolsetsModal allIds={[]} onConfirm={vi.fn()} onClose={vi.fn()} />);
+
+    const { items } = captured.props as AddOnCatalogModalProps;
+    const agent = items.find((item) => item.id === MCP_AGENT.id);
+    expect(agent?.type).toBe(CatalogEntityType.Toolset);
+    expect(items.some((item) => item.id === SELF.id)).toBe(false);
   });
 
   it('labels the popup for toolsets', () => {
