@@ -23,7 +23,8 @@ export interface AgentsFormSectionProps {
   allIds: string[];
   /** The agent entries among them. */
   agentIds: string[];
-  onChange: (allIds: string[]) => void;
+  /** `switchedIds`: entries of the other row checked in the popup, which move to this row. */
+  onChange: (allIds: string[], switchedIds?: string[]) => void;
   /** The transport saved per agent entry, if any. */
   transports: Record<string, DialAppTransportType | undefined>;
   onConfigure: (id: string, transport: DialAppTransportType) => void;
@@ -48,10 +49,18 @@ const AgentsFormSection: FC<AgentsFormSectionProps> = ({
 
   const handleConfirm = useCallback(
     (ids: string[]) => {
-      onChange(ids);
+      // The popup answers for this row's entries only: drop those it unchecked
+      // and append the new ones; the other row's entries stay where they are.
+      const removedIds = agentIds.filter((id) => !ids.includes(id));
+      const switchedIds = ids.filter((id) => allIds.includes(id) && !agentIds.includes(id));
+      const nextIds = [
+        ...allIds.filter((id) => !removedIds.includes(id)),
+        ...ids.filter((id) => !allIds.includes(id)),
+      ];
+      onChange(nextIds, switchedIds);
       setIsAddModalOpen(false);
     },
-    [onChange],
+    [onChange, allIds, agentIds],
   );
 
   return (
@@ -74,7 +83,12 @@ const AgentsFormSection: FC<AgentsFormSectionProps> = ({
 
       {isAddModalOpen && (
         <Suspense fallback={null}>
-          <AddAgentsModal allIds={allIds} onClose={handleCloseModal} onConfirm={handleConfirm} />
+          <AddAgentsModal
+            allIds={allIds}
+            otherRowIds={allIds.filter((id) => !agentIds.includes(id))}
+            onClose={handleCloseModal}
+            onConfirm={handleConfirm}
+          />
         </Suspense>
       )}
     </AddOnRow>

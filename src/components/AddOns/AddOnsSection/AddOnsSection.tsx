@@ -1,11 +1,14 @@
-import { FC, memo, useMemo } from 'react';
+import { FC, memo, useCallback, useMemo } from 'react';
 
 import { ApplicationEditorI18nKeys } from '@/constants/translation-keys';
 import { AddOnSchemaKeys } from '@/types/quick-app-form';
 import type { ConversationStartersValues } from '@/types/conversation-starters';
 import type { QuickApp2FormValues } from '@/types/quick-app-form';
+import { useDataContext } from '@/context/DataContext';
 import { useAddOnEntityMap } from '@/hooks/use-add-on-entity-map';
 import { useTranslation } from 'react-i18next';
+import { DialEntityType } from '@/types/dial-entities';
+import { doesAgentSupportMcp } from '@/utils/application';
 import { DialAppTransportType } from '@/types/quick-apps';
 import { partitionAddOnIds } from '@/utils/get-add-on-kind';
 
@@ -43,6 +46,9 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
 }) => {
   const { t } = useTranslation();
   const entityMap = useAddOnEntityMap();
+  const { mcpAgentsMap } = useDataContext();
+  // `mcpAgents` holds only the applications with no chat interface.
+  const mcpOnlyAgentIds = useMemo(() => new Set(Object.keys(mcpAgentsMap)), [mcpAgentsMap]);
 
   // Toolsets and Agents both edit `addOns`: each row shows its own
   // entries and always hands back the full id list, so the other row's
@@ -71,8 +77,38 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
     [addOns],
   );
   const { toolsetIds, agentIds } = useMemo(
-    () => partitionAddOnIds(addOns, entityMap),
-    [addOns, entityMap],
+    () => partitionAddOnIds(addOns, entityMap, mcpOnlyAgentIds),
+    [addOns, entityMap, mcpOnlyAgentIds],
+  );
+
+  // A new MCP-capable application is saved with the transport of the popup it
+  // was added from: `mcp` as a tool, `chat-completion` as an agent. MCP-only
+  // applications have no chat transport, so they always get `mcp`.
+  const handleChange = useCallback(
+    (ids: string[], transport: DialAppTransportType, switchedIds: string[] = []) => {
+      onAgentsChange(ids);
+      const knownIds = new Set(allIds);
+      // New entries, and entries moved here from the other row, get this row's transport.
+      ids
+        .filter((id) => !knownIds.has(id) || switchedIds.includes(id))
+        .forEach((id) => {
+          const entity = entityMap[id];
+          if (entity?.type !== DialEntityType.Application || !doesAgentSupportMcp(entity)) return;
+          const isChatCapable = !mcpOnlyAgentIds.has(id);
+          onConfigureAgent(id, isChatCapable ? transport : DialAppTransportType.MCP);
+        });
+    },
+    [allIds, entityMap, mcpOnlyAgentIds, onAgentsChange, onConfigureAgent],
+  );
+  const handleToolsetsChange = useCallback(
+    (ids: string[], switchedIds?: string[]) =>
+      handleChange(ids, DialAppTransportType.MCP, switchedIds),
+    [handleChange],
+  );
+  const handleAgentsChange = useCallback(
+    (ids: string[], switchedIds?: string[]) =>
+      handleChange(ids, DialAppTransportType.ChatCompletion, switchedIds),
+    [handleChange],
   );
 
   return (
@@ -84,13 +120,13 @@ export const AddOnsSection: FC<AddOnsSectionProps> = ({
           allIds={allIds}
           toolsetIds={toolsetIds}
           inlineConfigs={inlineConfigs}
-          onChange={onAgentsChange}
+          onChange={handleToolsetsChange}
         />
 
         <AgentsFormSection
           allIds={allIds}
           agentIds={agentIds}
-          onChange={onAgentsChange}
+          onChange={handleAgentsChange}
           transports={transports}
           onConfigure={onConfigureAgent}
         />

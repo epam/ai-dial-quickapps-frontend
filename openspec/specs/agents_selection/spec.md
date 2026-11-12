@@ -10,7 +10,7 @@ Defines how the Quick App editor lists, inspects, configures, removes and picks 
 
 The Agents row SHALL show and edit only the agent entries of the `addOns` form value (owned by `useQuickApp2Form`). These are the entries `getAddOnKind` classifies as `AddOnKind.Agent`, i.e. every entry that is not a toolset entry (`toolsets_selection` "Toolset entries of the add-ons value"):
 
-- applications, including MCP-only agents from `DataContext.mcpAgentsMap`;
+- applications with a chat interface and the `chat-completion` transport (MCP-only applications and applications saved with the `mcp` transport are toolset entries); an application added from the Add agent popup is saved with `transport: "chat-completion"`, and changing its transport to MCP in the details popup moves it to the Toolsets row (the popup closes);
 - models used as dial-deployment simple tools;
 - `applications/…` ids that are missing from the catalog;
 - dial-deployment tools whose model is no longer listed.
@@ -261,14 +261,14 @@ Settings tab ("Agent Settings tab (editable)").
 The Agents row's Add action SHALL open the **Add agent** popup. It SHALL match the Add skill popup (`skills_catalog`) with these differences:
 
 - **Text:** title `ApplicationEditorI18nKeys.AgentsAdd` ("Add agent"); heading `ApplicationEditorI18nKeys.AgentsCatalogTitle` ("Agents catalog"); search `ApplicationEditorI18nKeys.AgentsSearchPlaceholder` ("Search agents...").
-- **Content:** the rows are `DataContext.models` and `DataContext.mcpAgents`:
+- **Content:** the rows are `DataContext.models` (models and chat-interface applications; MCP-only applications are offered in the Add toolset popup instead, as in DIAL Chat's catalog):
   - without hidden-folder ids;
   - without the application being edited (`getEntityIdWithoutVersion(app.id)`), so it can't call itself;
   - mapped by `mapAgentToCatalogItem`, with item type `Model` for models and `Agent` otherwise.
 - **List:** `ListView` uses `type={CatalogEntityType.Agent}`, multi-select and the Favorite column hidden through `columnVisibility`.
 - **Checkbox names:** row checkboxes use `ApplicationEditorI18nKeys.AddOnsSelect`; select-all uses `ApplicationEditorI18nKeys.AgentsSelectAll`.
 - **States:** the loading label is `ApplicationEditorI18nKeys.AgentsLoading`, the error title `ApplicationEditorI18nKeys.AgentsLoadError`, and the empty-catalog title `ApplicationEditorI18nKeys.AgentsEmpty`.
-- **Pre-check:** only attached agent ids start checked.
+- **Pre-check:** only attached agent ids start checked. An application attached in the Toolsets row is listed here unchecked, so it never shows as added when it is not an agent; checking it and confirming moves it to the Agents row (its transport becomes `chat-completion`).
 - **Add** SHALL apply `applyCatalogSelection` to the full `addOns` id list:
   - kept agents and every toolset entry stay in place, with their tool data;
   - unchecked listed agents are removed;
@@ -281,7 +281,7 @@ The popup state SHALL be local `useState`, reset on each open, and the popup SHA
 #### Scenario: Popup lists agents and models
 
 - **WHEN** the user activates Add in the Agents row and data has loaded
-- **THEN** a dialog named "Add agent" SHALL list applications, MCP agents and models, with no toolsets and not the application being edited
+- **THEN** a dialog named "Add agent" SHALL list chat applications and models, with no toolsets or MCP-only applications and not the application being edited
 
 #### Scenario: Confirm keeps toolsets
 

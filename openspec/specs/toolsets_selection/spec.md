@@ -14,6 +14,11 @@ The Toolsets row SHALL show and edit only the toolset entries of the `addOns` fo
 - it has no entity and its id is a `toolsets/…` id (`isToolsetId`);
 - it has no entity, no `deployment_id`, and is not a dial-deployment tool (an inline toolset config saved through the JSON editor).
 
+- its entity is an application with no chat interface (`DataContext.mcpAgents`), as in DIAL Chat's catalog, where MCP-only applications are toolsets;
+- its entity is an MCP-capable application whose saved `transport` is `mcp` (a missing transport reads as `DEFAULT_AGENT_TRANSPORT`, `mcp`). An MCP-capable application saved with `chat-completion` is an agent entry.
+
+An MCP-capable application added from the Add toolset popup SHALL be saved with `transport: "mcp"`; one added from the Add agent popup SHALL be saved with `transport: "chat-completion"` (MCP-only applications always `mcp`).
+
 Every other entry belongs to the Agents row (`agents_selection`). The classification SHALL be the pure util `getAddOnKind` (`src/utils/get-add-on-kind.ts`), which returns the string enum `AddOnKind` (`Toolset`, `Agent`) from `src/types/add-on-kind.ts`.
 
 Each edit made from the Toolsets row SHALL change only toolset entries. Agent entries SHALL keep their values and their positions in the array. The form value's shape, the `tool_sets` save mapping (`buildQuickApp2Config`) and the per-entry tool data SHALL NOT change.
@@ -271,11 +276,11 @@ After a successful result, the details popup SHALL stay open. Its header action 
 The Toolsets row's Add action SHALL open the **Add toolset** popup. It SHALL match the Add skill popup (`skills_catalog` "Add skill popup catalog list", "… search, filter and sort", "… multi-selection", "… loading and error states") with these differences:
 
 - **Rows:** title `ApplicationEditorI18nKeys.ToolsetsAdd` ("Add toolset"); heading `ApplicationEditorI18nKeys.ToolsetsCatalogTitle` ("Toolsets catalog"); search placeholder and name `ApplicationEditorI18nKeys.ToolsetsSearchPlaceholder` ("Search toolsets...").
-- **Content:** the rows are `DataContext.toolsets` without hidden-folder ids and without the application being edited, mapped by `mapToolsetToCatalogItem`. The mapping SHALL carry `credentials`, so `ListView` shows the logged-out badge with the `CatalogI18nKeys.CredentialsBadgeLoggedOut` label.
+- **Content:** the rows are `DataContext.toolsets` without hidden-folder ids, mapped by `mapToolsetToCatalogItem`, followed by the applications exposing an MCP interface, as DIAL Chat's catalog lists them under Toolsets (`catalog-interface-classification`): `DataContext.mcpAgents` (MCP-only) and the `DataContext.models` applications that support MCP (chat and MCP) without hidden-folder ids and without the application being edited, mapped by `mapAgentToCatalogItem` with the type `Toolset`. The toolset mapping SHALL carry `credentials`, so `ListView` shows the logged-out badge with the `CatalogI18nKeys.CredentialsBadgeLoggedOut` label. An MCP-only application is a toolset entry (listed in the Toolsets row, whose details popup maps it as an application); an application that also serves chat is saved with `transport: "mcp"` and is listed in the Toolsets row.
 - **List:** `ListView` uses `type={CatalogEntityType.Toolset}`, `CatalogSelectionMode.Multiple` and `columnVisibility={{ favorite: () => false }}` (no Favorite column).
 - **Checkbox names:** row checkboxes use `ApplicationEditorI18nKeys.AddOnsSelect` ("Select {{name}}") and select-all uses `ApplicationEditorI18nKeys.ToolsetsSelectAll`.
 - **States:** the loading label is `ApplicationEditorI18nKeys.ToolsetsLoading`, the error title `ApplicationEditorI18nKeys.ToolsetsLoadError`, and the empty-catalog title `ApplicationEditorI18nKeys.ToolsetsEmpty`.
-- **Pre-check:** only the attached toolset ids start checked.
+- **Pre-check:** only the attached toolset ids start checked. An application attached in the Agents row is listed here unchecked, so it never shows as added when it is not a toolset; checking it and confirming moves it to the Toolsets row (its transport becomes `mcp`).
 - **Add** SHALL apply `applyCatalogSelection(allIds, checkedIds, listedIds)` (done by `@epam/ai-dial-catalog`'s `AddOnCatalogModal`, which took it over from this app) to the full `addOns` id list:
   - kept entries and every agent entry stay in place, with their tool data;
   - unchecked listed toolsets are removed;
@@ -283,10 +288,15 @@ The Toolsets row's Add action SHALL open the **Add toolset** popup. It SHALL mat
 
 The popup state SHALL be local `useState`, reset on each open. The popup SHALL be loaded with `React.lazy`.
 
-#### Scenario: Popup lists toolsets only
+#### Scenario: Popup lists toolsets and MCP agents
 
 - **WHEN** the user activates Add in the Toolsets row and data has loaded
-- **THEN** a dialog named "Add toolset" SHALL list toolsets only, with no models or applications, and with the logged-out badge on signed-out toolsets
+- **THEN** a dialog named "Add toolset" SHALL list toolsets and MCP agents, with no models or non-MCP applications, and with the logged-out badge on signed-out toolsets
+
+#### Scenario: MCP agent found by exact name
+
+- **WHEN** an application exposes both chat and MCP interfaces and the user searches the Add toolset popup for its exact name
+- **THEN** it SHALL be listed with the type Toolset
 
 #### Scenario: Confirm keeps agents
 

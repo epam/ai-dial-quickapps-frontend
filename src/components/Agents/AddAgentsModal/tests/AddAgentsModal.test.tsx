@@ -48,7 +48,7 @@ vi.mock('@epam/ai-dial-catalog', async (importOriginal) => ({
 const dom = setupTestRoot();
 
 describe('AddAgentsModal', () => {
-  it('offers models, applications and MCP agents, without the app being edited', () => {
+  it('offers models and chat applications, never MCP-only agents, nor the app being edited', () => {
     dom.render(
       <AddAgentsModal
         allIds={['toolsets/public/figma', GPT.id]}
@@ -62,7 +62,6 @@ describe('AddAgentsModal', () => {
     expect(props.items.map((item) => [item.name, item.type])).toEqual([
       ['GPT-4o', CatalogEntityType.Model],
       ['Research', CatalogEntityType.Agent],
-      ['MCP agent', CatalogEntityType.Agent],
     ]);
     expect(props.attachedIds).toEqual(['toolsets/public/figma', GPT.id]);
   });

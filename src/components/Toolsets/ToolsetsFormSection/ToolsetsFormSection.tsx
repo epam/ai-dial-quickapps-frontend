@@ -23,7 +23,8 @@ export interface ToolsetsFormSectionProps {
   toolsetIds: string[];
   /** The saved config of each entry by id; an inline toolset's tools come from it. */
   inlineConfigs?: Record<string, Record<string, unknown>>;
-  onChange: (allIds: string[]) => void;
+  /** `switchedIds`: entries of the other row checked in the popup, which move to this row. */
+  onChange: (allIds: string[], switchedIds?: string[]) => void;
 }
 
 /** The Toolsets row of the Add-ons card: the attached toolsets and the Add toolset picker. */
@@ -40,10 +41,18 @@ const ToolsetsFormSection: FC<ToolsetsFormSectionProps> = ({
 
   const handleConfirm = useCallback(
     (ids: string[]) => {
-      onChange(ids);
+      // The popup answers for this row's entries only: drop those it unchecked
+      // and append the new ones; the other row's entries stay where they are.
+      const removedIds = toolsetIds.filter((id) => !ids.includes(id));
+      const switchedIds = ids.filter((id) => allIds.includes(id) && !toolsetIds.includes(id));
+      const nextIds = [
+        ...allIds.filter((id) => !removedIds.includes(id)),
+        ...ids.filter((id) => !allIds.includes(id)),
+      ];
+      onChange(nextIds, switchedIds);
       setIsAddModalOpen(false);
     },
-    [onChange],
+    [onChange, allIds, toolsetIds],
   );
 
   return (
@@ -65,7 +74,12 @@ const ToolsetsFormSection: FC<ToolsetsFormSectionProps> = ({
 
       {isAddModalOpen && (
         <Suspense fallback={null}>
-          <AddToolsetsModal allIds={allIds} onClose={handleCloseModal} onConfirm={handleConfirm} />
+          <AddToolsetsModal
+            allIds={allIds}
+            otherRowIds={allIds.filter((id) => !toolsetIds.includes(id))}
+            onClose={handleCloseModal}
+            onConfirm={handleConfirm}
+          />
         </Suspense>
       )}
     </AddOnRow>
