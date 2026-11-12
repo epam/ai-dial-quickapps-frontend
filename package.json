@@ -1,6 +1,6 @@
 {
   "name": "ai-dial-quickapps-frontend",
-  "version": "0.4.0-rc.1",
+  "version": "0.4.0",
   "private": true,
   "scripts": {
     "start": "vite",
