@@ -70,6 +70,7 @@
     "vitest": "^4.1.12"
   },
   "overrides": {
+    "@epam/ai-dial-react-pdf-highlighter": "0.3.2",
     "@napi-rs/canvas": "0.1.100",
     "dompurify": "3.4.17",
     "katex": "^0.19.0",
