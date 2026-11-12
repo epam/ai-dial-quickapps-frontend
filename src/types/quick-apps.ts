@@ -143,6 +143,7 @@ export interface QuickApp2Config {
     timestamp?: {
       injection_strategy: TimestampInjectionStrategy.ToolCall;
     } | null;
+    /** Not edited by the UI; kept only so a stored value round-trips unchanged on save. */
     dial_files?: object | null;
     representation_tooling?: RepresentationToolingFeature | null;
     web_fetch?: WebFetchFeature | null;

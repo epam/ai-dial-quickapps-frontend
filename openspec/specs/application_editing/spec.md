@@ -456,7 +456,6 @@ PATCH /api/v1/applications/applications%2F<bucket>%2Fsupport-bot__1.0.0
     "conversation_starters": null,
     "features": {
       "timestamp": { "injection_strategy": "tool_call" },
-      "dial_files": null,
       "representation_tooling": null,
       "web_fetch": null
     }
