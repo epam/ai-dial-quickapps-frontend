@@ -64,3 +64,13 @@ body,
     max-width: 360px;
   }
 }
+
+/* Monaco's find-widget button tooltips are drawn in a container that sits a pixel over the button
+   (its arrow overlaps it). The pointer lands on the tooltip, the button loses hover, the tooltip
+   hides, the pointer is back on the button and it shows again: the tooltip blinks and the close
+   button can't be clicked. Let the pointer pass through the tooltip. */
+.context-view:has(> .workbench-hover-container),
+.workbench-hover-container,
+.workbench-hover-container * {
+  pointer-events: none;
+}
