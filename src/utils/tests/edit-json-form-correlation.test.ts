@@ -182,13 +182,11 @@ const REPRESENTATION: Record<
     expect(get(doc, 'orchestrator.system_prompt.content')).toBe(values.instructions),
   model: (doc, values) =>
     expect(get(doc, 'orchestrator.deployment.deployment_id')).toBe(values.model),
-  // Written for a model that supports it. For any other model only a stored temperature is shown;
-  // the form's default is never invented into the JSON.
+  // Written only for a model that supports it. For any other model it is absent from the JSON,
+  // even when one was stored; the form's default is never invented into the JSON.
   temperature: (doc, values) => {
     const temperature = get(doc, 'orchestrator.deployment.parameters.temperature');
-    const isStored =
-      get(values.extraConfig, 'orchestrator.deployment.parameters.temperature') !== undefined;
-    if (supportsTemperature(values) || isStored) expect(temperature).toBe(values.temperature);
+    if (supportsTemperature(values)) expect(temperature).toBe(values.temperature);
     else expect(temperature).toBeUndefined();
   },
   documentRelativeUrl: (doc, values) =>
@@ -294,8 +292,9 @@ describe.each(SCENARIOS)('JSON editor and form for $name', ({ app }) => {
     }
     expect(result.isValid).toBe(true);
     if (!result.isValid) return;
+    // The temperature of a model without support is not written to the JSON, so it cannot be read back.
     const comparable = (form: QuickApp2Form) => ({
-      ...omit(form, ['extraConfig']),
+      ...omit(form, supportsTemperature(form) ? ['extraConfig'] : ['extraConfig', 'temperature']),
       starters: form.starters.map((starter) => omit(starter, 'id')),
     });
     expect(comparable(result.values)).toEqual(comparable(values));
