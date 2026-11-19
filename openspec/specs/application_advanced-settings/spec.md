@@ -97,7 +97,7 @@ The popup values SHALL be serialized by the editor's existing application save w
 
 - `timestamp` → `application_properties.features.timestamp`
 - `maxInputAttachments` → the application's `maxInputAttachments`
-- `temperature` → `application_properties.orchestrator.deployment.parameters.temperature` (written from the form value when the model supports temperature). For any other model a stored `temperature` SHALL be kept as loaded and no temperature SHALL be added from the form default. Other keys of the loaded `deployment.parameters` (for example `top_p`, `seed`, `stop`, `max_tokens`) SHALL be kept as loaded; `parameters` is omitted only when there is nothing to write. While the selected model is not loaded yet, the loaded `parameters` SHALL be kept and a stored `temperature` SHALL follow the form value.
+- `temperature` → `application_properties.orchestrator.deployment.parameters.temperature` (written from the form value when the model supports temperature). For a loaded model without temperature support a stored `temperature` SHALL be removed from `parameters` and no temperature SHALL be added from the form default. Other keys of the loaded `deployment.parameters` (for example `top_p`, `seed`, `stop`, `max_tokens`) SHALL be kept as loaded; `parameters` is omitted only when there is nothing to write. While the selected model is not loaded yet, the loaded `parameters` SHALL be kept and a stored `temperature` SHALL follow the form value.
 - `processLargeFiles` → `application_properties.orchestrator.attachment_strategy` (only when the model accepts attachments)
 
 #### Scenario: Saved payload
@@ -140,10 +140,10 @@ The popup values SHALL be serialized by the editor's existing application save w
 - **WHEN** the loaded `orchestrator.deployment.parameters` is `{ "temperature": 0.2, "top_p": 1, "seed": 7 }` and the editor saves with `temperature: 0.3` for a model with `features.temperature: true`
 - **THEN** `applicationProperties.orchestrator.deployment.parameters` SHALL be `{ "temperature": 0.3, "top_p": 1, "seed": 7 }`
 
-#### Scenario: Model without temperature keeps other parameters
+#### Scenario: Model without temperature drops the temperature and keeps other parameters
 
 - **WHEN** the loaded `parameters` is `{ "temperature": 0.2, "seed": 7 }` and the selected model does not support temperature
-- **THEN** the saved `parameters` SHALL be `{ "temperature": 0.2, "seed": 7 }`
+- **THEN** the saved `parameters` SHALL be `{ "seed": 7 }` (and `parameters` SHALL be omitted when `temperature` was its only key)
 
 #### Scenario: No temperature is invented for a model without support
 

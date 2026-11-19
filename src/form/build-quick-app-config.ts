@@ -44,9 +44,10 @@ import { AddOnSchemaKeys } from '@/types/quick-app-form';
 import type { QuickApp2Form } from '@/types/quick-app-form';
 
 // `parameters` is the stored object, with the form's temperature on top for a model that supports
-// it. For any other model the stored parameters are kept as they are and no temperature is
-// invented from the form default. While the model is not loaded nothing can be said about support,
-// so a stored temperature follows the form value and nothing is added.
+// it. For a loaded model without temperature support the stored temperature is dropped (other
+// stored parameters are kept) and none is invented from the form default. While the model is not
+// loaded nothing can be said about support, so a stored temperature follows the form value and
+// nothing is added.
 const getDeploymentParameters = (
   extraParameters: unknown,
   model: DialAIEntityModel | undefined,
@@ -57,7 +58,8 @@ const getDeploymentParameters = (
     : {};
   if (model && doesModelAllowTemperature(model)) return { ...parameters, temperature };
   if (!model && 'temperature' in parameters) return { ...parameters, temperature };
-  return isEmpty(parameters) ? undefined : parameters;
+  const rest = model ? omit(parameters, 'temperature') : parameters;
+  return isEmpty(rest) ? undefined : rest;
 };
 
 export const buildQuickApp2Config = ({
@@ -118,7 +120,7 @@ export const buildQuickApp2Config = ({
     orchestrator: {
       ...extraOrchestrator,
       deployment: {
-        ...extraOrchestrator?.deployment,
+        ...omit(extraOrchestrator?.deployment, 'parameters'),
         deployment_id: data.model,
         ...(parameters && { parameters: parameters as { temperature: number } }),
       },

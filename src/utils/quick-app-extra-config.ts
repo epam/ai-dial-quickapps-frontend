@@ -10,8 +10,9 @@ import { ContextType, SkillRefType } from '@/types/quick-apps';
 export type QuickAppExtraConfig = Record<string, unknown>;
 
 // Leaves of the saved config that the editor form writes itself. `deployment.parameters.temperature`
-// is not one of them: it stays an extra so a stored value is kept for a model without temperature
-// support, and the form value overrides it only for a model that supports it. Everything else the
+// is not one of them: it stays an extra so it survives while the model is not loaded, the form
+// value overrides it for a model that supports temperature, and it is dropped for a model that
+// does not. Everything else the
 // loaded config holds is an "extra": it is kept as loaded, shown in the Edit JSON popup and
 // written back on save. `orchestrator.attachment_strategy` is not listed: it stays an extra
 // and is overridden only for a model that accepts attachments. `contexts` and `skills` stay
