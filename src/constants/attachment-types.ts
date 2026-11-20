@@ -8,12 +8,29 @@ const suggestion = (label: string, mimeType: MIMEType): AutocompleteTagInputSugg
   description: mimeType,
 });
 
+const groupSuggestion = (label: string, group: string): AutocompleteTagInputSuggestion => ({
+  value: group,
+  label,
+  description: group,
+});
+
+/**
+ * Suggested MIME type groups, shown before the concrete types. A group matches every MIME type
+ * with its prefix. Only prefixes that have several types declared below get a group.
+ */
+const ATTACHMENT_TYPE_GROUP_SUGGESTIONS: AutocompleteTagInputSuggestion[] = [
+  groupSuggestion('ANY-IMAGE', 'image/*'),
+  groupSuggestion('ANY-TEXT', 'text/*'),
+  groupSuggestion('ANY-APPLICATION', 'application/*'),
+];
+
 /**
  * Suggested Attachment types, in display order. Mirrors the DIAL admin app's
  * attachment-types suggestions so both editors offer the same list. Labels are
  * file-format identifiers and are not translated.
  */
 export const ATTACHMENT_TYPE_SUGGESTIONS: AutocompleteTagInputSuggestion[] = [
+  ...ATTACHMENT_TYPE_GROUP_SUGGESTIONS,
   suggestion('GIF', MIMEType.GIF),
   suggestion('PNG', MIMEType.PNG),
   suggestion('JPG', MIMEType.JPEG),
