@@ -142,9 +142,9 @@ describe('AttachmentsSection', () => {
     expect(field.dataset.tagListLabel).toBe(ApplicationEditorI18nKeys.AttachmentsTypesLabel);
     expect(field.dataset.removeLabel).toBe(ApplicationEditorI18nKeys.AttachmentsRemoveType);
     expect(JSON.parse(field.dataset.firstSuggestion ?? '{}')).toEqual({
-      value: 'image/gif',
-      label: 'GIF',
-      description: 'image/gif',
+      value: 'image/*',
+      label: 'ANY-IMAGE',
+      description: 'image/*',
     });
   });
 

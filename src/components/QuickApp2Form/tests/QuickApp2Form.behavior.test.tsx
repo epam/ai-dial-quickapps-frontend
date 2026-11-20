@@ -130,9 +130,9 @@ vi.mock('@/components/Orchestrator/ModelConfigurationSection/ModelConfigurationS
       <output data-testid="max-value">{String(advancedSettings.maxInputAttachments ?? '')}</output>
       <button
         type="button"
-        onClick={() => onAdvancedSettingsSave({ ...advancedSettings, maxInputAttachments: 1 })}
+        onClick={() => onAdvancedSettingsSave({ ...advancedSettings, maxInputAttachments: 10 })}
       >
-        Save max 1
+        Save max 10
       </button>
       <output data-testid="attachment-error">{errors.inputAttachmentTypes ?? ''}</output>
       <button type="button" onClick={() => onAttachmentsEnabledChange(true)}>
@@ -703,12 +703,12 @@ describe('QuickApp2Form observable behavior', () => {
     const { onSave, onDirtyChange } = renderForm();
 
     click(getButton('Turn attachments on'));
-    expect(getMaxValue()).toBe('1');
+    expect(getMaxValue()).toBe('10');
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
 
     click(getButton('Select PDF'));
     await submitForm();
-    expect(onSave.mock.calls[0][0]).toMatchObject({ maxInputAttachments: 1 });
+    expect(onSave.mock.calls[0][0]).toMatchObject({ maxInputAttachments: 10 });
   });
 
   it('keeps an existing max when attachments are turned on', () => {
@@ -737,14 +737,14 @@ describe('QuickApp2Form observable behavior', () => {
     expect(getMaxValue()).toBe('5');
   });
 
-  it('keeps a max of 1 confirmed in Advanced settings when attachments are turned off', () => {
+  it('keeps a max of 10 confirmed in Advanced settings when attachments are turned off', () => {
     const { onDirtyChange } = renderForm();
 
     click(getButton('Turn attachments on'));
-    click(getButton('Save max 1'));
+    click(getButton('Save max 10'));
     click(getButton('Turn attachments off'));
 
-    expect(getMaxValue()).toBe('1');
+    expect(getMaxValue()).toBe('10');
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
   });
 
@@ -756,7 +756,7 @@ describe('QuickApp2Form observable behavior', () => {
     await submitForm();
     click(getButton('Turn attachments off'));
 
-    expect(getMaxValue()).toBe('1');
+    expect(getMaxValue()).toBe('10');
   });
 
   it('loads an app with attachment types and no max with the default max and a clean form', () => {
@@ -767,7 +767,7 @@ describe('QuickApp2Form observable behavior', () => {
     };
     const { onDirtyChange } = renderForm();
 
-    expect(getMaxValue()).toBe('1');
+    expect(getMaxValue()).toBe('10');
     expect(onDirtyChange).not.toHaveBeenCalledWith(true);
   });
 
