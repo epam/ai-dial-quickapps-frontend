@@ -40,7 +40,7 @@ const FIGMA_DETAILS = {
   type: 'toolset',
   toolsetDetails: {
     owner: 'Figma',
-    catalogProperties: { provider: 'Figma' },
+    catalogProperties: { license: 'Proprietary' },
     authSettings: { authenticationType: 'OAUTH' },
     allowedTools: ['edit_design'],
     allToolNames: ['edit_design', 'get_design_context', 'evaluate_script'],
@@ -133,11 +133,11 @@ describe('useEntityDetails', () => {
 
     expect(latest.status).toBe(DetailsStatus.Ready);
     expect(sectionTitles()).toEqual([CatalogI18nKeys.DetailsOverviewSpecification]);
-    const labels = latest.details?.overview?.sections?.[0]?.specs.map((spec) => spec.label);
-    expect(labels).toEqual([
-      CatalogI18nKeys.DetailsAuthentication,
-      CatalogI18nKeys.DetailsOverviewProvider,
-      CatalogI18nKeys.DetailsOverviewHostedBy,
+    const specs = latest.details?.overview?.sections?.[0]?.specs;
+    expect(specs).toEqual([
+      { label: CatalogI18nKeys.DetailsAuthentication, value: 'OAUTH' },
+      { label: CatalogI18nKeys.DetailsOverviewLicense, value: 'Proprietary' },
+      { label: CatalogI18nKeys.DetailsOverviewHostedBy, value: 'Figma' },
     ]);
     expect(latest.details?.tools?.tools.map((tool) => tool.name)).toEqual(['edit_design']);
     // Connect: the toolset's MCP endpoint, built on the configured DIAL Core URL.
@@ -155,6 +155,58 @@ describe('useEntityDetails', () => {
     expect(latest.details?.limits?.groups[0]?.rows[0]?.label).toBe(
       CatalogI18nKeys.DetailsLimitsToday,
     );
+  });
+
+  it('shows the model provider from model details', async () => {
+    deploymentsApi.getDeploymentDetails.mockResolvedValueOnce({
+      ...GPT_DETAILS,
+      modelDetails: { ...GPT_DETAILS.modelDetails, provider: 'Azure' },
+    });
+
+    await render(GPT);
+
+    const specs = latest.details?.overview?.sections?.flatMap((section) => section.specs);
+    expect(specs).toContainEqual({
+      label: CatalogI18nKeys.DetailsOverviewProvider,
+      value: 'Azure',
+    });
+  });
+
+  it.each([
+    {
+      kind: 'toolset',
+      catalogItem: FIGMA,
+      response: {
+        ...FIGMA_DETAILS,
+        toolsetDetails: {
+          ...FIGMA_DETAILS.toolsetDetails,
+          catalogProperties: { license: 'Proprietary', provider: 'Legacy provider' },
+        },
+      },
+    },
+    {
+      kind: 'agent',
+      catalogItem: item('applications/public/agent', CatalogEntityType.Agent),
+      response: {
+        id: 'applications/public/agent',
+        type: 'application',
+        applicationDetails: {
+          owner: 'Owner',
+          catalogProperties: { license: 'Proprietary', provider: 'Legacy provider' },
+        },
+      },
+    },
+  ])('does not show a legacy catalog provider for a $kind', async ({ catalogItem, response }) => {
+    deploymentsApi.getDeploymentDetails.mockResolvedValueOnce(response);
+
+    await render(catalogItem);
+
+    const specs = latest.details?.overview?.sections?.flatMap((section) => section.specs);
+    expect(specs).toContainEqual({
+      label: CatalogI18nKeys.DetailsOverviewLicense,
+      value: 'Proprietary',
+    });
+    expect(specs?.map((spec) => spec.label)).not.toContain(CatalogI18nKeys.DetailsOverviewProvider);
   });
 
   it('uses translated labels for model lifecycle dates', async () => {

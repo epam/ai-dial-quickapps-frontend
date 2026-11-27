@@ -13,6 +13,8 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['src/test-utils/setup.ts'],
+    // The canvas package imports CSS; Vite must transform it before Node loads it.
+    server: { deps: { inline: ['@epam/ai-dial-attachment-canvas', '@epam/ai-dial-chat-hooks'] } },
     coverage: {
       provider: 'v8',
       include: ['src/**/*.{ts,tsx}'],

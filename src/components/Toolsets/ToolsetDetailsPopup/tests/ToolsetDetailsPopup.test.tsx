@@ -88,7 +88,7 @@ const FIGMA_DETAILS = {
   type: DialEntityType.Toolset,
   toolsetDetails: {
     owner: 'Figma Inc.',
-    catalogProperties: { provider: 'Figma' },
+    catalogProperties: { license: 'Proprietary' },
     authSettings: { authenticationType: 'OAUTH' },
     allowedTools: ['edit_design'],
     allToolNames: ['evaluate_script', 'get_design_context', 'edit_design'],
@@ -230,7 +230,9 @@ describe('ToolsetDetailsPopup', () => {
     const panel = document.querySelector('[role="tabpanel"]');
     expect(panel?.textContent).toContain(CatalogI18nKeys.DetailsOverviewSpecification);
     expect(panel?.textContent).toContain(CatalogI18nKeys.DetailsAuthentication);
-    expect(panel?.textContent).toContain(CatalogI18nKeys.DetailsOverviewProvider);
+    expect(panel?.textContent).toContain(CatalogI18nKeys.DetailsOverviewLicense);
+    expect(panel?.textContent).toContain('Proprietary');
+    expect(panel?.textContent).not.toContain(CatalogI18nKeys.DetailsOverviewProvider);
     expect(panel?.textContent).toContain(CatalogI18nKeys.DetailsOverviewHostedBy);
     expect(panel?.textContent).toContain('Figma Inc.');
   });

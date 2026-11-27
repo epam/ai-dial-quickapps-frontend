@@ -110,6 +110,8 @@ When a toolset, agent or model details popup opens for an entity present in `Dat
 
 The hook requests the details, plus the limits for models, in parallel, and maps them with chat-hooks' own `mapDeploymentDetailsDtoToEntityDetails`, `mapEntityDetailsToCatalogDetails` and `mapDeploymentLimitsDtoToCatalogLimits`. A failed limits request SHALL only omit Limits. An `undefined` result from `onFetchDetails` SHALL be treated as a failure.
 
+The model's top-level `modelDetails.provider`, when present, SHALL appear in Overview with the translated Provider label. Toolset and agent Overview SHALL NOT derive a provider from `catalogProperties`.
+
 The fetch state SHALL be a string enum `DetailsStatus` (`Idle`, `Loading`, `Ready`, `Error`) in `src/types/entity-details.ts`. The hook SHALL abort on unmount and ignore a response for an entity the popup no longer shows. Nothing SHALL be cached across opens; chat-api caches details for 60 s per user.
 
 No request SHALL be made for an entity missing from the catalog, an inline toolset, or a read-only render that was never opened.
@@ -137,7 +139,7 @@ GET /api/v1/deployments/toolsets%2Fpublic%2Ffigma/details
     "allToolNames": ["evaluate_script", "get_design_context"],
     "authSettings": { "authenticationType": "OAUTH" },
     "owner": "Figma",
-    "catalogProperties": { "provider": "Figma", "license": "Proprietary" },
+    "catalogProperties": { "license": "Proprietary" },
     "createdAt": 1714768496000
   }
 }
@@ -145,13 +147,23 @@ GET /api/v1/deployments/toolsets%2Fpublic%2Ffigma/details
 
 Rendered result:
 
-- Overview with a Specification section: Authentication, Provider "Figma", License "Proprietary", Hosted by "Figma", and the creation date.
+- Overview with a Specification section: Authentication, License "Proprietary", Hosted by "Figma", and the creation date.
 - Tools listing `evaluate_script` and `get_design_context`.
 
 #### Scenario: Model details and limits load together
 
 - **WHEN** the popup opens for model `gpt-4o`
 - **THEN** exactly one details request and one limits request for `gpt-4o` SHALL be made, in parallel
+
+#### Scenario: Model provider is displayed
+
+- **WHEN** the model details response includes `modelDetails.provider`
+- **THEN** Overview SHALL show that value with the translated Provider label
+
+#### Scenario: Toolset has no provider
+
+- **WHEN** a toolset's details response contains its owner and catalog license
+- **THEN** Overview SHALL show Hosted by and License without inventing a Provider field
 
 #### Scenario: Limits fail
 
