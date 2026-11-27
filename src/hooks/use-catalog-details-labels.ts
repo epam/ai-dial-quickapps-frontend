@@ -154,6 +154,8 @@ export const useCatalogDetailsLabels = (): CatalogDetailsLabels => {
           parameters: t(CatalogI18nKeys.DetailsOverviewParameters),
           hostedBy: t(CatalogI18nKeys.DetailsOverviewHostedBy),
           releaseDate: t(CatalogI18nKeys.DetailsOverviewReleaseDate),
+          deprecationDate: t(CatalogI18nKeys.DetailsOverviewDeprecationDate),
+          endOfService: t(CatalogI18nKeys.DetailsOverviewEndOfService),
           contextWindow: t(CatalogI18nKeys.DetailsOverviewContextWindow),
           maxOutputTokens: t(CatalogI18nKeys.DetailsOverviewMaxOutputTokens),
           inputModalities: t(CatalogI18nKeys.DetailsOverviewInputModalities),

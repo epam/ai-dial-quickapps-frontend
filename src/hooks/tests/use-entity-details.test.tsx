@@ -157,6 +157,27 @@ describe('useEntityDetails', () => {
     );
   });
 
+  it('uses translated labels for model lifecycle dates', async () => {
+    deploymentsApi.getDeploymentDetails.mockResolvedValueOnce({
+      ...GPT_DETAILS,
+      modelDetails: {
+        ...GPT_DETAILS.modelDetails,
+        deprecationDate: '2026-01-15',
+        endOfService: '2026-06-30',
+      },
+    });
+
+    await render(GPT);
+
+    const specs = latest.details?.overview?.sections?.flatMap((section) => section.specs);
+    expect(specs).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ label: CatalogI18nKeys.DetailsOverviewDeprecationDate }),
+        expect.objectContaining({ label: CatalogI18nKeys.DetailsOverviewEndOfService }),
+      ]),
+    );
+  });
+
   it('keeps a model’s details when its limits fail', async () => {
     deploymentsApi.getDeploymentLimits.mockRejectedValueOnce(new Error('403'));
     await render(GPT);
