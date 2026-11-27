@@ -107,6 +107,8 @@ export enum CatalogI18nKeys {
   DetailsOverviewParameters = 'catalog.details.overview.parameters',
   DetailsOverviewHostedBy = 'catalog.details.overview.hostedBy',
   DetailsOverviewReleaseDate = 'catalog.details.overview.releaseDate',
+  DetailsOverviewDeprecationDate = 'catalog.details.overview.deprecationDate',
+  DetailsOverviewEndOfService = 'catalog.details.overview.endOfService',
   DetailsOverviewContextWindow = 'catalog.details.overview.contextWindow',
   DetailsOverviewMaxOutputTokens = 'catalog.details.overview.maxOutputTokens',
   DetailsOverviewInputModalities = 'catalog.details.overview.inputModalities',
